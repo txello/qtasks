@@ -12,7 +12,7 @@ version = "1.0.0"
 authors = [
   { name="txello", email="txello@inbox.ru" },
 ]
-description = "Queue Tasks"
+description = "Queue Tasks Framework"
 readme = "README.md"
 requires-python = ">=3.8"
 

@@ -1,5 +1,6 @@
 site_name: QTasks
-site_url: https://qtasks.github.io/
+site_url: https://txello.github.io/qtasks
+docs_dir: docs/
 site_author: Satoru Ito
 copyright: Satoru Ito, 2025
 
