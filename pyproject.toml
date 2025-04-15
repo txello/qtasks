@@ -12,7 +12,7 @@ version = "1.0.0"
 authors = [
   { name="txello", email="txello@inbox.ru" },
 ]
-description = "Queue Tasks"
+description = "Queue Tasks Framework"
 readme = "README.md"
 requires-python = ">=3.8"
 
@@ -20,7 +20,7 @@ dependencies = [
     "typing-extensions>=4.12.2",
     "redis>=5.2.1",
     "anyio>=4.9.0",
-    "asyncio_atexit>=1.0.1"
+    "asyncio_atexit>=1.0.1",
     "apscheduler>=3.11.0"
 ]
 
