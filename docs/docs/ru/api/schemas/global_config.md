@@ -1,0 +1,1 @@
+::: qtasks.schemas.global_config
