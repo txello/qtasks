@@ -1,5 +1,5 @@
 site_name: QTasks
-site_url: https://txello.github.io/qtasks
+site_url: https://txello.github.io/qtasks/
 docs_dir: docs
 site_author: Satoru Ito
 copyright: Satoru Ito, 2025
@@ -124,7 +124,7 @@ plugins:
 
 nav:
   - QueueTasks:
-      - QueueTasks: ru/index.md
+      - QueueTasks: index.md
       - Установка: ru/install.md
       - Первые шаги: ru/getting_started.md
       - Компоненты: ru/components.md
@@ -164,4 +164,4 @@ nav:
 
 
 watch:
-  - ../src/qtasks  # Следить за изменениями в коде
+  - src/qtasks  # Следить за изменениями в коде
