@@ -1,6 +1,6 @@
 site_name: QTasks
 site_url: https://txello.github.io/qtasks
-docs_dir: docs/
+docs_dir: docs
 site_author: Satoru Ito
 copyright: Satoru Ito, 2025
 
@@ -112,7 +112,7 @@ plugins:
             docstring_style: google
             show_source: false
   - i18n:
-      default_language_only: ru
+      #default_language_only: ru
       languages:
         - locale: ru
           name: Русский
