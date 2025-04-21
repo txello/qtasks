@@ -10,6 +10,8 @@ from anyio import Semaphore
 
 
 from qtasks.configs.config import QueueConfig
+from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.schemas.task import Task
 
 from .base import BaseWorker
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
@@ -214,7 +216,7 @@ class AsyncWorker(BaseWorker):
                     """
                 )
             ]
-        ) -> None:
+        ) -> Task:
         """Добавление задачи в очередь.
 
         Args:
@@ -229,6 +231,9 @@ class AsyncWorker(BaseWorker):
         async with self.condition:
             await self.queue.put(model)
             self.condition.notify()
+        
+        model = Task(status=TaskStatusEnum.NEW.value, task_name=name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
+        return model
 
     async def start(self,
             num_workers: Annotated[

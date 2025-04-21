@@ -8,6 +8,7 @@ from time import time
 from typing import TYPE_CHECKING
 import redis.asyncio as aioredis
 
+from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.storages.async_redis import AsyncRedisStorage
 
@@ -115,7 +116,6 @@ class AsyncRedisBroker(BaseBroker):
                 model_get = await self.get(uuid=uuid)
                 args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
                 print(f"[Broker] Получена новая задача: {uuid}")
-                await self._plugin_trigger(name="new_task")
                 await worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)  # Передаём задачу в AsyncWorker
             else:
                 await asyncio.sleep(1)
@@ -174,13 +174,13 @@ class AsyncRedisBroker(BaseBroker):
         
         uuid = uuid4()
         created_at=time()
-        model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at or self.config.mutation_version_default)
+        model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
         
         await self.storage.add(uuid=uuid, task_status=model)
         await self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")
         
-        model = Task(status="new", task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=datetime.datetime.fromtimestamp(created_at), updated_at=datetime.datetime.fromtimestamp(created_at))
+        model = Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=datetime.datetime.fromtimestamp(created_at), updated_at=datetime.datetime.fromtimestamp(created_at))
         return model
     
     async def get(self,

@@ -1,23 +1,36 @@
 import aiounittest
 
 from apps.app_async import app
+from qtasks import tests
+from qtasks.schemas.task import Task
+from qtasks.schemas.test import TestConfig
 
 
 class TestAsyncQTasks(aiounittest.AsyncTestCase):
-    async def _add_task(self):
-        return await app.add_task("test", args=(5,))
+    def setUp(self):
+        self.test_case = tests.AsyncTestCase(app=app)
+
     
-    async def test_task_add(self):
-        result = self._add_task()
+    async def _add_task(self) -> Task|None:
+        return await self.test_case.add_task("test", args=(5,))
+    
+    async def test_add_task(self):
+        self.test_case.settings(TestConfig.full())
+        
+        result = await self._add_task()
         self.assertIsNotNone(result)
         return result
     
-    async def test_task_get_result(self):
+    async def test_add_task_and_get_result(self):
+        self.test_case.settings(TestConfig.full())
+        
         uuid = (await self._add_task()).uuid
-        result = await app.get(uuid=uuid)
+        result = await self.test_case.get(uuid=uuid)
         self.assertIsNotNone(result)
     
     async def test_task_get_none(self):
-        uuid = "00e55799-058e-4b6d-bdb1-3d2b31c3b95d"
-        result = await app.get(uuid=uuid)
+        self.test_case.settings(TestConfig.full_broker())
+        
+        uuid = "9c467627-3188-4e7a-ba88-1fec628da70e"
+        result = await self.test_case.get(uuid=uuid)
         self.assertIsNone(result)

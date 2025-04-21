@@ -1,6 +1,7 @@
 import json
 from typing import TYPE_CHECKING, Optional, Union
 
+from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.schemas.task_exec import TaskPrioritySchema
 try:
     import pika
@@ -205,7 +206,7 @@ class SyncRabbitMQBroker(BaseBroker):
         )
 
         return Task(
-            status="new", task_name=task_name, uuid=uuid,
+            status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid,
             priority=priority, args=args, kwargs=kwargs,
             created_at=created_at, updated_at=created_at
         )

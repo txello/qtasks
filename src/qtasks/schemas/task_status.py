@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from time import time
 import json
 
+from qtasks.enums.task_status import TaskStatusEnum
+
 @dataclass
 class BaseTaskStatusSchema:
     """`BaseTaskStatusSchema` схема.
@@ -39,7 +41,7 @@ class TaskStatusNewSchema(BaseTaskStatusSchema):
     Args:
         status (str): Статус.
     """
-    status: str = "new"
+    status: str = TaskStatusEnum.NEW.value
 
 @dataclass
 class TaskStatusProcessSchema(BaseTaskStatusSchema):
@@ -48,7 +50,7 @@ class TaskStatusProcessSchema(BaseTaskStatusSchema):
     Args:
         status (str): Статус.
     """
-    status: str = "process"
+    status: str = TaskStatusEnum.PROCESS.value
 
 @dataclass
 class TaskStatusSuccessSchema(BaseTaskStatusSchema):
@@ -58,7 +60,7 @@ class TaskStatusSuccessSchema(BaseTaskStatusSchema):
         status (str): Статус.
         returning (str): Результат.
     """
-    status: str = "success"
+    status: str = TaskStatusEnum.SUCCESS.value
     returning: str = ""
 
 @dataclass
@@ -69,5 +71,5 @@ class TaskStatusErrorSchema(BaseTaskStatusSchema):
         status (str): Статус.
         traceback (str): Трассировка ошибок.
     """
-    status: str = "error"
+    status: str = TaskStatusEnum.ERROR.value
     traceback: str = ""

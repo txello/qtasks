@@ -1,6 +1,7 @@
 import json
 from typing import TYPE_CHECKING, Optional, Union
 
+from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.schemas.task_exec import TaskPrioritySchema
 
 try:
@@ -206,7 +207,7 @@ class AsyncRabbitMQBroker(BaseBroker):
         
         
         return Task(
-            status="new", task_name=task_name, uuid=uuid,
+            status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid,
             priority=priority, args=args, kwargs=kwargs,
             created_at=created_at, updated_at=created_at
         )
@@ -278,7 +279,6 @@ class AsyncRabbitMQBroker(BaseBroker):
             await self.connection.close()
             self.connection = None
             self.channel = None
-        await self.storage.stop()
 
     async def remove_finished_task(self,
             task_broker: Annotated[

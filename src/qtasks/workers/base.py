@@ -154,7 +154,6 @@ class BaseWorker(ABC):
         """Останавливает воркеры. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
     
-    @abstractmethod
     def update_config(self,
             config: Annotated[
                 QueueConfig,
@@ -170,7 +169,8 @@ class BaseWorker(ABC):
         Args:
             config (QueueConfig): Конфиг.
         """
-        pass
+        self.config = config
+        return
     
     def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
         """
