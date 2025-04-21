@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.2afb09e1.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.4af4bdda.min.css">
       
         
         <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
@@ -2246,7 +2246,7 @@
 
         <p><code>QueueTasks</code> - Фреймворк для очередей задач.</p>
 <p>Читать больше:
-<a href="https://txello.github.io/qtasks/ru/getting_started/">Первые шаги</a>.</p>
+<a href="https://qtasks.github.io/first-steps/">QueueTasks docs for First Steps</a>.</p>
 <h4 id="qtasks.asyncio.qtasks.QueueTasks--_1">Пример<a class="headerlink" href="#qtasks.asyncio.qtasks.QueueTasks--_1" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><span class="kn">from</span><span class="w"> </span><span class="nn">qtasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueueTasks</span>
 </span><span id="__span-0-2">
@@ -2488,7 +2488,7 @@
                 <code>plugin</code>
             </td>
             <td>
-                  <code><span title="Type">Type</span>[<span title="qtasks.plugins.base.BasePlugin">BasePlugin</span>]</code>
+                  <code><span title="typing.Type">Type</span>[<span title="qtasks.plugins.base.BasePlugin">BasePlugin</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2825,22 +2825,6 @@
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>starter</code>
-            </td>
-            <td>
-                  <code><span title="qtasks.starters.base.BaseStarter">BaseStarter</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Стартер. По умолчанию: <code>qtasks.starters.AsyncStarter</code>.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
                 <code>num_workers</code>
             </td>
             <td>
@@ -2853,6 +2837,22 @@
             </td>
             <td>
                   <code>4</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>reset_starter</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Обновить Стартер. По умолчанию: True.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">

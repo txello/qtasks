@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.2afb09e1.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
@@ -889,15 +889,6 @@
   <a href="#qtasks.qtasks.QueueTasks.__init__" class="md-nav__link">
     <span class="md-ellipsis">
       __init__
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#qtasks.qtasks.QueueTasks.add_plugin" class="md-nav__link">
-    <span class="md-ellipsis">
-      add_plugin
     </span>
   </a>
   
@@ -2134,15 +2125,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#qtasks.qtasks.QueueTasks.add_plugin" class="md-nav__link">
-    <span class="md-ellipsis">
-      add_plugin
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#qtasks.qtasks.QueueTasks.add_task" class="md-nav__link">
     <span class="md-ellipsis">
       add_task
@@ -2261,8 +2243,8 @@
 
 
         <p><code>QueueTasks</code> - Фреймворк для очередей задач.</p>
-<p>Читать больше:
-<a href="https://txello.github.io/qtasks/ru/getting_started/">Первые шаги</a>.</p>
+<p>Читайте больше на
+<a href="https://qtasks.github.io/getting_started/">Первые шаги</a>.</p>
 <h4 id="qtasks.qtasks.QueueTasks--_1">Пример<a class="headerlink" href="#qtasks.qtasks.QueueTasks--_1" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><span class="kn">from</span><span class="w"> </span><span class="nn">qtasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueueTasks</span>
 </span><span id="__span-0-2">
@@ -2513,71 +2495,6 @@
             </td>
             <td>
                   <code>&#39;QueueTasks&#39;</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="qtasks.qtasks.QueueTasks.add_plugin" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">add_plugin</span><span class="p">(</span><span class="n">plugin</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
-
-<a href="#qtasks.qtasks.QueueTasks.add_plugin" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Добавить плагин.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>plugin</code>
-            </td>
-            <td>
-                  <code><span title="Type">Type</span>[<span title="qtasks.plugins.base.BasePlugin">BasePlugin</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Класс плагина.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>name</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Имя плагина. По умолчанию: <code>None</code>.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -2864,22 +2781,6 @@
         </tr>
       </thead>
       <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>starter</code>
-            </td>
-            <td>
-                  <code><span title="qtasks.starters.base.BaseStarter">BaseStarter</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Стартер. По умолчанию: <code>qtasks.starters.SyncStarter</code>.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
           <tr class="doc-section-item">
             <td>
                 <code>num_workers</code>
