@@ -3,8 +3,9 @@ from typing import Optional, Union
 from typing_extensions import Annotated, Doc, TYPE_CHECKING
 from uuid import UUID
 
-from qtasks.starters.sync_starter import SyncStarter
+from qtasks.registries.task_registry import TaskRegistry
 from qtasks.workers.sync_worker import SyncThreadWorker
+from qtasks.starters.sync_starter import SyncStarter
 from qtasks.brokers.sync_redis import SyncRedisBroker
 from qtasks.routers import Router
 from qtasks.configs import QueueConfig
@@ -16,13 +17,14 @@ if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
     from qtasks.workers.base import BaseWorker
     from qtasks.starters.base import BaseStarter
+    from qtasks.plugins.base import BasePlugin
 
 class QueueTasks:
     """
     `QueueTasks` - Фреймворк для очередей задач.
 
-    Читайте больше на
-    [Первые шаги](https://qtasks.github.io/getting_started/).
+    Читать больше:
+    [Первые шаги](https://txello.github.io/qtasks/ru/getting_started/).
 
     ## Пример
 
@@ -73,6 +75,7 @@ class QueueTasks:
         self.name = name
         self.broker = broker or SyncRedisBroker(name=name)
         self.worker = worker or SyncThreadWorker(name=name, broker=self.broker)
+        self.starter: "BaseStarter"|None = None
         
         
         self.config: Annotated[
@@ -108,6 +111,17 @@ class QueueTasks:
             )
         ] = {}
         
+        self.plugins: Annotated[
+            dict[str, "BasePlugin"],
+            Doc(
+                """
+                Задачи, тип `{plugin_name:qtasks.plugins.base.BasePlugin}`.
+                
+                По умолчанию: `Пустой словарь`.
+                """
+            )
+        ] = {}
+        
         self._inits: Annotated[
             dict[str, list[InitsExecSchema]],
             Doc(
@@ -125,6 +139,8 @@ class QueueTasks:
             "init_worker_stoping":[],
             "init_stoping":[]
         }
+        
+        self._registry_tasks()
     
     def task(self,
             name: Annotated[
@@ -283,6 +299,7 @@ class QueueTasks:
         """Запуск синхронно Воркер и Брокер.
 
         Args:
+            starter (BaseStarter, optional): Стартер. По умолчанию: `qtasks.starters.SyncStarter`.
             num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
         """
@@ -444,3 +461,35 @@ class QueueTasks:
             self.worker.init_task_stoping.append(model)
             return func
         return wrap
+
+    def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
+        """
+        Добавить плагин.
+
+        Args:
+            plugin (Type[BasePlugin]): Класс плагина.
+            name (str, optional): Имя плагина. По умолчанию: `None`.
+        """
+        self.plugins.update({str(plugin.name or name): plugin})
+    
+    async def _plugin_trigger(self, name: str, *args, **kwargs):
+        """
+        Вызвать триггер плагина.
+
+        Args:
+            name (str): Имя триггера.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
+        """
+        for plugin in self.plugins.values():
+            await plugin.trigger(name=name, *args, **kwargs)
+            
+    def _registry_tasks(self):
+        """
+        Зарегистрировать задачи из реестра задач.
+
+        Обновляет `self.tasks` и `self.worker._tasks` всеми задачами,
+        зарегистрированными в `TaskRegistry`.
+        """
+        self.tasks.update(TaskRegistry.all_tasks())
+        self.worker._tasks.update(TaskRegistry.all_tasks())

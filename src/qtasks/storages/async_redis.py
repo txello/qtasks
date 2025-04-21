@@ -8,6 +8,8 @@ from uuid import UUID
 import redis.asyncio as aioredis
 from typing import TYPE_CHECKING
 
+from qtasks.enums.task_status import TaskStatusEnum
+
 from .base import BaseStorage
 from qtasks.configs.async_config import AsyncRedisGlobalConfig
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -273,8 +275,13 @@ class AsyncRedisStorage(BaseStorage):
 
     async def _delete_finished_tasks(self):
         pattern = f"{self.name}:"
-        tasks = [pattern + str(task.uuid) for task in (await self.get_all())]
-        tasks.append(self.queue_process)
+        tasks: list[Task] = list(filter(lambda task: task.status != TaskStatusEnum.NEW.value, await self.get_all()))
         
-        await self.client.delete(*tasks)
+        tasks_hash = [pattern + str(task.uuid) for task in tasks]
+        tasks_queue = [f"{task.task_name}:{task.uuid}:{task.priority}" for task in tasks]
+        
+        if tasks_queue:
+            await self.client.zrem(self.queue_process, *tasks_queue)
+        if tasks_hash:
+            await self.client.delete(*tasks_hash)
         return

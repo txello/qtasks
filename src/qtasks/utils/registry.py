@@ -21,7 +21,6 @@ def _wrap_function(func: Callable, name: str):
     
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        print(f"Function '{name}' is called")
         return wrapped_func(*args, **kwargs)
 
     return wrapper

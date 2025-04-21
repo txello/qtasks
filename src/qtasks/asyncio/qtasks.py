@@ -1,6 +1,6 @@
 import asyncio
 import inspect
-from typing import TYPE_CHECKING, Optional, Type, Union
+from typing import TYPE_CHECKING, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
@@ -27,7 +27,7 @@ class QueueTasks:
     `QueueTasks` - Фреймворк для очередей задач.
 
     Читать больше:
-    [QueueTasks docs for First Steps](https://qtasks.github.io/first-steps/).
+    [Первые шаги](https://txello.github.io/qtasks/ru/getting_started/).
 
     ## Пример
 
@@ -72,6 +72,7 @@ class QueueTasks:
         self.name = name
         self.broker = broker or AsyncRedisBroker(name=name)
         self.worker = worker or AsyncWorker(name=name, broker=self.broker)
+        self.starter: "BaseStarter"|None = None
         
         
         self.config: Annotated[
@@ -321,8 +322,8 @@ class QueueTasks:
 
         Args:
             loop (asyncio.AbstractEventLoop, optional): асинхронный loop. По умолчанию: None.
+            starter (BaseStarter, optional): Стартер. По умолчанию: `qtasks.starters.AsyncStarter`.
             num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
-            reset_starter (bool, optional): Обновить Стартер. По умолчанию: True.
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
         """
         self.starter = starter or AsyncStarter(name=self.name, worker=self.worker, broker=self.broker)

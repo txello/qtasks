@@ -1,11 +1,8 @@
 site_name: QTasks
-site_url: https://txello.github.io/qtasks/
-docs_dir: docs
+site_url: https://qtasks.github.io/
 site_author: Satoru Ito
 copyright: Satoru Ito, 2025
 
-repo_name: txello/qtasks
-repo_url: https://github.com/txello/qtasks
 
 theme:
   name: material
@@ -114,7 +111,7 @@ plugins:
             docstring_style: google
             show_source: false
   - i18n:
-      #default_language_only: ru
+      default_language: ru
       languages:
         - locale: ru
           name: Русский
@@ -126,7 +123,7 @@ plugins:
 
 nav:
   - QueueTasks:
-      - QueueTasks: index.md
+      - QueueTasks: ru/index.md
       - Установка: ru/install.md
       - Первые шаги: ru/getting_started.md
       - Компоненты: ru/components.md
@@ -134,8 +131,6 @@ nav:
   - Возможности: ru/features.md
   - API:
       - QueueTasks: ru/api/queuetasks.md
-      - Asyncio:
-        - QueueTasks: ru/api/asyncio/queuetasks.md
       - Роутер: ru/api/router.md
       - Брокеры:
         - BaseBroker - Пишем свой брокер: ru/api/brokers/basebroker.md
@@ -163,9 +158,10 @@ nav:
         - GlobalConfig: ru/api/schemas/global_config.md
   - Примеры:
     - Примеры: ru/examples.md
+  - История обновлений: ru/changelog.md
   - Блог: ru/blog.md
   #- О проекте: ru/about.md
 
 
 watch:
-  - src/qtasks  # Следить за изменениями в коде
+  - ../src/qtasks  # Следить за изменениями в коде

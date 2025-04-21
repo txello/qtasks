@@ -10,6 +10,8 @@ from uuid import UUID, uuid4
 from time import time
 from typing import TYPE_CHECKING
 
+from qtasks.enums.task_status import TaskStatusEnum
+
 from .base import BaseBroker
 from qtasks.schemas.task_exec import TaskPrioritySchema
 
@@ -171,7 +173,7 @@ class AsyncKafkaBroker(BaseBroker):
         await self.producer.send_and_wait(self.topic, task_data.encode("utf-8"))
         await self.producer.stop()
         
-        return Task(status="new", task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
+        return Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
     
     async def get(self,
             uuid: Annotated[

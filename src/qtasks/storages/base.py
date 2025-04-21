@@ -41,10 +41,20 @@ class BaseStorage(ABC):
                     """
                 )
             ] = None,
+            global_config: Annotated[
+                Optional["BaseGlobalConfig"],
+                Doc(
+                    """
+                    Глобальный конфиг.
+                    
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None
         ):
         self.name = name
         self.client = None
-        self.global_config: "BaseGlobalConfig" = None
+        self.global_config: "BaseGlobalConfig"|None = global_config
         
         self.plugins: dict[str, "BasePlugin"] = {}
         pass

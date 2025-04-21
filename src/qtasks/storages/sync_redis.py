@@ -6,6 +6,8 @@ from uuid import UUID
 import redis
 from typing import TYPE_CHECKING
 
+from qtasks.enums.task_status import TaskStatusEnum
+
 from .base import BaseStorage
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema
@@ -238,3 +240,16 @@ class SyncRedisStorage(BaseStorage):
             args, kwargs, created_at = json.loads(args) or (), json.loads(kwargs) or {}, float(created_at)
             
             worker.add(name=task_name, uuid=uuid, priority=int(priority), created_at=created_at, args=args, kwargs=kwargs)
+
+    def _delete_finished_tasks(self):
+        pattern = f"{self.name}:"
+        tasks: list[Task] = list(filter(lambda task: task.status != TaskStatusEnum.NEW.value, self.get_all()))
+        
+        tasks_hash = [pattern + str(task.uuid) for task in tasks]
+        tasks_queue = [f"{task.task_name}:{task.uuid}:{task.priority}" for task in tasks]
+        
+        if tasks_queue:
+            self.client.zrem(self.queue_process, *tasks_queue)
+        if tasks_hash:
+            self.client.delete(*tasks_hash)
+        return

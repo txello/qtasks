@@ -1,11 +1,16 @@
 import unittest
 
 from apps.app_sync import app
+from qtasks import tests
+from qtasks.schemas.test import TestConfig
 
 
 class TestSyncQTasks(unittest.TestCase):
     def setUp(self):
-        self._result = app.add_task("test", args=(5,))
+        self.test_case = tests.SyncTestCase(app=app)
+        self.test_case.settings(TestConfig.full())
+        
+        self._result = self.test_case.add_task("test", args=(5,))
     
     def test_task_add(self):
         self.assertIsNotNone(self._result)

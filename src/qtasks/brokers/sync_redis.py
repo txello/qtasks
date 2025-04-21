@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 from time import time, sleep
 from typing import TYPE_CHECKING
 
-from qtasks.configs.config import QueueConfig
+from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.storages import SyncRedisStorage
 
@@ -172,7 +172,7 @@ class SyncRedisBroker(BaseBroker):
         self.storage.add(uuid=uuid, task_status=model)
         self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")
         
-        model = Task(status="new", task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
+        model = Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
         return model
     
     def get(self,

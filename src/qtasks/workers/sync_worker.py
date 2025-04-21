@@ -8,6 +8,8 @@ from uuid import UUID
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.schemas.task import Task
 
 from .base import BaseWorker
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
@@ -209,7 +211,7 @@ class SyncThreadWorker(BaseWorker):
                     """
                 )
             ]
-        ) -> None:
+        ) -> Task:
         """Добавление задачи в очередь.
 
         Args:
@@ -223,6 +225,9 @@ class SyncThreadWorker(BaseWorker):
         model = TaskPrioritySchema(priority=priority, uuid=uuid, name=name, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
         with self.lock:
             self.queue.put(model)
+        
+        model = Task(status=TaskStatusEnum.NEW.value, task_name=name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
+        return model
 
     def start(self,
             num_workers: Annotated[

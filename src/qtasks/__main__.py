@@ -23,9 +23,7 @@ if __name__ == "__main__":
     if start == "worker":
         
         app_arg: str = args.A
-        file_path, app_var = "".join(app_arg.split('.')[:-1]), app_arg.split('.')[-1]
-        
-        
+        file_path, app_var = app_arg.split(':')[0], app_arg.split(':')[-1]
         
         file = import_module(file_path)
         app = getattr(file, app_var)
