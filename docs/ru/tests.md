@@ -45,15 +45,18 @@ class TestAsyncTasks(aiounittest.AsyncTestCase):
 ### Пример теста с unittest
 ```py
 import unittest
+from qtasks.tests import SyncTestCase
+
 from app import app
 
 
 class TestTasks(unittest.TestCase):
     def setUp(self):
-        self.test_case = tests.SyncTestCase(app=app)
+        self.test_case = SyncTestCase(app=app)
     
     def test_task_add(self):
         self.test_case.settings(TestConfig.full())
+        
         result = self.test_case.add_task("test", args=(5,))
         self.assertIsNotNone(result)
 ```
@@ -61,18 +64,21 @@ class TestTasks(unittest.TestCase):
 ### Пример теста с aiounittest
 ```py
 import aiounittest
+from qtasks.tests import AsyncTestCase
+
 from app import app
+
 
 class TestAsyncQTasks(aiounittest.AsyncTestCase):
     def setUp(self):
-        self.test_case = tests.AsyncTestCase(app=app)
+        self.test_case = AsyncTestCase(app=app)
     
     async def _add_task(self) -> Task|None:
         return await self.test_case.add_task("test", args=(5,))
     
     async def test_add_task(self):
         self.test_case.settings(TestConfig.full())
-        
+
         result = await self._add_task()
         self.assertIsNotNone(result)
 ```

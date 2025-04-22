@@ -104,6 +104,10 @@ extra:
     
     - name: ru - Russian
       link: ./ru/
+  social:
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/qtasks/
+      name: PyPI
 
 plugins:
   - search
@@ -161,8 +165,13 @@ nav:
         - TaskExec: ru/api/schemas/task_exec.md
         - Inits: ru/api/schemas/inits.md
         - GlobalConfig: ru/api/schemas/global_config.md
+      - Тестирование:
+        - BaseTestCase - Пишем свой кейс тестирования: ru/api/tests/basetests.md
+        - SyncTestCase: ru/api/tests/sync_testcase.md
+        - AsyncTestCase: ru/api/tests/async_testcase.md
   - Примеры:
     - Примеры: ru/examples.md
+  - История изменений: ru/changelog.md
   - Блог: ru/blog.md
   #- О проекте: ru/about.md
 
