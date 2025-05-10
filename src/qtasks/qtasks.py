@@ -296,7 +296,7 @@ class QueueTasks:
                 )
             ] = True
         ) -> None:
-        """Запуск синхронно Воркер и Брокер.
+        """Запуск синхронно Приложение.
 
         Args:
             starter (BaseStarter, optional): Стартер. По умолчанию: `qtasks.starters.SyncStarter`.

@@ -165,6 +165,7 @@ nav:
         - TaskExec: ru/api/schemas/task_exec.md
         - Inits: ru/api/schemas/inits.md
         - GlobalConfig: ru/api/schemas/global_config.md
+        - TestConfig: ru/api/schemas/test_config.md
       - Тестирование:
         - BaseTestCase - Пишем свой кейс тестирования: ru/api/tests/basetests.md
         - SyncTestCase: ru/api/tests/sync_testcase.md

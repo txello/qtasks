@@ -120,7 +120,8 @@ class AsyncStarter(BaseStarter):
         """
         print("[QueueTasks] Запуск QueueTasks...")
 
-        self.plugins.update(plugins)
+        if plugins:
+            self.plugins.update(plugins)
         
         if reset_config:
             self.worker.update_config(self.config)
@@ -166,10 +167,14 @@ class AsyncStarter(BaseStarter):
         """Останавливает все компоненты."""
 
         print("[QueueTasks] Остановка QueueTasks...")
-        await self.broker.stop()
-        await self.worker.stop()
-        await self.broker.storage.stop()
-        await self.broker.storage.global_config.stop()
+        if self.broker:
+            await self.broker.stop()
+        if self.worker:
+            await self.worker.stop()
+        if self.broker.storage:
+            await self.broker.storage.stop()
+        if self.broker.storage.global_config:
+            await self.broker.storage.global_config.stop()
 
         if self._global_loop and self._global_loop.is_running():
             self._global_loop.stop()

@@ -318,7 +318,7 @@ class QueueTasks:
                 )
             ] = True
         ) -> None:
-        """Запуск асинхронно Воркера и Брокера.
+        """Запуск асинхронно Приложение.
 
         Args:
             loop (asyncio.AbstractEventLoop, optional): асинхронный loop. По умолчанию: None.

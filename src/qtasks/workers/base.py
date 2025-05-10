@@ -62,11 +62,6 @@ class BaseWorker(ABC):
         self.num_workers = 0
     
     @abstractmethod
-    def worker(self):
-        """Обработчик задач. Эта функция задействуется внутренней функцией start."""
-        pass
-    
-    @abstractmethod
     def add(self,
             name: Annotated[
                 str,

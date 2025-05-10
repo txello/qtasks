@@ -103,19 +103,20 @@ class SyncRedisBroker(BaseBroker):
 
         while self.running:
             task_data = self.client.lpop(self.queue_name)
-            
-            if task_data:
-                task_name, uuid, priority = task_data.split(':')
-                
-                self.storage.add_process(task_data, priority)
-                
-                model_get = self.get(uuid=uuid)
-                args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
-                
-                print(f"[Broker] Получена новая задача: {uuid}")
-                worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)
-            else:
+            if not task_data:
                 sleep(1)
+                continue
+            
+            task_name, uuid, priority = task_data.split(':')
+            
+            self.storage.add_process(task_data, priority)
+            
+            model_get = self.get(uuid=uuid)
+            args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
+            
+            print(f"[Broker] Получена новая задача: {uuid}")
+            worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)
+                
     
     def add(self,
             task_name: Annotated[
