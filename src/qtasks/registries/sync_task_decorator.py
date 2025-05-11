@@ -8,9 +8,10 @@ if TYPE_CHECKING:
     from qtasks import QueueTasks
 
 class SyncTask:
-    def __init__(self, app: "QueueTasks", task_name: str):
+    def __init__(self, app: "QueueTasks", task_name: str, priority: int):
         self.task_name = task_name
-        self._app = app
+        self.priority = priority
+        self.__app = app
         
     def add_task(self,
             priority: Annotated[
@@ -19,10 +20,10 @@ class SyncTask:
                     """
                     Приоритет задачи.
                     
-                    По умолчанию: `0`.
+                    По умолчанию: Значение приоритета у задачи.
                     """
                 )
-            ] = 0,
+            ] = None,
             args: Annotated[
                 Optional[tuple],
                 Doc(
@@ -44,4 +45,7 @@ class SyncTask:
                 )
             ] = None
         ) -> Task:
-        return self._app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs)
+        if priority is None:
+            priority = self.priority
+        
+        return self.__app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs)

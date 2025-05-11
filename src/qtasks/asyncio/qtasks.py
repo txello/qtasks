@@ -162,6 +162,16 @@ class QueueTasks:
                     По умолчанию: `func.__name__`.
                     """
                 )
+            ] = None,
+            priority: Annotated[
+                Optional[str],
+                Doc(
+                    """
+                    Приоритет у задачи по умолчанию.
+                    
+                    По умолчанию: `config.default_task_priority`.
+                    """
+                )
             ] = None
         ):
         """Декоратор для регистрации задач.
@@ -170,17 +180,21 @@ class QueueTasks:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
         """
         def wrapper(func):
-            nonlocal name
+            nonlocal name, priority
+            
             task_name = name or func.__name__
             if task_name in self.tasks:
                 raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
+            
+            if priority is None:
+                priority = self.config.default_task_priority
             
             model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func))
             
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
             
-            return AsyncTask(app=self, task_name=task_name)
+            return AsyncTask(app=self, task_name=task_name, priority=priority)
         return wrapper
 
     async def add_task(self, 
@@ -234,6 +248,12 @@ class QueueTasks:
         Returns:
             Task: `schemas.task.Task`.
         """
+        if task_name not in self.tasks:
+            raise KeyError(f"Задача с именем {task_name} не зарегистрирована!")
+        
+        if priority is None:
+            priority = self.tasks.get(task_name).priority
+            
         args, kwargs = args or (), kwargs or {}
         return await self.broker.add(task_name, priority, *args, **kwargs)
     
