@@ -33,16 +33,29 @@ class TaskRegistry:
                     По умолчанию: `func.__name__`.
                     """
                 )
-            ] = None
+            ] = None,
+            priority: Annotated[
+                int,
+                Doc(
+                    """
+                    Приоритет задачи.
+                    
+                    По умолчанию: `0`.
+                    """
+                )
+            ] = 0
         ) -> None:
         """Регистрация задачи.
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
+            priority (int): Приоритет задачи. По умолчанию: `0`.
         """
         def wrapper(func: Callable):
+            nonlocal name, priority
+            
             task_name = name or func.__name__
-            model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func))
+            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func))
             cls._tasks[task_name] = model
             return func
         return wrapper

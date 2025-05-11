@@ -1,5 +1,7 @@
 from qtasks import QueueTasks
 
+import shared_tasks
+
 app = QueueTasks()
 
 @app.task(name="test")

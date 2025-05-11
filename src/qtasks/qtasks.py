@@ -155,7 +155,7 @@ class QueueTasks:
                 )
             ] = None,
             priority: Annotated[
-                Optional[str],
+                Optional[int],
                 Doc(
                     """
                     Приоритет у задачи по умолчанию.
@@ -169,7 +169,7 @@ class QueueTasks:
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (str, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
         """
         def wrapper(func):
             nonlocal name, priority
@@ -198,7 +198,7 @@ class QueueTasks:
                 )
             ],
             priority: Annotated[
-                int,
+                Optional[int],
                 Doc(
                     """
                     Приоритет задачи.
@@ -232,7 +232,7 @@ class QueueTasks:
 
         Args:
             task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умолчанию 0.
+            priority (int, optional): Приоритет задачи. По умолчанию: Значение приоритета у задачи.
             args (tuple, optional): args задачи. По умолчанию `()`.
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
 
