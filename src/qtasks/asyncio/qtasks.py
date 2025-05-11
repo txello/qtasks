@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
+from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.starters.async_starter import AsyncStarter
 from qtasks.workers.async_worker import AsyncWorker
@@ -171,12 +172,15 @@ class QueueTasks:
         def wrapper(func):
             nonlocal name
             task_name = name or func.__name__
+            if task_name in self.tasks:
+                raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
+            
             model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func))
             
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
             
-            return func
+            return AsyncTask(app=self, task_name=task_name)
         return wrapper
 
     async def add_task(self, 

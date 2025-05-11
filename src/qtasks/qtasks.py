@@ -3,6 +3,7 @@ from typing import Optional, Union
 from typing_extensions import Annotated, Doc, TYPE_CHECKING
 from uuid import UUID
 
+from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.workers.sync_worker import SyncThreadWorker
 from qtasks.starters.sync_starter import SyncStarter
@@ -161,11 +162,14 @@ class QueueTasks:
         """
         def wrapper(func):
             task_name = name or func.__name__
+            if task_name in self.tasks:
+                raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
+            
             model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func))
             
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
-            return func
+            return SyncTask(app=self, task_name=task_name)
         return wrapper
     
     def add_task(self, 

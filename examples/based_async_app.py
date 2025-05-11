@@ -1,4 +1,5 @@
-from qtasks import QueueTasks
+import asyncio
+from qtasks.asyncio import QueueTasks
 
 app = QueueTasks()
 
@@ -10,6 +11,6 @@ def test():
 def test_num(number: int):
     print(f"Number: {number}")
 
-test_num.add_task(args=(1, ))
+asyncio.run(test_num.add_task(args=(1, )))
 
 app.run_forever()
