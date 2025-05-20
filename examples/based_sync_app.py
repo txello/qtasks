@@ -4,6 +4,8 @@ import shared_tasks
 
 app = QueueTasks()
 
+app.config.running_older_tasks = True
+
 @app.task(name="test")
 def test():
     print("Это тестовая задача!")
@@ -11,7 +13,7 @@ def test():
 @app.task(name="test_num")
 def test_num(number: int):
     print(f"Number: {number}")
+    return number
 
-test_num.add_task(args=(1, ))
-
-app.run_forever()
+if __name__ == "__main__":
+    app.run_forever()

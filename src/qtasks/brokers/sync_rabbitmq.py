@@ -263,11 +263,13 @@ class SyncRabbitMQBroker(BaseBroker):
         Args:
             worker (BaseWorker): Класс Воркера.
         """
+        self.storage.start()
+
         if self.config.delete_finished_tasks:
             self.storage._delete_finished_tasks()
         
         if self.config.running_older_tasks:
-            self._running_older_tasks(worker)
+            self.storage._running_older_tasks(worker)
         
         self.listen(worker)
 

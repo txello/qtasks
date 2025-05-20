@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from qtasks.enums.task_status import TaskStatusEnum
 
 from .base import BaseStorage
-from qtasks.configs.async_config import AsyncRedisGlobalConfig
+from qtasks.configs.async_globalconfig import AsyncRedisGlobalConfig
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema
 from qtasks.schemas.task import Task
@@ -229,7 +229,8 @@ class AsyncRedisStorage(BaseStorage):
     
     async def start(self):
         """Запускает хранилище."""
-        await self.global_config.start()
+        if self.global_config:
+            await self.global_config.start()
     
     async def stop(self):
         """Останавливает хранилище."""

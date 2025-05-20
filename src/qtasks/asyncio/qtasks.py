@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
+import qtasks._state
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.task_registry import TaskRegistry
-from qtasks.starters.async_starter import AsyncStarter
 from qtasks.workers.async_worker import AsyncWorker
+from qtasks.starters.async_starter import AsyncStarter
 from qtasks.brokers.async_redis import AsyncRedisBroker
-
 from qtasks.routers import Router
+
 from qtasks.configs import QueueConfig
 from qtasks.schemas.inits import InitsExecSchema
 from qtasks.schemas.task_exec import TaskExecSchema
@@ -151,6 +152,8 @@ class QueueTasks:
         }
         
         self._registry_tasks()
+
+        self._set_state()
     
     def task(self,
             name: Annotated[
@@ -364,6 +367,8 @@ class QueueTasks:
         for plugins in [self.plugins, self.worker.plugins, self.broker.plugins, self.broker.storage.plugins]:
             plugins_hash.update(plugins)
         
+        self._set_state()
+        
         self.starter.start(loop=loop, num_workers=num_workers, reset_config=reset_config, plugins = plugins_hash)
     
     async def stop(self):
@@ -543,3 +548,6 @@ class QueueTasks:
         """
         self.tasks.update(TaskRegistry.all_tasks())
         self.worker._tasks.update(TaskRegistry.all_tasks())
+
+    def _set_state(self):
+        qtasks._state.app_main = self

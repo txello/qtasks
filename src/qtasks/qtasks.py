@@ -1,14 +1,16 @@
 import inspect
-from typing import Optional, Union
-from typing_extensions import Annotated, Doc, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
+from typing_extensions import Annotated, Doc
 from uuid import UUID
 
+import qtasks._state
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.workers.sync_worker import SyncThreadWorker
 from qtasks.starters.sync_starter import SyncStarter
 from qtasks.brokers.sync_redis import SyncRedisBroker
 from qtasks.routers import Router
+
 from qtasks.configs import QueueConfig
 from qtasks.schemas.inits import InitsExecSchema
 from qtasks.schemas.task_exec import TaskExecSchema
@@ -142,6 +144,8 @@ class QueueTasks:
         }
         
         self._registry_tasks()
+
+        self._set_state()
     
     def task(self,
             name: Annotated[
@@ -337,6 +341,9 @@ class QueueTasks:
             "init_starting": self._inits["init_starting"],
             "init_stoping": self._inits["init_stoping"],
         })
+
+        self._set_state()
+
         self.starter.start(num_workers=num_workers, reset_config=reset_config)
     
     def stop(self):
@@ -519,3 +526,6 @@ class QueueTasks:
         """
         self.tasks.update(TaskRegistry.all_tasks())
         self.worker._tasks.update(TaskRegistry.all_tasks())
+
+    def _set_state(self):
+        qtasks._state.app_main = self

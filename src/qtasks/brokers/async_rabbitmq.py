@@ -264,11 +264,13 @@ class AsyncRabbitMQBroker(BaseBroker):
         Args:
             worker (BaseWorker): Класс Воркера.
         """
+        await self.storage.start()
+
         if self.config.delete_finished_tasks:
             await self.storage._delete_finished_tasks()
         
         if self.config.running_older_tasks:
-            await self._running_older_tasks(worker)
+            await self.storage._running_older_tasks(worker)
         
         await self.listen(worker)
 

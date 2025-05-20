@@ -153,8 +153,8 @@ class AsyncStarter(BaseStarter):
         for model in self._inits["init_starting"]:
             await model.func(worker=self.worker, broker=self.broker) if model.awaiting else model.func(worker=self.worker, broker=self.broker)
 
-        broker_task = asyncio.create_task(self.broker.start(self.worker))
         worker_task = asyncio.create_task(self.worker.start(num_workers))
+        broker_task = asyncio.create_task(self.broker.start(self.worker))
 
         try:
             await asyncio.gather(broker_task, worker_task)
