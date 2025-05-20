@@ -6,6 +6,7 @@ from uuid import UUID
 import qtasks._state
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
+from qtasks.results.sync_result import SyncResult
 from qtasks.workers.sync_worker import SyncThreadWorker
 from qtasks.starters.sync_starter import SyncStarter
 from qtasks.brokers.sync_redis import SyncRedisBroker
@@ -142,6 +143,16 @@ class QueueTasks:
             "init_worker_stoping":[],
             "init_stoping":[]
         }
+
+        self._method: Annotated[
+            str,
+            Doc(
+                """Метод использования QueueTasks.
+                
+                Указано: `sync`.
+                """
+            )
+        ] = "sync"
         
         self._registry_tasks()
 
@@ -230,6 +241,17 @@ class QueueTasks:
                     По умолчанию: `{}`.
                     """
                 )
+            ] = None,
+
+            timeout: Annotated[
+                Optional[float],
+                Doc(
+                    """
+                    Таймаут задачи.
+                    
+                    Если указан, задача возвращается через `qtasks.results.SyncTask`.
+                    """
+                )
             ] = None
         ) -> Task:
         """Добавить задачу.
@@ -240,8 +262,10 @@ class QueueTasks:
             args (tuple, optional): args задачи. По умолчанию `()`.
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
 
+            timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.SyncResult`.
+
         Returns:
-            Task: `schemas.task.Task`.
+            Task|None: `schemas.task.Task` или `None`.
         """
         if task_name not in self.tasks:
             raise KeyError(f"Задача с именем {task_name} не зарегистрирована!")
@@ -250,7 +274,11 @@ class QueueTasks:
             priority = self.tasks.get(task_name).priority
         
         args, kwargs = args or (), kwargs or {}
-        return self.broker.add(task_name, priority, *args, **kwargs)
+        task = self.broker.add(task_name, priority, *args, **kwargs)
+        if timeout is not None:
+            return SyncResult(uuid=task.uuid, app=self).result(timeout=timeout)
+        return task
+        
     
     def get(self,
             uuid: Annotated[

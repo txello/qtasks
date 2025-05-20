@@ -8,10 +8,10 @@ if TYPE_CHECKING:
     from qtasks import QueueTasks
 
 class SyncTask:
-    def __init__(self, app: "QueueTasks", task_name: str, priority: int):
+    def __init__(self, task_name: str, priority: int, app: "QueueTasks" = None):
         self.task_name = task_name
         self.priority = priority
-        self.__app = app
+        self._app = app
         
     def add_task(self,
             priority: Annotated[
@@ -43,9 +43,31 @@ class SyncTask:
                     По умолчанию: `{}`.
                     """
                 )
+            ] = None,
+
+            timeout: Annotated[
+                Optional[float],
+                Doc(
+                    """
+                    Таймаут задачи.
+                    
+                    Если указан, задача возвращается через `qtasks.results.SyncTask`.
+                    """
+                )
             ] = None
         ) -> Task:
+        if not self._app:
+            self._update_app()
+        
         if priority is None:
             priority = self.priority
         
-        return self.__app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs)
+        return self._app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
+    
+    def _update_app(self) -> "QueueTasks":
+        if not self._app:
+            import qtasks._state
+            if qtasks._state.app_main is None:
+                raise ImportError("Невозможно получить app!")
+            self._app = qtasks._state.app_main
+        return

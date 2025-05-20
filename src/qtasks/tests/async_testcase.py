@@ -204,7 +204,18 @@ class AsyncTestCase(BaseTestCase):
                     По умолчанию: `{}`.
                     """
                 )
-            ] = None
+            ] = None,
+
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                Таймаут задачи.
+                
+                Если указан, задача вызывается через `qtasks.results.AsyncTask`.
+                """
+            )
+        ] = None
         ) -> Task | None:
         """Добавить задачу.
 
@@ -214,12 +225,14 @@ class AsyncTestCase(BaseTestCase):
             args (tuple, optional): args задачи. По умолчанию: `()`.
             kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`
 
+            timeout (float, optional): Таймаут задачи. Если указан, задача вызывается через `qtasks.results.AsyncResult`.
+
         Returns:
             Task|None: Данные задачи или None.
         """
         if self.test_config.broker:
             args, kwargs = args or (), kwargs or {}
-            return await self.app.add_task(task_name=task_name, priority=priority, args=args, kwargs=kwargs)
+            return await self.app.add_task(task_name=task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
         elif self.test_config.worker:
             return await self.app.worker.add(name=task_name, uuid=uuid4(), priority=priority, created_at=time(), args=args or (), kwargs=kwargs or {})
         else:

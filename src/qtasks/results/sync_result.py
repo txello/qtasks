@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
+import time
 from typing import TYPE_CHECKING
 from uuid import UUID
 import threading
@@ -20,6 +21,7 @@ class SyncResult:
         self._stop_event = threading.Event()
 
         self.uuid = uuid
+        self._sleep_time: float = 1
 
     def result(self, timeout: float = 100) -> Task|None:
         self._stop_event.clear()
@@ -29,7 +31,7 @@ class SyncResult:
                 result = future.result(timeout=timeout)
                 return result
             except TimeoutError:
-                print(f"[Timeout] Function exceeded {timeout} seconds")
+                print(f"[SyncResult] Функция выполнялась {timeout} секунд!")
                 self._stop_event.set()
                 return None
 
@@ -40,6 +42,7 @@ class SyncResult:
 
             task = self._app.get(uuid=self.uuid)
             if not task or task.status not in [TaskStatusEnum.SUCCESS.value, TaskStatusEnum.ERROR.value]:
+                time.sleep(self._sleep_time)
                 continue
             return task
 

@@ -1,18 +1,19 @@
-import aiounittest
+import unittest
 
-from apps.app_async import app
 from qtasks import tests
+from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.schemas.task import Task
 from qtasks.schemas.test import TestConfig
 
+from apps.app_async import app
 
-class TestAsyncQTasks(aiounittest.AsyncTestCase):
+class TestAsyncQTasks(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.test_case = tests.AsyncTestCase(app=app)
 
     
-    async def _add_task(self) -> Task|None:
-        return await self.test_case.add_task("test", args=(5,))
+    async def _add_task(self, timeout: float|None = None) -> Task|None:
+        return await self.test_case.add_task("test", args=(5,), timeout=timeout)
     
     async def test_add_task(self):
         self.test_case.settings(TestConfig.full())
@@ -24,9 +25,9 @@ class TestAsyncQTasks(aiounittest.AsyncTestCase):
     async def test_add_task_and_get_result(self):
         self.test_case.settings(TestConfig.full())
         
-        uuid = (await self._add_task()).uuid
-        result = await self.test_case.get(uuid=uuid)
-        self.assertIsNotNone(result)
+        task = await self._add_task(timeout=50)
+        self.assertIsNotNone(task)
+        self.assertEqual(task.status, TaskStatusEnum.SUCCESS.value)
     
     async def test_task_get_none(self):
         self.test_case.settings(TestConfig.full_broker())

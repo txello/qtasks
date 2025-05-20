@@ -7,6 +7,7 @@ from uuid import UUID
 import qtasks._state
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.task_registry import TaskRegistry
+from qtasks.results.async_result import AsyncResult
 from qtasks.workers.async_worker import AsyncWorker
 from qtasks.starters.async_starter import AsyncStarter
 from qtasks.brokers.async_redis import AsyncRedisBroker
@@ -75,7 +76,6 @@ class QueueTasks:
         self.broker = broker or AsyncRedisBroker(name=name)
         self.worker = worker or AsyncWorker(name=name, broker=self.broker)
         self.starter: "BaseStarter"|None = None
-        
         
         self.config: Annotated[
             QueueConfig,
@@ -150,6 +150,16 @@ class QueueTasks:
             "init_worker_stoping":[],
             "init_stoping":[]
         }
+
+        self._method: Annotated[
+            str,
+            Doc(
+                """Метод использования QueueTasks.
+                
+                Указано: `async`.
+                """
+            )
+        ] = "async"
         
         self._registry_tasks()
 
@@ -239,6 +249,17 @@ class QueueTasks:
                     По умолчанию: `{}`.
                     """
                 )
+            ] = None,
+
+            timeout: Annotated[
+                Optional[float],
+                Doc(
+                    """
+                    Таймаут задачи.
+                    
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+                )
             ] = None
         ) -> Task:
         """Добавить задачу.
@@ -249,8 +270,10 @@ class QueueTasks:
             args (tuple, optional): args задачи. По умолчанию `()`.
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
 
+            timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.AsyncResult`.
+
         Returns:
-            Task: `schemas.task.Task`.
+            Task|None: `schemas.task.Task` или `None`.
         """
         if task_name not in self.tasks:
             raise KeyError(f"Задача с именем {task_name} не зарегистрирована!")
@@ -259,7 +282,11 @@ class QueueTasks:
             priority = self.tasks.get(task_name).priority
             
         args, kwargs = args or (), kwargs or {}
-        return await self.broker.add(task_name, priority, *args, **kwargs)
+        
+        task = await self.broker.add(task_name, priority, *args, **kwargs)
+        if timeout is not None:
+            return await AsyncResult(uuid=task.uuid, app=self).result(timeout=timeout)
+        return task
     
     async def get(self,
             uuid: Annotated[

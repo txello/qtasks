@@ -2,6 +2,7 @@ import inspect
 from typing import Callable, Optional
 from typing_extensions import Annotated, Doc
 
+from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.task_exec import TaskExecSchema
 
 
@@ -57,7 +58,7 @@ class TaskRegistry:
             task_name = name or func.__name__
             model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func))
             cls._tasks[task_name] = model
-            return func
+            return SyncTask(task_name=task_name, priority=priority)
         return wrapper
 
     @classmethod

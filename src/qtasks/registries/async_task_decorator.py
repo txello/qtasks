@@ -43,9 +43,20 @@ class AsyncTask:
                     По умолчанию: `{}`.
                     """
                 )
+            ] = None,
+
+            timeout: Annotated[
+                Optional[float],
+                Doc(
+                    """
+                    Таймаут задачи.
+                    
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+                )
             ] = None
         ) -> Task:
         if priority is None:
             priority = self.priority
         
-        return await self.__app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs)
+        return await self.__app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)

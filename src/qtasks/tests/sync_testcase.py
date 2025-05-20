@@ -185,6 +185,17 @@ class SyncTestCase(BaseTestCase):
                 По умолчанию: `{}`.
                 """
             )
+        ] = None,
+
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                Таймаут задачи.
+                
+                Если указан, задача вызывается через `qtasks.results.SyncTask`.
+                """
+            )
         ] = None
     ) -> Task | None:
         """Добавить задачу.
@@ -195,12 +206,14 @@ class SyncTestCase(BaseTestCase):
             args (tuple, optional): args задачи. По умолчанию: `()`.
             kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`
 
+            timeout (float, optional): Таймаут задачи. Если указан, задача вызывается через `qtasks.results.AsyncResult`.
+
         Returns:
             Task|None: Данные задачи или None.
         """
         if self.test_config.broker:
             args, kwargs = args or (), kwargs or {}
-            return self.app.add_task(task_name=task_name, priority=priority, args=args, kwargs=kwargs)
+            return self.app.add_task(task_name=task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
         elif self.test_config.worker:
             return self.app.worker.add(
                 name=task_name,
