@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from typing_extensions import Annotated, Doc
 from uuid import UUID
 import asyncio
 
@@ -10,10 +11,46 @@ if TYPE_CHECKING:
 
 
 class AsyncResult:
-    def __init__(self,
-            uuid: UUID|str,
+    """`AsyncResult` - Асинхронный класс для ожидания результата задачи.
 
-            app: "QueueTasks" = None
+    ## Пример
+
+    ```python
+    import asyncio
+
+    from qtasks import QueueTasks
+    from qtasks.results import AsyncResult
+    
+    app = QueueTasks()
+
+    async def main():
+        task = await app.add_task("test")
+        result = await AsyncResult(uuid=task.uuid).result(timeout=50)
+    
+    asyncio.run(main())
+    ```
+    """
+
+    def __init__(self,
+            uuid: Annotated[
+                UUID|str,
+                Doc(
+                    """
+                    UUID задачи.
+                    """
+                )
+            ] = None,
+
+            app: Annotated[
+                "QueueTasks",
+                Doc(
+                    """
+                    `QueueTasks` экземпляр.
+
+                    По умолчанию: `qtasks._state.app_main`.
+                    """
+                )
+            ] = None
         ):
         self._app = self._update_app(app)
         self._stop_event = asyncio.Event()
@@ -21,7 +58,26 @@ class AsyncResult:
         self.uuid = uuid
         self._sleep_time: float = 1
 
-    async def result(self, timeout: float = 100) -> Task|None:
+    async def result(self,
+            timeout: Annotated[
+                float,
+                Doc(
+                    """
+                    Таймаут задачи
+
+                    По умолчанию: `100`.
+                    """
+                )
+            ] = 100
+        ) -> Task|None:
+        """Ожидание результата задачи.
+
+        Args:
+            timeout (float, optional): Таймаут задачи. По умолчанию: `100`.
+
+        Returns:
+            Task|None: Задача или None.
+        """
         self._stop_event.clear()
         try:
             async with asyncio.timeout(timeout):

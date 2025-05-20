@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import time
 from typing import TYPE_CHECKING
+from typing_extensions import Annotated, Doc
 from uuid import UUID
 import threading
 
@@ -12,10 +13,42 @@ if TYPE_CHECKING:
 
 
 class SyncResult:
-    def __init__(self,
-            uuid: UUID|str,
+    """`SyncResult` - Синхронный класс для ожидания результата задачи.
 
-            app: "QueueTasks" = None
+    ## Пример
+
+    ```python
+
+    from qtasks import QueueTasks
+    from qtasks.results import SyncResult
+    
+    app = QueueTasks()
+
+    task = app.add_task("test")
+    result = SyncResult(uuid=task.uuid).result(timeout=50)
+    ```
+    """
+
+    def __init__(self,
+            uuid: Annotated[
+                UUID|str,
+                Doc(
+                    """
+                    UUID задачи.
+                    """
+                )
+            ] = None,
+
+            app: Annotated[
+                "QueueTasks",
+                Doc(
+                    """
+                    `QueueTasks` экземпляр.
+
+                    По умолчанию: `qtasks._state.app_main`.
+                    """
+                )
+            ] = None
         ):
         self._app = self._update_app(app)
         self._stop_event = threading.Event()
@@ -23,7 +56,27 @@ class SyncResult:
         self.uuid = uuid
         self._sleep_time: float = 1
 
-    def result(self, timeout: float = 100) -> Task|None:
+    def result(self,
+            timeout: Annotated[
+                float,
+                Doc(
+                    """
+                    Таймаут задачи
+
+                    По умолчанию: `100`.
+                    """
+                )
+            ] = 100
+        ) -> Task|None:
+        """Ожидание результата задачи.
+
+        Args:
+            timeout (float, optional): Таймаут задачи. По умолчанию: `100`.
+
+        Returns:
+            Task|None: Задача или None.
+        """
+
         self._stop_event.clear()
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(self._execute_task)

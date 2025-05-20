@@ -1,0 +1,1 @@
+::: qtasks.configs.base

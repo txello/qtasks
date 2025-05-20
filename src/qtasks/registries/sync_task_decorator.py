@@ -8,7 +8,51 @@ if TYPE_CHECKING:
     from qtasks import QueueTasks
 
 class SyncTask:
-    def __init__(self, task_name: str, priority: int, app: "QueueTasks" = None):
+    """`SyncTask` - класс для замены функции декоратором `@app.task` и `@shared_task`.
+
+    ## Пример
+
+    ```python
+    from qtasks import QueueTasks
+    
+    app = QueueTasks()
+
+    @app.task("test")
+    def test():
+        print("Это тест!")
+
+    test.add_task()
+    ```
+    """
+
+    def __init__(self,
+            task_name: Annotated[
+                str,
+                Doc(
+                    """
+                    Имя задачи.
+                    """
+                )
+            ],
+            priority: Annotated[
+                int,
+                Doc(
+                    """
+                    Приоритет задачи.
+                    """
+                )
+            ],
+            app: Annotated[
+                "QueueTasks",
+                Doc(
+                    """
+                    `QueueTasks` экземпляр.
+
+                    По умолчанию: `qtasks._state.app_main`.
+                    """
+                )
+            ] = None
+        ):
         self.task_name = task_name
         self.priority = priority
         self._app = app
@@ -55,7 +99,18 @@ class SyncTask:
                     """
                 )
             ] = None
-        ) -> Task:
+        ) -> Task|None:
+        """Добавить задачу.
+
+        Args:
+            priority (int, optional): Приоритет задачи. По умолчанию: Значение приоритета у задачи.
+            args (tuple, optional): args задачи. По умолчанию: `()`.
+            kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`.
+            timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.SyncTask`.
+
+        Returns:
+            Task|None: Результат задачи или `None`.
+        """
         if not self._app:
             self._update_app()
         

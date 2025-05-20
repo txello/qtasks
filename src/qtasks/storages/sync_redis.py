@@ -6,7 +6,7 @@ from uuid import UUID
 import redis
 from typing import TYPE_CHECKING
 
-from qtasks.configs.sync_globalconfig import SyncRedisGlobalConfig
+from qtasks.configs.sync_redisglobalconfig import SyncRedisGlobalConfig
 from qtasks.enums.task_status import TaskStatusEnum
 
 from .base import BaseStorage
