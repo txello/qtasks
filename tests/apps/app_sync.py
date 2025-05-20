@@ -12,3 +12,6 @@ def sample_task(id: int):
     # Логика задачи...
     result = f"Пользователь {id} записан"
     return result
+
+if __name__ == "__main__":
+    app.run_forever()

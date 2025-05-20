@@ -106,7 +106,8 @@ class SyncStarter(BaseStarter):
         """
         print("[QueueTasks] Запуск QueueTasks...")
         
-        self.plugins.update(plugins)
+        if plugins:
+            self.plugins.update(plugins)
         
         if reset_config:
             self.worker.update_config(self.config)
@@ -123,6 +124,9 @@ class SyncStarter(BaseStarter):
         Args:
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
         """
+        for model_plugin in self.plugins.values():
+            model_plugin.start()
+
         for model in self._inits["init_starting"]:
             model.func(worker=self.worker, broker=self.broker)
         
@@ -138,11 +142,19 @@ class SyncStarter(BaseStarter):
         
     def stop(self):
         """Останавливает все компоненты."""
-        #print("[QueueTasks] Остановка QueueTasks...")
         
-        self.broker.stop()
-        self.worker.stop()
-        self.broker.storage.stop()
+        print("[QueueTasks] Остановка QueueTasks...")
+        if self.broker:
+            self.broker.stop()
+        if self.worker:
+            self.worker.stop()
+        if self.broker.storage:
+            self.broker.storage.stop()
+        if self.broker.storage.global_config:
+            self.broker.storage.global_config.stop()
         
         for model in self._inits["init_stoping"]:
-                model.func(worker=self.worker, broker=self.broker)
+            model.func(worker=self.worker, broker=self.broker)
+                
+        for model_plugin in self.plugins.values():
+            model_plugin.stop()

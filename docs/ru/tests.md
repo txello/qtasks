@@ -25,12 +25,15 @@ class TestTasks(unittest.TestCase):
         result = app.get(uuid=uuid)
         self.assertIsNotNone(result)
 ```
-## Пример теста с aiounittest
+### Пример асинхронного теста с unittest
 ```py
-import aiounittest
+import unittest
+
+from qtasks.schemas.task import Task
+
 from app import app
 
-class TestAsyncTasks(aiounittest.AsyncTestCase):
+class TestAsyncTasks(unittest.IsolatedAsyncioTestCase):
     async def _add_task(self) -> Task|None:
         return await app.add_task("test", args=(5,))
     
@@ -42,37 +45,48 @@ class TestAsyncTasks(aiounittest.AsyncTestCase):
 
 ## TestCase
 
-### Пример теста с unittest
+### Пример синхронного теста с unittest
 ```py
 import unittest
+
+from qtasks.tests import SyncTestCase
+from qtasks.schemas.test import TestConfig
+
 from app import app
 
 
 class TestTasks(unittest.TestCase):
     def setUp(self):
-        self.test_case = tests.SyncTestCase(app=app)
+        self.test_case = SyncTestCase(app=app)
     
     def test_task_add(self):
         self.test_case.settings(TestConfig.full())
+        
         result = self.test_case.add_task("test", args=(5,))
         self.assertIsNotNone(result)
 ```
 
-### Пример теста с aiounittest
+### Пример асинхронного теста с unittest
 ```py
-import aiounittest
+import unittest
+
+from qtasks.tests import AsyncTestCase
+from qtasks.schemas.test import TestConfig
+from qtasks.schemas.task import Task
+
 from app import app
 
-class TestAsyncQTasks(aiounittest.AsyncTestCase):
+
+class TestAsyncQTasks(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        self.test_case = tests.AsyncTestCase(app=app)
+        self.test_case = AsyncTestCase(app=app)
     
     async def _add_task(self) -> Task|None:
-        return await self.test_case.add_task("test", args=(5,))
+        return await self.test_case.add_task("test", args=(5,), timeout=10)
     
     async def test_add_task(self):
         self.test_case.settings(TestConfig.full())
-        
+
         result = await self._add_task()
         self.assertIsNotNone(result)
 ```

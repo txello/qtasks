@@ -4,12 +4,15 @@ from typing import TYPE_CHECKING, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
+import qtasks._state
+from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.task_registry import TaskRegistry
-from qtasks.starters.async_starter import AsyncStarter
+from qtasks.results.async_result import AsyncResult
 from qtasks.workers.async_worker import AsyncWorker
+from qtasks.starters.async_starter import AsyncStarter
 from qtasks.brokers.async_redis import AsyncRedisBroker
-
 from qtasks.routers import Router
+
 from qtasks.configs import QueueConfig
 from qtasks.schemas.inits import InitsExecSchema
 from qtasks.schemas.task_exec import TaskExecSchema
@@ -73,7 +76,6 @@ class QueueTasks:
         self.broker = broker or AsyncRedisBroker(name=name)
         self.worker = worker or AsyncWorker(name=name, broker=self.broker)
         self.starter: "BaseStarter"|None = None
-        
         
         self.config: Annotated[
             QueueConfig,
@@ -148,8 +150,20 @@ class QueueTasks:
             "init_worker_stoping":[],
             "init_stoping":[]
         }
+
+        self._method: Annotated[
+            str,
+            Doc(
+                """Метод использования QueueTasks.
+                
+                Указано: `async`.
+                """
+            )
+        ] = "async"
         
         self._registry_tasks()
+
+        self._set_state()
     
     def task(self,
             name: Annotated[
@@ -161,22 +175,40 @@ class QueueTasks:
                     По умолчанию: `func.__name__`.
                     """
                 )
+            ] = None,
+            priority: Annotated[
+                Optional[int],
+                Doc(
+                    """
+                    Приоритет у задачи по умолчанию.
+                    
+                    По умолчанию: `config.default_task_priority`.
+                    """
+                )
             ] = None
         ):
         """Декоратор для регистрации задач.
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
         """
         def wrapper(func):
-            nonlocal name
+            nonlocal name, priority
+            
             task_name = name or func.__name__
+            if task_name in self.tasks:
+                raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
+            
+            if priority is None:
+                priority = self.config.default_task_priority
+            
             model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func))
             
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
             
-            return func
+            return AsyncTask(app=self, task_name=task_name, priority=priority)
         return wrapper
 
     async def add_task(self, 
@@ -189,15 +221,15 @@ class QueueTasks:
                 )
             ],
             priority: Annotated[
-                int,
+                Optional[int],
                 Doc(
                     """
-                    Приоритет задачи.
+                    Приоритет у задачи.
                     
-                    По умолчанию: `0`.
+                    По умолчанию: Значение приоритета у задачи.
                     """
                 )
-            ] = 0,
+            ] = None,
             args: Annotated[
                 Optional[tuple],
                 Doc(
@@ -217,21 +249,44 @@ class QueueTasks:
                     По умолчанию: `{}`.
                     """
                 )
+            ] = None,
+
+            timeout: Annotated[
+                Optional[float],
+                Doc(
+                    """
+                    Таймаут задачи.
+                    
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+                )
             ] = None
         ) -> Task:
         """Добавить задачу.
 
         Args:
             task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умолчанию 0.
+            priority (int, optional): Приоритет задачи. По умолчанию: Значение приоритета у задачи.
             args (tuple, optional): args задачи. По умолчанию `()`.
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
 
+            timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.AsyncResult`.
+
         Returns:
-            Task: `schemas.task.Task`.
+            Task|None: `schemas.task.Task` или `None`.
         """
+        if task_name not in self.tasks:
+            raise KeyError(f"Задача с именем {task_name} не зарегистрирована!")
+        
+        if priority is None:
+            priority = self.tasks.get(task_name).priority
+            
         args, kwargs = args or (), kwargs or {}
-        return await self.broker.add(task_name, priority, *args, **kwargs)
+        
+        task = await self.broker.add(task_name, priority, *args, **kwargs)
+        if timeout is not None:
+            return await AsyncResult(uuid=task.uuid, app=self).result(timeout=timeout)
+        return task
     
     async def get(self,
             uuid: Annotated[
@@ -318,7 +373,7 @@ class QueueTasks:
                 )
             ] = True
         ) -> None:
-        """Запуск асинхронно Воркера и Брокера.
+        """Запуск асинхронно Приложение.
 
         Args:
             loop (asyncio.AbstractEventLoop, optional): асинхронный loop. По умолчанию: None.
@@ -338,6 +393,8 @@ class QueueTasks:
         plugins_hash = {}
         for plugins in [self.plugins, self.worker.plugins, self.broker.plugins, self.broker.storage.plugins]:
             plugins_hash.update(plugins)
+        
+        self._set_state()
         
         self.starter.start(loop=loop, num_workers=num_workers, reset_config=reset_config, plugins = plugins_hash)
     
@@ -518,3 +575,6 @@ class QueueTasks:
         """
         self.tasks.update(TaskRegistry.all_tasks())
         self.worker._tasks.update(TaskRegistry.all_tasks())
+
+    def _set_state(self):
+        qtasks._state.app_main = self

@@ -28,9 +28,6 @@ class AsyncTestWorker(BaseWorker):
     def __init__(self, name = None, broker = None):
         super().__init__(name=name, broker=broker)
     
-    async def worker(self):
-        pass
-    
     async def add(self, task_name, priority = 0, *args, **kwargs):
         pass
     

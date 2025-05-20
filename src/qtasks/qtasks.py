@@ -1,13 +1,17 @@
 import inspect
-from typing import Optional, Union
-from typing_extensions import Annotated, Doc, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
+from typing_extensions import Annotated, Doc
 from uuid import UUID
 
+import qtasks._state
+from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
+from qtasks.results.sync_result import SyncResult
 from qtasks.workers.sync_worker import SyncThreadWorker
 from qtasks.starters.sync_starter import SyncStarter
 from qtasks.brokers.sync_redis import SyncRedisBroker
 from qtasks.routers import Router
+
 from qtasks.configs import QueueConfig
 from qtasks.schemas.inits import InitsExecSchema
 from qtasks.schemas.task_exec import TaskExecSchema
@@ -139,8 +143,20 @@ class QueueTasks:
             "init_worker_stoping":[],
             "init_stoping":[]
         }
+
+        self._method: Annotated[
+            str,
+            Doc(
+                """Метод использования QueueTasks.
+                
+                Указано: `sync`.
+                """
+            )
+        ] = "sync"
         
         self._registry_tasks()
+
+        self._set_state()
     
     def task(self,
             name: Annotated[
@@ -152,20 +168,39 @@ class QueueTasks:
                     По умолчанию: `func.__name__`.
                     """
                 )
+            ] = None,
+            priority: Annotated[
+                Optional[int],
+                Doc(
+                    """
+                    Приоритет у задачи по умолчанию.
+                    
+                    По умолчанию: `config.default_task_priority`.
+                    """
+                )
             ] = None
         ):
         """Декоратор для регистрации задач.
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
         """
         def wrapper(func):
+            nonlocal name, priority
+            
             task_name = name or func.__name__
-            model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func))
+            if task_name in self.tasks:
+                raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
+            
+            if priority is None:
+                priority = self.config.default_task_priority
+            
+            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func))
             
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
-            return func
+            return SyncTask(app=self, task_name=task_name, priority=priority)
         return wrapper
     
     def add_task(self, 
@@ -178,15 +213,15 @@ class QueueTasks:
                 )
             ],
             priority: Annotated[
-                int,
+                Optional[int],
                 Doc(
                     """
                     Приоритет задачи.
                     
-                    По умолчанию: `0`.
+                    По умолчанию: Значение приоритета у задачи.
                     """
                 )
-            ] = 0,
+            ] = None,
             args: Annotated[
                 Optional[tuple],
                 Doc(
@@ -206,21 +241,44 @@ class QueueTasks:
                     По умолчанию: `{}`.
                     """
                 )
+            ] = None,
+
+            timeout: Annotated[
+                Optional[float],
+                Doc(
+                    """
+                    Таймаут задачи.
+                    
+                    Если указан, задача возвращается через `qtasks.results.SyncTask`.
+                    """
+                )
             ] = None
         ) -> Task:
         """Добавить задачу.
 
         Args:
             task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умолчанию 0.
+            priority (int, optional): Приоритет задачи. По умолчанию: Значение приоритета у задачи.
             args (tuple, optional): args задачи. По умолчанию `()`.
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
 
+            timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.SyncResult`.
+
         Returns:
-            Task: `schemas.task.Task`.
+            Task|None: `schemas.task.Task` или `None`.
         """
+        if task_name not in self.tasks:
+            raise KeyError(f"Задача с именем {task_name} не зарегистрирована!")
+        
+        if priority is None:
+            priority = self.tasks.get(task_name).priority
+        
         args, kwargs = args or (), kwargs or {}
-        return self.broker.add(task_name, priority, *args, **kwargs)
+        task = self.broker.add(task_name, priority, *args, **kwargs)
+        if timeout is not None:
+            return SyncResult(uuid=task.uuid, app=self).result(timeout=timeout)
+        return task
+        
     
     def get(self,
             uuid: Annotated[
@@ -296,7 +354,7 @@ class QueueTasks:
                 )
             ] = True
         ) -> None:
-        """Запуск синхронно Воркер и Брокер.
+        """Запуск синхронно Приложение.
 
         Args:
             starter (BaseStarter, optional): Стартер. По умолчанию: `qtasks.starters.SyncStarter`.
@@ -311,6 +369,9 @@ class QueueTasks:
             "init_starting": self._inits["init_starting"],
             "init_stoping": self._inits["init_stoping"],
         })
+
+        self._set_state()
+
         self.starter.start(num_workers=num_workers, reset_config=reset_config)
     
     def stop(self):
@@ -493,3 +554,6 @@ class QueueTasks:
         """
         self.tasks.update(TaskRegistry.all_tasks())
         self.worker._tasks.update(TaskRegistry.all_tasks())
+
+    def _set_state(self):
+        qtasks._state.app_main = self

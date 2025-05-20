@@ -120,7 +120,8 @@ class AsyncStarter(BaseStarter):
         """
         print("[QueueTasks] Запуск QueueTasks...")
 
-        self.plugins.update(plugins)
+        if plugins:
+            self.plugins.update(plugins)
         
         if reset_config:
             self.worker.update_config(self.config)
@@ -152,8 +153,8 @@ class AsyncStarter(BaseStarter):
         for model in self._inits["init_starting"]:
             await model.func(worker=self.worker, broker=self.broker) if model.awaiting else model.func(worker=self.worker, broker=self.broker)
 
-        broker_task = asyncio.create_task(self.broker.start(self.worker))
         worker_task = asyncio.create_task(self.worker.start(num_workers))
+        broker_task = asyncio.create_task(self.broker.start(self.worker))
 
         try:
             await asyncio.gather(broker_task, worker_task)
@@ -166,10 +167,14 @@ class AsyncStarter(BaseStarter):
         """Останавливает все компоненты."""
 
         print("[QueueTasks] Остановка QueueTasks...")
-        await self.broker.stop()
-        await self.worker.stop()
-        await self.broker.storage.stop()
-        await self.broker.storage.global_config.stop()
+        if self.broker:
+            await self.broker.stop()
+        if self.worker:
+            await self.worker.stop()
+        if self.broker.storage:
+            await self.broker.storage.stop()
+        if self.broker.storage.global_config:
+            await self.broker.storage.global_config.stop()
 
         if self._global_loop and self._global_loop.is_running():
             self._global_loop.stop()

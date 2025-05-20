@@ -49,8 +49,10 @@ app.run_forever()
 ## Добавление задач в очередь.
 После запуска обработчика задач, можно добавлять задачи из другого файла или интерпретатора Python:
 ```py
-from app import app
+from app import app, mytest
 
 app.add_task("mytest", args=("Тест",))
+mytest.add_task(args=("Тест",))
 app.add_task("error_zero")
+
 ```

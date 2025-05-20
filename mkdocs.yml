@@ -104,6 +104,10 @@ extra:
     
     - name: ru - Russian
       link: ./ru/
+  social:
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/qtasks/
+      name: PyPI
 
 plugins:
   - search
@@ -149,6 +153,17 @@ nav:
         - BaseStorage - Пишем своё хранилище: ru/api/storages/basestorage.md
         - SyncRedisStorage: ru/api/storages/sync_redisstorage.md
         - AsyncRedisStorage: ru/api/storages/async_redisstorage.md
+      - Глобальные конфиги:
+        - BaseGlobalConfig - Пишем свой глобальный конфиг: ru/api/globalconfig/baseglobalconfig.md
+        - SyncRedisGlobalConfig: ru/api/globalconfig/sync_redisglobalconfig.md
+        - AsyncRedisGlobalConfig: ru/api/globalconfig/async_redisglobalconfig.md
+      - Стартеры:
+        - BaseStarter - Пишем свой запуск: ru/api/starters/basestarter.md
+        - SyncStarter: ru/api/starters/sync_starter.md
+        - AsyncStarter: ru/api/starters/async_starter.md
+      - Ожидание результата:
+        - SyncResult: ru/api/results/sync_result.md
+        - AsyncResult: ru/api/results/async_result.md
       - Timer:
         - BaseTimer - Пишем свой Таймер: ru/api/timers/basetimer.md
         - SyncTimer: ru/api/timers/sync_timer.md
@@ -157,12 +172,24 @@ nav:
       - Модели:
         - Task: ru/api/schemas/task.md
       - Схемы:
+        - QueueConfig: ru/api/schemas/queueconfig.md
         - TaskStatus: ru/api/schemas/task_status.md
         - TaskExec: ru/api/schemas/task_exec.md
         - Inits: ru/api/schemas/inits.md
         - GlobalConfig: ru/api/schemas/global_config.md
+        - TestConfig: ru/api/schemas/test_config.md
+        - TaskStatusEnum: ru/api/schemas/task_status_enum.md
+      - Декораторы:
+        - SyncTask: ru/api/registries/sync_task_decorator.md
+        - AsyncTask: ru/api/registries/async_task_decorator.md
+      - Глобальные переменные: ru/api/states.md
+      - Тестирование:
+        - BaseTestCase - Пишем свой кейс тестирования: ru/api/tests/basetests.md
+        - SyncTestCase: ru/api/tests/sync_testcase.md
+        - AsyncTestCase: ru/api/tests/async_testcase.md
   - Примеры:
     - Примеры: ru/examples.md
+  - История изменений: ru/changelog.md
   - Блог: ru/blog.md
   #- О проекте: ru/about.md
 

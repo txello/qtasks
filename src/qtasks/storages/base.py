@@ -17,10 +17,9 @@ class BaseStorage(ABC):
     """
     `BaseStorage` - Абстрактный класс, который является фундаментом для Хранилищ.
 
-    ## Example
+    ## Пример
 
     ```python
-    from qtasks import QueueTasks
     from qtasks.storages.base import BaseStorage
     
     class MyStorage(BaseStorage):

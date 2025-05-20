@@ -107,18 +107,19 @@ class AsyncRedisBroker(BaseBroker):
 
         while self.running:
             task_data = await self.client.lpop(self.queue_name)
-            
-            if task_data:
-                task_name, uuid, priority = task_data.split(':')
-                
-                await self.storage.add_process(task_data, priority)
-                
-                model_get = await self.get(uuid=uuid)
-                args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
-                print(f"[Broker] Получена новая задача: {uuid}")
-                await worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)  # Передаём задачу в AsyncWorker
-            else:
+            if not task_data:
                 await asyncio.sleep(1)
+                continue
+            
+            task_name, uuid, priority = task_data.split(':')
+            
+            await self.storage.add_process(task_data, priority)
+            
+            model_get = await self.get(uuid=uuid)
+            args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
+            print(f"[Broker] Получена новая задача: {uuid}")
+            await worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)  # Передаём задачу в AsyncWorker
+                
                 
     async def add(self,
             task_name: Annotated[
@@ -236,13 +237,14 @@ class AsyncRedisBroker(BaseBroker):
         Args:
             worker (BaseWorker): Класс Воркера.
         """
+        await self.storage.start()
+
         if self.config.delete_finished_tasks:
             await self.storage._delete_finished_tasks()
         
         if self.config.running_older_tasks:
             await self.storage._running_older_tasks(worker)
-            
-        await self.storage.start()
+        
         await self.listen(worker)
 
     async def stop(self):
