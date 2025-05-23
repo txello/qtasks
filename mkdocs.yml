@@ -187,6 +187,7 @@ nav:
         - BaseTestCase - Пишем свой кейс тестирования: ru/api/tests/basetests.md
         - SyncTestCase: ru/api/tests/sync_testcase.md
         - AsyncTestCase: ru/api/tests/async_testcase.md
+      - Логирование: ru/api/logs.md
   - Примеры:
     - Примеры: ru/examples.md
   - История изменений: ru/changelog.md
