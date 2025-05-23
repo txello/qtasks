@@ -66,8 +66,8 @@ class AsyncResult:
             
         ):
         self._app = app
-        self._update_state()
         self.log = log.with_subname("AsyncResult") if log else Logger(name=self._app.name, subname="AsyncResult", default_level=self._app.config.logs_default_level, format=self._app.config.logs_format)
+        self._update_state()
         self._stop_event = asyncio.Event()
 
         self.uuid = uuid
