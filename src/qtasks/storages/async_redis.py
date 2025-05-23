@@ -9,6 +9,7 @@ import redis.asyncio as aioredis
 from typing import TYPE_CHECKING
 
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.logs import Logger
 
 from .base import BaseStorage
 from qtasks.configs.async_redisglobalconfig import AsyncRedisGlobalConfig
@@ -88,9 +89,20 @@ class AsyncRedisStorage(BaseStorage):
                     По умолчанию: `None`.
                     """
                 )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name)
+        super().__init__(name, log=log)
         self.url = url
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"

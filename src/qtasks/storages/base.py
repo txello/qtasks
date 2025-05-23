@@ -4,6 +4,8 @@ from typing_extensions import Annotated, Doc
 from uuid import UUID
 from typing import TYPE_CHECKING
 
+from qtasks.configs.config import QueueConfig
+from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusSuccessSchema
@@ -49,12 +51,26 @@ class BaseStorage(ABC):
                     По умолчанию: `None`.
                     """
                 )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
             ] = None
+
         ):
         self.name = name
         self.client = None
         self.global_config: "BaseGlobalConfig"|None = global_config
         
+        self.config = QueueConfig()
+        self.log = log.with_subname("Storage") if log else Logger(name=self.name, subname="Storage", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.plugins: dict[str, "BasePlugin"] = {}
         pass
     
@@ -184,3 +200,21 @@ class BaseStorage(ABC):
     
     def _running_older_tasks(self, **kwargs) -> None:
         pass
+    
+    def update_config(self,
+            config: Annotated[
+                QueueConfig,
+                Doc(
+                    """
+                    Конфиг.
+                    """
+                )
+            ]
+        ) -> None:
+        """Обновляет конфиг брокера.
+
+        Args:
+            config (QueueConfig): Конфиг.
+        """
+        self.config = config
+        return

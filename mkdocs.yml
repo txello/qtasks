@@ -170,7 +170,7 @@ nav:
         - AsyncTimer: ru/api/timers/async_timer.md
       - WebView: ru/api/webview.md
       - Модели:
-        - Task: ru/api/schemas/task.md
+        - Task: ru/api/models/task.md
       - Схемы:
         - QueueConfig: ru/api/schemas/queueconfig.md
         - TaskStatus: ru/api/schemas/task_status.md

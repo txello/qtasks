@@ -11,6 +11,8 @@ from time import time
 from typing import TYPE_CHECKING
 
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.logs import Logger
+from qtasks.storages.sync_redis import SyncRedisStorage
 
 from .base import BaseBroker
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -78,9 +80,20 @@ class AsyncKafkaBroker(BaseBroker):
                     По умолчанию: `task_queue`.
                     """
                 )
-            ] = "task_queue"
+            ] = "task_queue",
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None
         ):
-        super().__init__(name=name, storage=storage)
+        super().__init__(name=name, log=log)
         self.url = url
         self.topic = f"{self.name}_{topic}"
         
@@ -94,6 +107,9 @@ class AsyncKafkaBroker(BaseBroker):
             loop=asyncio.get_event_loop(),
             bootstrap_servers=self.url
         )
+        
+        self.storage = storage or SyncRedisStorage(name=self.name, log=log)
+
         self.running = False
     
     async def listen(self, worker: "BaseWorker"):
@@ -110,7 +126,7 @@ class AsyncKafkaBroker(BaseBroker):
                 task_name, uuid, priority = task_data.split(":")
                 model_get = await self.get(uuid=uuid)
                 args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
-                print(f"[Broker] Получена новая задача: {uuid}")
+                self.log.info(f"Получена новая задача: {uuid}")
                 await worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)
         finally:
             await self.consumer.stop()

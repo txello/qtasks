@@ -4,6 +4,7 @@ from typing_extensions import Annotated, Doc
 from uuid import UUID
 
 import qtasks._state
+from qtasks.logs import Logger
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.results.sync_result import SyncResult
@@ -49,13 +50,25 @@ class QueueTasks:
                     """
                 )
             ] = "QueueTasks",
+            
+            broker_url: Annotated[
+                Optional[str],
+                Doc(
+                    """
+                    URL для Брокера. Используется Брокером по умолчанию через параметр url.
+                    
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+
             broker: Annotated[
                 Optional["BaseBroker"],
                 Doc(
                     """
                     Брокер. Хранит в себе обработку из очередей задач и хранилище данных.
                     
-                    По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
+                    По умолчанию: `qtasks.brokers.SyncRedisBroker`.
                     """
                 )
             ] = None,
@@ -65,7 +78,18 @@ class QueueTasks:
                     """
                     Воркер. Хранит в себе обработку задач.
                     
-                    По умолчанию: `qtasks.workers.AsyncWorker`.
+                    По умолчанию: `qtasks.workers.SyncWorker`.
+                    """
+                )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
             ] = None
@@ -75,13 +99,12 @@ class QueueTasks:
 
         Args:
             name (str): Имя проекта. По умолчанию: `QueueTasks`.
+            broker_url (str, optional): URL для Брокера. Используется Брокером по умолчанию через параметр url. По умолчанию: `None`.
+            broker (Type[BaseBroker], optional): Брокер. Хранит в себе обработку из очередей задач и хранилище данных. По умолчанию: `qtasks.brokers.SyncRedisBroker`.
+            worker (Type[BaseWorker], optional): Воркер. Хранит в себе обработку задач. По умолчанию: `qtasks.workers.SyncWorker`.
         """
         self.name = name
-        self.broker = broker or SyncRedisBroker(name=name)
-        self.worker = worker or SyncThreadWorker(name=name, broker=self.broker)
-        self.starter: "BaseStarter"|None = None
-        
-        
+
         self.config: Annotated[
             QueueConfig,
             Doc(
@@ -92,6 +115,12 @@ class QueueTasks:
                 """
             )
         ] = QueueConfig()
+        
+        self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)
+
+        self.broker = broker or SyncRedisBroker(name=name, url=broker_url, log=self.log)
+        self.worker = worker or SyncThreadWorker(name=name, broker=self.broker, log=log)
+        self.starter: "BaseStarter"|None = None
         
         self.routers: Annotated[
             list[Router],
@@ -276,7 +305,7 @@ class QueueTasks:
         args, kwargs = args or (), kwargs or {}
         task = self.broker.add(task_name, priority, *args, **kwargs)
         if timeout is not None:
-            return SyncResult(uuid=task.uuid, app=self).result(timeout=timeout)
+            return SyncResult(uuid=task.uuid, app=self, log=self.log).result(timeout=timeout)
         return task
         
     
@@ -361,7 +390,7 @@ class QueueTasks:
             num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
         """
-        self.starter = starter or SyncStarter(name=self.name, worker=self.worker, broker=self.broker)
+        self.starter = starter or SyncStarter(name=self.name, worker=self.worker, broker=self.broker, log=self.log)
         if reset_config:
             self.starter.config = self.config
         
@@ -378,7 +407,6 @@ class QueueTasks:
         """
         Останавливает все компоненты.
         """
-        #print("[QueueTasks] Остановка QueueTasks...")
         self.starter.stop()
     
     @property
@@ -556,4 +584,6 @@ class QueueTasks:
         self.worker._tasks.update(TaskRegistry.all_tasks())
 
     def _set_state(self):
+        """Установить параметры в `qtasks._state`."""
         qtasks._state.app_main = self
+        qtasks._state.log_main = self.log

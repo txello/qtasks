@@ -2,6 +2,8 @@ from typing import Any, Optional
 from typing_extensions import Annotated, Doc
 import redis
 
+from qtasks.logs import Logger
+
 from .base import BaseGlobalConfig
 from qtasks.schemas.global_config import GlobalConfigSchema
 
@@ -68,9 +70,20 @@ class SyncRedisGlobalConfig(BaseGlobalConfig):
                     По умолчанию: `name:GlobalConfig`.
                     """
                 )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name=name)
+        super().__init__(name=name, log=log)
         self.name = name
         self.url = url
         self.config_name = f"{self.name}:{config_name or 'GlobalConfig'}"

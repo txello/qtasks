@@ -4,6 +4,7 @@ from uuid import UUID
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.logs import Logger
 from qtasks.schemas.inits import InitsExecSchema
 
 if TYPE_CHECKING:
@@ -48,11 +49,24 @@ class BaseWorker(ABC):
                     По умолчанию: `None`.
                     """
                 )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
             ] = None
         ):
         self.name = name
         self.broker = broker
         self.config = QueueConfig()
+        
+        self.log = log.with_subname("Worker") if log else Logger(name=self.name, subname="Worker", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.init_worker_running: list[InitsExecSchema] = []
         self.init_task_running: list[InitsExecSchema] = []
         self.init_task_stoping: list[InitsExecSchema] = []

@@ -5,6 +5,7 @@ from typing_extensions import Annotated, Doc
 from uuid import UUID
 
 import qtasks._state
+from qtasks.logs import Logger
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.results.async_result import AsyncResult
@@ -51,6 +52,18 @@ class QueueTasks:
                     """
                 )
             ] = "QueueTasks",
+            
+            broker_url: Annotated[
+                Optional[str],
+                Doc(
+                    """
+                    URL для Брокера. Используется Брокером по умолчанию через параметр url.
+                    
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+
             broker: Annotated[
                 Optional["BaseBroker"],
                 Doc(
@@ -71,9 +84,29 @@ class QueueTasks:
                     """
                 )
             ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None
         ):
+        """
+        Инициализация QueueTasks.
+
+        Args:
+            name (str): Имя проекта. По умолчанию: `QueueTasks`.
+            broker_url (str, optional): URL для Брокера. Используется Брокером по умолчанию через параметр url. По умолчанию: `None`.
+            broker (Type[BaseBroker], optional): Брокер. Хранит в себе обработку из очередей задач и хранилище данных. По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
+            worker (Type[BaseWorker], optional): Воркер. Хранит в себе обработку задач. По умолчанию: `qtasks.workers.AsyncWorker`.
+        """
         self.name = name
-        self.broker = broker or AsyncRedisBroker(name=name)
+        self.broker = broker or AsyncRedisBroker(name=name, url=broker_url)
         self.worker = worker or AsyncWorker(name=name, broker=self.broker)
         self.starter: "BaseStarter"|None = None
         
@@ -87,6 +120,8 @@ class QueueTasks:
                 """
             )
         ] = QueueConfig()
+
+        self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)
         
         self.routers: Annotated[
             list[Router],
@@ -285,7 +320,7 @@ class QueueTasks:
         
         task = await self.broker.add(task_name, priority, *args, **kwargs)
         if timeout is not None:
-            return await AsyncResult(uuid=task.uuid, app=self).result(timeout=timeout)
+            return await AsyncResult(uuid=task.uuid, app=self, log=self.log).result(timeout=timeout)
         return task
     
     async def get(self,
@@ -577,4 +612,6 @@ class QueueTasks:
         self.worker._tasks.update(TaskRegistry.all_tasks())
 
     def _set_state(self):
+        """Установить параметры в `qtasks._state`."""
         qtasks._state.app_main = self
+        qtasks._state.log_main = self.log

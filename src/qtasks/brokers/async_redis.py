@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 import redis.asyncio as aioredis
 
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.storages.async_redis import AsyncRedisStorage
 
@@ -77,15 +78,26 @@ class AsyncRedisBroker(BaseBroker):
                     По умолчанию: `task_queue`.
                     """
                 )
-            ] = "task_queue"
+            ] = "task_queue",
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None
         ):
-        super().__init__(name=name)
+        super().__init__(name=name, log=log)
         self.url = url
         self.queue_name = f"{self.name}:{queue_name}"
         
         self.client = aioredis.ConnectionPool.from_url(self.url, decode_responses=True, encoding=u'utf-8')
         self.client = aioredis.Redis.from_pool(self.client)
-        self.storage = storage or AsyncRedisStorage(name=name, url=self.url, redis_connect=self.client)
+        self.storage = storage or AsyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=log)
         self.running = False
 
     async def listen(self,
@@ -117,7 +129,7 @@ class AsyncRedisBroker(BaseBroker):
             
             model_get = await self.get(uuid=uuid)
             args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
-            print(f"[Broker] Получена новая задача: {uuid}")
+            self.log.info(f"Получена новая задача: {uuid}")
             await worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)  # Передаём задачу в AsyncWorker
                 
                 

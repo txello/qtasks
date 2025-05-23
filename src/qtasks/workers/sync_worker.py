@@ -9,6 +9,7 @@ from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 
 from .base import BaseWorker
@@ -52,9 +53,20 @@ class SyncThreadWorker(BaseWorker):
                     По умолчанию: `qtasks.brokers.SyncRedisBroker`.
                     """
                 )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name, broker)
+        super().__init__(name=name, broker=broker, log=log)
         self.name = name
         self.broker = broker or SyncRedisBroker(name=self.name)
         self.queue = PriorityQueue()
@@ -121,11 +133,11 @@ class SyncThreadWorker(BaseWorker):
             try:
                 task_func = self._tasks[task_broker.name]
             except KeyError as e:
-                print(f"[Worker] Задачи {e.args[0]} не существует!")
+                self.log.warning(f"Задачи {e.args[0]} не существует!")
                 trace = traceback.format_exc()
                 model = TaskStatusErrorSchema(task_name=task_broker.name, priority=task_broker.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
                 self.broker.remove_finished_task(task_broker, model)
-                print(f"[Worker] Задача {task_broker.name} завершена с ошибкой:"), traceback.print_exception(e)
+                self.log.warning(f"Задача {task_broker.name} завершена с ошибкой:"), traceback.print_exception(e)
                 return
 
             try:
@@ -135,7 +147,7 @@ class SyncThreadWorker(BaseWorker):
                 return
 
             try:
-                print(f"[Worker] Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}")
+                self.log.info(f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}")
                 
                 if task_broker.args and task_broker.kwargs:
                     result = task_func.func(*task_broker.args, **task_broker.kwargs)
@@ -149,11 +161,11 @@ class SyncThreadWorker(BaseWorker):
                 result = json.dumps(result, ensure_ascii=False)
                 model = TaskStatusSuccessSchema(task_name=task_func.name, priority=task_func.priority, returning=result, created_at=task_broker.created_at, updated_at=time())
                 model.set_json(task_broker.args, task_broker.kwargs)
-                print(f"[Worker] Задача {task_broker.uuid} успешно завершена, результат: {result}")
+                self.log.info(f"Задача {task_broker.uuid} успешно завершена, результат: {result}")
             except Exception as e:
                 trace = traceback.format_exc()
                 model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
-                print(f"[Worker] Задача {task_broker.uuid} завершена с ошибкой:"), traceback.print_exception(e)
+                self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:"), traceback.print_exception(e)
             finally:
                 self.queue.task_done()
 

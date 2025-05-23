@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.logs import Logger
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
@@ -36,11 +37,23 @@ class BaseGlobalConfig(ABC):
                     """
                 )
             ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None
         ):
         self.name = name
         self.client = None
         self.config = QueueConfig()
         
+        self.log = log.with_subname("GlobalConfig") if log else Logger(name=self.name, subname="GlobalConfig", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.plugins: dict[str, "BasePlugin"] = {}
         pass
     

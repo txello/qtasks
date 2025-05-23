@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from qtasks.configs.sync_redisglobalconfig import SyncRedisGlobalConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.logs import Logger
 
 from .base import BaseStorage
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -86,9 +87,20 @@ class SyncRedisStorage(BaseStorage):
                     По умолчанию: `None`.
                     """
                 )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name=name)
+        super().__init__(name=name, log=log)
         self.url = url
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"

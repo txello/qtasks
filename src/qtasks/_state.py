@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 
+from qtasks.logs import Logger
+
 if TYPE_CHECKING:
     from qtasks.qtasks import QueueTasks
 
@@ -10,4 +12,11 @@ app_main: "QueueTasks" = None
 
 Переменная обновляется при инициализации `QueueTasks` и/или перед вызовом [`self.starter.start()`](/qtasks/ru/api/starters/basestarter#qtasks.starters.base.BaseStarter.start)
 внутри [`app.run_forever()`](/qtasks/ru/api/queuetasks/#qtasks.qtasks.QueueTasks.run_forever).
+"""
+
+log_main: Logger = Logger(name="QueueTasks", subname="_state")
+"""
+`log_main` - Хранит в себе компонент логирования Logger.
+Переменная обновляется при инициализации `QueueTasks`.
+По умолчанию: Logger(name="QueueTasks", subname="_state")
 """

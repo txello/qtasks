@@ -127,10 +127,10 @@ class AsyncWorker(BaseWorker):
             try:
                 task_func = self._tasks[task_broker.name]
             except KeyError as e:
-                print(f"[Worker] Задачи {e.args[0]} не существует!")
+                self.log.warning(f"Задачи {e.args[0]} не существует!")
                 trace = traceback.format_exc()
                 model = TaskStatusErrorSchema(task_name=task_broker.name, priority=task_broker.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
-                print(f"[Worker] Задача {task_broker.name} завершена с ошибкой:"), traceback.print_exception(e)
+                self.log.warning(f"Задача {task_broker.name} завершена с ошибкой:"), traceback.print_exception(e)
 
                 self.queue.task_done()
                 await self.broker.remove_finished_task(task_broker, model)
@@ -144,7 +144,7 @@ class AsyncWorker(BaseWorker):
                 raise e
 
             try:
-                print(f"[Worker] Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}")
+                self.log.info(f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}")
                 
                 #########
                 
@@ -153,12 +153,13 @@ class AsyncWorker(BaseWorker):
                 result = json.dumps(result, ensure_ascii=False)
                 model = TaskStatusSuccessSchema(task_name=task_func.name, priority=task_func.priority, returning=result, created_at=task_broker.created_at, updated_at=time())
                 model.set_json(task_broker.args, task_broker.kwargs)
-                print(f"[Worker] Задача {task_broker.uuid} успешно завершена, результат: {result}")
+                self.log.info(f"")
+                self.log.info(f"Задача {task_broker.uuid} успешно завершена, результат: {result}")
             except Exception as e:
                 trace = traceback.format_exc()
                 model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
                 model.set_json(task_broker.args, task_broker.kwargs)
-                print(f"[Worker] Задача {task_broker.uuid} завершена с ошибкой:"), traceback.print_exception(e)
+                self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:"), traceback.print_exception(e)
             finally:
                 self.queue.task_done()
 

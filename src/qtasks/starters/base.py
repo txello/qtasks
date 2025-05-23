@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from qtasks.logs import Logger
 from typing import TYPE_CHECKING, Optional, Type
 from typing_extensions import Annotated, Doc
 
@@ -59,10 +60,22 @@ class BaseStarter(ABC):
                     По умолчанию: `None`.
                     """
                 )
-            ] = None
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
         ):
         self.name = name
         self.config = QueueConfig()
+        self.log = log.with_subname("Starter") if log else Logger(name=self.name, subname="Starter", default_level=self.config.logs_default_level, format=self.config.logs_format)
         
         self.broker = broker
         self.worker = worker
@@ -110,3 +123,27 @@ class BaseStarter(ABC):
             name (str, optional): Имя плагина. По умолчанию: `plugin.name`.
         """
         self.plugins.update({str(plugin.name or name): plugin})
+
+    def update_configs(self,
+            config: Annotated[
+                QueueConfig,
+                Doc(
+                    """
+                    Конфиг.
+                    """
+                )
+            ]
+        ):
+        """Обновить конфиги всем компонентам.
+
+        Args:
+            config (QueueConfig): Конфиг.
+        """
+        if self.worker:
+            self.worker.update_config(config)
+        if self.broker:
+            self.broker.update_config(config)
+            if self.broker.storage:
+                self.broker.storage.update_config(config)
+                if self.broker.storage.global_config:
+                    self.broker.storage.global_config.update_config(config)
