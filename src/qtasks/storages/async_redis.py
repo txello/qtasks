@@ -8,6 +8,7 @@ from uuid import UUID
 import redis.asyncio as aioredis
 from typing import TYPE_CHECKING
 
+from qtasks.contrlib.redis.async_queue_client import AsyncRedisCommandQueue
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 
@@ -107,6 +108,7 @@ class AsyncRedisStorage(BaseStorage):
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"
         self.client = redis_connect or aioredis.from_url(self.url, decode_responses=True, encoding=u'utf-8')
+        self.redis_contrlib = AsyncRedisCommandQueue(redis=self.client, log=self.log)
         
         self.global_config = global_config or AsyncRedisGlobalConfig(name=self.name, redis_connect=self.client, log=self.log)
         
@@ -209,7 +211,7 @@ class AsyncRedisStorage(BaseStorage):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        return await self.client.hset(kwargs["name"], mapping=kwargs["mapping"])
+        return await self.redis_contrlib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
         
     async def remove_finished_task(self,
             task_broker: Annotated[

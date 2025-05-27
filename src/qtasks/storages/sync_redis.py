@@ -6,6 +6,7 @@ from uuid import UUID
 import redis
 from typing import TYPE_CHECKING
 
+from qtasks.contrlib.redis.sync_queue_client import SyncRedisCommandQueue
 from qtasks.configs.sync_redisglobalconfig import SyncRedisGlobalConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
@@ -105,6 +106,7 @@ class SyncRedisStorage(BaseStorage):
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"
         self.client = redis_connect or redis.Redis.from_url(self.url, decode_responses=True, encoding='utf-8')
+        self.redis_contrlib = SyncRedisCommandQueue(redis=self.client, log=self.log)
 
         self.global_config = global_config or SyncRedisGlobalConfig(name=self.name, redis_connect=self.client, log=self.log)
         
@@ -201,7 +203,7 @@ class SyncRedisStorage(BaseStorage):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        self.client.hset(kwargs["name"], mapping=kwargs["mapping"])
+        return self.redis_contrlib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
     
     def remove_finished_task(self,
             task_broker: Annotated[
@@ -227,8 +229,8 @@ class SyncRedisStorage(BaseStorage):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
-        self.client.hset(f"{self.name}:{task_broker.uuid}", mapping=model.__dict__)
-        self.client.zrem(self.queue_process, f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}")
+        self.redis_contrlib.execute("hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__)
+        self.redis_contrlib.execute("zrem", self.queue_process, f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}")
     
     def start(self):
         """Запускает хранилище."""

@@ -1,9 +1,7 @@
-from typing import Any, Callable, Dict, List, TypeVar, Generic
+from typing import Any, Callable, Dict, List
 from qtasks.configs.config import QueueConfig
 
-T = TypeVar('T', bound=QueueConfig)
-
-class ConfigObserver(Generic[T]):
+class ConfigObserver(QueueConfig):
     def __init__(self, config: QueueConfig):
         self._config = config
         self._callbacks: List[Callable[[str, Any], None]] = []
@@ -16,14 +14,16 @@ class ConfigObserver(Generic[T]):
         for callback in self._callbacks:
             callback(config, key, value)
 
-    def __getattr__(self, item):
-        # Сначала проверяем динамические поля
-        if item in self._dynamic_fields:
-            return self._dynamic_fields[item]
-        # Затем проверяем стандартные поля
-        if hasattr(self._config, item):
-            return getattr(self._config, item)
-        raise AttributeError(f"'Config' has no attribute '{item}'")
+    def __getattribute__(self, item):
+        # Пропускаем внутренние поля
+        if item in ('_callbacks', '_dynamic_fields', '_notify', 'subscribe', '__dict__', '__class__', '__annotations__'):
+            return super().__getattribute__(item)
+        # Проверяем динамические поля
+        dynamic_fields = super().__getattribute__('_dynamic_fields')
+        if item in dynamic_fields:
+            return dynamic_fields[item]
+        # Проверяем обычные атрибуты (включая dataclass)
+        return super().__getattribute__(item)
 
     def __setattr__(self, key, value):
         if key in ('_config', '_callbacks', '_dynamic_fields'):
