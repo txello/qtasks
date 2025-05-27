@@ -4,6 +4,7 @@ from typing_extensions import Annotated, Doc
 from uuid import UUID
 
 import qtasks._state
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
@@ -105,7 +106,7 @@ class QueueTasks:
         """
         self.name = name
 
-        self.config: Annotated[
+        self.config_dataclass: Annotated[
             QueueConfig,
             Doc(
                 """
@@ -115,10 +116,20 @@ class QueueTasks:
                 """
             )
         ] = QueueConfig()
+
+        self.config: Annotated[
+            ConfigObserver,
+            Doc(
+                """
+                Обсервер конфига. Хранит в себе QueueConfig.
+                """
+            )
+        ] = ConfigObserver(self.config_dataclass)
+        self.config.subscribe(self.update_configs)
         
         self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)
 
-        self.broker = broker or SyncRedisBroker(name=name, url=broker_url, log=self.log)
+        self.broker = broker or SyncRedisBroker(name=name, url=broker_url, log=self.log, config=self.config)
         self.worker = worker or SyncThreadWorker(name=name, broker=self.broker, log=self.log)
         self.starter: "BaseStarter"|None = None
         
@@ -390,9 +401,7 @@ class QueueTasks:
             num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
         """
-        self.starter = starter or SyncStarter(name=self.name, worker=self.worker, broker=self.broker, log=self.log)
-        if reset_config:
-            self.starter.config = self.config
+        self.starter = starter or SyncStarter(name=self.name, worker=self.worker, broker=self.broker, log=self.log, config=self.config)
         
         self.starter._inits.update({
             "init_starting": self._inits["init_starting"],
@@ -594,3 +603,8 @@ class QueueTasks:
         """Установить параметры в `qtasks._state`."""
         qtasks._state.app_main = self
         qtasks._state.log_main = self.log
+
+    def update_configs(self, config: QueueConfig, key, value):
+        if key == "logs_default_level":
+            self.log.default_level = value
+            self.log = self.log.update_logger()

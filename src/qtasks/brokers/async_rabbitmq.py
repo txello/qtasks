@@ -1,6 +1,7 @@
 import json
 from typing import TYPE_CHECKING, Optional, Union
 
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -88,6 +89,16 @@ class AsyncRabbitMQBroker(BaseBroker):
                     Логгер.
                     
                     По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
                     """
                 )
             ] = None

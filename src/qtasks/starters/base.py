@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 from typing import TYPE_CHECKING, Optional, Type
 from typing_extensions import Annotated, Doc
@@ -72,9 +73,19 @@ class BaseStarter(ABC):
                     """
                 )
             ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
+            ] = None
         ):
         self.name = name
-        self.config = QueueConfig()
+        self.config = config or ConfigObserver(QueueConfig())
         self.log = log.with_subname("Starter") if log else Logger(name=self.name, subname="Starter", default_level=self.config.logs_default_level, format=self.config.logs_format)
         
         self.broker = broker
@@ -139,6 +150,7 @@ class BaseStarter(ABC):
         Args:
             config (QueueConfig): Конфиг.
         """
+        self.log.debug("Конфиг обновлён")
         if self.worker:
             self.worker.update_config(config)
         if self.broker:

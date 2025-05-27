@@ -1,3 +1,4 @@
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 from typing import TYPE_CHECKING, Optional
 from typing_extensions import Annotated, Doc
@@ -73,9 +74,19 @@ class SyncStarter(BaseStarter):
                     По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name=name, broker=broker, worker=worker, log=log)
+        super().__init__(name=name, broker=broker, worker=worker, log=log, config=config)
         
     def start(self,
             num_workers: Annotated[

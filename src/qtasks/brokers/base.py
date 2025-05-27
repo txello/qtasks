@@ -4,6 +4,7 @@ from uuid import UUID
 from typing_extensions import Annotated, Doc
 from typing import TYPE_CHECKING
 
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 from qtasks.configs.config import QueueConfig
@@ -62,11 +63,20 @@ class BaseBroker(ABC):
                     По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
         self.name = name
-        self.client = None
-        self.config = QueueConfig()
+        self.config = config or ConfigObserver(QueueConfig())
         self.storage = storage
         self.log = log.with_subname("Broker") if log else Logger(name=self.name, subname="Broker", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.plugins: dict[str, "BasePlugin"] = {}
@@ -189,7 +199,7 @@ class BaseBroker(ABC):
 
     def update_config(self,
             config: Annotated[
-                QueueConfig,
+                ConfigObserver,
                 Doc(
                     """
                     Конфиг.

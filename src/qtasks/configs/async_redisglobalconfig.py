@@ -4,6 +4,7 @@ from typing import Any, Optional
 from typing_extensions import Annotated, Doc
 import redis.asyncio as aioredis
 
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 
 from .base import BaseGlobalConfig
@@ -83,9 +84,19 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig):
                     По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name=name, log=log)
+        super().__init__(name=name, log=log, config=config)
         self.name = name
         self.url = url
         self.config_name = f"{self.name}:{config_name or 'GlobalConfig'}"

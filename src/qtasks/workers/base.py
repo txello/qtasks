@@ -4,6 +4,7 @@ from uuid import UUID
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 from qtasks.schemas.inits import InitsExecSchema
 
@@ -60,11 +61,21 @@ class BaseWorker(ABC):
                     По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
         self.name = name
         self.broker = broker
-        self.config = QueueConfig()
+        self.config = config or ConfigObserver(QueueConfig())
         
         self.log = log.with_subname("Worker") if log else Logger(name=self.name, subname="Worker", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.init_worker_running: list[InitsExecSchema] = []

@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 from time import time
 from typing import TYPE_CHECKING
 
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 from qtasks.storages.sync_redis import SyncRedisStorage
@@ -91,9 +92,19 @@ class AsyncKafkaBroker(BaseBroker):
                     По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name=name, log=log)
+        super().__init__(name=name, log=log, config=config)
         self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
         

@@ -72,6 +72,7 @@ class Logger:
         self.name = name
         self.subname = subname or "-"
         self.format = format
+        self.default_level = default_level
         self.logger = logging.getLogger(name)
 
         formatter = logging.Formatter(
@@ -111,7 +112,15 @@ class Logger:
         Returns:
             Logger: Новый `Logger`.
         """
-        return Logger(self.name, new_subname, default_level=self.logger.level, format=self.format)
+        return Logger(self.name, new_subname, default_level=self.default_level, format=self.format)
+    
+    def update_logger(self) -> "Logger":
+        """Обновляем `Logger`.
+
+        Returns:
+            Logger: Новый `Logger`.
+        """
+        return Logger(self.name, self.subname, default_level=self.default_level, format=self.format)
     
     def _log(self, level, msg, *args, **kwargs):
         extra = kwargs.pop("extra", {})

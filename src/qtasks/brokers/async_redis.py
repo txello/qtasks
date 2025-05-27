@@ -8,6 +8,7 @@ from time import time
 from typing import TYPE_CHECKING
 import redis.asyncio as aioredis
 
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -89,9 +90,19 @@ class AsyncRedisBroker(BaseBroker):
                     По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name=name, log=log)
+        super().__init__(name=name, log=log, config=config)
         self.url = url or "redis://localhost:6379/0"
         self.queue_name = f"{self.name}:{queue_name}"
         
