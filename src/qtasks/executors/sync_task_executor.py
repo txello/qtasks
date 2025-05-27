@@ -1,11 +1,16 @@
 import json
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from typing_extensions import Annotated, Doc
+
+from .base import BaseTaskExecutor
 from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
+if TYPE_CHECKING:
+    from qtasks.middlewares.task import TaskMiddleware
 
-class SyncTaskExecutor:
+
+class SyncTaskExecutor(BaseTaskExecutor):
     def __init__(self,
             task_func: Annotated[
                 TaskExecSchema,
@@ -24,7 +29,7 @@ class SyncTaskExecutor:
                 )
             ],
             middlewares: Annotated[
-                Optional[Any],
+                Optional["TaskMiddleware"],
                 Doc(
                     """
                     Массив Миддлварей.
@@ -44,17 +49,8 @@ class SyncTaskExecutor:
                 )
             ] = None
         ):
-        self.task_func = task_func
-        self.task_broker = task_broker
-
-        self.middlewares = middlewares or []
+        super().__init__(task_func=task_func, task_broker=task_broker, middlewares=middlewares, log=log)
         self._result: Any = None
-
-        self.log = log
-        if self.log is None:
-            import qtasks._state
-            self.log = qtasks._state.log_main
-        self.log = self.log.with_subname("SyncTaskExecutor")
 
 
     def before_execute(self):
@@ -65,8 +61,8 @@ class SyncTaskExecutor:
 
     def execute_middlewares(self):
         for m in self.middlewares:
-            self.log.debug(f"Вызван Middleware {m.name} для {self.task_func.name}")
-            m(self)
+            m = m(self)
+            self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
     def run_task(self) -> Any:
         if self.task_broker.args and self.task_broker.kwargs:

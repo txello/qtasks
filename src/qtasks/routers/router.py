@@ -1,7 +1,10 @@
 import inspect
-from typing import TYPE_CHECKING, Optional, Type
+from typing import TYPE_CHECKING, List, Optional, Type
 from typing_extensions import Annotated, Doc
 
+from qtasks.executors.base import BaseTaskExecutor
+from qtasks.middlewares.task import TaskMiddleware
+from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
@@ -51,6 +54,36 @@ class Router:
                     По умолчанию: `func.__name__`.
                     """
                 )
+            ] = None,
+            priority: Annotated[
+                int,
+                Doc(
+                    """
+                    Приоритет задачи.
+                    
+                    По умолчанию: `0`.
+                    """
+                )
+            ] = 0,
+            executor: Annotated[
+                Type["BaseTaskExecutor"],
+                Doc(
+                    """
+                    Класс `BaseTaskExecutor`.
+                    
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+                )
+            ] = None,
+            middlewares: Annotated[
+                List[TaskMiddleware],
+                Doc(
+                    """
+                    Мидлвари.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+                )
             ] = None
         ):
         """Декоратор для регистрации задач.
@@ -59,11 +92,12 @@ class Router:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
         """
         def wrapper(func):
-            nonlocal name
+            nonlocal name, priority, executor, middlewares
             task_name = name or func.__name__
-            model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func))
+            middlewares = middlewares or []
+            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func), executor=executor, middlewares=middlewares)
             
             self.tasks[task_name] = model
             
-            return func
+            return SyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares)
         return wrapper

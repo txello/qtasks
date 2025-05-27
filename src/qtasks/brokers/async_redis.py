@@ -108,7 +108,7 @@ class AsyncRedisBroker(BaseBroker):
         
         self.client = aioredis.ConnectionPool.from_url(self.url, decode_responses=True, encoding=u'utf-8')
         self.client = aioredis.Redis.from_pool(self.client)
-        self.storage = storage or AsyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=self.log)
+        self.storage = storage or AsyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=self.log, config=self.config)
         self.running = False
 
     async def listen(self,

@@ -1,6 +1,8 @@
 import logging
 from qtasks.asyncio import QueueTasks
 
+import shared_tasks
+
 app = QueueTasks()
 
 app.config.running_older_tasks = True

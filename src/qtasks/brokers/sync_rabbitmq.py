@@ -103,7 +103,7 @@ class SyncRabbitMQBroker(BaseBroker):
         super().__init__(name=name, log=log)
         self.url = url or "amqp://guest:guest@localhost/"
         self.queue_name = f"{self.name}:{queue_name}"
-        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log)
+        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log, config=self.config)
         
         self.connection = None
         self.channel = None

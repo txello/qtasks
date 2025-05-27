@@ -114,13 +114,19 @@ class Logger:
         """
         return Logger(self.name, new_subname, default_level=self.default_level, format=self.format)
     
-    def update_logger(self) -> "Logger":
+    def update_logger(self, **kwargs) -> "Logger":
         """Обновляем `Logger`.
 
+        Args:
+            kwargs (dict): Новые данные задачи.
         Returns:
             Logger: Новый `Logger`.
         """
-        return Logger(self.name, self.subname, default_level=self.default_level, format=self.format)
+        name = kwargs.get("name", None) or self.name
+        subname = kwargs.get("subname", None) or self.subname
+        default_level = kwargs.get("default_level", None) or self.default_level
+        format = kwargs.get("format", None) or self.format
+        return Logger(name=name, subname=subname, default_level=default_level, format=format)
     
     def _log(self, level, msg, *args, **kwargs):
         extra = kwargs.pop("extra", {})

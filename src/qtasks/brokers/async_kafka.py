@@ -119,7 +119,7 @@ class AsyncKafkaBroker(BaseBroker):
             bootstrap_servers=self.url
         )
         
-        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log)
+        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log, config=config)
 
         self.running = False
     

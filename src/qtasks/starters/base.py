@@ -150,7 +150,7 @@ class BaseStarter(ABC):
         Args:
             config (QueueConfig): Конфиг.
         """
-        self.log.debug("Конфиг обновлён")
+        self.log.debug("Конфиг обновлен")
         if self.worker:
             self.worker.update_config(config)
         if self.broker:

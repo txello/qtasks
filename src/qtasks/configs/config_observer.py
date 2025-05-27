@@ -34,3 +34,6 @@ class ConfigObserver(QueueConfig):
         else:
             self._dynamic_fields[key] = value
             self._notify(self._config, key, value)
+
+    def __repr__(self):
+        return str(self._config)

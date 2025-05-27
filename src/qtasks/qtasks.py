@@ -1,11 +1,14 @@
 import inspect
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
 import qtasks._state
 from qtasks.configs.config_observer import ConfigObserver
+from qtasks.executors.base import BaseTaskExecutor
 from qtasks.logs import Logger
+from qtasks.middlewares.base import BaseMiddleware
+from qtasks.middlewares.task import TaskMiddleware
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.results.sync_result import SyncResult
@@ -24,6 +27,7 @@ if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
     from qtasks.starters.base import BaseStarter
     from qtasks.plugins.base import BasePlugin
+    from qtasks.middlewares.base import BaseMiddleWare
 
 class QueueTasks:
     """
@@ -130,7 +134,7 @@ class QueueTasks:
         self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)
 
         self.broker = broker or SyncRedisBroker(name=name, url=broker_url, log=self.log, config=self.config)
-        self.worker = worker or SyncThreadWorker(name=name, broker=self.broker, log=self.log)
+        self.worker = worker or SyncThreadWorker(name=name, broker=self.broker, log=self.log, config=self.config)
         self.starter: "BaseStarter"|None = None
         
         self.routers: Annotated[
@@ -218,6 +222,26 @@ class QueueTasks:
                     По умолчанию: `config.default_task_priority`.
                     """
                 )
+            ] = None,
+            executor: Annotated[
+                Type["BaseTaskExecutor"],
+                Doc(
+                    """
+                    Класс `BaseTaskExecutor`.
+                    
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+                )
+            ] = None,
+            middlewares: Annotated[
+                List[TaskMiddleware],
+                Doc(
+                    """
+                    Мидлвари.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+                )
             ] = None
         ):
         """Декоратор для регистрации задач.
@@ -227,7 +251,7 @@ class QueueTasks:
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
         """
         def wrapper(func):
-            nonlocal name, priority
+            nonlocal name, priority, executor, middlewares
             
             task_name = name or func.__name__
             if task_name in self.tasks:
@@ -236,11 +260,12 @@ class QueueTasks:
             if priority is None:
                 priority = self.config.default_task_priority
             
-            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func))
+            middlewares = middlewares or []
+            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func), executor=executor, middlewares=middlewares)
             
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
-            return SyncTask(app=self, task_name=task_name, priority=priority)
+            return SyncTask(app=self, task_name=task_name, priority=priority, executor=executor, middlewares=middlewares)
         return wrapper
     
     def add_task(self, 
@@ -408,9 +433,13 @@ class QueueTasks:
             "init_stoping": self._inits["init_stoping"],
         })
 
+        plugins_hash = {}
+        for plugins in [self.plugins, self.worker.plugins, self.broker.plugins, self.broker.storage.plugins]:
+            plugins_hash.update(plugins)
+
         self._set_state()
 
-        self.starter.start(num_workers=num_workers, reset_config=reset_config)
+        self.starter.start(num_workers=num_workers, reset_config=reset_config, plugins = plugins_hash)
     
     def stop(self):
         """
@@ -608,3 +637,11 @@ class QueueTasks:
         if key == "logs_default_level":
             self.log.default_level = value
             self.log = self.log.update_logger()
+
+    def add_middleware(self, middleware: Type[BaseMiddleware]) -> None:
+        if not middleware.__base__ or middleware.__base__.__base__.__name__ != "BaseMiddleware":
+            raise ImportError(f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!")
+        if middleware.__base__.__name__ == "TaskMiddleware":
+            self.worker.task_middlewares.append(middleware)
+        self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
+        return

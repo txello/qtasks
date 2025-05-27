@@ -1,6 +1,8 @@
-from typing import TYPE_CHECKING, Annotated, Optional
+from typing import TYPE_CHECKING, Annotated, List, Optional, Type
 from typing_extensions import Doc
 
+from qtasks.executors.base import BaseTaskExecutor
+from qtasks.middlewares.task import TaskMiddleware
 from qtasks.schemas.task import Task
 
 
@@ -51,10 +53,32 @@ class SyncTask:
                     По умолчанию: `qtasks._state.app_main`.
                     """
                 )
+            ] = None,
+            executor: Annotated[
+                Type["BaseTaskExecutor"],
+                Doc(
+                    """
+                    Класс `BaseTaskExecutor`.
+                    
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+                )
+            ] = None,
+            middlewares: Annotated[
+                List[TaskMiddleware],
+                Doc(
+                    """
+                    Мидлвари.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+                )
             ] = None
         ):
         self.task_name = task_name
         self.priority = priority
+        self.executor = executor
+        self.middlewares = middlewares
         self._app = app
         
     def add_task(self,

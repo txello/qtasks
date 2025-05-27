@@ -6,6 +6,7 @@ from typing_extensions import Annotated, Doc
 from qtasks.configs.config import QueueConfig
 from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
+from qtasks.middlewares.task import TaskMiddleware
 from qtasks.schemas.inits import InitsExecSchema
 
 if TYPE_CHECKING:
@@ -82,6 +83,8 @@ class BaseWorker(ABC):
         self.init_task_running: list[InitsExecSchema] = []
         self.init_task_stoping: list[InitsExecSchema] = []
         self.init_worker_stoping: list[InitsExecSchema] = []
+        self.task_middlewares: list[TaskMiddleware] = []
+
         self.plugins: dict[str, "BasePlugin"] = {}
         
         self.num_workers = 0

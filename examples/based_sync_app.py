@@ -4,7 +4,6 @@ from qtasks import QueueTasks
 import shared_tasks
 
 app = QueueTasks()
-
 app.config.running_older_tasks = True
 app.config.logs_default_level = logging.DEBUG
 

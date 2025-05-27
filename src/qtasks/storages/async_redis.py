@@ -1,4 +1,5 @@
 import asyncio
+import time
 import asyncio_atexit
 import datetime
 import json
@@ -8,6 +9,7 @@ from uuid import UUID
 import redis.asyncio as aioredis
 from typing import TYPE_CHECKING
 
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.contrlib.redis.async_queue_client import AsyncRedisCommandQueue
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
@@ -15,7 +17,7 @@ from qtasks.logs import Logger
 from .base import BaseStorage
 from qtasks.configs.async_redisglobalconfig import AsyncRedisGlobalConfig
 from qtasks.schemas.task_exec import TaskPrioritySchema
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema
+from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusSuccessSchema
 from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
@@ -101,16 +103,26 @@ class AsyncRedisStorage(BaseStorage):
                     По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name, log=log)
+        super().__init__(name, log=log, config=config)
         self.url = url
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"
         self.client = redis_connect or aioredis.from_url(self.url, decode_responses=True, encoding=u'utf-8')
         self.redis_contrlib = AsyncRedisCommandQueue(redis=self.client, log=self.log)
         
-        self.global_config = global_config or AsyncRedisGlobalConfig(name=self.name, redis_connect=self.client, log=self.log)
+        self.global_config = global_config or AsyncRedisGlobalConfig(name=self.name, redis_connect=self.client, log=self.log, config=self.config)
         
     async def add(self,
             uuid: Annotated[
@@ -223,7 +235,7 @@ class AsyncRedisStorage(BaseStorage):
                 )
             ],
             model: Annotated[
-                Union[TaskStatusNewSchema|TaskStatusErrorSchema],
+                Union[TaskStatusSuccessSchema|TaskStatusErrorSchema],
                 Doc(
                     """
                     Модель результата задачи.
@@ -231,14 +243,19 @@ class AsyncRedisStorage(BaseStorage):
                 )
             ]
         ) -> None:
-        """Обновляет данные задачи.
+        """Обновляет данные завершенной задачи.
 
         Args:
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
-        await self.client.hset(f"{self.name}:{task_broker.uuid}", mapping=model.__dict__)
-        await self.client.zrem(self.queue_process, f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}")
+        if model.status == TaskStatusEnum.SUCCESS.value and not isinstance(model.returning, (bytes, str, int, float)):
+            trace = "Invalid input of type: 'NoneType'. Convert to a bytes, string, int or float first."
+            model = TaskStatusErrorSchema(task_name=task_broker.name, priority=task_broker.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time.time())
+            self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+        
+        await self.redis_contrlib.execute("hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__)
+        await self.redis_contrlib.execute("zrem", self.queue_process, f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}")
         return
     
     async def start(self):

@@ -103,7 +103,7 @@ class SyncRedisBroker(BaseBroker):
         self.queue_name = f"{self.name}:{queue_name}"
         
         self.client = redis.Redis.from_url(self.url, decode_responses=True, encoding='utf-8')
-        self.storage = storage or SyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=self.log)
+        self.storage = storage or SyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=self.log, config=self.config)
         
         self.running = False
 

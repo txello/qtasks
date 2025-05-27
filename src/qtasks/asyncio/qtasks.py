@@ -1,13 +1,15 @@
 import asyncio
 import asyncio_atexit
 import inspect
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
 import qtasks._state
 from qtasks.configs.config_observer import ConfigObserver
+from qtasks.executors.base import BaseTaskExecutor
 from qtasks.logs import Logger
+from qtasks.middlewares.task import TaskMiddleware
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.results.async_result import AsyncResult
@@ -127,13 +129,14 @@ class QueueTasks:
                 """
             )
         ] = ConfigObserver(self.config_dataclass)
-        self.config.subscribe(self.update_configs)
-
-        self.broker = broker or AsyncRedisBroker(name=name, url=broker_url, config=self.config)
-        self.worker = worker or AsyncWorker(name=name, broker=self.broker)
-        self.starter: "BaseStarter"|None = None
+        self.config.subscribe(self._update_configs)
 
         self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)
+
+        self.broker = broker or AsyncRedisBroker(name=name, url=broker_url, log=self.log, config=self.config)
+        self.worker = worker or AsyncWorker(name=name, broker=self.broker, log=self.log, config=self.config)
+        self.starter: "BaseStarter"|None = None
+
         
         self.routers: Annotated[
             list[Router],
@@ -232,6 +235,26 @@ class QueueTasks:
                     По умолчанию: `config.default_task_priority`.
                     """
                 )
+            ] = None,
+            executor: Annotated[
+                Type["BaseTaskExecutor"],
+                Doc(
+                    """
+                    Класс `BaseTaskExecutor`.
+                    
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+                )
+            ] = None,
+            middlewares: Annotated[
+                List[TaskMiddleware],
+                Doc(
+                    """
+                    Мидлвари.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+                )
             ] = None
         ):
         """Декоратор для регистрации задач.
@@ -241,7 +264,7 @@ class QueueTasks:
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
         """
         def wrapper(func):
-            nonlocal name, priority
+            nonlocal name, priority, executor, middlewares
             
             task_name = name or func.__name__
             if task_name in self.tasks:
@@ -250,12 +273,13 @@ class QueueTasks:
             if priority is None:
                 priority = self.config.default_task_priority
             
-            model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func))
+            middlewares = middlewares or []
+            model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func), executor=executor, middlewares=middlewares)
             
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
             
-            return AsyncTask(app=self, task_name=task_name, priority=priority)
+            return AsyncTask(app=self, task_name=task_name, priority=priority, executor=executor, middlewares=middlewares)
         return wrapper
 
     async def add_task(self, 
@@ -636,7 +660,19 @@ class QueueTasks:
         qtasks._state.app_main = self
         qtasks._state.log_main = self.log
 
-    def update_configs(self, config: QueueConfig, key, value):
+    def _update_configs(self, config: QueueConfig, key, value):
         if key == "logs_default_level":
             self.log.default_level = value
             self.log = self.log.update_logger()
+            self._update_logs(default_level=value)
+
+    
+    def _update_logs(self, **kwargs):
+        if self.worker:
+            self.worker.log = self.worker.log.update_logger(**kwargs)
+        if self.broker:
+            self.broker.log = self.broker.log.update_logger(**kwargs)
+            if self.broker.storage:
+                self.broker.storage.log = self.broker.storage.log.update_logger(**kwargs)
+                if self.broker.storage.global_config:
+                    self.broker.storage.global_config.log = self.broker.storage.global_config.log.update_logger(**kwargs)
