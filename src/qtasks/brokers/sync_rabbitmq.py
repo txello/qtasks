@@ -56,7 +56,7 @@ class SyncRabbitMQBroker(BaseBroker):
                     По умолчанию: `amqp://guest:guest@localhost/`.
                     """
                 )
-            ] = "amqp://guest:guest@localhost/",
+            ] = None,
             storage: Annotated[
                 Optional["BaseStorage"],
                 Doc(
@@ -90,9 +90,9 @@ class SyncRabbitMQBroker(BaseBroker):
             ] = None
         ):
         super().__init__(name=name, log=log)
-        self.url = url
+        self.url = url or "amqp://guest:guest@localhost/"
         self.queue_name = f"{self.name}:{queue_name}"
-        self.storage = storage or SyncRedisStorage(name=self.name, log=log)
+        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log)
         
         self.connection = None
         self.channel = None

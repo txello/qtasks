@@ -22,5 +22,8 @@ class QueueConfig:
 
     default_task_priority: int = 0
 
+    global_config_status_ttl = 20
+    global_config_status_set_periodic = 17
+
     logs_default_level: int = logging.INFO
     logs_format: str = "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s"

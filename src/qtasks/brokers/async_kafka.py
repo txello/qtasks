@@ -60,7 +60,7 @@ class AsyncKafkaBroker(BaseBroker):
                     По умолчанию: `localhost:9092`.
                     """
                 )
-            ] = "localhost:9092",
+            ] = None,
             storage: Annotated[
                 Optional["BaseStorage"],
                 Doc(
@@ -94,7 +94,7 @@ class AsyncKafkaBroker(BaseBroker):
             ] = None
         ):
         super().__init__(name=name, log=log)
-        self.url = url
+        self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
         
         self.consumer = AIOKafkaConsumer(
@@ -108,7 +108,7 @@ class AsyncKafkaBroker(BaseBroker):
             bootstrap_servers=self.url
         )
         
-        self.storage = storage or SyncRedisStorage(name=self.name, log=log)
+        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log)
 
         self.running = False
     

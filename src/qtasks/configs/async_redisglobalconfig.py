@@ -1,3 +1,5 @@
+import asyncio
+import time
 from typing import Any, Optional
 from typing_extensions import Annotated, Doc
 import redis.asyncio as aioredis
@@ -89,6 +91,9 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig):
         self.config_name = f"{self.name}:{config_name or 'GlobalConfig'}"
         
         self.client = redis_connect or aioredis.from_url(self.url, decode_responses=True, encoding=u'utf-8')
+
+        self.status_event = None
+        self.running = False
         
     async def set(self, name: str, key: str, value: str) -> None:
         """Добавить новое значение.
@@ -101,24 +106,28 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig):
         await self.client.hset(name=f"{self.config_name}:{name}", key=key, value=value)
         return
     
-    async def get(self, name: str) -> Any:
+    async def get(self, key: str, name: str) -> Any:
         """Получить значение.
 
         Args:
-            name (str): Имя
+            key (str): Ключ.
+            name (str): Имя.
 
         Returns:
             Any: Значение.
         """
-        return await self.client.hget(name=self.config_name, key=name)
+        return await self.client.hget(name=f"{self.config_name}:{key}", key=name)
     
-    async def get_all(self) -> dict[Any]:
+    async def get_all(self, key: str) -> dict[Any]:
         """Получить все значения.
+
+        Args:
+            key (str): Ключ.
 
         Returns:
             dict[Any]: Значения.
         """
-        return await self.client.hgetall(name=self.config_name)
+        return await self.client.hgetall(name=f"{self.config_name}:{key}")
     
     async def get_match(self, match: str) -> Any | dict[Any]:
         """Получить значения по паттерну.
@@ -133,9 +142,22 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig):
     
     async def start(self) -> None:
         """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
-        global_config = GlobalConfigSchema(name=self.name)
+        self.running = True
+        loop = asyncio.get_running_loop()
+        self.status_event = loop.create_task(self._set_status())
+        global_config = GlobalConfigSchema(name=self.name, status="running")
         await self.client.hset(name=f"{self.config_name}:main", mapping=global_config.__dict__)
     
     async def stop(self) -> None:
         """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever."""
+        self.running = False
+        if self.status_event:
+            self.status_event.cancel()
         await self.client.close()
+
+    async def _set_status(self):
+        ttl = self.config.global_config_status_ttl
+        interval = self.config.global_config_status_set_periodic
+        while self.running:
+            await self.client.expire(f"{self.config_name}:main", ttl)
+            await asyncio.sleep(interval)

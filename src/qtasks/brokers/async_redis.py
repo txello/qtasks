@@ -58,7 +58,7 @@ class AsyncRedisBroker(BaseBroker):
                     По умолчанию: `redis://localhost:6379/0`.
                     """
                 )
-            ] = "redis://localhost:6379/0",
+            ] = None,
             storage: Annotated[
                 Optional["BaseStorage"],
                 Doc(
@@ -92,12 +92,12 @@ class AsyncRedisBroker(BaseBroker):
             ] = None
         ):
         super().__init__(name=name, log=log)
-        self.url = url
+        self.url = url or "redis://localhost:6379/0"
         self.queue_name = f"{self.name}:{queue_name}"
         
         self.client = aioredis.ConnectionPool.from_url(self.url, decode_responses=True, encoding=u'utf-8')
         self.client = aioredis.Redis.from_pool(self.client)
-        self.storage = storage or AsyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=log)
+        self.storage = storage or AsyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=self.log)
         self.running = False
 
     async def listen(self,

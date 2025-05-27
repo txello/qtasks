@@ -121,4 +121,4 @@ class SyncResult:
             if qtasks._state.app_main is None:
                 raise ImportError("Невозможно получить app!")
         if not self.log:
-            self.log = qtasks._state.log_main
+            self.log = qtasks._state.log_main.with_subname("AsyncResult")

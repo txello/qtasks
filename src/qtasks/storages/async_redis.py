@@ -108,7 +108,7 @@ class AsyncRedisStorage(BaseStorage):
         self.queue_process = f"{self.name}:{queue_process}"
         self.client = redis_connect or aioredis.from_url(self.url, decode_responses=True, encoding=u'utf-8')
         
-        self.global_config = global_config or AsyncRedisGlobalConfig(name=self.name, redis_connect=self.client)
+        self.global_config = global_config or AsyncRedisGlobalConfig(name=self.name, redis_connect=self.client, log=self.log)
         
     async def add(self,
             uuid: Annotated[

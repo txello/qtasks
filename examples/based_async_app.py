@@ -1,7 +1,9 @@
-import asyncio
+import logging
 from qtasks.asyncio import QueueTasks
 
 app = QueueTasks()
+
+app.config.logs_default_level = logging.DEBUG
 
 @app.task(name="test")
 def test():

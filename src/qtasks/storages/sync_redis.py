@@ -106,7 +106,7 @@ class SyncRedisStorage(BaseStorage):
         self.queue_process = f"{self.name}:{queue_process}"
         self.client = redis_connect or redis.Redis.from_url(self.url, decode_responses=True, encoding='utf-8')
 
-        self.global_config = global_config or SyncRedisGlobalConfig(name=self.name, redis_connect=self.client)
+        self.global_config = global_config or SyncRedisGlobalConfig(name=self.name, redis_connect=self.client, log=self.log)
         
     def add(self,
             uuid: Annotated[

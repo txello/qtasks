@@ -1,4 +1,5 @@
 import asyncio
+import asyncio_atexit
 import inspect
 from typing import TYPE_CHECKING, Optional, Union
 from typing_extensions import Annotated, Doc
@@ -578,6 +579,16 @@ class QueueTasks:
             self.worker.init_task_stoping.append(model)
             return func
         return wrap
+
+    async def ping(self, server: bool = True) -> bool:
+        if server:
+            loop = asyncio.get_running_loop()
+            asyncio_atexit.register(self.broker.storage.global_config.stop, loop=loop)
+
+            status = await self.broker.storage.global_config.get("main", "status")
+            if status is None:
+                return False
+            return True
 
     def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
         """

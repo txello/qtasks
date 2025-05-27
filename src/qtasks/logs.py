@@ -45,10 +45,10 @@ class Logger:
                     """
                     Level по умолчанию.
                     
-                    По умолчанию: `logging.DEBUG`.
+                    По умолчанию: `logging.INFO`.
                     """
                 )
-            ] = logging.DEBUG,
+            ] = logging.INFO,
             format: Annotated[
                 str,
                 Doc(
@@ -69,12 +69,21 @@ class Logger:
             format (str, optional): Формат логирования. По умолчанию: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`.
         """
         self.name = name
-        self.subname = subname
-        logging.basicConfig(
-            level=default_level,
-            format=(format or "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s")
-        )
+        self.name = name
+        self.subname = subname or "-"
+        self.format = format
         self.logger = logging.getLogger(name)
+
+        formatter = logging.Formatter(
+            self.format or "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s"
+        )
+
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+
+        self.logger.setLevel(default_level)
     
     def critical(self, *args, **kwargs):
         """Critical"""
@@ -92,10 +101,6 @@ class Logger:
         """Debug"""
         self._log(logging.DEBUG, *args, **kwargs)
     
-    def _log(self, level, msg, *args, **kwargs):
-        extra = kwargs.pop("extra", {})
-        extra["subname"] = self.subname
-        self.logger.log(level, msg, *args, extra=extra, **kwargs)
     
     def with_subname(self, new_subname: str) -> "Logger":
         """Обновляем `subname`.
@@ -106,4 +111,10 @@ class Logger:
         Returns:
             Logger: Новый `Logger`.
         """
-        return Logger(self.name, new_subname, default_level=self.logger.level)
+        return Logger(self.name, new_subname, default_level=self.logger.level, format=self.format)
+    
+    def _log(self, level, msg, *args, **kwargs):
+        extra = kwargs.pop("extra", {})
+        if "subname" not in extra:
+            extra["subname"] = self.subname
+        self.logger.log(level, msg, *args, extra=extra, **kwargs)

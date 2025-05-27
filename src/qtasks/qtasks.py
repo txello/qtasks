@@ -119,7 +119,7 @@ class QueueTasks:
         self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)
 
         self.broker = broker or SyncRedisBroker(name=name, url=broker_url, log=self.log)
-        self.worker = worker or SyncThreadWorker(name=name, broker=self.broker, log=log)
+        self.worker = worker or SyncThreadWorker(name=name, broker=self.broker, log=self.log)
         self.starter: "BaseStarter"|None = None
         
         self.routers: Annotated[
@@ -550,6 +550,13 @@ class QueueTasks:
             self.worker.init_task_stoping.append(model)
             return func
         return wrap
+
+    def ping(self, server: bool = True) -> bool:
+        if server:
+            status = self.broker.storage.global_config.get("main", "status")
+            if status is None:
+                return False
+            return True
 
     def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
         """

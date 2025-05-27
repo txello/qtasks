@@ -67,11 +67,12 @@ class BaseGlobalConfig(ABC):
         pass
     
     @abstractmethod
-    def get(self, name: str) -> Any:
+    def get(self, key: str, name: str) -> Any:
         """Получить значение.
 
         Args:
-            name (str): Имя
+            key (str): Ключ.
+            name (str): Имя.
 
         Returns:
             Any: Значение.
@@ -79,8 +80,11 @@ class BaseGlobalConfig(ABC):
         pass
     
     @abstractmethod
-    def get_all(self) -> dict[Any] | list[Any] | tuple[Any]:
+    def get_all(self, key: str) -> dict[Any] | list[Any] | tuple[Any]:
         """Получить все значения.
+
+        Args:
+            key (str): Ключ.
 
         Returns:
             dict[Any] | list[Any] | tuple[Any]: Значения.

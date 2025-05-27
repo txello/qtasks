@@ -68,7 +68,6 @@ class BaseBroker(ABC):
         self.client = None
         self.config = QueueConfig()
         self.storage = storage
-        
         self.log = log.with_subname("Broker") if log else Logger(name=self.name, subname="Broker", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.plugins: dict[str, "BasePlugin"] = {}
         pass

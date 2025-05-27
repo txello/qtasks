@@ -11,6 +11,7 @@ from anyio import Semaphore
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.executors.async_task_executor import AsyncTaskExecutor
 from qtasks.schemas.task import Task
 
 from .base import BaseWorker
@@ -148,7 +149,7 @@ class AsyncWorker(BaseWorker):
                 
                 #########
                 
-                result = await self._run_task(task_func, *task_broker.args, **task_broker.kwargs)
+                result = await self._run_task(task_func, task_broker)
                 
                 result = json.dumps(result, ensure_ascii=False)
                 model = TaskStatusSuccessSchema(task_name=task_func.name, priority=task_func.priority, returning=result, created_at=task_broker.created_at, updated_at=time())
@@ -286,7 +287,7 @@ class AsyncWorker(BaseWorker):
         self.config = config
         self.semaphore = Semaphore(config.max_tasks_process)
         
-    async def _run_task(self, task_func: TaskExecSchema, *args, **kwargs) -> Any:
+    async def _run_task(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> Any:
         """Запуск функции задачи.
 
         Args:
@@ -295,14 +296,5 @@ class AsyncWorker(BaseWorker):
         Returns:
             Any: Результат функции задачи.
         """
-        func = task_func.func
-        
-        if args and kwargs:
-            result = await func(*args, **kwargs) if task_func.awaiting else func(*args, **kwargs)
-        elif args:
-            result = await func(*args) if task_func.awaiting else func(*args)
-        elif kwargs:
-            result = await func(**kwargs) if task_func.awaiting else func(**kwargs)
-        else:
-            result = await func() if task_func.awaiting else func()
-        return result
+        executor = AsyncTaskExecutor(task_func=task_func, task_broker=task_broker)
+        return await executor.execute()
