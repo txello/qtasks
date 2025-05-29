@@ -48,6 +48,17 @@ class TaskRegistry:
                     """
                 )
             ] = 0,
+            awaiting: Annotated[
+                bool,
+                Doc(
+                    """
+                    Использовать ли AsyncTask вместо SyncTask
+
+                    По умолчанию: `False`.
+                    """
+                )
+            ] = False,
+            echo: bool = False,
             executor: Annotated[
                 Type["BaseTaskExecutor"],
                 Doc(
@@ -67,17 +78,7 @@ class TaskRegistry:
                     По умолчанию: `Пустой массив`.
                     """
                 )
-            ] = None,
-            awaiting: Annotated[
-                bool,
-                Doc(
-                    """
-                    Использовать ли AsyncTask вместо SyncTask
-
-                    По умолчанию: `False`.
-                    """
-                )
-            ] = False
+            ] = None
         ) -> SyncTask|AsyncTask:
         """Регистрация задачи.
 
@@ -89,12 +90,15 @@ class TaskRegistry:
             nonlocal name, priority, executor, middlewares
             
             task_name = name or func.__name__
-            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func), executor=executor, middlewares=middlewares)
+            model = TaskExecSchema(name=task_name, priority=priority, func=func, 
+                awaiting=inspect.iscoroutinefunction(func), echo=echo,
+                executor=executor, middlewares=middlewares
+            )
             cls._tasks[task_name] = model
             if awaiting:
-                return AsyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares)
+                return AsyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares, echo=echo)
             else:
-                return SyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares)
+                return SyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares, echo=echo)
         return wrapper
 
     @classmethod

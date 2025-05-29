@@ -54,6 +54,9 @@ class SyncTask:
                     """
                 )
             ] = None,
+
+            echo: bool = False,
+
             executor: Annotated[
                 Type["BaseTaskExecutor"],
                 Doc(
@@ -77,6 +80,9 @@ class SyncTask:
         ):
         self.task_name = task_name
         self.priority = priority
+        
+        self.echo = echo
+
         self.executor = executor
         self.middlewares = middlewares
         self._app = app
@@ -122,7 +128,9 @@ class SyncTask:
                     Если указан, задача возвращается через `qtasks.results.SyncTask`.
                     """
                 )
-            ] = None
+            ] = None,
+
+            task_name:str=None
         ) -> Task|None:
         """Добавить задачу.
 
@@ -141,8 +149,8 @@ class SyncTask:
         if priority is None:
             priority = self.priority
         
-        return self._app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
-    
+        return self._app.add_task(task_name=task_name or self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
+
     def _update_app(self) -> "QueueTasks":
         if not self._app:
             import qtasks._state

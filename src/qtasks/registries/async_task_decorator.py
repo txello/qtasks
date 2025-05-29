@@ -27,16 +27,9 @@ class AsyncTask:
                     """
                 )
             ],
-            app: Annotated[
-                "QueueTasks",
-                Doc(
-                    """
-                    `QueueTasks` экземпляр.
 
-                    По умолчанию: `qtasks._state.app_main`.
-                    """
-                )
-            ] = None,
+            echo: bool = False,
+            
             executor: Annotated[
                 Type["BaseTaskExecutor"],
                 Doc(
@@ -56,10 +49,24 @@ class AsyncTask:
                     По умолчанию: `Пустой массив`.
                     """
                 )
+            ] = None,
+            app: Annotated[
+                "QueueTasks",
+                Doc(
+                    """
+                    `QueueTasks` экземпляр.
+
+                    По умолчанию: `qtasks._state.app_main`.
+                    """
+                )
             ] = None
         ):
         self.task_name = task_name
         self.priority = priority
+        
+        self.echo = echo
+
+        self.executor = executor
         self.middlewares = middlewares
         self._app = app
         

@@ -97,7 +97,7 @@ class AsyncResult:
         try:
             async with asyncio.timeout(timeout):
                 result = await self._execute_task()
-            self.log.info(f"Задача {result.uuid} выполнена!")
+            self.log.debug(f"Задача {result.uuid} выполнена!")
             return result
         except asyncio.TimeoutError:
             self.log.warning(f"Функция выполнялась {timeout} секунд!")

@@ -36,7 +36,7 @@ classifiers = [
 [project.optional-dependencies]
 redis = ["redis>=5.2.1"]
 rabbitmq = ["aio-pika>=9.5.5", "pika>=1.3.2"]
-kafka = ["aiokafka>=0.12.0"]
+kafka = ["kafka>=2.2.10", "aiokafka>=0.12.0"]
 
 [project.urls]
 Homepage = "https://github.com/txello/qtasks"

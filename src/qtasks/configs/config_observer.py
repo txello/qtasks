@@ -1,7 +1,7 @@
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, get_type_hints
 from qtasks.configs.config import QueueConfig
 
-class ConfigObserver(QueueConfig):
+class ConfigObserver:
     def __init__(self, config: QueueConfig):
         self._config = config
         self._callbacks: List[Callable[[str, Any], None]] = []
@@ -10,30 +10,28 @@ class ConfigObserver(QueueConfig):
     def subscribe(self, callback: Callable[[str, Any], None]):
         self._callbacks.append(callback)
 
-    def _notify(self, config: QueueConfig, key: str, value: Any):
+    def _notify(self, key: str, value: Any):
         for callback in self._callbacks:
-            callback(config, key, value)
+            callback(self._config, key, value)
 
-    def __getattribute__(self, item):
-        # Пропускаем внутренние поля
-        if item in ('_callbacks', '_dynamic_fields', '_notify', 'subscribe', '__dict__', '__class__', '__annotations__'):
-            return super().__getattribute__(item)
+    def __getattr__(self, item):
         # Проверяем динамические поля
-        dynamic_fields = super().__getattribute__('_dynamic_fields')
-        if item in dynamic_fields:
-            return dynamic_fields[item]
-        # Проверяем обычные атрибуты (включая dataclass)
-        return super().__getattribute__(item)
+        if item in self._dynamic_fields:
+            return self._dynamic_fields[item]
+        # Доступ к полям config
+        return getattr(self._config, item)
 
     def __setattr__(self, key, value):
         if key in ('_config', '_callbacks', '_dynamic_fields'):
             super().__setattr__(key, value)
         elif hasattr(self._config, key):
             setattr(self._config, key, value)
-            self._notify(self._config, key, value)
+            self._notify(key, value)
         else:
             self._dynamic_fields[key] = value
-            self._notify(self._config, key, value)
+            self._notify(key, value)
 
     def __repr__(self):
         return str(self._config)
+    
+ConfigObserver.__annotations__ = get_type_hints(QueueConfig)

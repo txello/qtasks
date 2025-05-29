@@ -129,7 +129,7 @@ class QueueTasks:
                 """
             )
         ] = ConfigObserver(self.config_dataclass)
-        self.config.subscribe(self.update_configs)
+        self.config.subscribe(self._update_configs)
         
         self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)
 
@@ -223,6 +223,9 @@ class QueueTasks:
                     """
                 )
             ] = None,
+
+            echo: bool = False,
+
             executor: Annotated[
                 Type["BaseTaskExecutor"],
                 Doc(
@@ -251,7 +254,7 @@ class QueueTasks:
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
         """
         def wrapper(func):
-            nonlocal name, priority, executor, middlewares
+            nonlocal name, priority, executor, middlewares, echo
             
             task_name = name or func.__name__
             if task_name in self.tasks:
@@ -261,11 +264,15 @@ class QueueTasks:
                 priority = self.config.default_task_priority
             
             middlewares = middlewares or []
-            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func), executor=executor, middlewares=middlewares)
+            model = TaskExecSchema(
+                name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func),
+                echo=echo,
+                executor=executor, middlewares=middlewares
+            )
             
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
-            return SyncTask(app=self, task_name=task_name, priority=priority, executor=executor, middlewares=middlewares)
+            return SyncTask(app=self, task_name=task_name, priority=priority, echo=echo, executor=executor, middlewares=middlewares)
         return wrapper
     
     def add_task(self, 
@@ -460,7 +467,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_starting
-        def test(self, worker, broker):
+        def test(worker, broker):
             pass
         ```
         """
@@ -484,7 +491,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_stoping
-        def test(self, worker, broker):
+        def test(worker, broker):
             pass
         ```
         """
@@ -507,7 +514,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_worker_running
-        def test(self, worker):
+        def test(worker):
             pass
         ```
         """
@@ -530,7 +537,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_worker_stoping
-        def test(self, worker):
+        def test(worker):
             pass
         ```
         """
@@ -554,7 +561,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_task_running
-        def test(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema):
+        def test(task_func: TaskExecSchema, task_broker: TaskPrioritySchema):
             pass
         ```
         """
@@ -578,7 +585,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_task_stoping
-        def test(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema, returning: TaskStatusSuccessSchema|TaskStatusErrorSchema):
+        def test(task_func: TaskExecSchema, task_broker: TaskPrioritySchema, returning: TaskStatusSuccessSchema|TaskStatusErrorSchema):
             pass
         ```
         """
@@ -633,10 +640,21 @@ class QueueTasks:
         qtasks._state.app_main = self
         qtasks._state.log_main = self.log
 
-    def update_configs(self, config: QueueConfig, key, value):
+    def _update_configs(self, config: QueueConfig, key, value):
         if key == "logs_default_level":
             self.log.default_level = value
             self.log = self.log.update_logger()
+            self._update_logs(default_level=value)
+
+    def _update_logs(self, **kwargs):
+        if self.worker:
+            self.worker.log = self.worker.log.update_logger(**kwargs)
+        if self.broker:
+            self.broker.log = self.broker.log.update_logger(**kwargs)
+            if self.broker.storage:
+                self.broker.storage.log = self.broker.storage.log.update_logger(**kwargs)
+                if self.broker.storage.global_config:
+                    self.broker.storage.global_config.log = self.broker.storage.global_config.log.update_logger(**kwargs)
 
     def add_middleware(self, middleware: Type[BaseMiddleware]) -> None:
         if not middleware.__base__ or middleware.__base__.__base__.__name__ != "BaseMiddleware":

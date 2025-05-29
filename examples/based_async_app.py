@@ -1,12 +1,12 @@
 import logging
+
 from qtasks.asyncio import QueueTasks
 
 import shared_tasks
 
-app = QueueTasks()
-
-app.config.running_older_tasks = True
+app = QueueTasks() 
 app.config.logs_default_level = logging.DEBUG
+app.config.running_older_tasks = True
 
 @app.task(name="test")
 def test():
@@ -18,4 +18,4 @@ def test_num(number: int):
     return number
 
 if __name__ == "__main__":
-    app.run_forever()
+    app.run_forever(num_workers=10)

@@ -50,5 +50,7 @@ class TaskExecSchema:
     func: FunctionType
     awaiting: bool = False
 
+    echo: bool = False
+
     executor: Type["BaseTaskExecutor"] = None
     middlewares: list[Type["TaskMiddleware"]] = field(default_factory=list)

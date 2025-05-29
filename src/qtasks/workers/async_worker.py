@@ -141,7 +141,7 @@ class AsyncWorker(BaseWorker):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
         """
         async with self.semaphore:
-            
+            print(self.config.max_tasks_process)
             model = TaskStatusProcessSchema(task_name=task_broker.name, priority=task_broker.priority, created_at=task_broker.created_at, updated_at=time())
             model.set_json(task_broker.args, task_broker.kwargs)
             
@@ -235,7 +235,7 @@ class AsyncWorker(BaseWorker):
             args (tuple): Аргументы задачи типа args.
             kwargs (dict): Аргументы задачи типа kwargs.
         """
-        model = TaskPrioritySchema(priority=priority, uuid=uuid, name=name, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
+        model = TaskPrioritySchema(priority=priority, uuid=uuid, name=name, args=list(args), kwargs=kwargs, created_at=created_at, updated_at=created_at)
         async with self.condition:
             await self.queue.put(model)
             self.condition.notify()

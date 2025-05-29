@@ -9,6 +9,7 @@ import qtasks._state
 from qtasks.configs.config_observer import ConfigObserver
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.logs import Logger
+from qtasks.middlewares.base import BaseMiddleware
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.task_registry import TaskRegistry
@@ -484,7 +485,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_starting
-        async def test(self, worker, broker):
+        async def test(worker, broker):
             pass
         ```
         """
@@ -508,7 +509,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_stoping
-        async def test(self, worker, broker):
+        async def test(worker, broker):
             pass
         ```
         """
@@ -531,7 +532,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_worker_running
-        async def test(self, worker):
+        async def test(worker):
             pass
         ```
         """
@@ -554,7 +555,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_worker_stoping
-        async def test(self, worker):
+        async def test(worker):
             pass
         ```
         """
@@ -578,7 +579,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_task_running
-        async def test(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema):
+        async def test(task_func: TaskExecSchema, task_broker: TaskPrioritySchema):
             pass
         ```
         """
@@ -602,7 +603,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_task_stoping
-        async def test(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema, returning: TaskStatusSuccessSchema|TaskStatusErrorSchema):
+        async def test(task_func: TaskExecSchema, task_broker: TaskPrioritySchema, returning: TaskStatusSuccessSchema|TaskStatusErrorSchema):
             pass
         ```
         """
@@ -666,7 +667,6 @@ class QueueTasks:
             self.log = self.log.update_logger()
             self._update_logs(default_level=value)
 
-    
     def _update_logs(self, **kwargs):
         if self.worker:
             self.worker.log = self.worker.log.update_logger(**kwargs)
@@ -676,3 +676,11 @@ class QueueTasks:
                 self.broker.storage.log = self.broker.storage.log.update_logger(**kwargs)
                 if self.broker.storage.global_config:
                     self.broker.storage.global_config.log = self.broker.storage.global_config.log.update_logger(**kwargs)
+    
+    def add_middleware(self, middleware: Type[BaseMiddleware]) -> None:
+        if not middleware.__base__ or middleware.__base__.__base__.__name__ != "BaseMiddleware":
+            raise ImportError(f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!")
+        if middleware.__base__.__name__ == "TaskMiddleware":
+            self.worker.task_middlewares.append(middleware)
+        self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
+        return

@@ -229,7 +229,7 @@ class SyncThreadWorker(BaseWorker):
             args (tuple): Аргументы задачи типа args.
             kwargs (dict): Аргументы задачи типа kwargs.
         """
-        model = TaskPrioritySchema(priority=priority, uuid=uuid, name=name, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
+        model = TaskPrioritySchema(priority=priority, uuid=uuid, name=name, args=list(args), kwargs=kwargs, created_at=created_at, updated_at=created_at)
         with self.lock:
             self.queue.put(model)
         
