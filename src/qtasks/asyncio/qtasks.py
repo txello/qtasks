@@ -684,3 +684,6 @@ class QueueTasks:
             self.worker.task_middlewares.append(middleware)
         self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
         return
+    
+    async def flush_all(self):
+        await self.broker.flush_all()

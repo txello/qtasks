@@ -313,3 +313,6 @@ class AsyncRedisBroker(BaseBroker):
         """
         for plugin in self.plugins.values():
             await plugin.trigger(name=name, *args, **kwargs)
+
+    async def flush_all(self):
+        await self.storage.flush_all()

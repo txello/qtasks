@@ -3,6 +3,7 @@ import json
 import time
 import traceback
 from typing import Optional, Union
+from httpx import delete
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import redis
@@ -242,7 +243,7 @@ class SyncRedisStorage(BaseStorage):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
-        if not isinstance(model.returning, (bytes, str, int, float)):
+        if model.status == TaskStatusEnum.SUCCESS.value and not isinstance(model.returning, (bytes, str, int, float)):
             trace = "Invalid input of type: 'NoneType'. Convert to a bytes, string, int or float first."
             model = TaskStatusErrorSchema(task_name=task_broker.name, priority=task_broker.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time.time())
             self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
@@ -307,4 +308,13 @@ class SyncRedisStorage(BaseStorage):
             self.client.zrem(self.queue_process, *tasks_queue)
         if tasks_hash:
             self.client.delete(*tasks_hash)
+        return
+    
+    def flush_all(self):
+        pipe = self.client.pipeline()
+
+        pattern = f"{self.name}:*"
+        for key in self.client.scan_iter(pattern):
+            self.client.delete(key)
+        pipe.execute()
         return

@@ -291,3 +291,6 @@ class SyncRedisBroker(BaseBroker):
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
         self.storage.remove_finished_task(task_broker, model)
+
+    def flush_all(self):
+        self.storage.flush_all()

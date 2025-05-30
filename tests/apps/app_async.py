@@ -13,5 +13,9 @@ async def sample_task(id: int):
     result = f"Пользователь {id} записан"
     return result
 
+@app.task(name="error_task")
+async def error_zero():
+    result = 1/0
+
 if __name__ == "__main__":
     app.run_forever()

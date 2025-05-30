@@ -253,3 +253,6 @@ class BaseBroker(ABC):
         """
         for plugin in self.plugins.values():
             plugin.trigger(name=name, *args, **kwargs)
+    
+    def flush_all(self):
+        pass

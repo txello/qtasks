@@ -22,23 +22,22 @@ class TestSyncQTasks(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        time.sleep(2)
         cls.server_process.terminate()
         cls.server_process.join()
+        pass
     
     def setUp(self):
         self.test_case = tests.SyncTestCase(app=app)
         self.test_case.settings(TestConfig.full())
-    
-    def _add_task(self,
-            timeout: float = None
-        ) -> Task|None:
+
+    def _add_task(self, timeout: float = None) -> Task|None:
         return self.test_case.add_task("test", args=(5,), timeout=timeout)
     
-    def _add_error_task(self,
-            timeout: float = None
-        ) -> Task|None:
+    def _add_error_task(self, timeout: float = None) -> Task|None:
         return self.test_case.add_task("error_task", timeout=timeout)
     
+
     def test_task_get_result(self):
         uuid = self._add_task().uuid
         result = app.get(uuid=uuid)
@@ -63,4 +62,4 @@ class TestSyncQTasks(unittest.TestCase):
 
     def test_task_timeout(self):
         task = self._add_task(timeout=0.1)
-        self.assertIsNone(task, "Задача не создана (None)")
+        self.assertIsNone(task, "Истекло время ожидания задачи (None)")

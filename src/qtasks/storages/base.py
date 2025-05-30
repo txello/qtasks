@@ -228,3 +228,6 @@ class BaseStorage(ABC):
         """
         self.config = config
         return
+    
+    def flush_all(self):
+        pass

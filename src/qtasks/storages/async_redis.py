@@ -317,3 +317,15 @@ class AsyncRedisStorage(BaseStorage):
         if tasks_hash:
             await self.client.delete(*tasks_hash)
         return
+
+    async def flush_all(self):
+        loop = asyncio.get_running_loop()
+        asyncio_atexit.register(self.stop, loop=loop)
+        
+        pipe = self.client.pipeline()
+
+        pattern = f"{self.name}:*"
+        async for key in self.client.scan_iter(pattern):
+            await self.client.delete(key)
+        await pipe.execute()
+        return

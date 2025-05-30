@@ -49,7 +49,6 @@ class TaskExecSchema:
     
     func: FunctionType
     awaiting: bool = False
-
     echo: bool = False
 
     executor: Type["BaseTaskExecutor"] = None
