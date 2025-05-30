@@ -615,6 +615,14 @@ class QueueTasks:
         return wrap
 
     async def ping(self, server: bool = True) -> bool:
+        """Проверка запуска сервера
+
+        Args:
+            server (bool, optional): Проверка через сервер. По умолчанию `True`.
+
+        Returns:
+            bool: True - Работает, False - Не работает.
+        """
         if server:
             loop = asyncio.get_running_loop()
             asyncio_atexit.register(self.broker.storage.global_config.stop, loop=loop)
@@ -623,6 +631,7 @@ class QueueTasks:
             if status is None:
                 return False
             return True
+        return True
 
     def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
         """
@@ -678,6 +687,14 @@ class QueueTasks:
                     self.broker.storage.global_config.log = self.broker.storage.global_config.log.update_logger(**kwargs)
     
     def add_middleware(self, middleware: Type[BaseMiddleware]) -> None:
+        """Добавить мидлварь.
+
+        Args:
+            middleware (Type[BaseMiddleware]): Мидлварь.
+
+        Raises:
+            ImportError: Невозможно подключить Middleware: Он не относится к классу BaseMiddleware!
+        """
         if not middleware.__base__ or middleware.__base__.__base__.__name__ != "BaseMiddleware":
             raise ImportError(f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!")
         if middleware.__base__.__name__ == "TaskMiddleware":
@@ -685,5 +702,6 @@ class QueueTasks:
         self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
         return
     
-    async def flush_all(self):
+    async def flush_all(self) -> None:
+        """Удалить все данные."""
         await self.broker.flush_all()

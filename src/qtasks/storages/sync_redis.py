@@ -10,7 +10,7 @@ import redis
 from typing import TYPE_CHECKING
 
 from qtasks.configs.config_observer import ConfigObserver
-from qtasks.contrlib.redis.sync_queue_client import SyncRedisCommandQueue
+from qtasks.contrib.redis.sync_queue_client import SyncRedisCommandQueue
 from qtasks.configs.sync_redisglobalconfig import SyncRedisGlobalConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
@@ -120,7 +120,7 @@ class SyncRedisStorage(BaseStorage):
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"
         self.client = redis_connect or redis.Redis.from_url(self.url, decode_responses=True, encoding='utf-8')
-        self.redis_contrlib = SyncRedisCommandQueue(redis=self.client, log=self.log)
+        self.redis_contrib = SyncRedisCommandQueue(redis=self.client, log=self.log)
 
         self.global_config = global_config or SyncRedisGlobalConfig(name=self.name, redis_connect=self.client, log=self.log, config=self.config)
         
@@ -217,7 +217,7 @@ class SyncRedisStorage(BaseStorage):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        return self.redis_contrlib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
+        return self.redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
     
     def remove_finished_task(self,
             task_broker: Annotated[
@@ -248,8 +248,8 @@ class SyncRedisStorage(BaseStorage):
             model = TaskStatusErrorSchema(task_name=task_broker.name, priority=task_broker.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time.time())
             self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
         
-        self.redis_contrlib.execute("hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__)
-        self.redis_contrlib.execute("zrem", self.queue_process, f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}")
+        self.redis_contrib.execute("hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__)
+        self.redis_contrib.execute("zrem", self.queue_process, f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}")
         return
 
     def start(self):
@@ -310,7 +310,8 @@ class SyncRedisStorage(BaseStorage):
             self.client.delete(*tasks_hash)
         return
     
-    def flush_all(self):
+    def flush_all(self) -> None:
+        """Удалить все данные."""
         pipe = self.client.pipeline()
 
         pattern = f"{self.name}:*"

@@ -314,5 +314,6 @@ class AsyncRedisBroker(BaseBroker):
         for plugin in self.plugins.values():
             await plugin.trigger(name=name, *args, **kwargs)
 
-    async def flush_all(self):
+    async def flush_all(self) -> None:
+        """Удалить все данные."""
         await self.storage.flush_all()

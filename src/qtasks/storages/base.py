@@ -229,5 +229,6 @@ class BaseStorage(ABC):
         self.config = config
         return
     
-    def flush_all(self):
+    def flush_all(self) -> None:
+        """Удалить все данные."""
         pass

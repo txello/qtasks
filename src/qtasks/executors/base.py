@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Optional, Type
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, List, Optional, Type
 from typing_extensions import Annotated, Doc
 from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
@@ -7,7 +8,21 @@ if TYPE_CHECKING:
     from qtasks.middlewares.task import TaskMiddleware
 
 
-class BaseTaskExecutor:
+class BaseTaskExecutor(ABC):
+    """
+    `BaseTaskExecutor` - Абстрактный класс, который является фундаментом для классов исполнителей задач.
+
+    ## Пример
+
+    ```python
+    from qtasks.executors.base import BaseTaskExecutor
+    
+    class MyTaskExecutor(BaseTaskExecutor):
+        def __init__(self, name: str):
+            super().__init__(name=name)
+            pass
+    ```
+    """
     def __init__(self,
             task_func: Annotated[
                 TaskExecSchema,
@@ -26,7 +41,7 @@ class BaseTaskExecutor:
                 )
             ],
             middlewares: Annotated[
-                Optional[Type["TaskMiddleware"]],
+                Optional[List[Type["TaskMiddleware"]]],
                 Doc(
                     """
                     Массив Миддлварей.
@@ -46,6 +61,14 @@ class BaseTaskExecutor:
                 )
             ] = None
         ):
+        """Инициализация класса. Происходит внутри `Worker` перед обработкой задачи.
+
+        Args:
+            task_func (TaskExecSchema): Схема `TaskExecSchema`.
+            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
+            middlewares (List[Type[TaskMiddleware]], optional): _description_. По умолчанию `None`.
+            log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
+        """
         self.task_func = task_func
         self.task_broker = task_broker
 
@@ -70,9 +93,18 @@ class BaseTaskExecutor:
     def run_task(self) -> Any:
         pass
     
+    @abstractmethod
     def execute(self,
             decode: bool = True
         ) -> Any|str:
+        """Обработка задачи.
+
+        Args:
+            decode (bool, optional): Декодирование. По умолчанию: `True`.
+
+        Returns:
+            Any|str: Результат задачи.
+        """
         pass
 
     def decode(self) -> str:

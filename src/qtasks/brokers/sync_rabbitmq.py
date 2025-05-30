@@ -334,5 +334,6 @@ class SyncRabbitMQBroker(BaseBroker):
     def _running_older_tasks(self, worker):
         return self.storage._running_older_tasks(worker)
 
-    def flush_all(self):
+    def flush_all(self) -> None:
+        """Удалить все данные."""
         self.storage.flush_all()

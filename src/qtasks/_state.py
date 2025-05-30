@@ -16,7 +16,8 @@ app_main: "QueueTasks" = None
 
 log_main: Logger = Logger(name="QueueTasks", subname="_state")
 """
-`log_main` - Хранит в себе компонент логирования Logger.
-Переменная обновляется при инициализации `QueueTasks`.
+`log_main` - Хранит в себе компонент логирования [`Logger`](/qtasks/ru/api/logs/).
+Переменная обновляется при инициализации [`QueueTasks`](/qtasks/ru/api/queuetasks/).
+
 По умолчанию: Logger(name="QueueTasks", subname="_state")
 """

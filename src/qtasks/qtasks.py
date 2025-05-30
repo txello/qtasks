@@ -7,7 +7,6 @@ import qtasks._state
 from qtasks.configs.config_observer import ConfigObserver
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.logs import Logger
-from qtasks.middlewares.base import BaseMiddleware
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
@@ -27,7 +26,7 @@ if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
     from qtasks.starters.base import BaseStarter
     from qtasks.plugins.base import BasePlugin
-    from qtasks.middlewares.base import BaseMiddleWare
+    from qtasks.middlewares.base import BaseMiddleware
 
 class QueueTasks:
     """
@@ -597,11 +596,20 @@ class QueueTasks:
         return wrap
 
     def ping(self, server: bool = True) -> bool:
+        """Проверка запуска сервера
+
+        Args:
+            server (bool, optional): Проверка через сервер. По умолчанию `True`.
+
+        Returns:
+            bool: True - Работает, False - Не работает.
+        """
         if server:
             status = self.broker.storage.global_config.get("main", "status")
             if status is None:
                 return False
             return True
+        return True
 
     def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
         """
@@ -656,7 +664,15 @@ class QueueTasks:
                 if self.broker.storage.global_config:
                     self.broker.storage.global_config.log = self.broker.storage.global_config.log.update_logger(**kwargs)
 
-    def add_middleware(self, middleware: Type[BaseMiddleware]) -> None:
+    def add_middleware(self, middleware: Type["BaseMiddleware"]) -> None:
+        """Добавить мидлварь.
+
+        Args:
+            middleware (Type[BaseMiddleware]): Мидлварь.
+
+        Raises:
+            ImportError: Невозможно подключить Middleware: Он не относится к классу BaseMiddleware!
+        """
         if not middleware.__base__ or middleware.__base__.__base__.__name__ != "BaseMiddleware":
             raise ImportError(f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!")
         if middleware.__base__.__name__ == "TaskMiddleware":
@@ -664,5 +680,6 @@ class QueueTasks:
         self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
         return
     
-    def flush_all(self):
+    def flush_all(self) -> None:
+        """Удалить все данные."""
         self.broker.flush_all()

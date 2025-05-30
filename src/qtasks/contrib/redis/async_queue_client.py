@@ -4,9 +4,29 @@ import redis.asyncio as aioredis
 from qtasks.logs import Logger
 
 class AsyncRedisCommandQueue:
+    """
+    `AsyncRedisCommandQueue` - Асинхронный класс для работы с `Redis`.
+
+    ## Пример
+
+    ```python
+    import asyncio
+    from qtasks import QueueTasks
+    from qtasks.contrib.redis import AsyncRedisCommandQueue
+    
+    redis_contrib = AsyncRedisCommandQueue(redis)
+    asyncio.run(redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"]))
+    ```
+    """
     def __init__(self,
             redis: aioredis.Redis,
             log: Logger = None):
+        """Экземпляр класса.
+
+        Args:
+            redis (redis.asyncio.Redis): класс `Redis`.
+            log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
+        """
         self.log = self._get_log(log)
         self.redis = redis
         self.queue = asyncio.Queue()
@@ -27,7 +47,14 @@ class AsyncRedisCommandQueue:
         async with self.lock:
             self.worker_task = None
 
-    async def execute(self, cmd, *args, **kwargs):
+    async def execute(self, cmd: str, *args, **kwargs):
+        """Запрос в `Redis`.
+
+        Args:
+            cmd (str): Команда.
+            args(tuple, optional): Параметры к команде через *args.
+            kwargs(dict, optional): Параметры к команде через *args.
+        """
         await self.queue.put((cmd, args, kwargs))
         async with self.lock:
             if self.worker_task is None or self.worker_task.done():

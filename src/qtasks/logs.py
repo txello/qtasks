@@ -119,6 +119,7 @@ class Logger:
 
         Args:
             kwargs (dict): Новые данные задачи.
+            
         Returns:
             Logger: Новый `Logger`.
         """

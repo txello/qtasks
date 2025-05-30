@@ -292,5 +292,6 @@ class SyncRedisBroker(BaseBroker):
         """
         self.storage.remove_finished_task(task_broker, model)
 
-    def flush_all(self):
+    def flush_all(self) -> None:
+        """Удалить все данные."""
         self.storage.flush_all()

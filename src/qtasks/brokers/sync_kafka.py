@@ -312,5 +312,6 @@ class SyncKafkaBroker(BaseBroker):
         for plugin in self.plugins.values():
             plugin.trigger(name=name, *args, **kwargs)
     
-    def flush_all(self):
+    def flush_all(self) -> None:
+        """Удалить все данные."""
         self.storage.flush_all()
