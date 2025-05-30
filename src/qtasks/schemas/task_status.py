@@ -20,8 +20,8 @@ class BaseTaskStatusSchema:
         returning (str | None): Результат. По умолчанию: `None`.
         traceback (str | None): Трассировка ошибок. По умолчанию: `None`.
     """
-    priority: int = 0
     task_name: str = ""
+    priority: int = 0
     
     args: tuple[str] = field(default_factory=lambda:json.dumps(()))
     kwargs: dict[str, str] = field(default_factory=lambda:json.dumps({}))

@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Any, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.configs.config_observer import ConfigObserver
+from qtasks.logs import Logger
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
@@ -36,11 +38,33 @@ class BaseGlobalConfig(ABC):
                     """
                 )
             ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
+            ] = None
         ):
         self.name = name
         self.client = None
-        self.config = QueueConfig()
+        self.config = config or ConfigObserver(QueueConfig())
         
+        self.log = log.with_subname("GlobalConfig") if log else Logger(name=self.name, subname="GlobalConfig", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.plugins: dict[str, "BasePlugin"] = {}
         pass
     
@@ -54,11 +78,12 @@ class BaseGlobalConfig(ABC):
         pass
     
     @abstractmethod
-    def get(self, name: str) -> Any:
+    def get(self, key: str, name: str) -> Any:
         """Получить значение.
 
         Args:
-            name (str): Имя
+            key (str): Ключ.
+            name (str): Имя.
 
         Returns:
             Any: Значение.
@@ -66,8 +91,11 @@ class BaseGlobalConfig(ABC):
         pass
     
     @abstractmethod
-    def get_all(self) -> dict[Any] | list[Any] | tuple[Any]:
+    def get_all(self, key: str) -> dict[Any] | list[Any] | tuple[Any]:
         """Получить все значения.
+
+        Args:
+            key (str): Ключ.
 
         Returns:
             dict[Any] | list[Any] | tuple[Any]: Значения.

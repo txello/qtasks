@@ -1,7 +1,9 @@
 import json
 from typing import TYPE_CHECKING, Optional, Union
 
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskPrioritySchema
 
 try:
@@ -58,7 +60,7 @@ class AsyncRabbitMQBroker(BaseBroker):
                     По умолчанию: `amqp://guest:guest@localhost/`.
                     """
                 )
-            ] = "amqp://guest:guest@localhost/",
+            ] = None,
             storage: Annotated[
                 Optional["BaseStorage"],
                 Doc(
@@ -78,12 +80,33 @@ class AsyncRabbitMQBroker(BaseBroker):
                     По умолчанию: `task_queue`.
                     """
                 )
-            ] = "task_queue"
+            ] = "task_queue",
+            
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
+            ] = None
         ):
-        super().__init__(name=name)
-        self.url = url
+        super().__init__(name=name, log=log)
+        self.url = url or "amqp://guest:guest@localhost/"
         self.queue_name = f"{self.name}:{queue_name}"
-        self.storage = storage or AsyncRedisStorage(name=self.name)
+        self.storage = storage or AsyncRedisStorage(name=self.name, log=self.log, config=self.config)
         
         self.connection = None
         self.channel = None
@@ -121,7 +144,7 @@ class AsyncRabbitMQBroker(BaseBroker):
                 async with message.process():
                     task_data = json.loads(message.body)
                     await self.storage.add_process(f'{task_data["task_name"]}:{task_data["uuid"]}:{task_data["priority"]}', task_data["priority"])
-                    print(f"[Broker] Получена новая задача: {task_data['uuid']}")
+                    self.log.info(f"Получена новая задача: {task_data['uuid']}")
                     
                     await worker.add(
                         name=task_data["task_name"],
@@ -321,3 +344,7 @@ class AsyncRabbitMQBroker(BaseBroker):
         """
         for plugin in self.plugins.values():
             await plugin.trigger(name=name, *args, **kwargs)
+    
+    async def flush_all(self) -> None:
+        """Удалить все данные."""
+        await self.storage.flush_all()

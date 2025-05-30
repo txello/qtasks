@@ -1,13 +1,15 @@
 import asyncio
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from typing_extensions import Annotated, Doc
 from apscheduler.job import Job
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from qtasks.asyncio import QueueTasks
-
 from .base import BaseTimer
+from qtasks.logs import Logger
+
+if TYPE_CHECKING:
+    from qtasks.asyncio import QueueTasks
 
 
 class AsyncTimer(BaseTimer):
@@ -30,9 +32,23 @@ class AsyncTimer(BaseTimer):
     ```
     """
     
-    def __init__(self, app):
-        super().__init__(app=app)
-        self.app: QueueTasks
+    def __init__(self,
+            app,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None
+        ):
+        super().__init__(app=app, log=log)
+        self.app: "QueueTasks"
+
         self.scheduler = AsyncIOScheduler()
         self.tasks = {}
 
@@ -153,16 +169,16 @@ class AsyncTimer(BaseTimer):
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
         """
         task = await self.app.add_task(task_name=task_name, priority=priority, args=args, kwargs=kwargs)
-        print(f"[Timer] Отправлена задача {task_name}: {task.uuid}...")
+        self.log.info(f"Отправлена задача {task_name}: {task.uuid}...")
     
     def run_forever(self):
         """Запуск Таймера."""
-        print("[Timer] Запуск...")
+        self.log.info("Запуск...")
 
         try:
             asyncio.run(self._start_scheduler())  # Запускаем асинхронную функцию в основном цикле
         except KeyboardInterrupt:
-            print("[Timer] Остановка...")
+            self.log.info("Остановка...")
 
     async def _start_scheduler(self):
         """Запуск Таймера асинхронно."""

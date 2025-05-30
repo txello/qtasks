@@ -1,9 +1,13 @@
 import inspect
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
 import qtasks._state
+from qtasks.configs.config_observer import ConfigObserver
+from qtasks.executors.base import BaseTaskExecutor
+from qtasks.logs import Logger
+from qtasks.middlewares.task import TaskMiddleware
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.results.sync_result import SyncResult
@@ -22,6 +26,7 @@ if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
     from qtasks.starters.base import BaseStarter
     from qtasks.plugins.base import BasePlugin
+    from qtasks.middlewares.base import BaseMiddleware
 
 class QueueTasks:
     """
@@ -49,13 +54,25 @@ class QueueTasks:
                     """
                 )
             ] = "QueueTasks",
+            
+            broker_url: Annotated[
+                Optional[str],
+                Doc(
+                    """
+                    URL для Брокера. Используется Брокером по умолчанию через параметр url.
+                    
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+
             broker: Annotated[
                 Optional["BaseBroker"],
                 Doc(
                     """
                     Брокер. Хранит в себе обработку из очередей задач и хранилище данных.
                     
-                    По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
+                    По умолчанию: `qtasks.brokers.SyncRedisBroker`.
                     """
                 )
             ] = None,
@@ -65,7 +82,18 @@ class QueueTasks:
                     """
                     Воркер. Хранит в себе обработку задач.
                     
-                    По умолчанию: `qtasks.workers.AsyncWorker`.
+                    По умолчанию: `qtasks.workers.SyncWorker`.
+                    """
+                )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
             ] = None
@@ -75,14 +103,13 @@ class QueueTasks:
 
         Args:
             name (str): Имя проекта. По умолчанию: `QueueTasks`.
+            broker_url (str, optional): URL для Брокера. Используется Брокером по умолчанию через параметр url. По умолчанию: `None`.
+            broker (Type[BaseBroker], optional): Брокер. Хранит в себе обработку из очередей задач и хранилище данных. По умолчанию: `qtasks.brokers.SyncRedisBroker`.
+            worker (Type[BaseWorker], optional): Воркер. Хранит в себе обработку задач. По умолчанию: `qtasks.workers.SyncWorker`.
         """
         self.name = name
-        self.broker = broker or SyncRedisBroker(name=name)
-        self.worker = worker or SyncThreadWorker(name=name, broker=self.broker)
-        self.starter: "BaseStarter"|None = None
-        
-        
-        self.config: Annotated[
+
+        self.config_dataclass: Annotated[
             QueueConfig,
             Doc(
                 """
@@ -92,6 +119,22 @@ class QueueTasks:
                 """
             )
         ] = QueueConfig()
+
+        self.config: Annotated[
+            ConfigObserver,
+            Doc(
+                """
+                Обсервер конфига. Хранит в себе QueueConfig.
+                """
+            )
+        ] = ConfigObserver(self.config_dataclass)
+        self.config.subscribe(self._update_configs)
+        
+        self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)
+
+        self.broker = broker or SyncRedisBroker(name=name, url=broker_url, log=self.log, config=self.config)
+        self.worker = worker or SyncThreadWorker(name=name, broker=self.broker, log=self.log, config=self.config)
+        self.starter: "BaseStarter"|None = None
         
         self.routers: Annotated[
             list[Router],
@@ -178,6 +221,29 @@ class QueueTasks:
                     По умолчанию: `config.default_task_priority`.
                     """
                 )
+            ] = None,
+
+            echo: bool = False,
+
+            executor: Annotated[
+                Type["BaseTaskExecutor"],
+                Doc(
+                    """
+                    Класс `BaseTaskExecutor`.
+                    
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+                )
+            ] = None,
+            middlewares: Annotated[
+                List[TaskMiddleware],
+                Doc(
+                    """
+                    Мидлвари.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+                )
             ] = None
         ):
         """Декоратор для регистрации задач.
@@ -187,7 +253,7 @@ class QueueTasks:
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
         """
         def wrapper(func):
-            nonlocal name, priority
+            nonlocal name, priority, executor, middlewares, echo
             
             task_name = name or func.__name__
             if task_name in self.tasks:
@@ -196,11 +262,16 @@ class QueueTasks:
             if priority is None:
                 priority = self.config.default_task_priority
             
-            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func))
+            middlewares = middlewares or []
+            model = TaskExecSchema(
+                name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func),
+                echo=echo,
+                executor=executor, middlewares=middlewares
+            )
             
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
-            return SyncTask(app=self, task_name=task_name, priority=priority)
+            return SyncTask(app=self, task_name=task_name, priority=priority, echo=echo, executor=executor, middlewares=middlewares)
         return wrapper
     
     def add_task(self, 
@@ -276,7 +347,7 @@ class QueueTasks:
         args, kwargs = args or (), kwargs or {}
         task = self.broker.add(task_name, priority, *args, **kwargs)
         if timeout is not None:
-            return SyncResult(uuid=task.uuid, app=self).result(timeout=timeout)
+            return SyncResult(uuid=task.uuid, app=self, log=self.log).result(timeout=timeout)
         return task
         
     
@@ -361,24 +432,25 @@ class QueueTasks:
             num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
         """
-        self.starter = starter or SyncStarter(name=self.name, worker=self.worker, broker=self.broker)
-        if reset_config:
-            self.starter.config = self.config
+        self.starter = starter or SyncStarter(name=self.name, worker=self.worker, broker=self.broker, log=self.log, config=self.config)
         
         self.starter._inits.update({
             "init_starting": self._inits["init_starting"],
             "init_stoping": self._inits["init_stoping"],
         })
 
+        plugins_hash = {}
+        for plugins in [self.plugins, self.worker.plugins, self.broker.plugins, self.broker.storage.plugins]:
+            plugins_hash.update(plugins)
+
         self._set_state()
 
-        self.starter.start(num_workers=num_workers, reset_config=reset_config)
+        self.starter.start(num_workers=num_workers, reset_config=reset_config, plugins = plugins_hash)
     
     def stop(self):
         """
         Останавливает все компоненты.
         """
-        #print("[QueueTasks] Остановка QueueTasks...")
         self.starter.stop()
     
     @property
@@ -394,7 +466,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_starting
-        def test(self, worker, broker):
+        def test(worker, broker):
             pass
         ```
         """
@@ -418,7 +490,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_stoping
-        def test(self, worker, broker):
+        def test(worker, broker):
             pass
         ```
         """
@@ -441,7 +513,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_worker_running
-        def test(self, worker):
+        def test(worker):
             pass
         ```
         """
@@ -464,7 +536,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_worker_stoping
-        def test(self, worker):
+        def test(worker):
             pass
         ```
         """
@@ -488,7 +560,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_task_running
-        def test(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema):
+        def test(task_func: TaskExecSchema, task_broker: TaskPrioritySchema):
             pass
         ```
         """
@@ -512,7 +584,7 @@ class QueueTasks:
         app = QueueTasks()
         
         @app.init_task_stoping
-        def test(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema, returning: TaskStatusSuccessSchema|TaskStatusErrorSchema):
+        def test(task_func: TaskExecSchema, task_broker: TaskPrioritySchema, returning: TaskStatusSuccessSchema|TaskStatusErrorSchema):
             pass
         ```
         """
@@ -522,6 +594,22 @@ class QueueTasks:
             self.worker.init_task_stoping.append(model)
             return func
         return wrap
+
+    def ping(self, server: bool = True) -> bool:
+        """Проверка запуска сервера
+
+        Args:
+            server (bool, optional): Проверка через сервер. По умолчанию `True`.
+
+        Returns:
+            bool: True - Работает, False - Не работает.
+        """
+        if server:
+            status = self.broker.storage.global_config.get("main", "status")
+            if status is None:
+                return False
+            return True
+        return True
 
     def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
         """
@@ -556,4 +644,42 @@ class QueueTasks:
         self.worker._tasks.update(TaskRegistry.all_tasks())
 
     def _set_state(self):
+        """Установить параметры в `qtasks._state`."""
         qtasks._state.app_main = self
+        qtasks._state.log_main = self.log
+
+    def _update_configs(self, config: QueueConfig, key, value):
+        if key == "logs_default_level":
+            self.log.default_level = value
+            self.log = self.log.update_logger()
+            self._update_logs(default_level=value)
+
+    def _update_logs(self, **kwargs):
+        if self.worker:
+            self.worker.log = self.worker.log.update_logger(**kwargs)
+        if self.broker:
+            self.broker.log = self.broker.log.update_logger(**kwargs)
+            if self.broker.storage:
+                self.broker.storage.log = self.broker.storage.log.update_logger(**kwargs)
+                if self.broker.storage.global_config:
+                    self.broker.storage.global_config.log = self.broker.storage.global_config.log.update_logger(**kwargs)
+
+    def add_middleware(self, middleware: Type["BaseMiddleware"]) -> None:
+        """Добавить мидлварь.
+
+        Args:
+            middleware (Type[BaseMiddleware]): Мидлварь.
+
+        Raises:
+            ImportError: Невозможно подключить Middleware: Он не относится к классу BaseMiddleware!
+        """
+        if not middleware.__base__ or middleware.__base__.__base__.__name__ != "BaseMiddleware":
+            raise ImportError(f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!")
+        if middleware.__base__.__name__ == "TaskMiddleware":
+            self.worker.task_middlewares.append(middleware)
+        self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
+        return
+    
+    def flush_all(self) -> None:
+        """Удалить все данные."""
+        self.broker.flush_all()

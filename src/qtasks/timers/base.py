@@ -4,6 +4,8 @@ from typing_extensions import Annotated, Doc
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from qtasks.configs.config import QueueConfig
+from qtasks.configs.config_observer import ConfigObserver
+from qtasks.logs import Logger
 
 if TYPE_CHECKING:
     from qtasks import QueueTasks
@@ -35,10 +37,32 @@ class BaseTimer(ABC):
                     По умолчанию: `{qtasks.QueueTasks}` или `{qtasks.asyncio.QueueTasks}`.
                     """
                 )
-            ]
+            ],
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
+            ] = None
         ):
         self.app = app
-        self.config = QueueConfig()
+        self.config = config or self.app.config
+        self.log = log.with_subname("Timer") if log else Logger(name=self.app.name, subname="Timer", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.scheduler = AsyncIOScheduler()
         
     @abstractmethod

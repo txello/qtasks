@@ -145,6 +145,10 @@ nav:
         - BaseBroker - Пишем свой брокер: ru/api/brokers/basebroker.md
         - SyncRedisBroker: ru/api/brokers/sync_redisbroker.md
         - AsyncRedisBroker: ru/api/brokers/async_redisbroker.md
+        - SyncRabbitMQBroker: ru/api/brokers/sync_rabbitmqbroker.md
+        - AsyncRabbitMQBroker: ru/api/brokers/async_rabbitmqbroker.md
+        - SyncKafkaBroker: ru/api/brokers/sync_kafkabroker.md
+        - AsyncKafkaBroker: ru/api/brokers/async_kafkabroker.md
       - Воркеры:
         - BaseWorker - Пишем свой воркер: ru/api/workers/baseworker.md
         - SyncThreadWorker: ru/api/workers/sync_threadworker.md
@@ -164,13 +168,8 @@ nav:
       - Ожидание результата:
         - SyncResult: ru/api/results/sync_result.md
         - AsyncResult: ru/api/results/async_result.md
-      - Timer:
-        - BaseTimer - Пишем свой Таймер: ru/api/timers/basetimer.md
-        - SyncTimer: ru/api/timers/sync_timer.md
-        - AsyncTimer: ru/api/timers/async_timer.md
-      - WebView: ru/api/webview.md
       - Модели:
-        - Task: ru/api/schemas/task.md
+        - Task: ru/api/models/task.md
       - Схемы:
         - QueueConfig: ru/api/schemas/queueconfig.md
         - TaskStatus: ru/api/schemas/task_status.md
@@ -182,11 +181,28 @@ nav:
       - Декораторы:
         - SyncTask: ru/api/registries/sync_task_decorator.md
         - AsyncTask: ru/api/registries/async_task_decorator.md
+      - Исполнители задач:
+        - BaseTaskExecutor - Пишем свой исполнитель задач: ru/api/executors/basetask_executor.md
+        - SyncTaskExecutor: ru/api/executors/sync_task_executor.md
+        - AsyncTaskExecutor: ru/api/executors/async_task_executor.md
+      - Мидлвари:
+        - BaseMiddleware - Пишем свой мидлварь: ru/api/middlewares/basemiddleware.md
+        - TaskMiddleware: ru/api/middlewares/task_middleware.md
       - Глобальные переменные: ru/api/states.md
       - Тестирование:
         - BaseTestCase - Пишем свой кейс тестирования: ru/api/tests/basetests.md
         - SyncTestCase: ru/api/tests/sync_testcase.md
         - AsyncTestCase: ru/api/tests/async_testcase.md
+      - Логирование: ru/api/logs.md
+      - Классы:
+        - ConfigObserver: ru/api/classes/config_observer.md
+        - SyncRedisCommandQueue: ru/api/classes/sync_redis_commands.md
+        - AsyncRedisCommandQueue: ru/api/classes/async_redis_commands.md
+      - Timer:
+        - BaseTimer - Пишем свой Таймер: ru/api/timers/basetimer.md
+        - SyncTimer: ru/api/timers/sync_timer.md
+        - AsyncTimer: ru/api/timers/async_timer.md
+      - WebView: ru/api/webview.md
   - Примеры:
     - Примеры: ru/examples.md
   - История изменений: ru/changelog.md

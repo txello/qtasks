@@ -1,7 +1,10 @@
 import inspect
-from typing import Callable, Optional
+from typing import Callable, List, Optional, Type
 from typing_extensions import Annotated, Doc
 
+from qtasks.executors.base import BaseTaskExecutor
+from qtasks.middlewares.task import TaskMiddleware
+from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.task_exec import TaskExecSchema
 
@@ -44,8 +47,39 @@ class TaskRegistry:
                     По умолчанию: `0`.
                     """
                 )
-            ] = 0
-        ) -> None:
+            ] = 0,
+            awaiting: Annotated[
+                bool,
+                Doc(
+                    """
+                    Использовать ли AsyncTask вместо SyncTask
+
+                    По умолчанию: `False`.
+                    """
+                )
+            ] = False,
+            echo: bool = False,
+            executor: Annotated[
+                Type["BaseTaskExecutor"],
+                Doc(
+                    """
+                    Класс `BaseTaskExecutor`.
+                    
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+                )
+            ] = None,
+            middlewares: Annotated[
+                List[TaskMiddleware],
+                Doc(
+                    """
+                    Мидлвари.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+                )
+            ] = None
+        ) -> SyncTask|AsyncTask:
         """Регистрация задачи.
 
         Args:
@@ -53,12 +87,18 @@ class TaskRegistry:
             priority (int): Приоритет задачи. По умолчанию: `0`.
         """
         def wrapper(func: Callable):
-            nonlocal name, priority
+            nonlocal name, priority, executor, middlewares
             
             task_name = name or func.__name__
-            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func))
+            model = TaskExecSchema(name=task_name, priority=priority, func=func, 
+                awaiting=inspect.iscoroutinefunction(func), echo=echo,
+                executor=executor, middlewares=middlewares
+            )
             cls._tasks[task_name] = model
-            return SyncTask(task_name=task_name, priority=priority)
+            if awaiting:
+                return AsyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares, echo=echo)
+            else:
+                return SyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares, echo=echo)
         return wrapper
 
     @classmethod

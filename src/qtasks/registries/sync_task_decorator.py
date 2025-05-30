@@ -1,6 +1,8 @@
-from typing import TYPE_CHECKING, Annotated, Optional
+from typing import TYPE_CHECKING, Annotated, List, Optional, Type
 from typing_extensions import Doc
 
+from qtasks.executors.base import BaseTaskExecutor
+from qtasks.middlewares.task import TaskMiddleware
 from qtasks.schemas.task import Task
 
 
@@ -51,10 +53,38 @@ class SyncTask:
                     По умолчанию: `qtasks._state.app_main`.
                     """
                 )
+            ] = None,
+
+            echo: bool = False,
+
+            executor: Annotated[
+                Type["BaseTaskExecutor"],
+                Doc(
+                    """
+                    Класс `BaseTaskExecutor`.
+                    
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+                )
+            ] = None,
+            middlewares: Annotated[
+                List[TaskMiddleware],
+                Doc(
+                    """
+                    Мидлвари.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+                )
             ] = None
         ):
         self.task_name = task_name
         self.priority = priority
+        
+        self.echo = echo
+
+        self.executor = executor
+        self.middlewares = middlewares
         self._app = app
         
     def add_task(self,
@@ -98,7 +128,9 @@ class SyncTask:
                     Если указан, задача возвращается через `qtasks.results.SyncTask`.
                     """
                 )
-            ] = None
+            ] = None,
+
+            task_name:str=None
         ) -> Task|None:
         """Добавить задачу.
 
@@ -117,8 +149,8 @@ class SyncTask:
         if priority is None:
             priority = self.priority
         
-        return self._app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
-    
+        return self._app.add_task(task_name=task_name or self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
+
     def _update_app(self) -> "QueueTasks":
         if not self._app:
             import qtasks._state

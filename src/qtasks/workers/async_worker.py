@@ -10,7 +10,10 @@ from anyio import Semaphore
 
 
 from qtasks.configs.config import QueueConfig
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.executors.async_task_executor import AsyncTaskExecutor
+from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 
 from .base import BaseWorker
@@ -57,10 +60,30 @@ class AsyncWorker(BaseWorker):
                     """
                 )
             ] = None,
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
+            ] = None
         ):
-        super().__init__(name, broker)
+        super().__init__(name=name, broker=broker, log=log, config=config)
         self.name = name
-        self.broker = broker or AsyncRedisBroker(name=self.name)
+        self.broker = broker or AsyncRedisBroker(name=self.name, log=self.log, config=self.config)
         self.queue = asyncio.PriorityQueue()
         
         self._tasks: dict[str, TaskExecSchema] = {}
@@ -118,7 +141,7 @@ class AsyncWorker(BaseWorker):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
         """
         async with self.semaphore:
-            
+            print(self.config.max_tasks_process)
             model = TaskStatusProcessSchema(task_name=task_broker.name, priority=task_broker.priority, created_at=task_broker.created_at, updated_at=time())
             model.set_json(task_broker.args, task_broker.kwargs)
             
@@ -127,10 +150,10 @@ class AsyncWorker(BaseWorker):
             try:
                 task_func = self._tasks[task_broker.name]
             except KeyError as e:
-                print(f"[Worker] Задачи {e.args[0]} не существует!")
+                self.log.warning(f"Задачи {e.args[0]} не существует!")
                 trace = traceback.format_exc()
                 model = TaskStatusErrorSchema(task_name=task_broker.name, priority=task_broker.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
-                print(f"[Worker] Задача {task_broker.name} завершена с ошибкой:"), traceback.print_exception(e)
+                self.log.warning(f"Задача {task_broker.name} завершена с ошибкой:"), traceback.print_exception(e)
 
                 self.queue.task_done()
                 await self.broker.remove_finished_task(task_broker, model)
@@ -142,30 +165,15 @@ class AsyncWorker(BaseWorker):
             except BaseException as e:
                 self.queue.task_done()
                 raise e
-
-            try:
-                print(f"[Worker] Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}")
-                
-                #########
-                
-                result = await self._run_task(task_func, *task_broker.args, **task_broker.kwargs)
-                
-                result = json.dumps(result, ensure_ascii=False)
-                model = TaskStatusSuccessSchema(task_name=task_func.name, priority=task_func.priority, returning=result, created_at=task_broker.created_at, updated_at=time())
-                model.set_json(task_broker.args, task_broker.kwargs)
-                print(f"[Worker] Задача {task_broker.uuid} успешно завершена, результат: {result}")
-            except Exception as e:
-                trace = traceback.format_exc()
-                model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
-                model.set_json(task_broker.args, task_broker.kwargs)
-                print(f"[Worker] Задача {task_broker.uuid} завершена с ошибкой:"), traceback.print_exception(e)
-            finally:
-                self.queue.task_done()
+            
+            model = await self._run_task(task_func, task_broker)
 
             for model_init in self.init_task_stoping:
                 await model_init.func(task_func=task_func, task_broker=task_broker, returning=model) if model_init.awaiting else model_init.func(task_func=task_func, task_broker=task_broker, returning=model)
 
             await self.broker.remove_finished_task(task_broker, model)
+            
+            self.queue.task_done()
 
     async def add(self,
             name: Annotated[
@@ -227,7 +235,7 @@ class AsyncWorker(BaseWorker):
             args (tuple): Аргументы задачи типа args.
             kwargs (dict): Аргументы задачи типа kwargs.
         """
-        model = TaskPrioritySchema(priority=priority, uuid=uuid, name=name, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
+        model = TaskPrioritySchema(priority=priority, uuid=uuid, name=name, args=list(args), kwargs=kwargs, created_at=created_at, updated_at=created_at)
         async with self.condition:
             await self.queue.put(model)
             self.condition.notify()
@@ -285,23 +293,34 @@ class AsyncWorker(BaseWorker):
         self.config = config
         self.semaphore = Semaphore(config.max_tasks_process)
         
-    async def _run_task(self, task_func: TaskExecSchema, *args, **kwargs) -> Any:
+    async def _run_task(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> Any:
         """Запуск функции задачи.
 
         Args:
-            task_func (TaskExecSchema): Схема `qtasks.schemas.TaskExecSchema`
-
+            task_func (TaskExecSchema): Схема `qtasks.schemas.TaskExecSchema`.
+            task_broker (TaskPrioritySchema): Схема `qtasks.schemas.TaskPrioritySchema`.
+        
         Returns:
             Any: Результат функции задачи.
         """
-        func = task_func.func
+        self.log.info(f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}")
         
-        if args and kwargs:
-            result = await func(*args, **kwargs) if task_func.awaiting else func(*args, **kwargs)
-        elif args:
-            result = await func(*args) if task_func.awaiting else func(*args)
-        elif kwargs:
-            result = await func(**kwargs) if task_func.awaiting else func(**kwargs)
+        middlewares = self.task_middlewares[:]
+        if task_func.middlewares:
+            middlewares.extend(task_func.middlewares)
+        if task_func.executor is not None:
+            executor = task_func.executor(task_func=task_func, task_broker=task_broker, middlewares=middlewares, log=self.log)
         else:
-            result = await func() if task_func.awaiting else func()
-        return result
+            executor = AsyncTaskExecutor(task_func=task_func, task_broker=task_broker, middlewares=middlewares, log=self.log)
+        try:
+            result = await executor.execute()
+
+            model = TaskStatusSuccessSchema(task_name=task_func.name, priority=task_func.priority, returning=result, created_at=task_broker.created_at, updated_at=time())
+            model.set_json(task_broker.args, task_broker.kwargs)
+            self.log.info(f"Задача {task_broker.uuid} успешно завершена, результат: {result}")
+            return model
+        except BaseException:
+            trace = traceback.format_exc()
+            model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
+            self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+            return model

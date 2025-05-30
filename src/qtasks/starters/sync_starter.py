@@ -1,3 +1,5 @@
+from qtasks.configs.config_observer import ConfigObserver
+from qtasks.logs import Logger
 from typing import TYPE_CHECKING, Optional
 from typing_extensions import Annotated, Doc
 
@@ -61,9 +63,30 @@ class SyncStarter(BaseStarter):
                     По умолчанию: `None`.
                     """
                 )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name=name, broker=broker, worker=worker)
+        super().__init__(name=name, broker=broker, worker=worker, log=log, config=config)
         
     def start(self,
             num_workers: Annotated[
@@ -104,14 +127,13 @@ class SyncStarter(BaseStarter):
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
             plugins (dict[str, BasePlugin] | None, optional): Плагины. По умолчанию: None.
         """
-        print("[QueueTasks] Запуск QueueTasks...")
+        self.log.info("Запуск QueueTasks...")
         
         if plugins:
             self.plugins.update(plugins)
         
         if reset_config:
-            self.worker.update_config(self.config)
-            self.broker.update_config(self.config)
+            self.update_configs(self.config)
         
         try:
             self._start(num_workers=num_workers)
@@ -142,8 +164,8 @@ class SyncStarter(BaseStarter):
         
     def stop(self):
         """Останавливает все компоненты."""
+        self.log.info("Остановка QueueTasks...")
         
-        print("[QueueTasks] Остановка QueueTasks...")
         if self.broker:
             self.broker.stop()
         if self.worker:

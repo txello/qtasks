@@ -9,3 +9,4 @@ class GlobalConfigSchema:
         name (str): Название `GlobalConfig.name`.
     """
     name: str
+    status: str

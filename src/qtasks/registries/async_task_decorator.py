@@ -1,11 +1,13 @@
-from typing import TYPE_CHECKING, Annotated, Optional
+from typing import TYPE_CHECKING, Annotated, List, Optional, Type
 from typing_extensions import Doc
 
 from qtasks.schemas.task import Task
 
-
 if TYPE_CHECKING:
     from qtasks.asyncio import QueueTasks
+    from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.middlewares.task import TaskMiddleware
+
 
 class AsyncTask:
     def __init__(self,
@@ -25,6 +27,29 @@ class AsyncTask:
                     """
                 )
             ],
+
+            echo: bool = False,
+            
+            executor: Annotated[
+                Type["BaseTaskExecutor"],
+                Doc(
+                    """
+                    Класс `BaseTaskExecutor`.
+                    
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+                )
+            ] = None,
+            middlewares: Annotated[
+                List["TaskMiddleware"],
+                Doc(
+                    """
+                    Мидлвари.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+                )
+            ] = None,
             app: Annotated[
                 "QueueTasks",
                 Doc(
@@ -38,6 +63,11 @@ class AsyncTask:
         ):
         self.task_name = task_name
         self.priority = priority
+        
+        self.echo = echo
+
+        self.executor = executor
+        self.middlewares = middlewares
         self._app = app
         
     async def add_task(self,

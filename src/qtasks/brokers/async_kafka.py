@@ -10,7 +10,10 @@ from uuid import UUID, uuid4
 from time import time
 from typing import TYPE_CHECKING
 
+from qtasks.configs.config_observer import ConfigObserver
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.logs import Logger
+from qtasks.storages.sync_redis import SyncRedisStorage
 
 from .base import BaseBroker
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -29,7 +32,7 @@ class AsyncKafkaBroker(BaseBroker):
     ## Пример
 
     ```python
-    from qtasks import QueueTasks
+    from qtasks.asyncio import QueueTasks
     from qtasks.brokers import AsyncKafkaBroker
     
     broker = AsyncKafkaBroker(name="QueueTasks", url="localhost:9092")
@@ -58,7 +61,7 @@ class AsyncKafkaBroker(BaseBroker):
                     По умолчанию: `localhost:9092`.
                     """
                 )
-            ] = "localhost:9092",
+            ] = None,
             storage: Annotated[
                 Optional["BaseStorage"],
                 Doc(
@@ -78,22 +81,52 @@ class AsyncKafkaBroker(BaseBroker):
                     По умолчанию: `task_queue`.
                     """
                 )
-            ] = "task_queue"
+            ] = "task_queue",
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
+            ] = None
         ):
-        super().__init__(name=name, storage=storage)
-        self.url = url
+        super().__init__(name=name, log=log, config=config)
+        self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
         
         self.consumer = AIOKafkaConsumer(
             self.topic,
             loop=asyncio.get_event_loop(),
             bootstrap_servers=self.url,
-            group_id=f"{self.name}_group"
+            group_id=f"{self.name}_group",
+            auto_offset_reset='earliest',
+            enable_auto_commit=True,
+            value_deserializer=lambda m: m.decode('utf-8')
         )
         self.producer = AIOKafkaProducer(
             loop=asyncio.get_event_loop(),
-            bootstrap_servers=self.url
+            bootstrap_servers=self.url,
+            auto_offset_reset='earliest',
+            enable_auto_commit=True,
+            value_deserializer=lambda m: m.decode('utf-8')
         )
+        
+        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log, config=config)
+
         self.running = False
     
     async def listen(self, worker: "BaseWorker"):
@@ -106,11 +139,11 @@ class AsyncKafkaBroker(BaseBroker):
         self.running = True
         try:
             async for msg in self.consumer:
-                task_data = msg.value.decode("utf-8")
+                task_data = msg.value
                 task_name, uuid, priority = task_data.split(":")
                 model_get = await self.get(uuid=uuid)
                 args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
-                print(f"[Broker] Получена новая задача: {uuid}")
+                self.log.info(f"Получена новая задача: {uuid}")
                 await worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)
         finally:
             await self.consumer.stop()
@@ -170,7 +203,7 @@ class AsyncKafkaBroker(BaseBroker):
         
         task_data = f"{task_name}:{uuid}:{priority}"
         await self._producer_start()
-        await self.producer.send_and_wait(self.topic, task_data.encode("utf-8"))
+        await self.producer.send_and_wait(self.topic, task_data)
         await self.producer.stop()
         
         return Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
@@ -299,3 +332,7 @@ class AsyncKafkaBroker(BaseBroker):
         """
         for plugin in self.plugins.values():
             await plugin.trigger(name=name, *args, **kwargs)
+    
+    async def flush_all(self) -> None:
+        """Удалить все данные."""
+        await self.storage.flush_all()

@@ -206,7 +206,7 @@ class SyncTestCase(BaseTestCase):
             args (tuple, optional): args задачи. По умолчанию: `()`.
             kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`
 
-            timeout (float, optional): Таймаут задачи. Если указан, задача вызывается через `qtasks.results.AsyncResult`.
+            timeout (float, optional): Таймаут задачи. Если указан, задача вызывается через `qtasks.results.SyncResult`.
 
         Returns:
             Task|None: Данные задачи или None.

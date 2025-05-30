@@ -2,6 +2,9 @@ import asyncio
 from typing import TYPE_CHECKING, Optional
 from typing_extensions import Annotated, Doc
 
+from qtasks.configs.config_observer import ConfigObserver
+from qtasks.logs import Logger
+
 from .base import BaseStarter
 
 if TYPE_CHECKING:
@@ -62,9 +65,30 @@ class AsyncStarter(BaseStarter):
                     По умолчанию: `None`.
                     """
                 )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name=name, broker=broker, worker=worker)
+        super().__init__(name=name, broker=broker, worker=worker, log=log, config=config)
         
         self._global_loop: asyncio.AbstractEventLoop | None = None
 
@@ -118,14 +142,13 @@ class AsyncStarter(BaseStarter):
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
             plugins (dict[str, BasePlugin] | None, optional): Плагины. По умолчанию: None.
         """
-        print("[QueueTasks] Запуск QueueTasks...")
+        self.log.info("Запуск QueueTasks...")
 
         if plugins:
             self.plugins.update(plugins)
         
         if reset_config:
-            self.worker.update_config(self.config)
-            self.broker.update_config(self.config)
+            self.update_configs(self.config)
 
         if loop:
             self._global_loop = loop
@@ -166,7 +189,7 @@ class AsyncStarter(BaseStarter):
     async def stop(self):
         """Останавливает все компоненты."""
 
-        print("[QueueTasks] Остановка QueueTasks...")
+        self.log.info(f"Остановка QueueTasks...")
         if self.broker:
             await self.broker.stop()
         if self.worker:

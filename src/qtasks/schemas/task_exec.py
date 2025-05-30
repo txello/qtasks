@@ -1,6 +1,12 @@
 from dataclasses import dataclass, field
 from types import FunctionType
+from typing import TYPE_CHECKING, Type
 from uuid import UUID
+
+
+if TYPE_CHECKING:
+    from qtasks.middlewares.task import TaskMiddleware
+    from qtasks.executors.base import BaseTaskExecutor
 
 
 @dataclass(order=True)
@@ -43,3 +49,7 @@ class TaskExecSchema:
     
     func: FunctionType
     awaiting: bool = False
+    echo: bool = False
+
+    executor: Type["BaseTaskExecutor"] = None
+    middlewares: list[Type["TaskMiddleware"]] = field(default_factory=list)

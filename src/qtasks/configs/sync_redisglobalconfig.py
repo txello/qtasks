@@ -1,6 +1,11 @@
+from threading import Thread
+import time
 from typing import Any, Optional
 from typing_extensions import Annotated, Doc
 import redis
+
+from qtasks.configs.config_observer import ConfigObserver
+from qtasks.logs import Logger
 
 from .base import BaseGlobalConfig
 from qtasks.schemas.global_config import GlobalConfigSchema
@@ -68,14 +73,36 @@ class SyncRedisGlobalConfig(BaseGlobalConfig):
                     По умолчанию: `name:GlobalConfig`.
                     """
                 )
+            ] = None,
+
+            log: Annotated[
+                Optional[Logger],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.logs.Logger`.
+                    """
+                )
+            ] = None,
+            config: Annotated[
+                Optional[ConfigObserver],
+                Doc(
+                    """
+                    Логгер.
+                    
+                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    """
+                )
             ] = None
         ):
-        super().__init__(name=name)
+        super().__init__(name=name, log=log, config=config)
         self.name = name
         self.url = url
         self.config_name = f"{self.name}:{config_name or 'GlobalConfig'}"
         
         self.client = redis_connect or redis.from_url(self.url, decode_responses=True, encoding=u'utf-8')
+        self.running = False
         
     def set(self, name: str, key: str, value: str) -> None:
         """Добавить новое значение.
@@ -88,24 +115,28 @@ class SyncRedisGlobalConfig(BaseGlobalConfig):
         self.client.hset(name=f"{self.config_name}:{name}", key=key, value=value)
         return
     
-    def get(self, name: str) -> Any:
+    def get(self, key: str, name: str) -> Any:
         """Получить значение.
 
         Args:
-            name (str): Имя
+            key (str): Ключ.
+            name (str): Имя.
 
         Returns:
             Any: Значение.
         """
-        return self.client.hget(name=self.config_name, key=name)
+        return self.client.hget(name=f"{self.config_name}:{key}", key=name)
     
-    def get_all(self) -> dict[Any]:
+    def get_all(self, key: str) -> dict[Any]:
         """Получить все значения.
+
+        Args:
+            key (str): Ключ.
 
         Returns:
             dict[Any]: Значения.
         """
-        return self.client.hgetall(name=self.config_name)
+        return self.client.hgetall(name=f"{self.config_name}:{key}")
     
     def get_match(self, match: str) -> Any | dict[Any]:
         """Получить значения по паттерну.
@@ -120,10 +151,21 @@ class SyncRedisGlobalConfig(BaseGlobalConfig):
     
     def start(self) -> None:
         """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
-        global_config = GlobalConfigSchema(name=self.name)
+        self.running = True
+        global_config = GlobalConfigSchema(name=self.name, status="running")
         self.client.hset(name=f"{self.config_name}:main", mapping=global_config.__dict__)
+        Thread(target=self._set_status, daemon=True).start()
+        
     
     def stop(self) -> None:
         """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever."""
+        self.running = False
         self.client.close()
         return
+    
+    def _set_status(self):
+        ttl = self.config.global_config_status_ttl
+        interval = self.config.global_config_status_set_periodic
+        while self.running:
+            self.client.expire(f"{self.config_name}:main", ttl)
+            time.sleep(interval)

@@ -1,2 +1,4 @@
 from .config import QueueConfig
+from .config_observer import ConfigObserver
+from .sync_redisglobalconfig import SyncRedisGlobalConfig
 from .async_redisglobalconfig import AsyncRedisGlobalConfig
