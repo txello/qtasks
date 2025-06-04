@@ -2,7 +2,7 @@ import asyncio
 from typing import TYPE_CHECKING, Optional
 from typing_extensions import Annotated, Doc
 
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 
 from .base import BaseStarter
@@ -78,12 +78,12 @@ class AsyncStarter(BaseStarter):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None

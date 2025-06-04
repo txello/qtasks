@@ -6,7 +6,6 @@ from typing_extensions import Annotated, Doc
 from uuid import UUID
 
 import qtasks._state
-from qtasks.configs.config_observer import ConfigObserver
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.logs import Logger
 from qtasks.middlewares.base import BaseMiddleware
@@ -112,7 +111,7 @@ class QueueTasks:
         """
         self.name = name
         
-        self.config_dataclass: Annotated[
+        self.config: Annotated[
             QueueConfig,
             Doc(
                 """
@@ -122,14 +121,6 @@ class QueueTasks:
                 """
             )
         ] = QueueConfig()
-        self.config: Annotated[
-            ConfigObserver,
-            Doc(
-                """
-                Обсервер конфига. Хранит в себе QueueConfig.
-                """
-            )
-        ] = ConfigObserver(self.config_dataclass)
         self.config.subscribe(self._update_configs)
 
         self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)

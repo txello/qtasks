@@ -4,7 +4,7 @@ from typing import Any, Optional
 from typing_extensions import Annotated, Doc
 import redis.asyncio as aioredis
 
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 
 from .base import BaseGlobalConfig
@@ -86,12 +86,12 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None

@@ -195,7 +195,6 @@ nav:
         - AsyncTestCase: ru/api/tests/async_testcase.md
       - Логирование: ru/api/logs.md
       - Классы:
-        - ConfigObserver: ru/api/classes/config_observer.md
         - SyncRedisCommandQueue: ru/api/classes/sync_redis_commands.md
         - AsyncRedisCommandQueue: ru/api/classes/async_redis_commands.md
       - Timer:

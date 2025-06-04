@@ -5,7 +5,6 @@ from uuid import UUID
 from typing import TYPE_CHECKING
 
 from qtasks.configs.config import QueueConfig
-from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -65,12 +64,12 @@ class BaseStorage(ABC):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -79,7 +78,7 @@ class BaseStorage(ABC):
         self.client = None
         self.global_config: "BaseGlobalConfig"|None = global_config
 
-        self.config = config or ConfigObserver(QueueConfig())
+        self.config = config or QueueConfig()
         self.log = log.with_subname("Storage") if log else Logger(name=self.name, subname="Storage", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.plugins: dict[str, "BasePlugin"] = {}
         pass

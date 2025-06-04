@@ -9,7 +9,7 @@ from uuid import UUID
 import redis.asyncio as aioredis
 from typing import TYPE_CHECKING
 
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.contrib.redis.async_queue_client import AsyncRedisCommandQueue
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
@@ -105,12 +105,12 @@ class AsyncRedisStorage(BaseStorage):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None

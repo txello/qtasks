@@ -10,7 +10,6 @@ from anyio import Semaphore
 
 
 from qtasks.configs.config import QueueConfig
-from qtasks.configs.config_observer import ConfigObserver
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.executors.async_task_executor import AsyncTaskExecutor
 from qtasks.logs import Logger
@@ -71,12 +70,12 @@ class AsyncWorker(BaseWorker):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -141,35 +140,20 @@ class AsyncWorker(BaseWorker):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
         """
         async with self.semaphore:
-            print(self.config.max_tasks_process)
             model = TaskStatusProcessSchema(task_name=task_broker.name, priority=task_broker.priority, created_at=task_broker.created_at, updated_at=time())
             model.set_json(task_broker.args, task_broker.kwargs)
-            
             await self.broker.update(name=f"{self.name}:{task_broker.uuid}", mapping=model.__dict__)
 
-            try:
-                task_func = self._tasks[task_broker.name]
-            except KeyError as e:
-                self.log.warning(f"Задачи {e.args[0]} не существует!")
-                trace = traceback.format_exc()
-                model = TaskStatusErrorSchema(task_name=task_broker.name, priority=task_broker.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
-                self.log.warning(f"Задача {task_broker.name} завершена с ошибкой:"), traceback.print_exception(e)
-
+            task_func = await self._task_exists(task_broker=task_broker)
+            if not task_func:
                 self.queue.task_done()
-                await self.broker.remove_finished_task(task_broker, model)
                 return
 
-            try:
-                for model_init in self.init_task_running:
-                    await model_init.func(task_func=task_func, task_broker=task_broker) if model_init.awaiting else model_init.func(task_func=task_func, task_broker=task_broker)
-            except BaseException as e:
-                self.queue.task_done()
-                raise e
+            await self._init_task_running(task_func=task_func, task_broker=task_broker)
             
             model = await self._run_task(task_func, task_broker)
 
-            for model_init in self.init_task_stoping:
-                await model_init.func(task_func=task_func, task_broker=task_broker, returning=model) if model_init.awaiting else model_init.func(task_func=task_func, task_broker=task_broker, returning=model)
+            await self._init_task_stoping(task_func=task_func, task_broker=task_broker, model=model)
 
             await self.broker.remove_finished_task(task_broker, model)
             
@@ -240,8 +224,7 @@ class AsyncWorker(BaseWorker):
             await self.queue.put(model)
             self.condition.notify()
         
-        model = Task(status=TaskStatusEnum.NEW.value, task_name=name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
-        return model
+        return Task(status=TaskStatusEnum.NEW.value, task_name=name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
 
     async def start(self,
             num_workers: Annotated[
@@ -324,3 +307,52 @@ class AsyncWorker(BaseWorker):
             model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
             self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
             return model
+    
+    async def _task_exists(self, task_broker: TaskPrioritySchema) -> TaskExecSchema|None:
+        """Проверка существования задачи.
+
+        Args:
+            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
+
+        Returns:
+            TaskExecSchema|None: Схема `TaskExecSchema` или `None`.
+        """
+        
+        try:
+            return self._tasks[task_broker.name]
+        except KeyError as e:
+            self.log.warning(f"Задачи {e.args[0]} не существует!")
+            trace = traceback.format_exc()
+            model = TaskStatusErrorSchema(task_name=task_broker.name, priority=task_broker.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
+            await self.broker.remove_finished_task(task_broker, model)
+            self.log.warning(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
+            return None
+
+    async def _init_task_running(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> None:
+        """Вызов задач `init_task_running`.
+
+        Args:
+            task_func (TaskExecSchema): Схема `TaskExecSchema`.
+            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
+        """
+        for model_init in self.init_task_running:
+            try:
+                await model_init.func(task_func=task_func, task_broker=task_broker) if model_init.awaiting else model_init.func(task_func=task_func, task_broker=task_broker)
+            except BaseException:
+                pass
+        return
+    
+    async def _init_task_stoping(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema, model: TaskStatusSuccessSchema|TaskStatusErrorSchema) -> None:
+        """Вызов задач `init_task_stoping`.
+
+        Args:
+            task_func (TaskExecSchema): Схема `TaskExecSchema`.
+            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель `TaskStatusSuccessSchema` или `TaskStatusSuccessSchema`.
+        """
+        for model_init in self.init_task_stoping:
+            try:
+                await model_init.func(task_func=task_func, task_broker=task_broker, returning=model) if model_init.awaiting else model_init.func(task_func=task_func, task_broker=task_broker, returning=model)
+            except BaseException:
+                pass
+        return

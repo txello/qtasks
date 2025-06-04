@@ -4,7 +4,6 @@ from typing_extensions import Annotated, Doc
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from qtasks.configs.config import QueueConfig
-from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 
 if TYPE_CHECKING:
@@ -50,12 +49,12 @@ class BaseTimer(ABC):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
