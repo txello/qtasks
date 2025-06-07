@@ -277,7 +277,7 @@ class AsyncWorker(BaseWorker):
         self.config = config
         self.semaphore = Semaphore(config.max_tasks_process)
         
-    async def _run_task(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> Any:
+    async def _run_task(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> TaskStatusSuccessSchema|TaskStatusErrorSchema:
         """Запуск функции задачи.
 
         Args:
@@ -292,6 +292,7 @@ class AsyncWorker(BaseWorker):
         middlewares = self.task_middlewares[:]
         if task_func.middlewares:
             middlewares.extend(task_func.middlewares)
+        
         if task_func.executor is not None:
             executor = task_func.executor(task_func=task_func, task_broker=task_broker, middlewares=middlewares, log=self.log)
         else:
@@ -313,6 +314,7 @@ class AsyncWorker(BaseWorker):
             
             if not plugin_result:
                 model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
+                model.set_json(args=task_broker.args, kwargs=task_broker.kwargs)
             else:
                 model: TaskStatusErrorSchema = plugin_result[-1]
             ###

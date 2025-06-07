@@ -58,7 +58,10 @@ class TaskRegistry:
                     """
                 )
             ] = False,
+
             echo: bool = False,
+            retry: int|None = None,
+
             executor: Annotated[
                 Type["BaseTaskExecutor"],
                 Doc(
@@ -91,7 +94,7 @@ class TaskRegistry:
             
             task_name = name or func.__name__
             model = TaskExecSchema(name=task_name, priority=priority, func=func, 
-                awaiting=inspect.iscoroutinefunction(func), echo=echo,
+                awaiting=inspect.iscoroutinefunction(func), echo=echo, retry=retry,
                 executor=executor, middlewares=middlewares
             )
             cls._tasks[task_name] = model

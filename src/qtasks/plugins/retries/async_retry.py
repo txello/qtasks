@@ -8,6 +8,9 @@ from qtasks.schemas.task_status import TaskStatusErrorSchema
 class AsyncRetryPlugin(BasePlugin):
     def __init__(self, name = "AsyncRetryPlugin"):
         super().__init__(name)
+        self.handlers = {
+            "retry": self._execute
+        }
     
     async def start(self, *args, **kwargs):
         pass
@@ -16,21 +19,13 @@ class AsyncRetryPlugin(BasePlugin):
         pass
 
 
-    async def trigger(self, name, *args, **kwargs):
-        if name == "retry":
-            return await self._execute(
-                broker=kwargs.get("broker", None),
-                task_func=kwargs.get("task_func", None),
-                task_broker=kwargs.get("task_broker", None),
-                trace=kwargs.get("trace", None),
-            )
-        return None
-
+    async def trigger(self, name, **kwargs):
+        handler = self.handlers.get(name)
+        return await handler(**kwargs) if handler else None
 
     async def _execute(self, broker: BaseBroker, task_func: TaskExecSchema, task_broker: TaskPrioritySchema, trace: str) -> TaskStatusErrorSchema:
         task = await broker.get(uuid=task_broker.uuid)
         task_retry = int(task.retry) if hasattr(task, "retry") else task_func.retry
-        print(123, task_retry)
 
         if task_retry > 0:
             await broker.add(task_name=task_broker.name, priority=task_broker.priority,

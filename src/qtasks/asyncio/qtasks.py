@@ -354,7 +354,7 @@ class QueueTasks:
             
         args, kwargs = args or (), kwargs or {}
         
-        task = await self.broker.add(task_name, priority, *args, **kwargs)
+        task = await self.broker.add(task_name=task_name, priority=priority, extra=None, args=args, kwargs=kwargs)
         if timeout is not None:
             return await AsyncResult(uuid=task.uuid, app=self, log=self.log).result(timeout=timeout)
         return task

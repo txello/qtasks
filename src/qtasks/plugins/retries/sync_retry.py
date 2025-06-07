@@ -8,6 +8,9 @@ from qtasks.schemas.task_status import TaskStatusErrorSchema
 class SyncRetryPlugin(BasePlugin):
     def __init__(self, name = "SyncRetryPlugin"):
         super().__init__(name)
+        self.handlers = {
+            "retry": self._execute
+        }
     
     def start(self, *args, **kwargs):
         pass
@@ -16,15 +19,9 @@ class SyncRetryPlugin(BasePlugin):
         pass
 
 
-    def trigger(self, name, *args, **kwargs):
-        if name == "retry":
-            return self._execute(
-                broker=kwargs.get("broker", None),
-                task_func=kwargs.get("task_func", None),
-                task_broker=kwargs.get("task_broker", None),
-                trace=kwargs.get("trace", None),
-            )
-        return None
+    def trigger(self, name, **kwargs):
+        handler = self.handlers.get(name)
+        return handler(**kwargs) if handler else None
 
 
     def _execute(self, broker: BaseBroker, task_func: TaskExecSchema, task_broker: TaskPrioritySchema, trace: str) -> TaskStatusErrorSchema:

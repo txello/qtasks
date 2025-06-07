@@ -337,7 +337,7 @@ class QueueTasks:
             priority = self.tasks.get(task_name).priority
         
         args, kwargs = args or (), kwargs or {}
-        task = self.broker.add(task_name, priority, *args, **kwargs)
+        task = self.broker.add(task_name=task_name, priority=priority, extra=None, args=args, kwargs=kwargs)
         if timeout is not None:
             return SyncResult(uuid=task.uuid, app=self, log=self.log).result(timeout=timeout)
         return task

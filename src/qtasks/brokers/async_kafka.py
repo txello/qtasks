@@ -167,22 +167,22 @@ class AsyncKafkaBroker(BaseBroker):
                     """
                 )
             ] = 0,
-            *args: Annotated[
+            args: Annotated[
                 tuple,
                 Doc(
                     """
                     Аргументы задачи типа args.
                     """
                 )
-            ],
-            **kwargs: Annotated[
+            ] = None,
+            kwargs: Annotated[
                 dict,
                 Doc(
                     """
                     Аргументы задачи типа kwargs.
                     """
                 )
-            ]
+            ] = None
         ) -> Task:
         """Добавляет задачу в брокер.
 
@@ -195,6 +195,8 @@ class AsyncKafkaBroker(BaseBroker):
         Returns:
             Task: `schemas.task.Task`
         """
+        args, kwargs = args or (), kwargs or {}
+
         uuid = uuid4()
         created_at = time()
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)

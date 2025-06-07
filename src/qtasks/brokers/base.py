@@ -101,22 +101,25 @@ class BaseBroker(ABC):
                     """
                 )
             ] = 0,
-            *args: Annotated[
+
+            extra: dict = None,
+
+            args: Annotated[
                 tuple,
                 Doc(
                     """
                     Аргументы задачи типа args.
                     """
                 )
-            ],
-            **kwargs: Annotated[
+            ] = None,
+            kwargs: Annotated[
                 dict,
                 Doc(
                     """
                     Аргументы задачи типа kwargs.
                     """
                 )
-            ]
+            ] = None
         ):
         """Добавление задачи в брокер.
 

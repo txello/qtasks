@@ -1,9 +1,8 @@
 from threading import Event, Lock, Semaphore, Thread
-import json
 from time import time, sleep
 import traceback
 from queue import PriorityQueue
-from typing import Any, Optional
+from typing import Optional
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
@@ -264,7 +263,7 @@ class SyncThreadWorker(BaseWorker):
             task_broker (TaskPrioritySchema): Схема `qtasks.schemas.TaskPrioritySchema`.
         
         Returns:
-            Any: Результат функции задачи.
+            TaskStatusSuccessSchema|TaskStatusErrorSchema: Результат функции задачи.
         """
         self.log.info(f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}")
 
@@ -293,6 +292,7 @@ class SyncThreadWorker(BaseWorker):
             
             if not plugin_result:
                 model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
+                model.set_json(args=task_broker.args, kwargs=task_broker.kwargs)
             else:
                 model: TaskStatusErrorSchema = plugin_result[-1]
             ###
