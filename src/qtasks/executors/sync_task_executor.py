@@ -109,12 +109,12 @@ class SyncTaskExecutor(BaseTaskExecutor):
         Returns:
             Any: Результат задачи.
         """
-        if self.task_broker.args and self.task_broker.kwargs:
-            result = self.task_func(*self.task_broker.args, **self.task_broker.kwargs)
-        elif self.task_broker.args:
-            result = self.task_func.func(*self.task_broker.args)
-        elif self.task_broker.kwargs:
-            result = self.task_func.func(**self.task_broker.kwargs)
+        if self._args and self._kwargs:
+            result = self.task_func(self._args, **self._kwargs)
+        elif self._args:
+            result = self.task_func.func(self._args)
+        elif self._kwargs:
+            result = self.task_func.func(self._kwargs)
         else:
             result = self.task_func.func()
         return result

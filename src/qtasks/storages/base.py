@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from typing import List, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 from typing import TYPE_CHECKING
@@ -80,7 +80,7 @@ class BaseStorage(ABC):
 
         self.config = config or QueueConfig()
         self.log = log.with_subname("Storage") if log else Logger(name=self.name, subname="Storage", default_level=self.config.logs_default_level, format=self.config.logs_format)
-        self.plugins: dict[str, "BasePlugin"] = {}
+        self.plugins: dict[str, List["BasePlugin"]] = {}
         pass
     
     @abstractmethod
@@ -168,15 +168,40 @@ class BaseStorage(ABC):
         """Останавливает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
     
-    def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
-        """
-        Добавить плагин.
+    def add_plugin(self, 
+            plugin: Annotated[
+                "BasePlugin",
+                Doc(
+                    """
+                    Плагин.
+                    """
+                )
+            ],
+            trigger_names: Annotated[
+                Optional[List[str]],
+                Doc(
+                    """
+                    Имя триггеров для плагина.
+                    
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
+                    """
+                )
+            ] = None
+        ) -> None:
+        """Добавить плагин в класс.
 
         Args:
-            plugin (Type[BasePlugin]): Класс плагина.
-            name (str, optional): Имя плагина. По умолчанию: `None`.
+            plugin (BasePlugin): Плагин
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
         """
-        self.plugins.update({str(plugin.name or name): plugin})
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return
         
     def remove_finished_task(self,
             task_broker: Annotated[

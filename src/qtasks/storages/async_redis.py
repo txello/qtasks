@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import field, fields, make_dataclass
 import time
 import asyncio_atexit
 import datetime
@@ -172,20 +173,7 @@ class AsyncRedisStorage(BaseStorage):
         if not result:
             return None
         
-        return Task(
-            status=result["status"],
-            uuid=uuid,
-            priority=int(result["priority"]),
-            task_name=result["task_name"],
-            
-            args=json.loads(result["args"]),
-            kwargs=json.loads(result["kwargs"]),
-            
-            returning=json.loads(result["returning"]) if "returning" in result else None,
-            traceback=str(result["traceback"]) if "traceback" in result else None,
-            created_at=datetime.datetime.fromtimestamp(float(result["created_at"])),
-            updated_at=datetime.datetime.fromtimestamp(float(result["updated_at"]))
-        )
+        return self._build_task(uuid, result)
     
     async def get_all(self) -> list[Task]:
         """Получить все задачи.
@@ -330,3 +318,67 @@ class AsyncRedisStorage(BaseStorage):
             await self.client.delete(key)
         await pipe.execute()
         return
+    
+    def _build_task(self, uuid, result: dict) -> Task:
+        # Сначала собираем стандартные аргументы Task
+
+        base_kwargs = dict(
+            status=result["status"],
+            uuid=uuid,
+            priority=int(result["priority"]),
+            task_name=result["task_name"],
+            args=json.loads(result["args"]),
+            kwargs=json.loads(result["kwargs"]),
+            returning=json.loads(result["returning"]) if "returning" in result else None,
+            traceback=str(result["traceback"]) if "traceback" in result else None,
+            created_at=datetime.datetime.fromtimestamp(float(result["created_at"])),
+            updated_at=datetime.datetime.fromtimestamp(float(result["updated_at"])),
+        )
+
+        # Вычисляем имена стандартных полей
+        task_field_names = {f.name for f in fields(Task)}
+
+        # Ищем дополнительные ключи
+        extra_fields = []
+        extra_values = {}
+
+        for key, value in result.items():
+            if key not in task_field_names:
+                # Типизация примитивная — можно улучшить
+                field_type = self._infer_type(value)
+                extra_fields.append((key, field_type, field(default=None)))
+
+                # Можно привести значение к типу
+                if field_type is bool:
+                    extra_values[key] = value.lower() == "true"
+                elif field_type is int:
+                    extra_values[key] = int(value)
+                elif field_type is float:
+                    extra_values[key] = float(value)
+                else:
+                    extra_values[key] = value
+
+        # Создаем новый dataclass с дополнительными полями
+        if extra_fields:
+            NewTask = make_dataclass("Task", extra_fields, bases=(Task,))
+        else:
+            NewTask = Task
+
+        # Объединяем все аргументы
+        return NewTask(**base_kwargs, **extra_values)
+    
+    def _infer_type(self, value: str):
+        """Пытается определить реальный тип из строки."""
+        if value.lower() in {"true", "false"}:
+            return bool
+        try:
+            int(value)
+            return int
+        except ValueError:
+            pass
+        try:
+            float(value)
+            return float
+        except ValueError:
+            pass
+        return str

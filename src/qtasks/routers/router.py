@@ -42,7 +42,7 @@ class Router:
             )
         ] = {}
         
-        self.plugins: dict[str, "BasePlugin"] = {}
+        self.plugins: dict[str, List["BasePlugin"]] = {}
     
     def task(self,
             name: Annotated[

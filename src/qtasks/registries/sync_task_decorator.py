@@ -56,6 +56,7 @@ class SyncTask:
             ] = None,
 
             echo: bool = False,
+            retry: int|None = None,
 
             executor: Annotated[
                 Type["BaseTaskExecutor"],
@@ -82,6 +83,7 @@ class SyncTask:
         self.priority = priority
         
         self.echo = echo
+        self.retry = retry
 
         self.executor = executor
         self.middlewares = middlewares

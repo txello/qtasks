@@ -1,3 +1,3 @@
-from based_sync_app import shared_tasks
-task = shared_tasks.sync_test.add_task(timeout=50)
+from based_sync_app import error_zero
+task = error_zero.add_task(timeout=50)
 print(task)

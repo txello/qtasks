@@ -13,6 +13,7 @@ from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.executors.async_task_executor import AsyncTaskExecutor
 from qtasks.logs import Logger
+from qtasks.plugins.retries.async_retry import AsyncRetryPlugin
 from qtasks.schemas.task import Task
 
 from .base import BaseWorker
@@ -304,7 +305,18 @@ class AsyncWorker(BaseWorker):
             return model
         except BaseException:
             trace = traceback.format_exc()
-            model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
+
+            ### plugin: retry
+            plugin_result = None
+            if task_func.retry:
+                plugin_result = await self._plugin_trigger("retry", broker=self.broker, task_func=task_func, task_broker=task_broker, trace=trace)
+            
+            if not plugin_result:
+                model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
+            else:
+                model: TaskStatusErrorSchema = plugin_result[-1]
+            ###
+            
             self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
             return model
     
@@ -356,3 +368,22 @@ class AsyncWorker(BaseWorker):
             except BaseException:
                 pass
         return
+    
+    async def _plugin_trigger(self, name: str, *args, **kwargs):
+        """
+        Вызвать триггер плагина.
+
+        Args:
+            name (str): Имя триггера.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
+        """
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = await plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
+
+    def init_plugins(self):
+        self.add_plugin(AsyncRetryPlugin(), trigger_names=["retry"])

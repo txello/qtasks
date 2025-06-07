@@ -302,15 +302,20 @@ class SyncKafkaBroker(BaseBroker):
         self.storage.remove_finished_task(task_broker, model)
         
     def _plugin_trigger(self, name: str, *args, **kwargs):
-        """Триггер плагина
+        """
+        Вызвать триггер плагина.
 
         Args:
             name (str): Имя триггера.
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
         """
-        for plugin in self.plugins.values():
-            plugin.trigger(name=name, *args, **kwargs)
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
     
     def flush_all(self) -> None:
         """Удалить все данные."""

@@ -113,6 +113,7 @@ class SyncResult:
             if not task or task.status not in [TaskStatusEnum.SUCCESS.value, TaskStatusEnum.ERROR.value]:
                 time.sleep(self._sleep_time)
                 continue
+                    
             return task
 
     def _update_state(self) -> "QueueTasks":

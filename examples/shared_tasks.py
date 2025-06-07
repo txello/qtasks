@@ -7,8 +7,7 @@ from qtasks.registries.sync_task_decorator import SyncTask
 
 @shared_task(middlewares=[MyTaskMiddleware], echo=True)
 def sync_test(self: SyncTask):
-    task = self.add_task("test", timeout=50)
-    print(task.returning)
+    print("sync_test")
 
 @shared_task(middlewares=[MyTaskMiddleware], awaiting=True)
 async def async_test():

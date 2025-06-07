@@ -1,3 +1,4 @@
+from dataclasses import asdict, field, fields, make_dataclass
 import redis
 from typing import Optional, Union
 from typing_extensions import Annotated, Doc
@@ -159,6 +160,9 @@ class SyncRedisBroker(BaseBroker):
                     """
                 )
             ] = 0,
+
+            extra: dict = None,
+
             *args: Annotated[
                 tuple,
                 Doc(
@@ -187,10 +191,34 @@ class SyncRedisBroker(BaseBroker):
         Returns:
             Task: `schemas.task.Task`
         """
-        uuid = uuid4()
+        uuid = str(uuid4())
         created_at = time()
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
+
+        if extra:
+            # Вычисляем имена стандартных полей
+            task_field_names = {f.name for f in fields(TaskStatusNewSchema)}
+
+            # Ищем дополнительные ключи
+            extra_fields = []
+            extra_values = {}
+
+            for key, value in extra.items():
+                if key not in task_field_names:
+                    # Типизация примитивная — можно улучшить
+                    field_type = type(value)
+                    extra_fields.append((key, field_type, field(default=None)))
+                    extra_values[key] = value
+
+            # Создаем новый dataclass с дополнительными полями
+            if extra_fields:
+                NewTask = make_dataclass("TaskStatusNewSchema", extra_fields, bases=(TaskStatusNewSchema,))
+            else:
+                NewTask = TaskStatusNewSchema
+
+            # Объединяем все аргументы
+            model = NewTask(**asdict(model), **extra_values)
         
         self.storage.add(uuid=uuid, task_status=model)
         self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")

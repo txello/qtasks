@@ -170,7 +170,7 @@ class AsyncStarter(BaseStarter):
         Args:
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
         """
-        for model_plugin in self.plugins.values():
+        for model_plugin in [i for y in self.plugins.values() for i in y]:
             await model_plugin.start()
         
         for model in self._inits["init_starting"]:
@@ -205,5 +205,5 @@ class AsyncStarter(BaseStarter):
         for model_init in self._inits["init_stoping"]:
             await model_init.func(worker=self.worker, broker=self.broker) if model_init.awaiting else model_init.func(worker=self.worker, broker=self.broker)
 
-        for model_plugin in self.plugins.values():
+        for model_plugin in [i for y in self.plugins.values() for i in y]:
             await model_plugin.stop()

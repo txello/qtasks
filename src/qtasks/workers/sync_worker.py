@@ -3,7 +3,7 @@ import json
 from time import time, sleep
 import traceback
 from queue import PriorityQueue
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
@@ -11,6 +11,7 @@ from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.executors.sync_task_executor import SyncTaskExecutor
 from qtasks.logs import Logger
+from qtasks.plugins.retries.sync_retry import SyncRetryPlugin
 from qtasks.schemas.task import Task
 
 from .base import BaseWorker
@@ -146,7 +147,7 @@ class SyncThreadWorker(BaseWorker):
                 self.queue.task_done()
                 return
 
-            self._init_task_running()
+            self._init_task_running(task_func=task_func, task_broker=task_broker)
             
             model = self._run_task(task_func=task_func, task_broker=task_broker)
 
@@ -284,7 +285,18 @@ class SyncThreadWorker(BaseWorker):
             return model
         except BaseException:
             trace = traceback.format_exc()
-            model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
+
+            ### plugin: retry
+            plugin_result = None
+            if task_func.retry:
+                plugin_result = self._plugin_trigger("retry", broker=self.broker, task_func=task_func, task_broker=task_broker, trace=trace)
+            
+            if not plugin_result:
+                model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
+            else:
+                model: TaskStatusErrorSchema = plugin_result[-1]
+            ###
+            
             self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
             return model
         
@@ -336,3 +348,22 @@ class SyncThreadWorker(BaseWorker):
             except BaseException:
                 pass
         return
+
+    def _plugin_trigger(self, name: str, *args, **kwargs):
+        """
+        Вызвать триггер плагина.
+
+        Args:
+            name (str): Имя триггера.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
+        """
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
+
+    def init_plugins(self):
+        self.add_plugin(SyncRetryPlugin(), trigger_names=["retry"])

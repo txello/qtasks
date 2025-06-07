@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
@@ -64,7 +64,7 @@ class BaseGlobalConfig(ABC):
         self.config = config or QueueConfig()
         
         self.log = log.with_subname("GlobalConfig") if log else Logger(name=self.name, subname="GlobalConfig", default_level=self.config.logs_default_level, format=self.config.logs_format)
-        self.plugins: dict[str, "BasePlugin"] = {}
+        self.plugins: dict[str, List["BasePlugin"]] = {}
         pass
     
     @abstractmethod
@@ -143,7 +143,7 @@ class BaseGlobalConfig(ABC):
         self.config = config
         return
     
-    def include_plugin(self, 
+    def add_plugin(self, 
             plugin: Annotated[
                 "BasePlugin",
                 Doc(
@@ -152,21 +152,28 @@ class BaseGlobalConfig(ABC):
                     """
                 )
             ],
-            name: Annotated[
-                Optional[str],
+            trigger_names: Annotated[
+                Optional[List[str]],
                 Doc(
                     """
-                    Имя плагина.
+                    Имя триггеров для плагина.
                     
-                    По умолчанию: `plugin.name`.
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
                     """
                 )
             ] = None
-            ) -> None:
+        ) -> None:
         """Добавить плагин в класс.
 
         Args:
             plugin (BasePlugin): Плагин
-            name (str, optional): Имя плагина. По умолчанию: `plugin.name`.
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
         """
-        self.plugins.update({str(plugin.name or name): plugin})
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return

@@ -149,10 +149,10 @@ class QueueTasks:
         ] = {}
         
         self.plugins: Annotated[
-            dict[str, "BasePlugin"],
+            dict[str, List["BasePlugin"]],
             Doc(
                 """
-                Задачи, тип `{plugin_name:qtasks.plugins.base.BasePlugin}`.
+                Задачи, тип `{trigger_name:[qtasks.plugins.base.BasePlugin]}`.
                 
                 По умолчанию: `Пустой словарь`.
                 """
@@ -214,6 +214,7 @@ class QueueTasks:
             ] = None,
 
             echo: bool = False,
+            retry: int|None = None,
 
             executor: Annotated[
                 Type["BaseTaskExecutor"],
@@ -243,7 +244,7 @@ class QueueTasks:
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
         """
         def wrapper(func):
-            nonlocal name, priority, executor, middlewares, echo
+            nonlocal name, priority, executor, middlewares, echo, retry
             
             task_name = name or func.__name__
             if task_name in self.tasks:
@@ -256,6 +257,7 @@ class QueueTasks:
             model = TaskExecSchema(
                 name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func),
                 echo=echo,
+                retry=retry,
                 executor=executor, middlewares=middlewares
             )
             
@@ -601,15 +603,37 @@ class QueueTasks:
             return True
         return True
 
-    def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
+    def add_plugin(self, plugin: "BasePlugin", trigger_names: Optional[List[str]] = None, component: Optional[str] = None) -> None:
         """
         Добавить плагин.
 
         Args:
             plugin (Type[BasePlugin]): Класс плагина.
-            name (str, optional): Имя плагина. По умолчанию: `None`.
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+            component (str, optional): Имя компонента. По умолчанию: `None`.
         """
-        self.plugins.update({str(plugin.name or name): plugin})
+        data = {
+            "worker": self.worker,
+            "broker": self.broker,
+            "storage": self.broker.storage,
+            "global_config": self.broker.storage.global_config
+        }
+
+        trigger_names = trigger_names or ["Globals"]
+
+        if not component:
+            for name in trigger_names:
+                if name not in self.plugins:
+                    self.plugins.update({name: [plugin]})
+                else:
+                    self.plugins[name].append(plugin)
+            return
+        
+        component_data = data.get(component, None)
+        if not component_data:
+            raise KeyError(f"Невозможно получить компонент {component}!")
+        component_data.add_plugin(plugin, trigger_names)
+        return
     
     async def _plugin_trigger(self, name: str, *args, **kwargs):
         """
@@ -620,8 +644,12 @@ class QueueTasks:
             *args: Позиционные аргументы для триггера.
             **kwargs: Именованные аргументы для триггера.
         """
-        for plugin in self.plugins.values():
-            await plugin.trigger(name=name, *args, **kwargs)
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = await plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
             
     def _registry_tasks(self):
         """

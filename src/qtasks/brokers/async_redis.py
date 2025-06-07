@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import asdict, field, fields, make_dataclass
 import datetime
 import asyncio_atexit
 from typing import Optional, Union
@@ -163,6 +164,9 @@ class AsyncRedisBroker(BaseBroker):
                     """
                 )
             ] = 0,
+
+            extra: dict = None,
+
             *args: Annotated[
                 tuple,
                 Doc(
@@ -196,15 +200,39 @@ class AsyncRedisBroker(BaseBroker):
         asyncio_atexit.register(self.storage.stop, loop=loop)
         
         
-        uuid = uuid4()
-        created_at=time()
+        uuid = str(uuid4())
+        created_at = time()
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
+
+        if extra:
+            # Вычисляем имена стандартных полей
+            task_field_names = {f.name for f in fields(TaskStatusNewSchema)}
+
+            # Ищем дополнительные ключи
+            extra_fields = []
+            extra_values = {}
+
+            for key, value in extra.items():
+                if key not in task_field_names:
+                    # Типизация примитивная — можно улучшить
+                    field_type = type(value)
+                    extra_fields.append((key, field_type, field(default=None)))
+                    extra_values[key] = value
+
+            # Создаем новый dataclass с дополнительными полями
+            if extra_fields:
+                NewTask = make_dataclass("TaskStatusNewSchema", extra_fields, bases=(TaskStatusNewSchema,))
+            else:
+                NewTask = TaskStatusNewSchema
+
+            # Объединяем все аргументы
+            model = NewTask(**asdict(model), **extra_values)
         
         await self.storage.add(uuid=uuid, task_status=model)
         await self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")
         
-        model = Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=datetime.datetime.fromtimestamp(created_at), updated_at=datetime.datetime.fromtimestamp(created_at))
+        model = Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
         return model
     
     async def get(self,
@@ -304,15 +332,20 @@ class AsyncRedisBroker(BaseBroker):
         return
     
     async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """Триггер плагина
+        """
+        Вызвать триггер плагина.
 
         Args:
             name (str): Имя триггера.
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
         """
-        for plugin in self.plugins.values():
-            await plugin.trigger(name=name, *args, **kwargs)
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = await plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
 
     async def flush_all(self) -> None:
         """Удалить все данные."""

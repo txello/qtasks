@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.middlewares.task import TaskMiddleware
+from qtasks.plugins.retries.sync_retry import SyncRetryPlugin
 from qtasks.schemas.inits import InitsExecSchema
 
 if TYPE_CHECKING:
@@ -84,9 +85,11 @@ class BaseWorker(ABC):
         self.init_worker_stoping: list[InitsExecSchema] = []
         self.task_middlewares: list[TaskMiddleware] = []
 
-        self.plugins: dict[str, "BasePlugin"] = {}
+        self.plugins: dict[str, List["BasePlugin"]] = {}
         
         self.num_workers = 0
+
+        self.init_plugins()
     
     @abstractmethod
     def add(self,
@@ -194,12 +197,40 @@ class BaseWorker(ABC):
         self.config = config
         return
     
-    def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
-        """
-        Добавить плагин.
+    def add_plugin(self, 
+            plugin: Annotated[
+                "BasePlugin",
+                Doc(
+                    """
+                    Плагин.
+                    """
+                )
+            ],
+            trigger_names: Annotated[
+                Optional[List[str]],
+                Doc(
+                    """
+                    Имя триггеров для плагина.
+                    
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
+                    """
+                )
+            ] = None
+        ) -> None:
+        """Добавить плагин в класс.
 
         Args:
-            plugin (Type[BasePlugin]): Класс плагина.
-            name (str, optional): Имя плагина. По умолчанию: `None`.
+            plugin (BasePlugin): Плагин
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
         """
-        self.plugins.update({str(plugin.name or name): plugin})
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return
+    
+    def init_plugins(self):
+        pass

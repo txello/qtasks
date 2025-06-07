@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Type, Union
+from typing import List, Optional, Type, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 from typing import TYPE_CHECKING
@@ -78,7 +78,7 @@ class BaseBroker(ABC):
         self.config = config or QueueConfig()
         self.storage = storage
         self.log = log.with_subname("Broker") if log else Logger(name=self.name, subname="Broker", default_level=self.config.logs_default_level, format=self.config.logs_format)
-        self.plugins: dict[str, "BasePlugin"] = {}
+        self.plugins: dict[str, List["BasePlugin"]] = {}
         pass
     
     @abstractmethod
@@ -214,7 +214,7 @@ class BaseBroker(ABC):
         self.config = config
         return
     
-    def include_plugin(self, 
+    def add_plugin(self, 
             plugin: Annotated[
                 "BasePlugin",
                 Doc(
@@ -223,35 +223,47 @@ class BaseBroker(ABC):
                     """
                 )
             ],
-            name: Annotated[
-                Optional[str],
+            trigger_names: Annotated[
+                Optional[List[str]],
                 Doc(
                     """
-                    Имя плагина.
+                    Имя триггеров для плагина.
                     
-                    По умолчанию: `plugin.name`.
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
                     """
                 )
             ] = None
-            ) -> None:
+        ) -> None:
         """Добавить плагин в класс.
 
         Args:
             plugin (BasePlugin): Плагин
-            name (str, optional): Имя плагина. По умолчанию: `plugin.name`.
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
         """
-        self.plugins.update({str(name or plugin.name): plugin})
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return
         
     def _plugin_trigger(self, name: str, *args, **kwargs):
-        """Триггер плагина
+        """
+        Вызвать триггер плагина.
 
         Args:
             name (str): Имя триггера.
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
         """
-        for plugin in self.plugins.values():
-            plugin.trigger(name=name, *args, **kwargs)
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
     
     def flush_all(self) -> None:
         """Удалить все данные."""
