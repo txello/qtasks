@@ -1,5 +1,6 @@
+import asyncio
 import json
-from typing import Any, Optional
+from typing import Any, AsyncGenerator, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.registries.async_task_decorator import AsyncTask
@@ -107,7 +108,7 @@ class AsyncTaskExecutor(BaseTaskExecutor):
             Any: Результат задачи.
         """
         if self.task_broker.args and self.task_broker.kwargs:
-            result = await self.task_func(*self.task_broker.args, **self.task_broker.kwargs)\
+            result = await self.task_func.func(*self.task_broker.args, **self.task_broker.kwargs)\
                 if self.task_func.awaiting else self.task_func.func(*self.task_broker.args, **self.task_broker.kwargs)
         elif self.task_broker.args:
             result = await self.task_func.func(*self.task_broker.args) if self.task_func.awaiting else self.task_func.func(*self.task_broker.args)
@@ -115,7 +116,45 @@ class AsyncTaskExecutor(BaseTaskExecutor):
             result = await self.task_func.func(**self.task_broker.kwargs) if self.task_func.awaiting else self.task_func.func(**self.task_broker.kwargs)
         else:
             result = await self.task_func.func() if self.task_func.awaiting else self.task_func.func()
+
+        if self.task_func.generating:
+            return await self.run_task_gen(result)
+        
         return result
+    
+    async def run_task_gen(self, func: AsyncGenerator) -> list[Any]:
+        """Вызов генератора задачи.
+
+        Args:
+            func (FunctionType): Функция.
+
+        Returns:
+            Any: Результат задачи.
+        """
+        results = []
+        if self.task_func.generating == "async":
+            async for result in func:
+                if self.task_func.generate_handler:
+                    result = await self._maybe_await(self.task_func.generate_handler(result))
+                results.append(result)
+
+        elif self.task_func.generating == "sync":
+            try:
+                while True:
+                    result = next(func)
+                    if self.task_func.generate_handler:
+                        result = await self._maybe_await(self.task_func.generate_handler(result))
+                    results.append(result)
+            except StopIteration:
+                pass
+
+        return results
+    
+    
+    async def _maybe_await(self, value):
+        if asyncio.iscoroutine(value):
+            return await value
+        return value
     
     async def execute(self,
             decode: bool = True

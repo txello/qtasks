@@ -61,6 +61,7 @@ class TaskRegistry:
 
             echo: bool = False,
             retry: int|None = None,
+            generate_handler: Callable|None = None,
 
             executor: Annotated[
                 Type["BaseTaskExecutor"],
@@ -93,10 +94,25 @@ class TaskRegistry:
             nonlocal name, priority, executor, middlewares
             
             task_name = name or func.__name__
-            model = TaskExecSchema(name=task_name, priority=priority, func=func, 
-                awaiting=inspect.iscoroutinefunction(func), echo=echo, retry=retry,
+            
+            generating = False
+            if inspect.isgeneratorfunction(func): generating = "sync"
+            if inspect.isasyncgenfunction(func): generating = "async"
+
+            middlewares = middlewares or []
+            
+            model = TaskExecSchema(
+                name=task_name, priority=priority, func=func,
+                awaiting=inspect.iscoroutinefunction(func),
+                generating=generating,
+
+                echo=echo,
+                retry=retry,
+                generate_handler=generate_handler,
+
                 executor=executor, middlewares=middlewares
             )
+            
             cls._tasks[task_name] = model
             if awaiting:
                 return AsyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares, echo=echo)

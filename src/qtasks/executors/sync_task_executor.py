@@ -1,6 +1,5 @@
-from dataclasses import replace
 import json
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Generator, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.registries.sync_task_decorator import SyncTask
@@ -103,21 +102,55 @@ class SyncTaskExecutor(BaseTaskExecutor):
             m = m(self)
             self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
-    def run_task(self) -> Any:
+    def run_task(self) -> Any|list[Any]:
         """Вызов задачи.
 
         Returns:
             Any: Результат задачи.
         """
+
+        
         if self._args and self._kwargs:
-            result = self.task_func(*self._args, **self._kwargs)
+            result = self.task_func.func(*self._args, **self._kwargs)
         elif self._args:
             result = self.task_func.func(*self._args)
         elif self._kwargs:
             result = self.task_func.func(**self._kwargs)
         else:
             result = self.task_func.func()
+        
+        if self.task_func.generating:
+            return self.run_task_gen(result)
+
         return result
+    
+    def run_task_gen(self, func: Generator) -> list[Any]:
+        """Вызов генератора задачи.
+
+        Args:
+            func (FunctionType): Функция.
+
+        Raises:
+            RuntimeError: Невозможно запустить асинхронный генератор задачи в синхронном виде!
+
+        Returns:
+            Any: Результат задачи.
+        """
+        results = []
+        if self.task_func.generating == "async":
+            raise RuntimeError("Невозможно запустить асинхронный генератор задачи в синхронном виде!")
+
+        elif self.task_func.generating == "sync":
+            try:
+                while True:
+                    result = next(func)
+                    if self.task_func.generate_handler:
+                        result = self.task_func.generate_handler(result)
+                    results.append(result)
+            except StopIteration:
+                pass
+
+        return results
     
     def execute(self,
             decode: bool = True

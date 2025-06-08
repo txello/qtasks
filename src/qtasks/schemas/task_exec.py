@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from types import FunctionType
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING, Callable, Literal, Type
 from uuid import UUID
 
 
@@ -49,9 +49,12 @@ class TaskExecSchema:
     
     func: FunctionType
     awaiting: bool = False
+    generating: str|Literal[False] = False
     
     echo: bool = False
     retry: int|None = None
+
+    generate_handler: Callable|None = None
 
     executor: Type["BaseTaskExecutor"] = None
     middlewares: list[Type["TaskMiddleware"]] = field(default_factory=list)

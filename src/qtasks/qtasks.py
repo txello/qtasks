@@ -1,5 +1,5 @@
 import inspect
-from typing import TYPE_CHECKING, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Callable, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
@@ -215,6 +215,7 @@ class QueueTasks:
 
             echo: bool = False,
             retry: int|None = None,
+            generate_handler: Callable|None = None,
 
             executor: Annotated[
                 Type["BaseTaskExecutor"],
@@ -253,11 +254,21 @@ class QueueTasks:
             if priority is None:
                 priority = self.config.default_task_priority
             
+            generating = False
+            if inspect.isgeneratorfunction(func): generating = "sync"
+            if inspect.isasyncgenfunction(func): generating = "async"
+
             middlewares = middlewares or []
+            
             model = TaskExecSchema(
-                name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func),
+                name=task_name, priority=priority, func=func,
+                awaiting=inspect.iscoroutinefunction(func),
+                generating=generating,
+
                 echo=echo,
                 retry=retry,
+                generate_handler=generate_handler,
+
                 executor=executor, middlewares=middlewares
             )
             

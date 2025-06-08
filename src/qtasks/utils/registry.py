@@ -4,47 +4,39 @@ from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.registries.sync_task_decorator import SyncTask
+from qtasks.registries.async_task_decorator import AsyncTask
 
 
 def shared_task(
         func_or_name: Union[Callable, str, None] = None,
-        priority: int = 0, executor: Type["BaseTaskExecutor"] = None,
-        middlewares: List[TaskMiddleware] = None,
-        awaiting: bool = False,
-        echo: bool = False,
-        retry: int|None = None
+        priority: int = 0,
 
-    ) -> Type[SyncTask]:
+        echo: bool = False,
+        retry: int|None = None,
+        awaiting: bool = False,
+
+        generate_handler: Callable|None = None,
+        executor: Type["BaseTaskExecutor"] = None,
+        middlewares: List[TaskMiddleware] = None
+
+
+    ) -> Type[SyncTask]|Type[AsyncTask]:
     middlewares = middlewares or []
     if callable(func_or_name):
         # Декоратор без скобок
-        return _wrap_function(
-            func=func_or_name, name=func_or_name.__name__, priority=priority,
-            awaiting=awaiting, echo=echo, retry=retry,
-            executor=executor, middlewares=middlewares
-        )
+        return TaskRegistry.register(name=func_or_name.__name__, priority=priority,
+        awaiting=awaiting, echo=echo, retry=retry,
+
+
+        executor=executor, middlewares=middlewares
+        )(func_or_name)
     
     # Декоратор со скобками
     def wrapper(func: Callable):
-        return _wrap_function(
-            func=func, name=func_or_name or func.__name__, priority=priority, 
-            awaiting=awaiting, echo=echo, retry=retry,
-            executor=executor, middlewares=middlewares
-        )
+        return TaskRegistry.register(name=func_or_name or func.__name__, priority=priority,
+        awaiting=awaiting, echo=echo, retry=retry,
+        generate_handler=generate_handler,
+        executor=executor, middlewares=middlewares
+        )(func)
     
     return wrapper
-
-def _wrap_function(func: Callable,
-        name: str, priority: int, 
-        
-        awaiting: bool,
-        echo: bool,
-        retry: int|None,
-        
-        executor: Type["BaseTaskExecutor"], middlewares: List[TaskMiddleware]
-    ) -> Type[SyncTask]:
-    """Оборачивает функцию и регистрирует её через register"""
-    return TaskRegistry.register(name=name, priority=priority,
-        awaiting=awaiting, echo=echo, retry=retry,
-        executor=executor, middlewares=middlewares
-    )(func)  # Вызываем register и регистрируем функцию

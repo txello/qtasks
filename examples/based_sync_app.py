@@ -1,6 +1,7 @@
 import logging
 from qtasks import QueueTasks
 from qtasks.registries import SyncTask
+
 import shared_tasks
 
 app = QueueTasks()
@@ -26,6 +27,16 @@ def test_echo(self: SyncTask):
 @app.task(retry=5)
 def error_zero():
     result = 1/0
+
+def yield_func(result):
+    print(result)
+    return result
+
+@app.task(generate_handler=yield_func)
+def test_yield(n: int):
+    for _ in range(n):
+        n += 1
+        yield n
 
 
 if __name__ == "__main__":
