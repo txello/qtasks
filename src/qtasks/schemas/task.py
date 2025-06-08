@@ -33,6 +33,3 @@ class Task:
     
     created_at: datetime
     updated_at: datetime
-    
-    returning: str|None = None
-    traceback: str|None = None

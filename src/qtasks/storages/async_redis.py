@@ -295,15 +295,18 @@ class AsyncRedisStorage(BaseStorage):
 
     async def _delete_finished_tasks(self):
         pattern = f"{self.name}:"
-        tasks: list[Task] = list(filter(lambda task: task.status != TaskStatusEnum.NEW.value, await self.get_all()))
+        try:
+            tasks: list[Task] = list(filter(lambda task: task.status != TaskStatusEnum.NEW.value, await self.get_all()))
         
-        tasks_hash = [pattern + str(task.uuid) for task in tasks]
-        tasks_queue = [f"{task.task_name}:{task.uuid}:{task.priority}" for task in tasks]
-        
-        if tasks_queue:
-            await self.client.zrem(self.queue_process, *tasks_queue)
-        if tasks_hash:
-            await self.client.delete(*tasks_hash)
+            tasks_hash = [pattern + str(task.uuid) for task in tasks]
+            tasks_queue = [f"{task.task_name}:{task.uuid}:{task.priority}" for task in tasks]
+            
+            if tasks_queue:
+                await self.client.zrem(self.queue_process, *tasks_queue)
+            if tasks_hash:
+                await self.client.delete(*tasks_hash)
+        except:
+            pass
         return
 
     async def flush_all(self) -> None:
@@ -329,8 +332,6 @@ class AsyncRedisStorage(BaseStorage):
             task_name=result["task_name"],
             args=json.loads(result["args"]),
             kwargs=json.loads(result["kwargs"]),
-            returning=json.loads(result["returning"]) if "returning" in result else None,
-            traceback=str(result["traceback"]) if "traceback" in result else None,
             created_at=datetime.datetime.fromtimestamp(float(result["created_at"])),
             updated_at=datetime.datetime.fromtimestamp(float(result["updated_at"])),
         )
@@ -365,7 +366,11 @@ class AsyncRedisStorage(BaseStorage):
             NewTask = Task
 
         # Объединяем все аргументы
-        return NewTask(**base_kwargs, **extra_values)
+        task = NewTask(**base_kwargs, **extra_values)
+        if hasattr(task, "returning"):
+            try: task.returning = json.loads(task.returning)
+            except: pass
+        return task
     
     def _infer_type(self, value: str):
         """Пытается определить реальный тип из строки."""

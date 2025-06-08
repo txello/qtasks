@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Annotated, List, Optional, Type
 from typing_extensions import Doc
 
+from qtasks.contexts.async_context import AsyncContext
 from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
@@ -29,6 +30,7 @@ class AsyncTask:
             ],
 
             echo: bool = False,
+            retry: int|None = None,
             
             executor: Annotated[
                 Type["BaseTaskExecutor"],
@@ -65,10 +67,17 @@ class AsyncTask:
         self.priority = priority
         
         self.echo = echo
+        self.retry = retry
 
         self.executor = executor
         self.middlewares = middlewares
         self._app = app
+
+        self.ctx = AsyncContext(task_name=task_name, priority=priority,
+            echo=echo, retry=retry,
+            executor=executor, middlewares=middlewares,
+            app=app
+        )
         
     async def add_task(self,
             priority: Annotated[
@@ -111,7 +120,9 @@ class AsyncTask:
                     Если указан, задача возвращается через `qtasks.results.AsyncTask`.
                     """
                 )
-            ] = None
+            ] = None,
+
+            task_name:str=None
         ) -> Task|None:
         """Добавить задачу.
 
@@ -130,7 +141,7 @@ class AsyncTask:
         if priority is None:
             priority = self.priority
         
-        return await self._app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
+        return await self._app.add_task(task_name=task_name or self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
     
     def _update_app(self) -> "QueueTasks":
         if not self._app:

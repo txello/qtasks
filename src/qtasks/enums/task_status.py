@@ -13,3 +13,5 @@ class TaskStatusEnum(Enum):
     """Задача успешно выполнена"""
     ERROR = "error"
     """Задача выполнена с ошибкой"""
+    CANCEL = 'cancel'
+    """Задача отменена"""

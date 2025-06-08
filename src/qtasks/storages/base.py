@@ -8,7 +8,7 @@ from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskPrioritySchema
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusSuccessSchema
+from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema, TaskStatusSuccessSchema
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
@@ -213,7 +213,7 @@ class BaseStorage(ABC):
                 )
             ],
             model: Annotated[
-                Union[TaskStatusNewSchema|TaskStatusErrorSchema],
+                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
                 Doc(
                     """
                     Модель результата задачи.

@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
 
 from qtasks.schemas.task import Task
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema
+from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
 
 class AsyncKafkaBroker(BaseBroker):
     """
@@ -289,7 +289,7 @@ class AsyncKafkaBroker(BaseBroker):
                 )
             ],
             model: Annotated[
-                Union[TaskStatusNewSchema|TaskStatusErrorSchema],
+                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
                 Doc(
                     """
                     Модель результата задачи.

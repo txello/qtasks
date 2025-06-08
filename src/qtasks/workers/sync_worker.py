@@ -8,6 +8,7 @@ from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.exc.task import TaskCancelError
 from qtasks.executors.sync_task_executor import SyncTaskExecutor
 from qtasks.logs import Logger
 from qtasks.plugins.retries.sync_retry import SyncRetryPlugin
@@ -15,7 +16,7 @@ from qtasks.schemas.task import Task
 
 from .base import BaseWorker
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusProcessSchema, TaskStatusSuccessSchema
+from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusProcessSchema, TaskStatusSuccessSchema
 from qtasks.brokers.base import BaseBroker
 from qtasks.brokers import SyncRedisBroker
 
@@ -255,7 +256,7 @@ class SyncThreadWorker(BaseWorker):
         self.config = config
         self.semaphore = Semaphore(config.max_tasks_process)
 
-    def _run_task(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> TaskStatusSuccessSchema|TaskStatusErrorSchema:
+    def _run_task(self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> TaskStatusSuccessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema:
         """Запуск функции задачи.
 
         Args:
@@ -282,20 +283,25 @@ class SyncThreadWorker(BaseWorker):
             model.set_json(task_broker.args, task_broker.kwargs)
             self.log.info(f"Задача {task_broker.uuid} успешно завершена, результат: {result}")
             return model
+        except TaskCancelError as e:
+            model = TaskStatusCancelSchema(task_name=task_func.name, priority=task_func.priority, cancel_reason=str(e), created_at=task_broker.created_at, updated_at=time())
+            self.log.info(f"Задача {task_broker.uuid} была отменена по причине: {e}")
+            return model
         except BaseException:
+
             trace = traceback.format_exc()
 
             ### plugin: retry
             plugin_result = None
             if task_func.retry:
                 plugin_result = self._plugin_trigger("retry", broker=self.broker, task_func=task_func, task_broker=task_broker, trace=trace)
+            ###
             
             if not plugin_result:
                 model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
                 model.set_json(args=task_broker.args, kwargs=task_broker.kwargs)
             else:
                 model: TaskStatusErrorSchema = plugin_result[-1]
-            ###
             
             self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
             return model

@@ -110,7 +110,7 @@ class SyncResult:
                 break
 
             task = self._app.get(uuid=self.uuid)
-            if not task or task.status not in [TaskStatusEnum.SUCCESS.value, TaskStatusEnum.ERROR.value]:
+            if not task or task.status not in [TaskStatusEnum.SUCCESS.value, TaskStatusEnum.ERROR.value, TaskStatusEnum.CANCEL.value]:
                 time.sleep(self._sleep_time)
                 continue
                     

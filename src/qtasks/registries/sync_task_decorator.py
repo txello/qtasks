@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Annotated, List, Optional, Type
 from typing_extensions import Doc
 
+from qtasks.contexts.sync_context import SyncContext
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.schemas.task import Task
@@ -88,6 +89,12 @@ class SyncTask:
         self.executor = executor
         self.middlewares = middlewares
         self._app = app
+
+        self.ctx = SyncContext(task_name=task_name, priority=priority,
+            echo=echo, retry=retry,
+            executor=executor, middlewares=middlewares,
+            app=app
+        )
         
     def add_task(self,
             priority: Annotated[

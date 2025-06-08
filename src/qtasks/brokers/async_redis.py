@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 from .base import BaseBroker
 from qtasks.schemas.task import Task
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema
+from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
 from qtasks.storages import AsyncRedisStorage
 
 class AsyncRedisBroker(BaseBroker):
@@ -315,7 +315,7 @@ class AsyncRedisBroker(BaseBroker):
                 )
             ],
             model: Annotated[
-                Union[TaskStatusNewSchema|TaskStatusErrorSchema],
+                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
                 Doc(
                     """
                     Модель результата задачи.

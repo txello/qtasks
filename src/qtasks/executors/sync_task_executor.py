@@ -77,17 +77,19 @@ class SyncTaskExecutor(BaseTaskExecutor):
         self._args = []
         self._kwargs = {}
         self._result: Any = None
+        self.echo = None
 
 
     def before_execute(self):
         """Вызов перед запуском задач."""
         if self.task_func.echo:
-            echo = SyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
-                echo=self.task_func.echo,
+            self.echo = SyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
+                echo=self.task_func.echo, retry=self.task_func.retry,
                 executor=self.task_func.executor, middlewares=self.task_func.middlewares
             )
+            self.echo.ctx._update(task_uuid=self.task_broker.uuid)
             self._args = self.task_broker.args[:]
-            self._args.insert(0, echo)
+            self._args.insert(0, self.echo)
         else:
             self._args = self.task_broker.args
         self._kwargs = self.task_broker.kwargs
@@ -136,6 +138,9 @@ class SyncTaskExecutor(BaseTaskExecutor):
         Returns:
             Any: Результат задачи.
         """
+        if self.echo:
+            self.echo.ctx._update(generate_handler=self.task_func.generate_handler)
+        
         results = []
         if self.task_func.generating == "async":
             raise RuntimeError("Невозможно запустить асинхронный генератор задачи в синхронном виде!")
