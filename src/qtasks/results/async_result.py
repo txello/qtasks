@@ -105,11 +105,16 @@ class AsyncResult:
             return None
 
     async def _execute_task(self) -> Task|None:
+        uuid = self.uuid
         while True:
             if self._stop_event.is_set():
                 break
-
-            task = await self._app.get(uuid=self.uuid)
+            
+            task = await self._app.get(uuid=uuid)
+            if hasattr(task, "retry") and task.retry > 0:
+                if hasattr(task, "retry_child_uuid"):
+                    uuid = task.retry_child_uuid
+                    continue
             if not task or task.status not in [TaskStatusEnum.SUCCESS.value, TaskStatusEnum.ERROR.value, TaskStatusEnum.CANCEL.value]:
                 await asyncio.sleep(self._sleep_time)
                 continue
@@ -122,3 +127,19 @@ class AsyncResult:
                 raise ImportError("Невозможно получить app!")
         if not self.log:
             self.log = qtasks._state.log_main
+
+    async def _plugin_trigger(self, name: str, *args, **kwargs):
+        """
+        Вызвать триггер плагина.
+
+        Args:
+            name (str): Имя триггера.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
+        """
+        results = []
+        for plugin in self._app.plugins.get(name, []) + self._app.plugins.get("Globals", []):
+            result = await plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results

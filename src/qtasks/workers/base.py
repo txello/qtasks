@@ -6,7 +6,6 @@ from typing_extensions import Annotated, Doc
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.middlewares.task import TaskMiddleware
-from qtasks.plugins.retries.sync_retry import SyncRetryPlugin
 from qtasks.schemas.inits import InitsExecSchema
 from qtasks.schemas.task_exec import TaskExecSchema
 

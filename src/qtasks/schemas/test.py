@@ -33,4 +33,4 @@ class TestConfig:
     
     @classmethod
     def full_broker(cls):
-        return cls(broker=True, storage=True, global_config = True, plugins = True)
+        return cls(broker=True, storage=True, global_config=True, plugins=True)

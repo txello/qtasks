@@ -26,17 +26,30 @@ class AsyncRetryPlugin(BasePlugin):
     async def _execute(self, broker: BaseBroker, task_func: TaskExecSchema, task_broker: TaskPrioritySchema, trace: str) -> TaskStatusErrorSchema:
         task = await broker.get(uuid=task_broker.uuid)
         task_retry = int(task.retry) if hasattr(task, "retry") else task_func.retry
+        new_task = None
 
         if task_retry > 0:
-            await broker.add(task_name=task_broker.name, priority=task_broker.priority,
+            new_task = await broker.add(task_name=task_broker.name, priority=task_broker.priority,
                 extra={
                     "retry": task_retry - 1,
-                    "retry_uuid": task_broker.uuid
+                    "retry_parent_uuid": task_broker.uuid
                 }, 
                 *task_broker.args, **task_broker.kwargs
             )
         
         model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time.time())
-        model.__class__ = make_dataclass('TaskStatusErrorSchema', fields=[('retry', int|None, field(default=None))], bases=(TaskStatusErrorSchema,))
+        fields = [
+            ('retry', int|None, field(default="None")),
+        ]
+        if new_task is not None:
+            fields.append(('retry_child_uuid', str|None, field(default="None")))
+        
+        model.__class__ = make_dataclass(
+            'TaskStatusErrorSchema',
+            fields=fields,
+            bases=(TaskStatusErrorSchema,)
+        )
         model.retry = task_retry
+        if new_task is not None:
+            model.retry_child_uuid = new_task.uuid if task_retry > 0 else "None"
         return model

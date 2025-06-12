@@ -12,6 +12,7 @@ from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.workers.sync_worker import SyncThreadWorker
 from qtasks.starters.sync_starter import SyncStarter
 from qtasks.results.sync_result import SyncResult
+from qtasks.plugins.retries import sync_retry_plugin
 
 from qtasks.configs import QueueConfig
 from qtasks.schemas.inits import InitsExecSchema
@@ -125,6 +126,8 @@ class QueueTasks(BaseQueueTasks):
         self._registry_tasks()
 
         self._set_state()
+
+        self.init_plugins()
     
     def add_task(self, 
             task_name: Annotated[

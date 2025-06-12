@@ -120,7 +120,7 @@ class BaseBroker(ABC):
                     """
                 )
             ] = None
-        ):
+        ) -> Task:
         """Добавление задачи в брокер.
 
         Args:

@@ -11,8 +11,8 @@ from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.exc.task import TaskCancelError
 from qtasks.executors.sync_task_executor import SyncTaskExecutor
 from qtasks.logs import Logger
-from qtasks.plugins.retries.sync_retry import SyncRetryPlugin
 from qtasks.schemas.task import Task
+from qtasks.plugins.retries import sync_retry_plugin
 
 from .base import BaseWorker
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
@@ -375,4 +375,4 @@ class SyncThreadWorker(BaseWorker):
         return results
 
     def init_plugins(self):
-        self.add_plugin(SyncRetryPlugin(), trigger_names=["retry"])
+        self.add_plugin(sync_retry_plugin, trigger_names=["retry"])

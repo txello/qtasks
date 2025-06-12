@@ -354,6 +354,9 @@ class BaseQueueTasks:
             self.worker.task_middlewares.append(middleware)
         self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
         return
+    
+    def init_plugins(self):
+        pass
 
     def _registry_tasks(self):
         """

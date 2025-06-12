@@ -2,7 +2,7 @@ import asyncio
 import json
 from time import time
 import traceback
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
@@ -14,8 +14,8 @@ from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.exc.task import TaskCancelError
 from qtasks.executors.async_task_executor import AsyncTaskExecutor
 from qtasks.logs import Logger
-from qtasks.plugins.retries.async_retry import AsyncRetryPlugin
 from qtasks.schemas.task import Task
+from qtasks.plugins.retries import async_retry_plugin
 
 from .base import BaseWorker
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
@@ -397,4 +397,4 @@ class AsyncWorker(BaseWorker):
         return results
 
     def init_plugins(self):
-        self.add_plugin(AsyncRetryPlugin(), trigger_names=["retry"])
+        self.add_plugin(async_retry_plugin, trigger_names=["retry"])

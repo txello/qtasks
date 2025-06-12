@@ -14,6 +14,7 @@ from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.workers.async_worker import AsyncWorker
 from qtasks.starters.async_starter import AsyncStarter
 from qtasks.results.async_result import AsyncResult
+from qtasks.plugins.retries import async_retry_plugin
 
 from qtasks.configs import QueueConfig
 from qtasks.schemas.inits import InitsExecSchema
@@ -139,6 +140,8 @@ class QueueTasks(BaseQueueTasks):
         self._registry_tasks()
 
         self._set_state()
+
+        self.init_plugins()
 
     async def add_task(self, 
             task_name: Annotated[
