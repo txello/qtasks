@@ -2,7 +2,7 @@ import asyncio
 from typing import TYPE_CHECKING, Optional
 from typing_extensions import Annotated, Doc
 
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 
 from .base import BaseStarter
@@ -78,12 +78,12 @@ class AsyncStarter(BaseStarter):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -170,7 +170,7 @@ class AsyncStarter(BaseStarter):
         Args:
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
         """
-        for model_plugin in self.plugins.values():
+        for model_plugin in [i for y in self.plugins.values() for i in y]:
             await model_plugin.start()
         
         for model in self._inits["init_starting"]:
@@ -183,12 +183,9 @@ class AsyncStarter(BaseStarter):
             await asyncio.gather(broker_task, worker_task)
         except asyncio.CancelledError:
             pass
-        finally:
-            await self.stop()
 
     async def stop(self):
         """Останавливает все компоненты."""
-
         self.log.info(f"Остановка QueueTasks...")
         if self.broker:
             await self.broker.stop()
@@ -205,5 +202,5 @@ class AsyncStarter(BaseStarter):
         for model_init in self._inits["init_stoping"]:
             await model_init.func(worker=self.worker, broker=self.broker) if model_init.awaiting else model_init.func(worker=self.worker, broker=self.broker)
 
-        for model_plugin in self.plugins.values():
+        for model_plugin in [i for y in self.plugins.values() for i in y]:
             await model_plugin.stop()

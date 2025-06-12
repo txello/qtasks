@@ -1,37 +1,34 @@
 import asyncio
 import asyncio_atexit
 import inspect
-from typing import TYPE_CHECKING, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Callable, List, Optional, Type, Union, overload
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
-import qtasks._state
-from qtasks.configs.config_observer import ConfigObserver
-from qtasks.executors.base import BaseTaskExecutor
+from qtasks.types.annotations import P, R
+from qtasks.base.qtasks import BaseQueueTasks
 from qtasks.logs import Logger
-from qtasks.middlewares.base import BaseMiddleware
-from qtasks.middlewares.task import TaskMiddleware
+
+from qtasks.brokers.async_redis import AsyncRedisBroker
 from qtasks.registries.async_task_decorator import AsyncTask
-from qtasks.registries.task_registry import TaskRegistry
-from qtasks.results.async_result import AsyncResult
 from qtasks.workers.async_worker import AsyncWorker
 from qtasks.starters.async_starter import AsyncStarter
-from qtasks.brokers.async_redis import AsyncRedisBroker
-from qtasks.routers import Router
+from qtasks.results.async_result import AsyncResult
+from qtasks.plugins.retries import async_retry_plugin
 
 from qtasks.configs import QueueConfig
 from qtasks.schemas.inits import InitsExecSchema
-from qtasks.schemas.task_exec import TaskExecSchema
 from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
     from qtasks.brokers.base import BaseBroker
     from qtasks.starters.base import BaseStarter
-    from qtasks.plugins.base import BasePlugin
+    from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.middlewares.task import TaskMiddleware
 
 
-class QueueTasks:
+class QueueTasks(BaseQueueTasks):
     """
     `QueueTasks` - Фреймворк для очередей задач.
 
@@ -99,6 +96,16 @@ class QueueTasks:
                     По умолчанию: `qtasks.logs.Logger`.
                     """
                 )
+            ] = None,
+            config: Annotated[
+                Optional[QueueConfig],
+                Doc(
+                    """
+                    Конфиг.
+                    
+                    По умолчанию: `qtasks.configs.QueueConfig`.
+                    """
+                )
             ] = None
         ):
         """
@@ -109,69 +116,15 @@ class QueueTasks:
             broker_url (str, optional): URL для Брокера. Используется Брокером по умолчанию через параметр url. По умолчанию: `None`.
             broker (Type[BaseBroker], optional): Брокер. Хранит в себе обработку из очередей задач и хранилище данных. По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
             worker (Type[BaseWorker], optional): Воркер. Хранит в себе обработку задач. По умолчанию: `qtasks.workers.AsyncWorker`.
+            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.QueueConfig`.
         """
-        self.name = name
-        
-        self.config_dataclass: Annotated[
-            QueueConfig,
-            Doc(
-                """
-                Конфиг, тип `qtasks.configs.QueueConfig`.
-                
-                По умолчанию: `QueueConfig()`.
-                """
-            )
-        ] = QueueConfig()
-        self.config: Annotated[
-            ConfigObserver,
-            Doc(
-                """
-                Обсервер конфига. Хранит в себе QueueConfig.
-                """
-            )
-        ] = ConfigObserver(self.config_dataclass)
-        self.config.subscribe(self._update_configs)
+        super().__init__(name=name, broker=broker, worker=worker, log=log, config=config)
+        self._method = "async"
 
-        self.log = log.with_subname("QueueTasks") if log else Logger(name=self.name, subname="QueueTasks", default_level=self.config.logs_default_level, format=self.config.logs_format)
-
-        self.broker = broker or AsyncRedisBroker(name=name, url=broker_url, log=self.log, config=self.config)
-        self.worker = worker or AsyncWorker(name=name, broker=self.broker, log=self.log, config=self.config)
+        self.broker: "BaseBroker" = self.broker or AsyncRedisBroker(name=name, url=broker_url, log=self.log, config=self.config)
+        self.worker: "BaseWorker" = self.worker or AsyncWorker(name=name, broker=self.broker, log=self.log, config=self.config)
         self.starter: "BaseStarter"|None = None
-
-        
-        self.routers: Annotated[
-            list[Router],
-            Doc(
-                """
-                Роутеры, тип `qtasks.routers.Router`.
-                
-                По умолчанию: `Пустой массив`.
-                """
-            )
-        ] = []
-        
-        self.tasks: Annotated[
-            dict[str, TaskExecSchema],
-            Doc(
-                """
-                Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
-                
-                По умолчанию: `Пустой словарь`.
-                """
-            )
-        ] = {}
-        
-        self.plugins: Annotated[
-            dict[str, "BasePlugin"],
-            Doc(
-                """
-                Задачи, тип `{plugin_name:qtasks.plugins.base.BasePlugin}`.
-                
-                По умолчанию: `Пустой словарь`.
-                """
-            )
-        ] = {}
-        
         
         self._global_loop: Annotated[
             Optional[asyncio.AbstractEventLoop],
@@ -184,104 +137,11 @@ class QueueTasks:
             )
         ] = None
         
-        self._inits: Annotated[
-            dict[str, list[InitsExecSchema]],
-            Doc(
-                """
-                функции инициализаций.
-                
-                По умолчанию установлены: `init_starting, init_worker_running, init_task_running, init_task_stoping, init_task_stoping, init_worker_stoping` и `init_stoping`.
-                """
-            )
-        ] = {
-            "init_starting":[],
-            "init_worker_running":[],
-            "init_task_running":[],
-            "init_task_stoping":[],
-            "init_worker_stoping":[],
-            "init_stoping":[]
-        }
-
-        self._method: Annotated[
-            str,
-            Doc(
-                """Метод использования QueueTasks.
-                
-                Указано: `async`.
-                """
-            )
-        ] = "async"
-        
         self._registry_tasks()
 
         self._set_state()
-    
-    def task(self,
-            name: Annotated[
-                Optional[str],
-                Doc(
-                    """
-                    Имя задачи.
-                    
-                    По умолчанию: `func.__name__`.
-                    """
-                )
-            ] = None,
-            priority: Annotated[
-                Optional[int],
-                Doc(
-                    """
-                    Приоритет у задачи по умолчанию.
-                    
-                    По умолчанию: `config.default_task_priority`.
-                    """
-                )
-            ] = None,
-            executor: Annotated[
-                Type["BaseTaskExecutor"],
-                Doc(
-                    """
-                    Класс `BaseTaskExecutor`.
-                    
-                    По умолчанию: `SyncTaskExecutor`.
-                    """
-                )
-            ] = None,
-            middlewares: Annotated[
-                List[TaskMiddleware],
-                Doc(
-                    """
-                    Мидлвари.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-                )
-            ] = None
-        ):
-        """Декоратор для регистрации задач.
-
-        Args:
-            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
-        """
-        def wrapper(func):
-            nonlocal name, priority, executor, middlewares
-            
-            task_name = name or func.__name__
-            if task_name in self.tasks:
-                raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
-            
-            if priority is None:
-                priority = self.config.default_task_priority
-            
-            middlewares = middlewares or []
-            model = TaskExecSchema(name=task_name, priority=0, func=func, awaiting=inspect.iscoroutinefunction(func), executor=executor, middlewares=middlewares)
-            
-            self.tasks[task_name] = model
-            self.worker._tasks[task_name] = model
-            
-            return AsyncTask(app=self, task_name=task_name, priority=priority, executor=executor, middlewares=middlewares)
-        return wrapper
+        self.init_plugins()
 
     async def add_task(self, 
             task_name: Annotated[
@@ -355,7 +215,7 @@ class QueueTasks:
             
         args, kwargs = args or (), kwargs or {}
         
-        task = await self.broker.add(task_name, priority, *args, **kwargs)
+        task = await self.broker.add(task_name=task_name, priority=priority, extra=None, args=args, kwargs=kwargs)
         if timeout is not None:
             return await AsyncResult(uuid=task.uuid, app=self, log=self.log).result(timeout=timeout)
         return task
@@ -382,26 +242,6 @@ class QueueTasks:
             uuid = UUID(uuid)
         
         return await self.broker.get(uuid=uuid)
-    
-    def include_router(self,
-            router: Annotated[
-                Router,
-                Doc(
-                    """
-                    Роутер `qtasks.routers.Router`.
-                    """
-                )
-            ]
-        ) -> None:
-        """Добавить Router.
-
-        Args:
-            router (Router): Роутер `qtasks.routers.Router`.
-        """
-        self.routers.append(router)
-        self.tasks.update(router.tasks)
-        self.worker._tasks.update(router.tasks)
-    
     
     def run_forever(self,
             loop: Annotated[
@@ -632,16 +472,6 @@ class QueueTasks:
                 return False
             return True
         return True
-
-    def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
-        """
-        Добавить плагин.
-
-        Args:
-            plugin (Type[BasePlugin]): Класс плагина.
-            name (str, optional): Имя плагина. По умолчанию: `None`.
-        """
-        self.plugins.update({str(plugin.name or name): plugin})
         
     async def _plugin_trigger(self, name: str, *args, **kwargs):
         """
@@ -652,56 +482,30 @@ class QueueTasks:
             *args: Позиционные аргументы для триггера.
             **kwargs: Именованные аргументы для триггера.
         """
-        for plugin in self.plugins.values():
-            await plugin.trigger(name=name, *args, **kwargs)
-            
-    def _registry_tasks(self):
-        """
-        Зарегистрировать задачи из реестра задач.
-
-        Обновляет `self.tasks` и `self.worker._tasks` всеми задачами,
-        зарегистрированными в `TaskRegistry`.
-        """
-        self.tasks.update(TaskRegistry.all_tasks())
-        self.worker._tasks.update(TaskRegistry.all_tasks())
-
-    def _set_state(self):
-        """Установить параметры в `qtasks._state`."""
-        qtasks._state.app_main = self
-        qtasks._state.log_main = self.log
-
-    def _update_configs(self, config: QueueConfig, key, value):
-        if key == "logs_default_level":
-            self.log.default_level = value
-            self.log = self.log.update_logger()
-            self._update_logs(default_level=value)
-
-    def _update_logs(self, **kwargs):
-        if self.worker:
-            self.worker.log = self.worker.log.update_logger(**kwargs)
-        if self.broker:
-            self.broker.log = self.broker.log.update_logger(**kwargs)
-            if self.broker.storage:
-                self.broker.storage.log = self.broker.storage.log.update_logger(**kwargs)
-                if self.broker.storage.global_config:
-                    self.broker.storage.global_config.log = self.broker.storage.global_config.log.update_logger(**kwargs)
-    
-    def add_middleware(self, middleware: Type[BaseMiddleware]) -> None:
-        """Добавить мидлварь.
-
-        Args:
-            middleware (Type[BaseMiddleware]): Мидлварь.
-
-        Raises:
-            ImportError: Невозможно подключить Middleware: Он не относится к классу BaseMiddleware!
-        """
-        if not middleware.__base__ or middleware.__base__.__base__.__name__ != "BaseMiddleware":
-            raise ImportError(f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!")
-        if middleware.__base__.__name__ == "TaskMiddleware":
-            self.worker.task_middlewares.append(middleware)
-        self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
-        return
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = await plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
     
     async def flush_all(self) -> None:
         """Удалить все данные."""
         await self.broker.flush_all()
+
+    @overload
+    def task(self,
+        name: str|None = None,
+        priority: int|None = None,
+
+        echo: bool = False,
+        retry: int|None = None,
+        retry_on_exc: list[Type[Exception]]|None = None,
+        generate_handler: Callable|None = None,
+
+        executor: Type["BaseTaskExecutor"]|None = None,
+        middlewares: List["TaskMiddleware"]|None = None
+    ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]: ...
+
+    def task(self, *args, **kwargs):
+        return super().task(*args, **kwargs)

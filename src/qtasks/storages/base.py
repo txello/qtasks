@@ -1,15 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from dataclasses import field, fields, make_dataclass
+import datetime
+import json
+from typing import List, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 from typing import TYPE_CHECKING
 
 from qtasks.configs.config import QueueConfig
-from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskPrioritySchema
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusSuccessSchema
+from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema, TaskStatusSuccessSchema
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
@@ -65,12 +67,12 @@ class BaseStorage(ABC):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -79,10 +81,11 @@ class BaseStorage(ABC):
         self.client = None
         self.global_config: "BaseGlobalConfig"|None = global_config
 
-        self.config = config or ConfigObserver(QueueConfig())
+        self.config = config or QueueConfig()
         self.log = log.with_subname("Storage") if log else Logger(name=self.name, subname="Storage", default_level=self.config.logs_default_level, format=self.config.logs_format)
-        self.plugins: dict[str, "BasePlugin"] = {}
-        pass
+        self.plugins: dict[str, List["BasePlugin"]] = {}
+
+        self.init_plugins()
     
     @abstractmethod
     def add(self,
@@ -169,15 +172,40 @@ class BaseStorage(ABC):
         """Останавливает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
     
-    def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
-        """
-        Добавить плагин.
+    def add_plugin(self, 
+            plugin: Annotated[
+                "BasePlugin",
+                Doc(
+                    """
+                    Плагин.
+                    """
+                )
+            ],
+            trigger_names: Annotated[
+                Optional[List[str]],
+                Doc(
+                    """
+                    Имя триггеров для плагина.
+                    
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
+                    """
+                )
+            ] = None
+        ) -> None:
+        """Добавить плагин в класс.
 
         Args:
-            plugin (Type[BasePlugin]): Класс плагина.
-            name (str, optional): Имя плагина. По умолчанию: `None`.
+            plugin (BasePlugin): Плагин
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
         """
-        self.plugins.update({str(plugin.name or name): plugin})
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return
         
     def remove_finished_task(self,
             task_broker: Annotated[
@@ -189,7 +217,7 @@ class BaseStorage(ABC):
                 )
             ],
             model: Annotated[
-                Union[TaskStatusNewSchema|TaskStatusErrorSchema],
+                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
                 Doc(
                     """
                     Модель результата задачи.
@@ -231,4 +259,73 @@ class BaseStorage(ABC):
     
     def flush_all(self) -> None:
         """Удалить все данные."""
+        pass
+
+    def _build_task(self, uuid, result: dict) -> Task:
+        # Сначала собираем стандартные аргументы Task
+
+        base_kwargs = dict(
+            status=result["status"],
+            uuid=uuid,
+            priority=int(result["priority"]),
+            task_name=result["task_name"],
+            args=json.loads(result["args"]),
+            kwargs=json.loads(result["kwargs"]),
+            created_at=datetime.datetime.fromtimestamp(float(result["created_at"])),
+            updated_at=datetime.datetime.fromtimestamp(float(result["updated_at"])),
+        )
+
+        # Вычисляем имена стандартных полей
+        task_field_names = {f.name for f in fields(Task)}
+
+        # Ищем дополнительные ключи
+        extra_fields = []
+        extra_values = {}
+
+        for key, value in result.items():
+            if key not in task_field_names:
+                # Типизация примитивная — можно улучшить
+                field_type = self._infer_type(value)
+                extra_fields.append((key, field_type, field(default=None)))
+
+                # Можно привести значение к типу
+                if field_type is bool:
+                    extra_values[key] = value.lower() == "true"
+                elif field_type is int:
+                    extra_values[key] = int(value)
+                elif field_type is float:
+                    extra_values[key] = float(value)
+                else:
+                    extra_values[key] = value
+
+        # Создаем новый dataclass с дополнительными полями
+        if extra_fields:
+            NewTask = make_dataclass("Task", extra_fields, bases=(Task,))
+        else:
+            NewTask = Task
+
+        # Объединяем все аргументы
+        task = NewTask(**base_kwargs, **extra_values)
+        if hasattr(task, "returning"):
+            try: task.returning = json.loads(task.returning)
+            except: pass
+        return task
+    
+    def _infer_type(self, value: str):
+        """Пытается определить реальный тип из строки."""
+        if value.lower() in {"true", "false"}:
+            return bool
+        try:
+            int(value)
+            return int
+        except ValueError:
+            pass
+        try:
+            float(value)
+            return float
+        except ValueError:
+            pass
+        return str
+    
+    def init_plugins(self):
         pass

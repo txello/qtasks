@@ -153,7 +153,7 @@ class AsyncTestCase(BaseTestCase):
             num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
         """
-        self.app.run_forever(loop=loop, num_workers=num_workers, reset_config=reset_config)
+        self.app.run_forever(loop=loop, starter=starter, num_workers=num_workers, reset_config=reset_config)
     
     async def stop(self):
         """Останавливает кейс тестирования."""

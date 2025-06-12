@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
-from typing import TYPE_CHECKING, Optional, Type
+from typing import TYPE_CHECKING, List, Optional, Type
 from typing_extensions import Annotated, Doc
 
 
@@ -74,18 +73,18 @@ class BaseStarter(ABC):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
         ):
         self.name = name
-        self.config = config or ConfigObserver(QueueConfig())
+        self.config = config or QueueConfig()
         self.log = log.with_subname("Starter") if log else Logger(name=self.name, subname="Starter", default_level=self.config.logs_default_level, format=self.config.logs_format)
         
         self.broker = broker
@@ -96,7 +95,9 @@ class BaseStarter(ABC):
             "init_stoping":[]
         }
         
-        self.plugins: dict[str, "BasePlugin"] = {}
+        self.plugins: dict[str, List["BasePlugin"]] = {}
+
+        self.init_plugins()
         
     @abstractmethod
     def start(self) -> None:
@@ -107,7 +108,7 @@ class BaseStarter(ABC):
         """Останавливает Стартер. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
     
-    def include_plugin(self,
+    def add_plugin(self, 
             plugin: Annotated[
                 "BasePlugin",
                 Doc(
@@ -116,24 +117,31 @@ class BaseStarter(ABC):
                     """
                 )
             ],
-            name: Annotated[
-                Optional[str],
+            trigger_names: Annotated[
+                Optional[List[str]],
                 Doc(
                     """
-                    Имя плагина.
+                    Имя триггеров для плагина.
                     
-                    По умолчанию: `plugin.name`.
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
                     """
                 )
             ] = None
-            ) -> None:
+        ) -> None:
         """Добавить плагин в класс.
 
         Args:
             plugin (BasePlugin): Плагин
-            name (str, optional): Имя плагина. По умолчанию: `plugin.name`.
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
         """
-        self.plugins.update({str(plugin.name or name): plugin})
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return
 
     def update_configs(self,
             config: Annotated[
@@ -159,3 +167,6 @@ class BaseStarter(ABC):
                 self.broker.storage.update_config(config)
                 if self.broker.storage.global_config:
                     self.broker.storage.global_config.update_config(config)
+    
+    def init_plugins(self):
+        pass

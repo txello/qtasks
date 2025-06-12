@@ -41,7 +41,7 @@ class SyncResult:
             ] = None,
 
             app: Annotated[
-                "QueueTasks",
+                Optional["QueueTasks"],
                 Doc(
                     """
                     `QueueTasks` экземпляр.
@@ -105,14 +105,19 @@ class SyncResult:
                 return None
 
     def _execute_task(self) -> Task|None:
+        uuid = self.uuid
         while True:
             if self._stop_event.is_set():
                 break
 
-            task = self._app.get(uuid=self.uuid)
-            if not task or task.status not in [TaskStatusEnum.SUCCESS.value, TaskStatusEnum.ERROR.value]:
+            task = self._app.get(uuid=uuid)
+            if not task or task.status not in [TaskStatusEnum.SUCCESS.value, TaskStatusEnum.ERROR.value, TaskStatusEnum.CANCEL.value]:
                 time.sleep(self._sleep_time)
                 continue
+            if hasattr(task, "retry") and hasattr(task, "retry_child_uuid"):
+                uuid = task.retry_child_uuid
+                continue
+                    
             return task
 
     def _update_state(self) -> "QueueTasks":

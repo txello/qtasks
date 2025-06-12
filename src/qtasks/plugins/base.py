@@ -36,12 +36,11 @@ class BasePlugin(ABC):
         pass
     
     @abstractmethod
-    def trigger(self, name: str, *args, **kwargs):
+    def trigger(self, name: str, **kwargs):
         """Триггер плагина
 
         Args:
             name (str): Имя триггера.
-            args (tuple, optional): Аргументы триггера типа args.
             kwargs (dict, optional): Аргументы триггера типа kwargs.
         """
         pass

@@ -1,4 +1,4 @@
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from typing import TYPE_CHECKING, Optional
 from typing_extensions import Annotated, Doc
@@ -76,12 +76,12 @@ class SyncStarter(BaseStarter):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -146,7 +146,7 @@ class SyncStarter(BaseStarter):
         Args:
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
         """
-        for model_plugin in self.plugins.values():
+        for model_plugin in [i for y in self.plugins.values() for i in y]:
             model_plugin.start()
 
         for model in self._inits["init_starting"]:
@@ -178,5 +178,5 @@ class SyncStarter(BaseStarter):
         for model in self._inits["init_stoping"]:
             model.func(worker=self.worker, broker=self.broker)
                 
-        for model_plugin in self.plugins.values():
+        for model_plugin in [i for y in self.plugins.values() for i in y]:
             model_plugin.stop()

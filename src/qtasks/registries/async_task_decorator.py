@@ -1,6 +1,8 @@
-from typing import TYPE_CHECKING, Annotated, List, Optional, Type
+from typing import TYPE_CHECKING, Annotated, Callable, Generic, List, Optional, Type
 from typing_extensions import Doc
 
+from qtasks.types.annotations import P, R
+from qtasks.contexts.async_context import AsyncContext
 from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
@@ -9,27 +11,84 @@ if TYPE_CHECKING:
     from qtasks.middlewares.task import TaskMiddleware
 
 
-class AsyncTask:
+class AsyncTask(Generic[P, R]):
+    """`AsyncTask` - класс для замены функции декоратором `@app.task` и `@shared_task`.
+
+    ## Пример
+
+    ```python
+    import asyncio
+    from qtasks import QueueTasks
+    
+    app = QueueTasks()
+
+    @app.task("test")
+    async def test():
+        print("Это тест!")
+
+    asyncio.run(await test.add_task())
+    ```
+    """
+
     def __init__(self,
             task_name: Annotated[
-                str,
+                Optional[str],
                 Doc(
                     """
                     Имя задачи.
+                    
+                    По умолчанию: `func.__name__`.
                     """
                 )
-            ],
+            ] = None,
             priority: Annotated[
-                int,
+                Optional[int],
                 Doc(
                     """
-                    Приоритет задачи.
+                    Приоритет у задачи по умолчанию.
+                    
+                    По умолчанию: `config.default_task_priority`.
                     """
                 )
-            ],
+            ] = None,
 
-            echo: bool = False,
-            
+            echo: Annotated[
+                bool,
+                Doc("""
+                    Включить вывод в консоль.
+                    
+                    По умолчанию: `False`.
+                    """
+                )
+            ] = False,
+            retry: Annotated[
+                int|None,
+                Doc("""
+                    Количество попыток повторного выполнения задачи.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            retry_on_exc: Annotated[
+                list[Type[Exception]]|None,
+                Doc("""
+                    Исключения, при которых задача будет повторно выполнена.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            generate_handler: Annotated[
+                Callable|None,
+                Doc("""
+                    Генератор обработчика.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+
             executor: Annotated[
                 Type["BaseTaskExecutor"],
                 Doc(
@@ -65,10 +124,17 @@ class AsyncTask:
         self.priority = priority
         
         self.echo = echo
+        self.retry = retry
+        self.retry_on_exc = retry_on_exc
 
         self.executor = executor
         self.middlewares = middlewares
         self._app = app
+
+        self.ctx = AsyncContext(generate_handler=generate_handler,
+            executor=executor, middlewares=middlewares,
+            app=app
+        )
         
     async def add_task(self,
             priority: Annotated[
@@ -111,6 +177,17 @@ class AsyncTask:
                     Если указан, задача возвращается через `qtasks.results.AsyncTask`.
                     """
                 )
+            ] = None,
+
+            task_name: Annotated[
+                str,
+                Doc(
+                    """
+                    Имя задачи.
+
+                    По умолчанию: Значение имени у задачи.
+                    """
+                )
             ] = None
         ) -> Task|None:
         """Добавить задачу.
@@ -120,6 +197,7 @@ class AsyncTask:
             args (tuple, optional): args задачи. По умолчанию: `()`.
             kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`.
             timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.SyncTask`.
+            task_name (str, optional): Имя задачи. По умолчанию: Значение имени у задачи.
 
         Returns:
             Task|None: Результат задачи или `None`.
@@ -130,9 +208,10 @@ class AsyncTask:
         if priority is None:
             priority = self.priority
         
-        return await self._app.add_task(task_name=self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
+        return await self._app.add_task(task_name=task_name or self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
     
     def _update_app(self) -> "QueueTasks":
+        """Обновление приложения."""
         if not self._app:
             import qtasks._state
             if qtasks._state.app_main is None:

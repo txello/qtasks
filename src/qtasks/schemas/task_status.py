@@ -73,3 +73,14 @@ class TaskStatusErrorSchema(BaseTaskStatusSchema):
     """
     status: str = TaskStatusEnum.ERROR.value
     traceback: str = ""
+
+@dataclass
+class TaskStatusCancelSchema(BaseTaskStatusSchema):
+    """`TaskStatusCancelSchema` схема.
+    
+    Args:
+        status (str): Статус.
+        cancel_reason (str): Причина отмены задачи.
+    """
+    status: str = TaskStatusEnum.CANCEL.value
+    cancel_reason: str = ""

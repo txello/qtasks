@@ -11,7 +11,7 @@ include = ["qtasks*"]
 
 [project]
 name = "qtasks"
-version = "1.3.0"
+version = "1.4.0"
 authors = [
   { name="txello", email="txello@inbox.ru" },
 ]
@@ -41,3 +41,6 @@ kafka = ["kafka>=2.2.10", "aiokafka>=0.12.0"]
 [project.urls]
 Homepage = "https://github.com/txello/qtasks"
 Issues = "https://github.com/txello/qtasks/issues"
+
+[project.scripts]
+qtasks = "qtasks.__main__:main"

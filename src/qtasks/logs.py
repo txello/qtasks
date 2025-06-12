@@ -13,7 +13,7 @@ class Logger:
     from qtasks.logs import Logger
     
     logger = Logger(name="QueueTasks", subname="Global")
-    app = QueueTasks(logs=logger)
+    app = QueueTasks(log=logger)
 
     app.log.debug("Тест") # asctime [QueueTasks: DEBUG] (QueueTasks) Тест
     ```

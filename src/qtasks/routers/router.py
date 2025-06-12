@@ -1,9 +1,11 @@
 import inspect
-from typing import TYPE_CHECKING, List, Optional, Type
+from typing import TYPE_CHECKING, Callable, List, Literal, Optional, Type, Union, overload
 from typing_extensions import Annotated, Doc
 
+from qtasks.types.annotations import P, R
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
+from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.task_exec import TaskExecSchema
 
@@ -30,7 +32,13 @@ class Router:
     app.include_router(router)
     ```
     """
-    def __init__(self):
+    @overload
+    def __init__(self, method: Literal["sync"] = None) -> None: ...
+    @overload
+    def __init__(self, method: Literal["async"] = None) -> None: ...
+
+    def __init__(self, method: Literal["sync", "async"] = None):
+        self._method = method
         self.tasks: Annotated[
             dict[str, TaskExecSchema],
             Doc(
@@ -42,8 +50,8 @@ class Router:
             )
         ] = {}
         
-        self.plugins: dict[str, "BasePlugin"] = {}
-    
+        self.plugins: dict[str, List["BasePlugin"]] = {}
+
     def task(self,
             name: Annotated[
                 Optional[str],
@@ -56,15 +64,53 @@ class Router:
                 )
             ] = None,
             priority: Annotated[
-                int,
+                Optional[int],
                 Doc(
                     """
-                    Приоритет задачи.
+                    Приоритет у задачи по умолчанию.
                     
-                    По умолчанию: `0`.
+                    По умолчанию: `config.default_task_priority`.
                     """
                 )
-            ] = 0,
+            ] = None,
+
+            echo: Annotated[
+                bool,
+                Doc("""
+                    Включить вывод в консоль.
+                    
+                    По умолчанию: `False`.
+                    """
+                )
+            ] = False,
+            retry: Annotated[
+                int|None,
+                Doc("""
+                    Количество попыток повторного выполнения задачи.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            retry_on_exc: Annotated[
+                list[Type[Exception]]|None,
+                Doc("""
+                    Исключения, при которых задача будет повторно выполнена.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            generate_handler: Annotated[
+                Callable|None,
+                Doc("""
+                    Генератор обработчика.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+
             executor: Annotated[
                 Type["BaseTaskExecutor"],
                 Doc(
@@ -76,7 +122,7 @@ class Router:
                 )
             ] = None,
             middlewares: Annotated[
-                List[TaskMiddleware],
+                List["TaskMiddleware"],
                 Doc(
                     """
                     Мидлвари.
@@ -85,19 +131,60 @@ class Router:
                     """
                 )
             ] = None
-        ):
+        ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
         """Декоратор для регистрации задач.
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
+            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
+            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
+            middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
+
+        Raises:
+            ValueError: Если задача с таким именем уже зарегистрирована.
+            ValueError: Неизвестный метод {self._method}.
+
+        Returns:
+            Callable[SyncTask|AsyncTask]: Декоратор для регистрации задачи.
         """
         def wrapper(func):
-            nonlocal name, priority, executor, middlewares
+            nonlocal name, priority, executor, middlewares, echo, retry, retry_on_exc
+            
             task_name = name or func.__name__
+            if task_name in self.tasks:
+                raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
+            
+            if priority is None:
+                priority = 0
+            
+            generating = False
+            if inspect.isgeneratorfunction(func): generating = "sync"
+            if inspect.isasyncgenfunction(func): generating = "async"
+
             middlewares = middlewares or []
-            model = TaskExecSchema(name=task_name, priority=priority, func=func, awaiting=inspect.iscoroutinefunction(func), executor=executor, middlewares=middlewares)
+            
+            model = TaskExecSchema(
+                name=task_name, priority=priority, func=func,
+                awaiting=inspect.iscoroutinefunction(func),
+                generating=generating,
+
+                echo=echo,
+                retry=retry,
+                retry_on_exc=retry_on_exc,
+                generate_handler=generate_handler,
+
+                executor=executor, middlewares=middlewares
+            )
             
             self.tasks[task_name] = model
-            
-            return SyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares)
+            if self._method == "async":
+                return AsyncTask(app=self, task_name=task_name, priority=priority, echo=echo, retry=retry, retry_on_exc=retry_on_exc, generate_handler=generate_handler, executor=executor, middlewares=middlewares)
+            elif self._method == "sync":
+                return SyncTask(app=self, task_name=task_name, priority=priority, echo=echo, retry=retry, retry_on_exc=retry_on_exc, generate_handler=generate_handler, executor=executor, middlewares=middlewares)
+            else:
+                raise ValueError(f"Неизвестный метод {self._method}")
         return wrapper

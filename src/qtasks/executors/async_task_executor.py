@@ -1,8 +1,10 @@
+import asyncio
 import json
-from typing import Any, Optional
+from typing import Any, AsyncGenerator, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.registries.async_task_decorator import AsyncTask
+from qtasks.registries.sync_task_decorator import SyncTask
 
 from .base import BaseTaskExecutor
 from qtasks.logs import Logger
@@ -75,17 +77,25 @@ class AsyncTaskExecutor(BaseTaskExecutor):
         self._args = []
         self._kwargs = {}
         self._result: Any = None
+        self.echo = None
 
 
     async def before_execute(self):
-        """Вызов перед запуском задач."""
+        """Вызывается перед выполнением задачи."""
         if self.task_func.echo:
-            echo = AsyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
-                echo=self.task_func.echo,
-                executor=self.task_func.executor, middlewares=self.task_func.middlewares
-            )
+            if not self.task_func.awaiting or self.task_func.generating == "sync":
+                self.echo = SyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
+                    echo=self.task_func.echo, retry=self.task_func.retry, retry_on_exc=self.task_func.retry_on_exc,
+                    executor=self.task_func.executor, middlewares=self.task_func.middlewares
+                )
+            else:
+                self.echo = AsyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
+                    echo=self.task_func.echo, retry=self.task_func.retry, retry_on_exc=self.task_func.retry_on_exc,
+                    executor=self.task_func.executor, middlewares=self.task_func.middlewares
+                )
+            self.echo.ctx._update(task_uuid=self.task_broker.uuid)
             self._args = self.task_broker.args[:]
-            self._args.insert(0, echo)
+            self._args.insert(0, self.echo)
         else:
             self._args = self.task_broker.args
         self._kwargs = self.task_broker.kwargs
@@ -106,16 +116,56 @@ class AsyncTaskExecutor(BaseTaskExecutor):
         Returns:
             Any: Результат задачи.
         """
-        if self.task_broker.args and self.task_broker.kwargs:
-            result = await self.task_func(*self.task_broker.args, **self.task_broker.kwargs)\
-                if self.task_func.awaiting else self.task_func.func(*self.task_broker.args, **self.task_broker.kwargs)
-        elif self.task_broker.args:
-            result = await self.task_func.func(*self.task_broker.args) if self.task_func.awaiting else self.task_func.func(*self.task_broker.args)
-        elif self.task_broker.kwargs:
-            result = await self.task_func.func(**self.task_broker.kwargs) if self.task_func.awaiting else self.task_func.func(**self.task_broker.kwargs)
+        if self._args and self._kwargs:
+            result = await self.task_func.func(*self._args, **self._kwargs) if self.task_func.awaiting else self.task_func.func(*self._args, **self._kwargs)
+        elif self._args:
+            result = await self.task_func.func(*self._args) if self.task_func.awaiting else self.task_func.func(*self._args)
+        elif self._kwargs:
+            result = await self.task_func.func(**self._kwargs) if self.task_func.awaiting else self.task_func.func(**self._kwargs)
         else:
             result = await self.task_func.func() if self.task_func.awaiting else self.task_func.func()
+
+        if self.task_func.generating:
+            return await self.run_task_gen(result)
+        
         return result
+    
+    async def run_task_gen(self, func: AsyncGenerator) -> list[Any]:
+        """Вызов генератора задачи.
+
+        Args:
+            func (FunctionType): Функция.
+
+        Returns:
+            Any: Результат задачи.
+        """
+        if self.echo:
+            self.echo.ctx._update(generate_handler=self.task_func.generate_handler)
+        
+        results = []
+        if self.task_func.generating == "async":
+            async for result in func:
+                if self.task_func.generate_handler:
+                    result = await self._maybe_await(self.task_func.generate_handler(result))
+                results.append(result)
+
+        elif self.task_func.generating == "sync":
+            try:
+                while True:
+                    result = next(func)
+                    if self.task_func.generate_handler:
+                        result = await self._maybe_await(self.task_func.generate_handler(result))
+                    results.append(result)
+            except StopIteration:
+                pass
+
+        return results
+    
+    
+    async def _maybe_await(self, value):
+        if asyncio.iscoroutine(value):
+            return await value
+        return value
     
     async def execute(self,
             decode: bool = True

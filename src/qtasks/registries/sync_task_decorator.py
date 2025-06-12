@@ -1,6 +1,8 @@
-from typing import TYPE_CHECKING, Annotated, List, Optional, Type
+from typing import TYPE_CHECKING, Annotated, Callable, Generic, List, Optional, Type
 from typing_extensions import Doc
 
+from qtasks.types.annotations import P, R
+from qtasks.contexts.sync_context import SyncContext
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.schemas.task import Task
@@ -9,7 +11,7 @@ from qtasks.schemas.task import Task
 if TYPE_CHECKING:
     from qtasks import QueueTasks
 
-class SyncTask:
+class SyncTask(Generic[P, R]):
     """`SyncTask` - класс для замены функции декоратором `@app.task` и `@shared_task`.
 
     ## Пример
@@ -29,33 +31,62 @@ class SyncTask:
 
     def __init__(self,
             task_name: Annotated[
-                str,
+                Optional[str],
                 Doc(
                     """
                     Имя задачи.
+                    
+                    По умолчанию: `func.__name__`.
                     """
                 )
-            ],
+            ] = None,
             priority: Annotated[
-                int,
+                Optional[int],
                 Doc(
                     """
-                    Приоритет задачи.
-                    """
-                )
-            ],
-            app: Annotated[
-                "QueueTasks",
-                Doc(
-                    """
-                    `QueueTasks` экземпляр.
-
-                    По умолчанию: `qtasks._state.app_main`.
+                    Приоритет у задачи по умолчанию.
+                    
+                    По умолчанию: `config.default_task_priority`.
                     """
                 )
             ] = None,
 
-            echo: bool = False,
+            echo: Annotated[
+                bool,
+                Doc("""
+                    Включить вывод в консоль.
+                    
+                    По умолчанию: `False`.
+                    """
+                )
+            ] = False,
+            retry: Annotated[
+                int|None,
+                Doc("""
+                    Количество попыток повторного выполнения задачи.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            retry_on_exc: Annotated[
+                list[Type[Exception]]|None,
+                Doc("""
+                    Исключения, при которых задача будет повторно выполнена.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            generate_handler: Annotated[
+                Callable|None,
+                Doc("""
+                    Генератор обработчика.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
 
             executor: Annotated[
                 Type["BaseTaskExecutor"],
@@ -68,12 +99,22 @@ class SyncTask:
                 )
             ] = None,
             middlewares: Annotated[
-                List[TaskMiddleware],
+                List["TaskMiddleware"],
                 Doc(
                     """
                     Мидлвари.
 
                     По умолчанию: `Пустой массив`.
+                    """
+                )
+            ] = None,
+            app: Annotated[
+                "QueueTasks",
+                Doc(
+                    """
+                    `QueueTasks` экземпляр.
+
+                    По умолчанию: `qtasks._state.app_main`.
                     """
                 )
             ] = None
@@ -82,10 +123,17 @@ class SyncTask:
         self.priority = priority
         
         self.echo = echo
+        self.retry = retry
+        self.retry_on_exc = retry_on_exc
 
         self.executor = executor
         self.middlewares = middlewares
         self._app = app
+
+        self.ctx = SyncContext(generate_handler=generate_handler,
+            executor=executor, middlewares=middlewares,
+            app=app
+        )
         
     def add_task(self,
             priority: Annotated[
@@ -130,7 +178,14 @@ class SyncTask:
                 )
             ] = None,
 
-            task_name:str=None
+            task_name: Annotated[
+                str,
+                Doc(
+                    """
+                    Имя задачи.
+                    """
+                )
+            ] = None
         ) -> Task|None:
         """Добавить задачу.
 
@@ -139,6 +194,7 @@ class SyncTask:
             args (tuple, optional): args задачи. По умолчанию: `()`.
             kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`.
             timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.SyncTask`.
+            task_name (str, optional): Имя задачи. По умолчанию: Значение имени у задачи.
 
         Returns:
             Task|None: Результат задачи или `None`.

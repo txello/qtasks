@@ -1,15 +1,14 @@
+from dataclasses import field, fields, make_dataclass
 import datetime
 import json
 import time
-import traceback
 from typing import Optional, Union
-from httpx import delete
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import redis
 from typing import TYPE_CHECKING
 
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.contrib.redis.sync_queue_client import SyncRedisCommandQueue
 from qtasks.configs.sync_redisglobalconfig import SyncRedisGlobalConfig
 from qtasks.enums.task_status import TaskStatusEnum
@@ -105,12 +104,12 @@ class SyncRedisStorage(BaseStorage):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -167,20 +166,7 @@ class SyncRedisStorage(BaseStorage):
         if not result:
             return None
         
-        return Task(
-            status=result["status"],
-            uuid=uuid,
-            priority=int(result["priority"]),
-            task_name=result["task_name"],
-            
-            args=json.loads(result["args"]),
-            kwargs=json.loads(result["kwargs"]),
-            
-            returning=json.loads(result["returning"]) if "returning" in result else None,
-            traceback=str(result["traceback"]) if "traceback" in result else None,
-            created_at=datetime.datetime.fromtimestamp(float(result["created_at"])),
-            updated_at=datetime.datetime.fromtimestamp(float(result["updated_at"]))
-        )
+        return self._build_task(uuid, result)
     
     def get_all(self) -> list[Task]:
         """Получить все задачи.
@@ -299,15 +285,18 @@ class SyncRedisStorage(BaseStorage):
 
     def _delete_finished_tasks(self):
         pattern = f"{self.name}:"
-        tasks: list[Task] = list(filter(lambda task: task.status != TaskStatusEnum.NEW.value, self.get_all()))
-        
-        tasks_hash = [pattern + str(task.uuid) for task in tasks]
-        tasks_queue = [f"{task.task_name}:{task.uuid}:{task.priority}" for task in tasks]
-        
-        if tasks_queue:
-            self.client.zrem(self.queue_process, *tasks_queue)
-        if tasks_hash:
-            self.client.delete(*tasks_hash)
+        try:
+            tasks: list[Task] = list(filter(lambda task: task.status != TaskStatusEnum.NEW.value, self.get_all()))
+            
+            tasks_hash = [pattern + str(task.uuid) for task in tasks]
+            tasks_queue = [f"{task.task_name}:{task.uuid}:{task.priority}" for task in tasks]
+            
+            if tasks_queue:
+                self.client.zrem(self.queue_process, *tasks_queue)
+            if tasks_hash:
+                self.client.delete(*tasks_hash)
+        except:
+            pass
         return
     
     def flush_all(self) -> None:

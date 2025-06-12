@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import asdict, field, fields, make_dataclass
 import datetime
 import asyncio_atexit
 from typing import Optional, Union
@@ -8,7 +9,7 @@ from time import time
 from typing import TYPE_CHECKING
 import redis.asyncio as aioredis
 
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
 
 from .base import BaseBroker
 from qtasks.schemas.task import Task
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema
+from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
 from qtasks.storages import AsyncRedisStorage
 
 class AsyncRedisBroker(BaseBroker):
@@ -92,12 +93,12 @@ class AsyncRedisBroker(BaseBroker):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -110,6 +111,7 @@ class AsyncRedisBroker(BaseBroker):
         self.client = aioredis.Redis.from_pool(self.client)
         self.storage = storage or AsyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=self.log, config=self.config)
         self.running = False
+        self.default_sleep = 0.01
 
     async def listen(self,
             worker: Annotated[
@@ -131,7 +133,7 @@ class AsyncRedisBroker(BaseBroker):
         while self.running:
             task_data = await self.client.lpop(self.queue_name)
             if not task_data:
-                await asyncio.sleep(1)
+                await asyncio.sleep(self.default_sleep)
                 continue
             
             task_name, uuid, priority = task_data.split(':')
@@ -163,28 +165,32 @@ class AsyncRedisBroker(BaseBroker):
                     """
                 )
             ] = 0,
-            *args: Annotated[
+
+            extra: dict = None,
+
+            args: Annotated[
                 tuple,
                 Doc(
                     """
                     Аргументы задачи типа args.
                     """
                 )
-            ],
-            **kwargs: Annotated[
+            ] = None,
+            kwargs: Annotated[
                 dict,
                 Doc(
                     """
                     Аргументы задачи типа kwargs.
                     """
                 )
-            ]
+            ] = None
         ) -> Task:
         """Добавляет задачу в брокер.
 
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
+            extra (dict, optional): Дополнительные параметры задачи.
             args (tuple, optional): Аргументы задачи типа args.
             kwargs (dict, optional): Аргументы задачи типа kwargs.
 
@@ -196,15 +202,19 @@ class AsyncRedisBroker(BaseBroker):
         asyncio_atexit.register(self.storage.stop, loop=loop)
         
         
-        uuid = uuid4()
-        created_at=time()
+        args, kwargs = args or (), kwargs or {}
+        uuid = str(uuid4())
+        created_at = time()
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
+
+        if extra:
+            model = self._dynamic_model(model=model, extra=extra)
         
         await self.storage.add(uuid=uuid, task_status=model)
         await self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")
         
-        model = Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=datetime.datetime.fromtimestamp(created_at), updated_at=datetime.datetime.fromtimestamp(created_at))
+        model = Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
         return model
     
     async def get(self,
@@ -286,7 +296,7 @@ class AsyncRedisBroker(BaseBroker):
                 )
             ],
             model: Annotated[
-                Union[TaskStatusNewSchema|TaskStatusErrorSchema],
+                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
                 Doc(
                     """
                     Модель результата задачи.
@@ -304,15 +314,20 @@ class AsyncRedisBroker(BaseBroker):
         return
     
     async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """Триггер плагина
+        """
+        Вызвать триггер плагина.
 
         Args:
             name (str): Имя триггера.
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
         """
-        for plugin in self.plugins.values():
-            await plugin.trigger(name=name, *args, **kwargs)
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = await plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
 
     async def flush_all(self) -> None:
         """Удалить все данные."""

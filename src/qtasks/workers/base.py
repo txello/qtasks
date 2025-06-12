@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Optional, Type
+from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
-from qtasks.configs.config_observer import ConfigObserver
 from qtasks.logs import Logger
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.schemas.inits import InitsExecSchema
+from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
@@ -64,30 +64,34 @@ class BaseWorker(ABC):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
         ):
         self.name = name
         self.broker = broker
-        self.config = config or ConfigObserver(QueueConfig())
+        self.config = config or QueueConfig()
         
         self.log = log.with_subname("Worker") if log else Logger(name=self.name, subname="Worker", default_level=self.config.logs_default_level, format=self.config.logs_format)
+        
+        self._tasks: dict[str, TaskExecSchema] = {}
         self.init_worker_running: list[InitsExecSchema] = []
         self.init_task_running: list[InitsExecSchema] = []
         self.init_task_stoping: list[InitsExecSchema] = []
         self.init_worker_stoping: list[InitsExecSchema] = []
         self.task_middlewares: list[TaskMiddleware] = []
 
-        self.plugins: dict[str, "BasePlugin"] = {}
+        self.plugins: dict[str, List["BasePlugin"]] = {}
         
         self.num_workers = 0
+
+        self.init_plugins()
     
     @abstractmethod
     def add(self,
@@ -195,12 +199,40 @@ class BaseWorker(ABC):
         self.config = config
         return
     
-    def add_plugin(self, plugin: "BasePlugin", name: Optional[str] = None) -> None:
-        """
-        Добавить плагин.
+    def add_plugin(self, 
+            plugin: Annotated[
+                "BasePlugin",
+                Doc(
+                    """
+                    Плагин.
+                    """
+                )
+            ],
+            trigger_names: Annotated[
+                Optional[List[str]],
+                Doc(
+                    """
+                    Имя триггеров для плагина.
+                    
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
+                    """
+                )
+            ] = None
+        ) -> None:
+        """Добавить плагин в класс.
 
         Args:
-            plugin (Type[BasePlugin]): Класс плагина.
-            name (str, optional): Имя плагина. По умолчанию: `None`.
+            plugin (BasePlugin): Плагин
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
         """
-        self.plugins.update({str(plugin.name or name): plugin})
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return
+    
+    def init_plugins(self):
+        pass

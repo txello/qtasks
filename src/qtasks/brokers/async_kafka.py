@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 from time import time
 from typing import TYPE_CHECKING
 
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 from qtasks.storages.sync_redis import SyncRedisStorage
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
 
 from qtasks.schemas.task import Task
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema
+from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
 
 class AsyncKafkaBroker(BaseBroker):
     """
@@ -94,12 +94,12 @@ class AsyncKafkaBroker(BaseBroker):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -167,40 +167,47 @@ class AsyncKafkaBroker(BaseBroker):
                     """
                 )
             ] = 0,
-            *args: Annotated[
-                tuple,
+            extra: Annotated[
+                dict,
                 Doc(
                     """
-                    Аргументы задачи типа args.
+                    Дополнительные параметры задачи.
                     """
                 )
-            ],
-            **kwargs: Annotated[
+            ] = None,
+            kwargs: Annotated[
                 dict,
                 Doc(
                     """
                     Аргументы задачи типа kwargs.
                     """
                 )
-            ]
+            ] = None
         ) -> Task:
         """Добавляет задачу в брокер.
 
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
+            extra (dict, optional): Дополнительные параметры задачи.
             args (tuple, optional): Аргументы задачи типа args.
             kwargs (dict, optional): Аргументы задачи типа kwargs.
 
         Returns:
             Task: `schemas.task.Task`
         """
+        args, kwargs = args or (), kwargs or {}
+
         uuid = uuid4()
         created_at = time()
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
+
+        if extra:
+            model = self._dynamic_model(model=model, extra=extra)
+
         await self.storage.add(uuid=uuid, task_status=model)
-        
+
         task_data = f"{task_name}:{uuid}:{priority}"
         await self._producer_start()
         await self.producer.send_and_wait(self.topic, task_data)
@@ -287,7 +294,7 @@ class AsyncKafkaBroker(BaseBroker):
                 )
             ],
             model: Annotated[
-                Union[TaskStatusNewSchema|TaskStatusErrorSchema],
+                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
                 Doc(
                     """
                     Модель результата задачи.
@@ -323,15 +330,20 @@ class AsyncKafkaBroker(BaseBroker):
         await self.producer.start()
         
     async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """Триггер плагина
+        """
+        Вызвать триггер плагина.
 
         Args:
             name (str): Имя триггера.
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
         """
-        for plugin in self.plugins.values():
-            await plugin.trigger(name=name, *args, **kwargs)
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = await plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
     
     async def flush_all(self) -> None:
         """Удалить все данные."""

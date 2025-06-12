@@ -4,9 +4,9 @@ import os
 import sys
 from types import FunctionType
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/.."))
+sys.path.append(os.path.abspath(os.getcwd()))
 
-if __name__ == "__main__":
+def main():
     parser = ArgumentParser(
         prog='QTasks',
         description='QueueTasks framework',
@@ -47,3 +47,7 @@ if __name__ == "__main__":
         app = getattr(file, app_var)
         webview.app_qtasks = app
         uvicorn.run(webview.app, port=app_port)
+
+
+if __name__ == "__main__":
+    main()

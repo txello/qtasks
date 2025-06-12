@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
-from qtasks.configs.config_observer import ConfigObserver
 from qtasks.schemas.test import TestConfig
 from qtasks.tests.async_classes import AsyncTestBroker, AsyncTestGlobalConfig, AsyncTestStorage, AsyncTestWorker
 
@@ -51,7 +50,7 @@ class BaseTestCase(ABC):
         self.app = app
         
         self.name = name
-        self.config = ConfigObserver(QueueConfig())
+        self.config = QueueConfig()
         self.test_config = TestConfig()
     
     @abstractmethod

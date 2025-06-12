@@ -1,7 +1,7 @@
 import json
 from typing import TYPE_CHECKING, Optional, Union
 
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -93,12 +93,12 @@ class AsyncRabbitMQBroker(BaseBroker):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -176,6 +176,15 @@ class AsyncRabbitMQBroker(BaseBroker):
                     """
                 )
             ] = 0,
+
+            extra: Annotated[
+                dict,
+                Doc(
+                    """
+                    Дополнительные параметры задачи.
+                    """
+                )
+            ] = None,
             *args: Annotated[
                 tuple,
                 Doc(
@@ -198,22 +207,28 @@ class AsyncRabbitMQBroker(BaseBroker):
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
+            extra (dict, optional): Дополнительные параметры задачи.
             args (tuple, optional): Аргументы задачи типа args.
             kwargs (dict, optional): Аргументы задачи типа kwargs.
 
         Returns:
             Task: `schemas.task.Task`
         """
+        args, kwargs = args or (), kwargs or {}
         if not self.channel:
             await self.connect()
 
         uuid = str(uuid4())
         created_at = time()
+        
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
-        
+
+        if extra:
+            model = self._dynamic_model(model=model, extra=extra)
+
         await self.storage.add(uuid=uuid, task_status=model)
-        
+
         task_data = {
             "uuid": uuid,
             "task_name": task_name,
@@ -335,15 +350,20 @@ class AsyncRabbitMQBroker(BaseBroker):
         return await self.storage._running_older_tasks(worker)
 
     async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """Триггер плагина
+        """
+        Вызвать триггер плагина.
 
         Args:
             name (str): Имя триггера.
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+            *args: Позиционные аргументы для триггера.
+            **kwargs: Именованные аргументы для триггера.
         """
-        for plugin in self.plugins.values():
-            await plugin.trigger(name=name, *args, **kwargs)
+        results = []
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            result = await plugin.trigger(name=name, *args, **kwargs)
+            if result is not None:
+                results.append(result)
+        return results
     
     async def flush_all(self) -> None:
         """Удалить все данные."""

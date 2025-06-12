@@ -46,9 +46,20 @@ def error_zero():
     result = 1/0
     return
 
+
+# Поддерживает генераторы!
+def gen_func(result):
+    return result + 1
+@app.task(generate_handler=gen_func)
+async def test_gen(n: int):
+    for _ in range(n):
+        n += 1
+        yield n
+
 app.run_forever()
 
 # Вызов задачи:
-# app.add_task("mytest", args=("Тест",))
-# error_zero.add_task()
+# app.add_task("mytest", args=("Тест",)). task.returning: "Тест"
+# error_zero.add_task(). task.status: "ERROR"
+# test_gen.add_task(args=(5,)). task.returning: [7, 8, 9, 10, 11]
 ```

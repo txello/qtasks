@@ -1,3 +1,4 @@
+from dataclasses import asdict, field, fields, make_dataclass
 import redis
 from typing import Optional, Union
 from typing_extensions import Annotated, Doc
@@ -5,7 +6,7 @@ from uuid import UUID, uuid4
 from time import time, sleep
 from typing import TYPE_CHECKING
 
-from qtasks.configs.config_observer import ConfigObserver
+from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
 from .base import BaseBroker
 from qtasks.schemas.task import Task
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema
+from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
 
 class SyncRedisBroker(BaseBroker):
     """
@@ -88,12 +89,12 @@ class SyncRedisBroker(BaseBroker):
                 )
             ] = None,
             config: Annotated[
-                Optional[ConfigObserver],
+                Optional[QueueConfig],
                 Doc(
                     """
-                    Логгер.
+                    Конфиг.
                     
-                    По умолчанию: `qtasks.configs.config_observer.ConfigObserver`.
+                    По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
                 )
             ] = None
@@ -106,6 +107,7 @@ class SyncRedisBroker(BaseBroker):
         self.storage = storage or SyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=self.log, config=self.config)
         
         self.running = False
+        self.default_sleep = 0.01
 
     def listen(self,
             worker: Annotated[
@@ -127,7 +129,7 @@ class SyncRedisBroker(BaseBroker):
         while self.running:
             task_data = self.client.lpop(self.queue_name)
             if not task_data:
-                sleep(1)
+                sleep(self.default_sleep)
                 continue
             
             task_name, uuid, priority = task_data.split(':')
@@ -159,39 +161,48 @@ class SyncRedisBroker(BaseBroker):
                     """
                 )
             ] = 0,
-            *args: Annotated[
+
+            extra: dict = None,
+
+            args: Annotated[
                 tuple,
                 Doc(
                     """
                     Аргументы задачи типа args.
                     """
                 )
-            ],
-            **kwargs: Annotated[
+            ] = None,
+            kwargs: Annotated[
                 dict,
                 Doc(
                     """
                     Аргументы задачи типа kwargs.
                     """
                 )
-            ]
+            ] = None
         ) -> Task:
         """Добавляет задачу в брокер.
 
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
+            extra (dict, optional): Дополнительные параметры задачи.
             args (tuple, optional): Аргументы задачи типа args.
             kwargs (dict, optional): Аргументы задачи типа kwargs.
 
         Returns:
             Task: `schemas.task.Task`
         """
-        uuid = uuid4()
+        args, kwargs = args or (), kwargs or {}
+        uuid = str(uuid4())
         created_at = time()
+        
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
         
+        if extra:
+            model = self._dynamic_model(model=model, extra=extra)
+
         self.storage.add(uuid=uuid, task_status=model)
         self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")
         
@@ -276,7 +287,7 @@ class SyncRedisBroker(BaseBroker):
                 )
             ],
             model: Annotated[
-                Union[TaskStatusNewSchema|TaskStatusErrorSchema],
+                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
                 Doc(
                     """
                     Модель результата задачи.

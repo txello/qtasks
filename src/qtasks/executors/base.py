@@ -82,15 +82,23 @@ class BaseTaskExecutor(ABC):
 
 
     def before_execute(self):
+        """Вызывается перед выполнением задачи."""
         pass
 
     def after_execute(self):
+        """Вызывается после выполнения задачи."""
         pass
 
     def execute_middlewares(self):
+        """Вызов мидлварей."""
         pass
 
     def run_task(self) -> Any:
+        """Вызов задачи.
+
+        Returns:
+            Any: Результат задачи.
+        """
         pass
     
     @abstractmethod
@@ -108,4 +116,9 @@ class BaseTaskExecutor(ABC):
         pass
 
     def decode(self) -> str:
+        """Декодирование задачи.
+
+        Returns:
+            str: Результат задачи.
+        """
         pass

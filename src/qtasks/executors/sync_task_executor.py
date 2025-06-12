@@ -1,6 +1,5 @@
-from dataclasses import replace
 import json
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Generator, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.registries.sync_task_decorator import SyncTask
@@ -78,23 +77,25 @@ class SyncTaskExecutor(BaseTaskExecutor):
         self._args = []
         self._kwargs = {}
         self._result: Any = None
+        self.echo = None
 
 
     def before_execute(self):
-        """Вызов перед запуском задач."""
+        """Вызывается перед выполнением задачи."""
         if self.task_func.echo:
-            echo = SyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
-                echo=self.task_func.echo,
+            self.echo = SyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
+                echo=self.task_func.echo, retry=self.task_func.retry, retry_on_exc=self.task_func.retry_on_exc,
                 executor=self.task_func.executor, middlewares=self.task_func.middlewares
             )
+            self.echo.ctx._update(task_uuid=self.task_broker.uuid)
             self._args = self.task_broker.args[:]
-            self._args.insert(0, echo)
+            self._args.insert(0, self.echo)
         else:
             self._args = self.task_broker.args
         self._kwargs = self.task_broker.kwargs
 
     def after_execute(self):
-        """Вызов после запуска задач."""
+        """Вызывается после выполнения задачи."""
         pass
 
     def execute_middlewares(self):
@@ -103,21 +104,58 @@ class SyncTaskExecutor(BaseTaskExecutor):
             m = m(self)
             self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
-    def run_task(self) -> Any:
+    def run_task(self) -> Any|list[Any]:
         """Вызов задачи.
 
         Returns:
             Any: Результат задачи.
         """
-        if self.task_broker.args and self.task_broker.kwargs:
-            result = self.task_func(*self.task_broker.args, **self.task_broker.kwargs)
-        elif self.task_broker.args:
-            result = self.task_func.func(*self.task_broker.args)
-        elif self.task_broker.kwargs:
-            result = self.task_func.func(**self.task_broker.kwargs)
+
+        
+        if self._args and self._kwargs:
+            result = self.task_func.func(*self._args, **self._kwargs)
+        elif self._args:
+            result = self.task_func.func(*self._args)
+        elif self._kwargs:
+            result = self.task_func.func(**self._kwargs)
         else:
             result = self.task_func.func()
+        
+        if self.task_func.generating:
+            return self.run_task_gen(result)
+
         return result
+    
+    def run_task_gen(self, func: Generator) -> list[Any]:
+        """Вызов генератора задачи.
+
+        Args:
+            func (FunctionType): Функция.
+
+        Raises:
+            RuntimeError: Невозможно запустить асинхронный генератор задачи в синхронном виде!
+
+        Returns:
+            Any: Результат задачи.
+        """
+        if self.echo:
+            self.echo.ctx._update(generate_handler=self.task_func.generate_handler)
+        
+        results = []
+        if self.task_func.generating == "async":
+            raise RuntimeError("Невозможно запустить асинхронный генератор задачи в синхронном виде!")
+
+        elif self.task_func.generating == "sync":
+            try:
+                while True:
+                    result = next(func)
+                    if self.task_func.generate_handler:
+                        result = self.task_func.generate_handler(result)
+                    results.append(result)
+            except StopIteration:
+                pass
+
+        return results
     
     def execute(self,
             decode: bool = True
