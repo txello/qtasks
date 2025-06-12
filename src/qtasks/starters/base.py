@@ -96,6 +96,8 @@ class BaseStarter(ABC):
         }
         
         self.plugins: dict[str, List["BasePlugin"]] = {}
+
+        self.init_plugins()
         
     @abstractmethod
     def start(self) -> None:
@@ -165,3 +167,6 @@ class BaseStarter(ABC):
                 self.broker.storage.update_config(config)
                 if self.broker.storage.global_config:
                     self.broker.storage.global_config.update_config(config)
+    
+    def init_plugins(self):
+        pass

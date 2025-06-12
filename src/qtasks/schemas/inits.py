@@ -9,6 +9,7 @@ class InitsExecSchema:
     Args:
         typing (str): Тип инициализации.
         func (FunctionType): Функция инициализации.
+        
         awaiting (bool): Асинхронность инициализации. По умолчанию: False
     """
     typing: str

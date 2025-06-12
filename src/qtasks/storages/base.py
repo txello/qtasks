@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from dataclasses import field, fields, make_dataclass
+import datetime
+import json
 from typing import List, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
@@ -81,7 +84,8 @@ class BaseStorage(ABC):
         self.config = config or QueueConfig()
         self.log = log.with_subname("Storage") if log else Logger(name=self.name, subname="Storage", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.plugins: dict[str, List["BasePlugin"]] = {}
-        pass
+
+        self.init_plugins()
     
     @abstractmethod
     def add(self,
@@ -255,4 +259,73 @@ class BaseStorage(ABC):
     
     def flush_all(self) -> None:
         """Удалить все данные."""
+        pass
+
+    def _build_task(self, uuid, result: dict) -> Task:
+        # Сначала собираем стандартные аргументы Task
+
+        base_kwargs = dict(
+            status=result["status"],
+            uuid=uuid,
+            priority=int(result["priority"]),
+            task_name=result["task_name"],
+            args=json.loads(result["args"]),
+            kwargs=json.loads(result["kwargs"]),
+            created_at=datetime.datetime.fromtimestamp(float(result["created_at"])),
+            updated_at=datetime.datetime.fromtimestamp(float(result["updated_at"])),
+        )
+
+        # Вычисляем имена стандартных полей
+        task_field_names = {f.name for f in fields(Task)}
+
+        # Ищем дополнительные ключи
+        extra_fields = []
+        extra_values = {}
+
+        for key, value in result.items():
+            if key not in task_field_names:
+                # Типизация примитивная — можно улучшить
+                field_type = self._infer_type(value)
+                extra_fields.append((key, field_type, field(default=None)))
+
+                # Можно привести значение к типу
+                if field_type is bool:
+                    extra_values[key] = value.lower() == "true"
+                elif field_type is int:
+                    extra_values[key] = int(value)
+                elif field_type is float:
+                    extra_values[key] = float(value)
+                else:
+                    extra_values[key] = value
+
+        # Создаем новый dataclass с дополнительными полями
+        if extra_fields:
+            NewTask = make_dataclass("Task", extra_fields, bases=(Task,))
+        else:
+            NewTask = Task
+
+        # Объединяем все аргументы
+        task = NewTask(**base_kwargs, **extra_values)
+        if hasattr(task, "returning"):
+            try: task.returning = json.loads(task.returning)
+            except: pass
+        return task
+    
+    def _infer_type(self, value: str):
+        """Пытается определить реальный тип из строки."""
+        if value.lower() in {"true", "false"}:
+            return bool
+        try:
+            int(value)
+            return int
+        except ValueError:
+            pass
+        try:
+            float(value)
+            return float
+        except ValueError:
+            pass
+        return str
+    
+    def init_plugins(self):
         pass

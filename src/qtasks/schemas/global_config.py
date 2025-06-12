@@ -7,6 +7,7 @@ class GlobalConfigSchema:
 
     Args:
         name (str): Название `GlobalConfig.name`.
+        status (str): Название `GlobalConfig.status`.
     """
     name: str
     status: str

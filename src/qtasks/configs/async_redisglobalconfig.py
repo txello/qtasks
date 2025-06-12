@@ -167,6 +167,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig):
         await self.client.close()
 
     async def _set_status(self):
+        """Обновляет статус запуска глобального конфига."""
         ttl = self.config.global_config_status_ttl
         interval = self.config.global_config_status_set_periodic
         while self.running:

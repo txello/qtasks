@@ -74,10 +74,42 @@ class Router:
                 )
             ] = None,
 
-            echo: bool = False,
-            retry: int|None = None,
-            retry_on_exc: list[Type[Exception]]|None = None,
-            generate_handler: Callable|None = None,
+            echo: Annotated[
+                bool,
+                Doc("""
+                    Включить вывод в консоль.
+                    
+                    По умолчанию: `False`.
+                    """
+                )
+            ] = False,
+            retry: Annotated[
+                int|None,
+                Doc("""
+                    Количество попыток повторного выполнения задачи.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            retry_on_exc: Annotated[
+                list[Type[Exception]]|None,
+                Doc("""
+                    Исключения, при которых задача будет повторно выполнена.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            generate_handler: Annotated[
+                Callable|None,
+                Doc("""
+                    Генератор обработчика.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
 
             executor: Annotated[
                 Type["BaseTaskExecutor"],
@@ -106,9 +138,9 @@ class Router:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
             echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
-            retry (int|None, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (list[Type[Exception]]|None, optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-            generate_handler (Callable|None, optional): Генератор обработчика. По умолчанию: `None`.
+            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
+            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
             middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
 

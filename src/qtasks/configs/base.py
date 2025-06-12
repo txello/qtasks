@@ -65,7 +65,8 @@ class BaseGlobalConfig(ABC):
         
         self.log = log.with_subname("GlobalConfig") if log else Logger(name=self.name, subname="GlobalConfig", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.plugins: dict[str, List["BasePlugin"]] = {}
-        pass
+
+        self.init_plugins()
     
     @abstractmethod
     def set(self, **kwargs) -> None:
@@ -177,3 +178,6 @@ class BaseGlobalConfig(ABC):
             else:
                 self.plugins[name].append(plugin)
         return
+
+    def init_plugins(self):
+        pass

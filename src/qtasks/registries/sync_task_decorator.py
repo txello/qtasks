@@ -31,37 +31,62 @@ class SyncTask(Generic[P, R]):
 
     def __init__(self,
             task_name: Annotated[
-                str,
+                Optional[str],
                 Doc(
                     """
                     Имя задачи.
+                    
+                    По умолчанию: `func.__name__`.
                     """
                 )
-            ],
+            ] = None,
             priority: Annotated[
-                int,
+                Optional[int],
                 Doc(
                     """
-                    Приоритет задачи.
-                    """
-                )
-            ],
-            app: Annotated[
-                "QueueTasks",
-                Doc(
-                    """
-                    `QueueTasks` экземпляр.
-
-                    По умолчанию: `qtasks._state.app_main`.
+                    Приоритет у задачи по умолчанию.
+                    
+                    По умолчанию: `config.default_task_priority`.
                     """
                 )
             ] = None,
 
-            echo: bool = False,
-            retry: int|None = None,
-            retry_on_exc: list[Type[Exception]]|None = None,
-            generate_handler: Callable|None = None,
+            echo: Annotated[
+                bool,
+                Doc("""
+                    Включить вывод в консоль.
+                    
+                    По умолчанию: `False`.
+                    """
+                )
+            ] = False,
+            retry: Annotated[
+                int|None,
+                Doc("""
+                    Количество попыток повторного выполнения задачи.
 
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            retry_on_exc: Annotated[
+                list[Type[Exception]]|None,
+                Doc("""
+                    Исключения, при которых задача будет повторно выполнена.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            generate_handler: Annotated[
+                Callable|None,
+                Doc("""
+                    Генератор обработчика.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
 
             executor: Annotated[
                 Type["BaseTaskExecutor"],
@@ -74,12 +99,22 @@ class SyncTask(Generic[P, R]):
                 )
             ] = None,
             middlewares: Annotated[
-                List[TaskMiddleware],
+                List["TaskMiddleware"],
                 Doc(
                     """
                     Мидлвари.
 
                     По умолчанию: `Пустой массив`.
+                    """
+                )
+            ] = None,
+            app: Annotated[
+                "QueueTasks",
+                Doc(
+                    """
+                    `QueueTasks` экземпляр.
+
+                    По умолчанию: `qtasks._state.app_main`.
                     """
                 )
             ] = None

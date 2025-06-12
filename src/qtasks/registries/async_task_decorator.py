@@ -32,27 +32,63 @@ class AsyncTask(Generic[P, R]):
 
     def __init__(self,
             task_name: Annotated[
-                str,
+                Optional[str],
                 Doc(
                     """
                     Имя задачи.
+                    
+                    По умолчанию: `func.__name__`.
                     """
                 )
-            ],
+            ] = None,
             priority: Annotated[
-                int,
+                Optional[int],
                 Doc(
                     """
-                    Приоритет задачи.
+                    Приоритет у задачи по умолчанию.
+                    
+                    По умолчанию: `config.default_task_priority`.
                     """
                 )
-            ],
+            ] = None,
 
-            echo: bool = False,
-            retry: int|None = None,
-            retry_on_exc: list[Type[Exception]]|None = None,
-            generate_handler: Callable|None = None,
-            
+            echo: Annotated[
+                bool,
+                Doc("""
+                    Включить вывод в консоль.
+                    
+                    По умолчанию: `False`.
+                    """
+                )
+            ] = False,
+            retry: Annotated[
+                int|None,
+                Doc("""
+                    Количество попыток повторного выполнения задачи.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            retry_on_exc: Annotated[
+                list[Type[Exception]]|None,
+                Doc("""
+                    Исключения, при которых задача будет повторно выполнена.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+            generate_handler: Annotated[
+                Callable|None,
+                Doc("""
+                    Генератор обработчика.
+
+                    По умолчанию: `None`.
+                    """
+                )
+            ] = None,
+
             executor: Annotated[
                 Type["BaseTaskExecutor"],
                 Doc(
@@ -175,6 +211,7 @@ class AsyncTask(Generic[P, R]):
         return await self._app.add_task(task_name=task_name or self.task_name, priority=priority, args=args, kwargs=kwargs, timeout=timeout)
     
     def _update_app(self) -> "QueueTasks":
+        """Обновление приложения."""
         if not self._app:
             import qtasks._state
             if qtasks._state.app_main is None:

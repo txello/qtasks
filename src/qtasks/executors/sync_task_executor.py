@@ -81,7 +81,7 @@ class SyncTaskExecutor(BaseTaskExecutor):
 
 
     def before_execute(self):
-        """Вызов перед запуском задач."""
+        """Вызывается перед выполнением задачи."""
         if self.task_func.echo:
             self.echo = SyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
                 echo=self.task_func.echo, retry=self.task_func.retry, retry_on_exc=self.task_func.retry_on_exc,
@@ -95,7 +95,7 @@ class SyncTaskExecutor(BaseTaskExecutor):
         self._kwargs = self.task_broker.kwargs
 
     def after_execute(self):
-        """Вызов после запуска задач."""
+        """Вызывается после выполнения задачи."""
         pass
 
     def execute_middlewares(self):

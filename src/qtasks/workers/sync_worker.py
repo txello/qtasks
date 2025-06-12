@@ -375,4 +375,5 @@ class SyncThreadWorker(BaseWorker):
         return results
 
     def init_plugins(self):
+        """Инициализация плагинов."""
         self.add_plugin(sync_retry_plugin, trigger_names=["retry"])

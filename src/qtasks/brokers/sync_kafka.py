@@ -166,11 +166,11 @@ class SyncKafkaBroker(BaseBroker):
                     """
                 )
             ] = 0,
-            args: Annotated[
-                tuple,
+            extra: Annotated[
+                dict,
                 Doc(
                     """
-                    Аргументы задачи типа args.
+                    Дополнительные параметры задачи.
                     """
                 )
             ] = None,
@@ -200,8 +200,12 @@ class SyncKafkaBroker(BaseBroker):
 
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
+
+        if extra:
+            model = self._dynamic_model(model=model, extra=extra)
+
         self.storage.add(uuid=uuid, task_status=model)
-        
+
         task_data = f"{task_name}:{uuid}:{priority}"
         self.producer.send(self.topic, task_data)
         self.producer.flush()

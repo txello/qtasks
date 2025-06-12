@@ -176,6 +176,15 @@ class AsyncRabbitMQBroker(BaseBroker):
                     """
                 )
             ] = 0,
+
+            extra: Annotated[
+                dict,
+                Doc(
+                    """
+                    Дополнительные параметры задачи.
+                    """
+                )
+            ] = None,
             *args: Annotated[
                 tuple,
                 Doc(
@@ -198,6 +207,7 @@ class AsyncRabbitMQBroker(BaseBroker):
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
+            extra (dict, optional): Дополнительные параметры задачи.
             args (tuple, optional): Аргументы задачи типа args.
             kwargs (dict, optional): Аргументы задачи типа kwargs.
 
@@ -213,9 +223,12 @@ class AsyncRabbitMQBroker(BaseBroker):
         
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
-        
+
+        if extra:
+            model = self._dynamic_model(model=model, extra=extra)
+
         await self.storage.add(uuid=uuid, task_status=model)
-        
+
         task_data = {
             "uuid": uuid,
             "task_name": task_name,

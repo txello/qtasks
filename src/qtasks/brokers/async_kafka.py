@@ -167,11 +167,11 @@ class AsyncKafkaBroker(BaseBroker):
                     """
                 )
             ] = 0,
-            args: Annotated[
-                tuple,
+            extra: Annotated[
+                dict,
                 Doc(
                     """
-                    Аргументы задачи типа args.
+                    Дополнительные параметры задачи.
                     """
                 )
             ] = None,
@@ -189,6 +189,7 @@ class AsyncKafkaBroker(BaseBroker):
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
+            extra (dict, optional): Дополнительные параметры задачи.
             args (tuple, optional): Аргументы задачи типа args.
             kwargs (dict, optional): Аргументы задачи типа kwargs.
 
@@ -201,8 +202,12 @@ class AsyncKafkaBroker(BaseBroker):
         created_at = time()
         model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
         model.set_json(args, kwargs)
+
+        if extra:
+            model = self._dynamic_model(model=model, extra=extra)
+
         await self.storage.add(uuid=uuid, task_status=model)
-        
+
         task_data = f"{task_name}:{uuid}:{priority}"
         await self._producer_start()
         await self.producer.send_and_wait(self.topic, task_data)

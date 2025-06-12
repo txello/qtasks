@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import asdict, field, fields, make_dataclass
 from typing import List, Optional, Type, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
@@ -7,6 +8,7 @@ from typing import TYPE_CHECKING
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 from qtasks.configs.config import QueueConfig
+from qtasks.schemas.task_status import TaskStatusNewSchema
 
 if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
@@ -79,7 +81,8 @@ class BaseBroker(ABC):
         self.storage = storage
         self.log = log.with_subname("Broker") if log else Logger(name=self.name, subname="Broker", default_level=self.config.logs_default_level, format=self.config.logs_format)
         self.plugins: dict[str, List["BasePlugin"]] = {}
-        pass
+        
+        self.init_plugins()
     
     @abstractmethod
     def add(self,
@@ -102,13 +105,11 @@ class BaseBroker(ABC):
                 )
             ] = 0,
 
-            extra: dict = None,
-
-            args: Annotated[
-                tuple,
+            extra: Annotated[
+                dict,
                 Doc(
                     """
-                    Аргументы задачи типа args.
+                    Дополнительные параметры задачи.
                     """
                 )
             ] = None,
@@ -126,6 +127,7 @@ class BaseBroker(ABC):
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
+            extra (dict, optional): Дополнительные параметры задачи.
             args (tuple, optional): Аргументы задачи типа args.
             kwargs (dict, optional): Аргументы задачи типа kwargs.
 
@@ -252,6 +254,10 @@ class BaseBroker(ABC):
                 self.plugins[name].append(plugin)
         return
         
+    def flush_all(self) -> None:
+        """Удалить все данные."""
+        pass
+
     def _plugin_trigger(self, name: str, *args, **kwargs):
         """
         Вызвать триггер плагина.
@@ -268,6 +274,46 @@ class BaseBroker(ABC):
                 results.append(result)
         return results
     
-    def flush_all(self) -> None:
-        """Удалить все данные."""
+    def init_plugins(self):
         pass
+
+    def _dynamic_model(self,
+            model: Annotated[
+                TaskStatusNewSchema,
+                Doc(
+                    """
+                    Модель задачи.
+                    """
+                )
+            ],
+            extra: Annotated[
+                dict,
+                Doc(
+                    """
+                    Дополнительные поля.
+                    """
+                )
+            ]
+        ):
+        # Вычисляем имена стандартных полей
+        task_field_names = {f.name for f in fields(TaskStatusNewSchema)}
+
+        # Ищем дополнительные ключи
+        extra_fields = []
+        extra_values = {}
+
+        for key, value in extra.items():
+            if key not in task_field_names:
+                # Типизация примитивная — можно улучшить
+                field_type = type(value)
+                extra_fields.append((key, field_type, field(default=None)))
+                extra_values[key] = value
+
+        # Создаем новый dataclass с дополнительными полями
+        if extra_fields:
+            NewTask = make_dataclass("TaskStatusNewSchema", extra_fields, bases=(TaskStatusNewSchema,))
+        else:
+            NewTask = TaskStatusNewSchema
+
+        # Объединяем все аргументы
+        return NewTask(**asdict(model), **extra_values)

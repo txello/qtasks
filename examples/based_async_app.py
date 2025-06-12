@@ -37,7 +37,7 @@ def error_zero():
 
 async def yield_func(result):
     print(result)
-    return result
+    return result + 1
 
 @app.task(generate_handler=yield_func, echo=True)
 async def test_yield(self: AsyncTask, n: int):

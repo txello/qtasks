@@ -81,7 +81,7 @@ class AsyncTaskExecutor(BaseTaskExecutor):
 
 
     async def before_execute(self):
-        """Вызов перед запуском задач."""
+        """Вызывается перед выполнением задачи."""
         if self.task_func.echo:
             if not self.task_func.awaiting or self.task_func.generating == "sync":
                 self.echo = SyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,

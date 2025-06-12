@@ -190,6 +190,7 @@ class AsyncRedisBroker(BaseBroker):
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
+            extra (dict, optional): Дополнительные параметры задачи.
             args (tuple, optional): Аргументы задачи типа args.
             kwargs (dict, optional): Аргументы задачи типа kwargs.
 
@@ -208,28 +209,7 @@ class AsyncRedisBroker(BaseBroker):
         model.set_json(args, kwargs)
 
         if extra:
-            # Вычисляем имена стандартных полей
-            task_field_names = {f.name for f in fields(TaskStatusNewSchema)}
-
-            # Ищем дополнительные ключи
-            extra_fields = []
-            extra_values = {}
-
-            for key, value in extra.items():
-                if key not in task_field_names:
-                    # Типизация примитивная — можно улучшить
-                    field_type = type(value)
-                    extra_fields.append((key, field_type, field(default=None)))
-                    extra_values[key] = value
-
-            # Создаем новый dataclass с дополнительными полями
-            if extra_fields:
-                NewTask = make_dataclass("TaskStatusNewSchema", extra_fields, bases=(TaskStatusNewSchema,))
-            else:
-                NewTask = TaskStatusNewSchema
-
-            # Объединяем все аргументы
-            model = NewTask(**asdict(model), **extra_values)
+            model = self._dynamic_model(model=model, extra=extra)
         
         await self.storage.add(uuid=uuid, task_status=model)
         await self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")

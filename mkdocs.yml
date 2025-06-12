@@ -134,6 +134,7 @@ nav:
       - Установка: ru/install.md
       - Первые шаги: ru/getting_started.md
       - Компоненты: ru/components.md
+      - Работа с консолью: ru/console.md
       - Тестирование: ru/tests.md
   - Возможности: ru/features.md
   - API:
@@ -181,6 +182,9 @@ nav:
       - Декораторы:
         - SyncTask: ru/api/registries/sync_task_decorator.md
         - AsyncTask: ru/api/registries/async_task_decorator.md
+      - Контексты:
+        - SyncContext: ru/api/contexts/sync_context.md
+        - AsyncContext: ru/api/contexts/async_context.md
       - Исполнители задач:
         - BaseTaskExecutor - Пишем свой исполнитель задач: ru/api/executors/basetask_executor.md
         - SyncTaskExecutor: ru/api/executors/sync_task_executor.md
@@ -197,6 +201,7 @@ nav:
       - Классы:
         - SyncRedisCommandQueue: ru/api/classes/sync_redis_commands.md
         - AsyncRedisCommandQueue: ru/api/classes/async_redis_commands.md
+        - BaseQueueTasks: ru/api/classes/baseqtasks.md
       - Timer:
         - BaseTimer - Пишем свой Таймер: ru/api/timers/basetimer.md
         - SyncTimer: ru/api/timers/sync_timer.md

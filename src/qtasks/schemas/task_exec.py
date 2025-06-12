@@ -17,6 +17,7 @@ class TaskPrioritySchema:
         priority (int): Приоритет.
         uuid (UUID): UUID.
         name (str): Название.
+
         args (tuple[str]): Аргументы типа args.
         kwargs (dict[str, str]): Аргументы типа kwargs.
         
@@ -41,8 +42,20 @@ class TaskExecSchema:
     Args:
         priority (int): Приоритет.
         name (str): Название.
+
         func (FunctionType): Функция задачи.
         awaiting (bool): Асинхронность задачи. По умолчанию: False
+        generating (str|Literal[False]): Генерация задачи. По умолчанию: False
+
+        echo (bool): Включить параметр self в задачу. По умолчанию: False
+        retry (int|None): Количество попыток повторного выполнения задачи. По умолчанию: None
+        retry_on_exc (list[Type[Exception]]|None): Исключения, при которых задача будет повторно выполнена. По умолчанию: None
+
+        generate_handler (Callable|None): Генератор обработчика. По умолчанию: None
+
+        executor (Type[BaseTaskExecutor]|None): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`|`AsyncTaskExecutor`.
+        middlewares (list[Type[TaskMiddleware]]): Мидлвари. По умолчанию: `Пустой массив`.
+
     """
     priority: int
     name: str

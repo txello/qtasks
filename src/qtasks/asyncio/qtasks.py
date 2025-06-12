@@ -495,52 +495,16 @@ class QueueTasks(BaseQueueTasks):
 
     @overload
     def task(self,
-        name: Annotated[
-                Optional[str],
-                Doc(
-                    """
-                    Имя задачи.
-                    
-                    По умолчанию: `func.__name__`.
-                    """
-                )
-            ] = None,
-            priority: Annotated[
-                Optional[int],
-                Doc(
-                    """
-                    Приоритет у задачи по умолчанию.
-                    
-                    По умолчанию: `config.default_task_priority`.
-                    """
-                )
-            ] = None,
+        name: str|None = None,
+        priority: int|None = None,
 
-            echo: bool = False,
-            retry: int|None = None,
-            retry_on_exc: list[Type[Exception]]|None = None,
-            generate_handler: Callable|None = None,
+        echo: bool = False,
+        retry: int|None = None,
+        retry_on_exc: list[Type[Exception]]|None = None,
+        generate_handler: Callable|None = None,
 
-            executor: Annotated[
-                Type["BaseTaskExecutor"],
-                Doc(
-                    """
-                    Класс `BaseTaskExecutor`.
-                    
-                    По умолчанию: `SyncTaskExecutor`.
-                    """
-                )
-            ] = None,
-            middlewares: Annotated[
-                List["TaskMiddleware"],
-                Doc(
-                    """
-                    Мидлвари.
-
-                    По умолчанию: `Пустой массив`.
-                    """
-                )
-            ] = None
+        executor: Type["BaseTaskExecutor"]|None = None,
+        middlewares: List["TaskMiddleware"]|None = None
     ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]: ...
 
     def task(self, *args, **kwargs):
