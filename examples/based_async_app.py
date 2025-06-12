@@ -1,13 +1,20 @@
 import logging
 
 from qtasks.asyncio import QueueTasks
-from qtasks.registries import AsyncTask
+from qtasks.registries import AsyncTask, SyncTask
 
 import shared_tasks
+import router_tasks
 
 app = QueueTasks() 
 app.config.logs_default_level = logging.INFO
 app.config.running_older_tasks = True
+
+app.include_router(router_tasks.router)
+
+@app.task()
+async def load_test_job(num):
+    print("Задача {num}")
 
 @app.task(name="test")
 async def test():
@@ -22,9 +29,9 @@ def test_num(number: int):
 async def test_echo(self: AsyncTask):
     task = await self.add_task(task_name="test_num", args=(5,), timeout=50)
     print(f"Задача {task.task_name}, результат: {task.returning}")
-    return
+    return str(task)
 
-@app.task(retry=5)
+@app.task(retry=5, retry_on_exc=[ZeroDivisionError])
 def error_zero():
     result = 1/0
 
@@ -34,6 +41,7 @@ async def yield_func(result):
 
 @app.task(generate_handler=yield_func, echo=True)
 async def test_yield(self: AsyncTask, n: int):
+    self.ctx.get_logger().info(self.ctx.task_uuid)
     for _ in range(n):
         n += 1
         yield n

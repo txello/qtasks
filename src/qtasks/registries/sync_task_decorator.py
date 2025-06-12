@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING, Annotated, List, Optional, Type
+from typing import TYPE_CHECKING, Annotated, Callable, Generic, List, Optional, Type
 from typing_extensions import Doc
 
+from qtasks.types.annotations import P, R
 from qtasks.contexts.sync_context import SyncContext
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
@@ -10,7 +11,7 @@ from qtasks.schemas.task import Task
 if TYPE_CHECKING:
     from qtasks import QueueTasks
 
-class SyncTask:
+class SyncTask(Generic[P, R]):
     """`SyncTask` - класс для замены функции декоратором `@app.task` и `@shared_task`.
 
     ## Пример
@@ -58,6 +59,9 @@ class SyncTask:
 
             echo: bool = False,
             retry: int|None = None,
+            retry_on_exc: list[Type[Exception]]|None = None,
+            generate_handler: Callable|None = None,
+
 
             executor: Annotated[
                 Type["BaseTaskExecutor"],
@@ -85,13 +89,13 @@ class SyncTask:
         
         self.echo = echo
         self.retry = retry
+        self.retry_on_exc = retry_on_exc
 
         self.executor = executor
         self.middlewares = middlewares
         self._app = app
 
-        self.ctx = SyncContext(task_name=task_name, priority=priority,
-            echo=echo, retry=retry,
+        self.ctx = SyncContext(generate_handler=generate_handler,
             executor=executor, middlewares=middlewares,
             app=app
         )
@@ -139,7 +143,14 @@ class SyncTask:
                 )
             ] = None,
 
-            task_name:str=None
+            task_name: Annotated[
+                str,
+                Doc(
+                    """
+                    Имя задачи.
+                    """
+                )
+            ] = None
         ) -> Task|None:
         """Добавить задачу.
 
@@ -148,6 +159,7 @@ class SyncTask:
             args (tuple, optional): args задачи. По умолчанию: `()`.
             kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`.
             timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.SyncTask`.
+            task_name (str, optional): Имя задачи. По умолчанию: Значение имени у задачи.
 
         Returns:
             Task|None: Результат задачи или `None`.

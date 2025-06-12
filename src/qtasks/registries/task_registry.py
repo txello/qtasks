@@ -1,5 +1,5 @@
 import inspect
-from typing import Callable, List, Optional, Type
+from typing import Callable, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.executors.base import BaseTaskExecutor
@@ -61,6 +61,7 @@ class TaskRegistry:
 
             echo: bool = False,
             retry: int|None = None,
+            retry_on_exc: list[Type[Exception]]|None = None,
             generate_handler: Callable|None = None,
 
             executor: Annotated[
@@ -83,7 +84,7 @@ class TaskRegistry:
                     """
                 )
             ] = None
-        ) -> SyncTask|AsyncTask:
+        ) -> Callable[[Callable], Union[SyncTask, AsyncTask]]:
         """Регистрация задачи.
 
         Args:
@@ -108,16 +109,22 @@ class TaskRegistry:
 
                 echo=echo,
                 retry=retry,
+                retry_on_exc=retry_on_exc,
                 generate_handler=generate_handler,
 
                 executor=executor, middlewares=middlewares
             )
             
             cls._tasks[task_name] = model
+            
             if awaiting:
-                return AsyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares, echo=echo)
+                return AsyncTask(task_name=task_name, priority=priority, echo=echo,
+                                retry=retry, retry_on_exc=retry_on_exc, generate_handler=generate_handler,
+                                executor=executor, middlewares=middlewares)
             else:
-                return SyncTask(task_name=task_name, priority=priority, executor=executor, middlewares=middlewares, echo=echo)
+                return SyncTask(task_name=task_name, priority=priority, echo=echo,
+                                retry=retry, retry_on_exc=retry_on_exc, generate_handler=generate_handler,
+                                executor=executor, middlewares=middlewares)
         return wrapper
 
     @classmethod

@@ -12,9 +12,6 @@ if TYPE_CHECKING:
 class AsyncContext:
     def __init__(self, **kwargs):
         self.task_uuid = kwargs.get("task_uuid")
-        self.task_name = kwargs.get("task_name")
-        self.priority = kwargs.get("priority")
-        
         self.generate_handler = kwargs.get("generate_handler")
 
         self._app: "QueueTasks" = kwargs.get("app")

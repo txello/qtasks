@@ -3,11 +3,13 @@ from qtasks import QueueTasks
 from qtasks.registries import SyncTask
 
 import shared_tasks
+import router_tasks
 
 app = QueueTasks()
-
 app.config.logs_default_level = logging.INFO
 app.config.running_older_tasks = True
+
+app.include_router(router_tasks.router)
 
 @app.task(name="test")
 def test():
@@ -24,7 +26,7 @@ def test_echo(self: SyncTask):
     print(f"Задача {task.task_name}, результат: {task.returning}")
     return
 
-@app.task(retry=5)
+@app.task(retry=5, retry_on_exc=[ZeroDivisionError])
 def error_zero():
     result = 1/0
 

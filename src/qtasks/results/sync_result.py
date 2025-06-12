@@ -41,7 +41,7 @@ class SyncResult:
             ] = None,
 
             app: Annotated[
-                "QueueTasks",
+                Optional["QueueTasks"],
                 Doc(
                     """
                     `QueueTasks` экземпляр.

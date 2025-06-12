@@ -85,12 +85,12 @@ class AsyncTaskExecutor(BaseTaskExecutor):
         if self.task_func.echo:
             if not self.task_func.awaiting or self.task_func.generating == "sync":
                 self.echo = SyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
-                    echo=self.task_func.echo, retry=self.task_func.retry,
+                    echo=self.task_func.echo, retry=self.task_func.retry, retry_on_exc=self.task_func.retry_on_exc,
                     executor=self.task_func.executor, middlewares=self.task_func.middlewares
                 )
             else:
                 self.echo = AsyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
-                    echo=self.task_func.echo, retry=self.task_func.retry,
+                    echo=self.task_func.echo, retry=self.task_func.retry, retry_on_exc=self.task_func.retry_on_exc,
                     executor=self.task_func.executor, middlewares=self.task_func.middlewares
                 )
             self.echo.ctx._update(task_uuid=self.task_broker.uuid)

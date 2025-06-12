@@ -111,6 +111,7 @@ class AsyncRedisBroker(BaseBroker):
         self.client = aioredis.Redis.from_pool(self.client)
         self.storage = storage or AsyncRedisStorage(name=name, url=self.url, redis_connect=self.client, log=self.log, config=self.config)
         self.running = False
+        self.default_sleep = 0.01
 
     async def listen(self,
             worker: Annotated[
@@ -132,7 +133,7 @@ class AsyncRedisBroker(BaseBroker):
         while self.running:
             task_data = await self.client.lpop(self.queue_name)
             if not task_data:
-                await asyncio.sleep(1)
+                await asyncio.sleep(self.default_sleep)
                 continue
             
             task_name, uuid, priority = task_data.split(':')

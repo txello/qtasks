@@ -43,7 +43,7 @@ class AsyncResult:
             ] = None,
 
             app: Annotated[
-                "QueueTasks",
+                Optional["QueueTasks"],
                 Doc(
                     """
                     `QueueTasks` экземпляр.

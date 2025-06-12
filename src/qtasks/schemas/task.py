@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from datetime import datetime
 from typing import Any
 from uuid import UUID
@@ -23,6 +23,7 @@ class Task:
         returning (str | None): Результат. По умолчанию: `None`.
         traceback (str | None): Трассировка ошибок. По умолчанию: `None`.
     """
+
     status: str
     uuid: UUID
     priority: int
@@ -33,3 +34,6 @@ class Task:
     
     created_at: datetime
     updated_at: datetime
+
+    returning: InitVar[str | None] = None
+    traceback: InitVar[str | None] = None

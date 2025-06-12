@@ -287,21 +287,24 @@ class SyncThreadWorker(BaseWorker):
             model = TaskStatusCancelSchema(task_name=task_func.name, priority=task_func.priority, cancel_reason=str(e), created_at=task_broker.created_at, updated_at=time())
             self.log.info(f"Задача {task_broker.uuid} была отменена по причине: {e}")
             return model
-        except BaseException:
-
+        except BaseException as e:
             trace = traceback.format_exc()
 
             ### plugin: retry
             plugin_result = None
-            if task_func.retry:
-                plugin_result = self._plugin_trigger("retry", broker=self.broker, task_func=task_func, task_broker=task_broker, trace=trace)
-            ###
+
+            if task_func.retry_on_exc and type(e) not in task_func.retry_on_exc:
+                pass
+            else:
+                if task_func.retry:
+                    plugin_result = self._plugin_trigger("retry", broker=self.broker, task_func=task_func, task_broker=task_broker, trace=trace)
             
             if not plugin_result:
                 model = TaskStatusErrorSchema(task_name=task_func.name, priority=task_func.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time())
                 model.set_json(args=task_broker.args, kwargs=task_broker.kwargs)
             else:
                 model: TaskStatusErrorSchema = plugin_result[-1]
+            ###
             
             self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
             return model

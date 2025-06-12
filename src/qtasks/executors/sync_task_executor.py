@@ -84,7 +84,7 @@ class SyncTaskExecutor(BaseTaskExecutor):
         """Вызов перед запуском задач."""
         if self.task_func.echo:
             self.echo = SyncTask(task_name=self.task_broker.name, priority=self.task_broker.priority,
-                echo=self.task_func.echo, retry=self.task_func.retry,
+                echo=self.task_func.echo, retry=self.task_func.retry, retry_on_exc=self.task_func.retry_on_exc,
                 executor=self.task_func.executor, middlewares=self.task_func.middlewares
             )
             self.echo.ctx._update(task_uuid=self.task_broker.uuid)

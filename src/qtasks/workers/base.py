@@ -8,6 +8,7 @@ from qtasks.logs import Logger
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.plugins.retries.sync_retry import SyncRetryPlugin
 from qtasks.schemas.inits import InitsExecSchema
+from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
@@ -79,6 +80,8 @@ class BaseWorker(ABC):
         self.config = config or QueueConfig()
         
         self.log = log.with_subname("Worker") if log else Logger(name=self.name, subname="Worker", default_level=self.config.logs_default_level, format=self.config.logs_format)
+        
+        self._tasks: dict[str, TaskExecSchema] = {}
         self.init_worker_running: list[InitsExecSchema] = []
         self.init_task_running: list[InitsExecSchema] = []
         self.init_task_stoping: list[InitsExecSchema] = []

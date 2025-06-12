@@ -183,12 +183,9 @@ class AsyncStarter(BaseStarter):
             await asyncio.gather(broker_task, worker_task)
         except asyncio.CancelledError:
             pass
-        finally:
-            await self.stop()
 
     async def stop(self):
         """Останавливает все компоненты."""
-
         self.log.info(f"Остановка QueueTasks...")
         if self.broker:
             await self.broker.stop()

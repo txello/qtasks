@@ -53,6 +53,7 @@ class TaskExecSchema:
     
     echo: bool = False
     retry: int|None = None
+    retry_on_exc: list[Type[Exception]]|None = None
 
     generate_handler: Callable|None = None
 
