@@ -6,12 +6,13 @@ import redis
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import SyncPluginMixin
 
 from .base import BaseGlobalConfig
 from qtasks.schemas.global_config import GlobalConfigSchema
 
 
-class SyncRedisGlobalConfig(BaseGlobalConfig):
+class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
     """
     Глобальный Конфиг, работающий через Redis и работает с глобальными значениями.
 

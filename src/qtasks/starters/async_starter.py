@@ -4,6 +4,7 @@ from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import AsyncPluginMixin
 
 from .base import BaseStarter
 
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
 
 
-class AsyncStarter(BaseStarter):
+class AsyncStarter(BaseStarter, AsyncPluginMixin):
     """
     Стартер, запускающий Компоненты.
 
@@ -91,6 +92,7 @@ class AsyncStarter(BaseStarter):
         super().__init__(name=name, broker=broker, worker=worker, log=log, config=config)
         
         self._global_loop: asyncio.AbstractEventLoop | None = None
+        self._started_plugins: set[int] = set()
 
     def start(self,
             loop: Annotated[
@@ -170,8 +172,11 @@ class AsyncStarter(BaseStarter):
         Args:
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
         """
-        for model_plugin in [i for y in self.plugins.values() for i in y]:
-            await model_plugin.start()
+
+        for plugin in [i for y in self.plugins.values() for i in y]:
+            if plugin not in self._started_plugins:
+                self._started_plugins.add(plugin)
+                await plugin.start()
         
         for model in self._inits["init_starting"]:
             await model.func(worker=self.worker, broker=self.broker) if model.awaiting else model.func(worker=self.worker, broker=self.broker)
@@ -202,5 +207,6 @@ class AsyncStarter(BaseStarter):
         for model_init in self._inits["init_stoping"]:
             await model_init.func(worker=self.worker, broker=self.broker) if model_init.awaiting else model_init.func(worker=self.worker, broker=self.broker)
 
-        for model_plugin in [i for y in self.plugins.values() for i in y]:
-            await model_plugin.stop()
+        for plugin in self._started_plugins:
+            await plugin.stop()
+        self._started_plugins.clear()

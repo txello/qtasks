@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable, List, Optional, Type, Union, overloa
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
+from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.types.annotations import P, R
 from qtasks.base.qtasks import BaseQueueTasks
 from qtasks.logs import Logger
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
     from qtasks.middlewares.task import TaskMiddleware
 
 
-class QueueTasks(BaseQueueTasks):
+class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
     """
     `QueueTasks` - Фреймворк для очередей задач.
 
@@ -472,22 +473,6 @@ class QueueTasks(BaseQueueTasks):
                 return False
             return True
         return True
-        
-    async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """
-        Вызвать триггер плагина.
-
-        Args:
-            name (str): Имя триггера.
-            *args: Позиционные аргументы для триггера.
-            **kwargs: Именованные аргументы для триггера.
-        """
-        results = []
-        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            result = await plugin.trigger(name=name, *args, **kwargs)
-            if result is not None:
-                results.append(result)
-        return results
     
     async def flush_all(self) -> None:
         """Удалить все данные."""

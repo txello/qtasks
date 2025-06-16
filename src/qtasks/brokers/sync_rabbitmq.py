@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional, Union
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.schemas.task_exec import TaskPrioritySchema
 try:
     import pika
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
 
-class SyncRabbitMQBroker(BaseBroker):
+class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     """
     Брокер, слушающий RabbitMQ и добавляющий задачи в очередь.
 

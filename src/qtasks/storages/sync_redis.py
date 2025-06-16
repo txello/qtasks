@@ -13,6 +13,7 @@ from qtasks.contrib.redis.sync_queue_client import SyncRedisCommandQueue
 from qtasks.configs.sync_redisglobalconfig import SyncRedisGlobalConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import SyncPluginMixin
 
 from .base import BaseStorage
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.workers.base import BaseWorker
 
-class SyncRedisStorage(BaseStorage):
+class SyncRedisStorage(BaseStorage, SyncPluginMixin):
     """
     Хранилище, работающий с Redis, сохраняя информацию о задачах.
 

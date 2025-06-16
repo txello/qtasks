@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional, Union
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.schemas.task_exec import TaskPrioritySchema
 
 try:
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
 
-class AsyncRabbitMQBroker(BaseBroker):
+class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     """
     Брокер, слушающий RabbitMQ и добавляющий задачи в очередь.
 
@@ -348,22 +349,6 @@ class AsyncRabbitMQBroker(BaseBroker):
     
     async def _running_older_tasks(self, worker):
         return await self.storage._running_older_tasks(worker)
-
-    async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """
-        Вызвать триггер плагина.
-
-        Args:
-            name (str): Имя триггера.
-            *args: Позиционные аргументы для триггера.
-            **kwargs: Именованные аргументы для триггера.
-        """
-        results = []
-        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            result = await plugin.trigger(name=name, *args, **kwargs)
-            if result is not None:
-                results.append(result)
-        return results
     
     async def flush_all(self) -> None:
         """Удалить все данные."""

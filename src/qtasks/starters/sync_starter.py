@@ -3,6 +3,8 @@ from qtasks.logs import Logger
 from typing import TYPE_CHECKING, Optional
 from typing_extensions import Annotated, Doc
 
+from qtasks.mixins.plugin import SyncPluginMixin
+
 from .base import BaseStarter
 
 if TYPE_CHECKING:
@@ -11,7 +13,7 @@ if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
 
 
-class SyncStarter(BaseStarter):
+class SyncStarter(BaseStarter, SyncPluginMixin):
     """
     Стартер, запускающий Компоненты.
 

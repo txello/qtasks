@@ -14,6 +14,7 @@ from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.exc.task import TaskCancelError
 from qtasks.executors.async_task_executor import AsyncTaskExecutor
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.schemas.task import Task
 from qtasks.plugins.retries import async_retry_plugin
 
@@ -25,7 +26,7 @@ from qtasks.brokers.async_redis import AsyncRedisBroker
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
 
-class AsyncWorker(BaseWorker):
+class AsyncWorker(BaseWorker, AsyncPluginMixin):
     """
     Воркер, Получающий из Брокера задачи и обрабатывающий их.
 
@@ -379,22 +380,6 @@ class AsyncWorker(BaseWorker):
             except BaseException:
                 pass
         return
-    
-    async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """
-        Вызвать триггер плагина.
-
-        Args:
-            name (str): Имя триггера.
-            *args: Позиционные аргументы для триггера.
-            **kwargs: Именованные аргументы для триггера.
-        """
-        results = []
-        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            result = await plugin.trigger(name=name, *args, **kwargs)
-            if result is not None:
-                results.append(result)
-        return results
 
     def init_plugins(self):
         """Инициализация плагинов."""

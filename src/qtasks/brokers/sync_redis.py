@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.storages import SyncRedisStorage
 
@@ -20,7 +21,7 @@ from .base import BaseBroker
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
 
-class SyncRedisBroker(BaseBroker):
+class SyncRedisBroker(BaseBroker, SyncPluginMixin):
     """
     Брокер, слушающий Redis и добавляющий задачи в очередь.
 

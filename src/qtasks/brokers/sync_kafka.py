@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.storages.sync_redis import SyncRedisStorage
 
 from .base import BaseBroker
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
 
-class SyncKafkaBroker(BaseBroker):
+class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
     """
     Брокер, слушающий Kafka и добавляющий задачи в очередь.
 
@@ -306,22 +307,6 @@ class SyncKafkaBroker(BaseBroker):
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
         self.storage.remove_finished_task(task_broker, model)
-        
-    def _plugin_trigger(self, name: str, *args, **kwargs):
-        """
-        Вызвать триггер плагина.
-
-        Args:
-            name (str): Имя триггера.
-            *args: Позиционные аргументы для триггера.
-            **kwargs: Именованные аргументы для триггера.
-        """
-        results = []
-        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            result = plugin.trigger(name=name, *args, **kwargs)
-            if result is not None:
-                results.append(result)
-        return results
     
     def flush_all(self) -> None:
         """Удалить все данные."""

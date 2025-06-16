@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.storages.sync_redis import SyncRedisStorage
 
 from .base import BaseBroker
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
 
-class AsyncKafkaBroker(BaseBroker):
+class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
     """
     Брокер, слушающий Kafka и добавляющий задачи в очередь.
 
@@ -328,22 +329,6 @@ class AsyncKafkaBroker(BaseBroker):
             loop=loop,
         )
         await self.producer.start()
-        
-    async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """
-        Вызвать триггер плагина.
-
-        Args:
-            name (str): Имя триггера.
-            *args: Позиционные аргументы для триггера.
-            **kwargs: Именованные аргументы для триггера.
-        """
-        results = []
-        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            result = await plugin.trigger(name=name, *args, **kwargs)
-            if result is not None:
-                results.append(result)
-        return results
     
     async def flush_all(self) -> None:
         """Удалить все данные."""

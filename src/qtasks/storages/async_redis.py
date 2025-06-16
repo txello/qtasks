@@ -13,18 +13,19 @@ from qtasks.configs.config import QueueConfig
 from qtasks.contrib.redis.async_queue_client import AsyncRedisCommandQueue
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import AsyncPluginMixin
 
 from .base import BaseStorage
 from qtasks.configs.async_redisglobalconfig import AsyncRedisGlobalConfig
 from qtasks.schemas.task_exec import TaskPrioritySchema
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusSuccessSchema
+from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusSuccessSchema
 from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.workers.base import BaseWorker
 
-class AsyncRedisStorage(BaseStorage):
+class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     """
     Хранилище, работающий с Redis, сохраняя информацию о задачах.
 
@@ -222,7 +223,7 @@ class AsyncRedisStorage(BaseStorage):
                 )
             ],
             model: Annotated[
-                Union[TaskStatusSuccessSchema|TaskStatusErrorSchema],
+                Union[TaskStatusSuccessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
                 Doc(
                     """
                     Модель результата задачи.
@@ -234,7 +235,7 @@ class AsyncRedisStorage(BaseStorage):
 
         Args:
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Модель результата задачи.
         """
         if model.status == TaskStatusEnum.SUCCESS.value and not isinstance(model.returning, (bytes, str, int, float)):
             trace = "Invalid input of type: 'NoneType'. Convert to a bytes, string, int or float first."
@@ -243,6 +244,8 @@ class AsyncRedisStorage(BaseStorage):
         
         await self.redis_contrib.execute("hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__)
         await self.redis_contrib.execute("zrem", self.queue_process, f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}")
+
+        await self._plugin_trigger("storage_task_finished", task_broker=task_broker, model=model)
         return
     
     async def start(self):

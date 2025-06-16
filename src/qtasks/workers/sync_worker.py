@@ -11,6 +11,7 @@ from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.exc.task import TaskCancelError
 from qtasks.executors.sync_task_executor import SyncTaskExecutor
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.schemas.task import Task
 from qtasks.plugins.retries import sync_retry_plugin
 
@@ -20,7 +21,7 @@ from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSc
 from qtasks.brokers.base import BaseBroker
 from qtasks.brokers import SyncRedisBroker
 
-class SyncThreadWorker(BaseWorker):
+class SyncThreadWorker(BaseWorker, SyncPluginMixin):
     """
     Воркер, Получающий из Брокера задачи и обрабатывающий их.
 
@@ -357,22 +358,6 @@ class SyncThreadWorker(BaseWorker):
             except BaseException:
                 pass
         return
-
-    def _plugin_trigger(self, name: str, *args, **kwargs):
-        """
-        Вызвать триггер плагина.
-
-        Args:
-            name (str): Имя триггера.
-            *args: Позиционные аргументы для триггера.
-            **kwargs: Именованные аргументы для триггера.
-        """
-        results = []
-        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            result = plugin.trigger(name=name, *args, **kwargs)
-            if result is not None:
-                results.append(result)
-        return results
 
     def init_plugins(self):
         """Инициализация плагинов."""

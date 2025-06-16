@@ -12,6 +12,7 @@ import redis.asyncio as aioredis
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.storages.async_redis import AsyncRedisStorage
 
@@ -24,7 +25,7 @@ from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
 from qtasks.storages import AsyncRedisStorage
 
-class AsyncRedisBroker(BaseBroker):
+class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
     """
     Брокер, слушающий Redis и добавляющий задачи в очередь.
 
@@ -143,6 +144,8 @@ class AsyncRedisBroker(BaseBroker):
             model_get = await self.get(uuid=uuid)
             args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
             self.log.info(f"Получена новая задача: {uuid}")
+
+            await self._plugin_trigger("broker_new_task", task_name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)
             await worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)  # Передаём задачу в AsyncWorker
                 
                 
@@ -312,22 +315,6 @@ class AsyncRedisBroker(BaseBroker):
         """
         await self.storage.remove_finished_task(task_broker, model)
         return
-    
-    async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """
-        Вызвать триггер плагина.
-
-        Args:
-            name (str): Имя триггера.
-            *args: Позиционные аргументы для триггера.
-            **kwargs: Именованные аргументы для триггера.
-        """
-        results = []
-        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            result = await plugin.trigger(name=name, *args, **kwargs)
-            if result is not None:
-                results.append(result)
-        return results
 
     async def flush_all(self) -> None:
         """Удалить все данные."""
