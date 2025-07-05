@@ -127,6 +127,19 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             key (str): Ключ.
             value (str): Значение.
         """
+        new_data = self._plugin_trigger(
+            "global_config_set",
+            global_config=self,
+            name=name,
+            key=key,
+            value=value
+        )
+        if new_data:
+            new_data = new_data[-1]
+            name = new_data.get("name", name)
+            key = new_data.get("key", key)
+            value = new_data.get("value", value)
+
         self.client.hset(name=f"{self.config_name}:{name}", key=key, value=value)
         return
 
@@ -140,7 +153,15 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Returns:
             Any: Значение.
         """
-        return self.client.hget(name=f"{self.config_name}:{key}", key=name)
+        result = self.client.hget(name=f"{self.config_name}:{key}", key=name)
+        new_result = self._plugin_trigger(
+            "global_config_get",
+            global_config=self,
+            get=result
+        )
+        if new_result:
+            result = new_result[-1]
+        return result
 
     def get_all(self, key: str) -> dict[Any]:
         """Получить все значения.
@@ -151,7 +172,15 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Returns:
             dict[Any]: Значения.
         """
-        return self.client.hgetall(name=f"{self.config_name}:{key}")
+        result = self.client.hgetall(name=f"{self.config_name}:{key}")
+        new_result = self._plugin_trigger(
+            "global_config_get_all",
+            global_config=self,
+            get=result
+        )
+        if new_result:
+            result = new_result[-1]
+        return result
 
     def get_match(self, match: str) -> Any | dict[Any]:
         """Получить значения по паттерну.
@@ -162,10 +191,19 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Returns:
             Any | dict[Any]: Значение или Значения.
         """
-        return self.client.hscan(key=self.config_name, match=match)
+        result = self.client.hscan(key=self.config_name, match=match)
+        new_result = self._plugin_trigger(
+            "global_config_get_match",
+            global_config=self,
+            get=result
+        )
+        if new_result:
+            result = new_result[-1]
+        return result
 
     def start(self) -> None:
         """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
+        self._plugin_trigger("global_config_start", global_config=self)
         self.running = True
         global_config = GlobalConfigSchema(name=self.name, status="running")
         self.client.hset(
@@ -174,13 +212,15 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Thread(target=self._set_status, daemon=True).start()
 
     def stop(self) -> None:
-        """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever."""
+        """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+        self._plugin_trigger("global_config_stop", global_config=self)
         self.running = False
         self.client.close()
         return
 
     def _set_status(self):
         """Обновляет статус запуска глобального конфига."""
+        self._plugin_trigger("global_config_set_status", global_config=self)
         ttl = self.config.global_config_status_ttl
         interval = self.config.global_config_status_set_periodic
         while self.running:

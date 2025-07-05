@@ -7,13 +7,13 @@ import redis.asyncio as aioredis
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
-from qtasks.mixins.plugin import SyncPluginMixin
+from qtasks.mixins.plugin import AsyncPluginMixin
 
 from .base import BaseGlobalConfig
 from qtasks.schemas.global_config import GlobalConfigSchema
 
 
-class AsyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
+class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
     """
     Глобальный Конфиг, работающий через Redis и работает с глобальными значениями.
 
@@ -128,6 +128,19 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             key (str): Ключ.
             value (str): Значение.
         """
+        new_data = await self._plugin_trigger(
+            "global_config_set",
+            global_config=self,
+            name=name,
+            key=key,
+            value=value
+        )
+        if new_data:
+            new_data = new_data[-1]
+            name = new_data.get("name", name)
+            key = new_data.get("key", key)
+            value = new_data.get("value", value)
+
         await self.client.hset(name=f"{self.config_name}:{name}", key=key, value=value)
         return
 
@@ -141,7 +154,15 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Returns:
             Any: Значение.
         """
-        return await self.client.hget(name=f"{self.config_name}:{key}", key=name)
+        result = await self.client.hget(name=f"{self.config_name}:{key}", key=name)
+        new_result = await self._plugin_trigger(
+            "global_config_get",
+            global_config=self,
+            get=result
+        )
+        if new_result:
+            result = new_result[-1]
+        return result
 
     async def get_all(self, key: str) -> dict[Any]:
         """Получить все значения.
@@ -152,7 +173,15 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Returns:
             dict[Any]: Значения.
         """
-        return await self.client.hgetall(name=f"{self.config_name}:{key}")
+        result = await self.client.hgetall(name=f"{self.config_name}:{key}")
+        new_result = await self._plugin_trigger(
+            "global_config_get_all",
+            global_config=self,
+            get=result
+        )
+        if new_result:
+            result = new_result[-1]
+        return result
 
     async def get_match(self, match: str) -> Any | dict[Any]:
         """Получить значения по паттерну.
@@ -163,10 +192,19 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Returns:
             Any | dict[Any]: Значение или Значения.
         """
-        return await self.client.hscan(key=self.config_name, match=match)
+        result = await self.client.hscan(key=self.config_name, match=match)
+        new_result = await self._plugin_trigger(
+            "global_config_get_match",
+            global_config=self,
+            get=result
+        )
+        if new_result:
+            result = new_result[-1]
+        return result
 
     async def start(self) -> None:
         """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
+        await self._plugin_trigger("global_config_start", global_config=self)
         self.running = True
         loop = asyncio.get_running_loop()
         self.status_event = loop.create_task(self._set_status())
@@ -176,7 +214,8 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         )
 
     async def stop(self) -> None:
-        """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever."""
+        """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+        await self._plugin_trigger("global_config_stop", global_config=self)
         self.running = False
         if self.status_event:
             self.status_event.cancel()
@@ -184,6 +223,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
 
     async def _set_status(self):
         """Обновляет статус запуска глобального конфига."""
+        await self._plugin_trigger("global_config_set_status", global_config=self)
         ttl = self.config.global_config_status_ttl
         interval = self.config.global_config_status_set_periodic
         while self.running:

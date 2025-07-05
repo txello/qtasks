@@ -1,4 +1,5 @@
-from dataclasses import asdict, field, fields, make_dataclass
+"""Sync Redis Broker."""
+
 import redis
 from typing import Optional, Union
 from typing_extensions import Annotated, Doc
@@ -50,7 +51,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             Doc(
                 """
                     Имя проекта. Это имя также используется брокером.
-                    
+
                     По умолчанию: `QueueTasks`.
                     """
             ),
@@ -60,7 +61,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             Doc(
                 """
                     URL для подключения к Redis.
-                    
+
                     По умолчанию: `redis://localhost:6379/0`.
                     """
             ),
@@ -70,7 +71,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             Doc(
                 """
                     Хранилище.
-                    
+
                     По умолчанию: `AsyncRedisStorage`.
                     """
             ),
@@ -80,7 +81,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             Doc(
                 """
                     Имя массива очереди задач для Redis. Название обновляется на: `name:queue_name`
-                    
+
                     По умолчанию: `task_queue`.
                     """
             ),
@@ -90,7 +91,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             Doc(
                 """
                     Логгер.
-                    
+
                     По умолчанию: `qtasks.logs.Logger`.
                     """
             ),
@@ -100,12 +101,22 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             Doc(
                 """
                     Конфиг.
-                    
+
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
             ),
         ] = None,
     ):
+        """Инициализация SyncRedisBroker.
+
+        Args:
+            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
+            url (str, optional): URL для подключения к Redis. По умолчанию: None.
+            storage (BaseStorage, optional): Хранилище. По умолчанию: None.
+            queue_name (str, optional): Имя массива очереди задач для Redis. По умолчанию: "task_queue".
+            log (Logger, optional): Логгер. По умолчанию: None.
+            config (QueueConfig, optional): Конфиг. По умолчанию: None.
+        """
         super().__init__(name=name, log=log, config=config)
         self.url = url or "redis://localhost:6379/0"
         self.queue_name = f"{self.name}:{queue_name}"
@@ -140,6 +151,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         Args:
             worker (BaseWorker): Класс воркера.
         """
+        self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
 
         while self.running:
@@ -159,6 +171,27 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
                 model_get.created_at.timestamp(),
             )
             self.log.info(f"Получена новая задача: {uuid}")
+            new_args = self._plugin_trigger(
+                "broker_add_worker",
+                broker=self,
+                worker=worker,
+
+                task_name=task_name,
+                uuid=uuid,
+                priority=int(priority),
+                args=args,
+                kwargs=kwargs,
+                created_at=created_at
+            )
+            if new_args:
+                new_args = new_args[-1]
+                task_name = new_args.get("task_name", task_name)
+                uuid = new_args.get("uuid", uuid)
+                priority = new_args.get("priority", priority)
+                args = new_args.get("args", args)
+                kwargs = new_args.get("kwargs", kwargs)
+                created_at = new_args.get("created_at", created_at)
+
             worker.add(
                 name=task_name,
                 uuid=uuid,
@@ -183,7 +216,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             Doc(
                 """
                     Приоритет задачи.
-                    
+
                     По умолчанию: `0`.
                     """
             ),
@@ -233,8 +266,24 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
 
+        new_model = self._plugin_trigger(
+            "broker_add_before",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
+        if new_model:
+            model = new_model[-1]
+
         self.storage.add(uuid=uuid, task_status=model)
         self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")
+
+        self._plugin_trigger(
+            "broker_add_after",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
 
         model = Task(
             status=TaskStatusEnum.NEW.value,
@@ -269,7 +318,11 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
-        return self.storage.get(uuid=uuid)
+        task = self.storage.get(uuid=uuid)
+        new_task = self._plugin_trigger("broker_get", broker=self, task=task)
+        if new_task:
+            task = new_task[-1]
+        return task
 
     def update(
         self,
@@ -287,7 +340,10 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        self.storage.update(**kwargs)
+        new_kw = self._plugin_trigger("broker_update", broker=self, kw=kwargs)
+        if new_kw:
+            kwargs = new_kw[-1]
+        return self.storage.update(**kwargs)
 
     def start(
         self,
@@ -305,6 +361,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         Args:
             worker (BaseWorker): Класс Воркера.
         """
+        self._plugin_trigger("broker_start", broker=self, worker=worker)
         self.storage.start()
 
         if self.config.delete_finished_tasks:
@@ -317,6 +374,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
 
     def stop(self):
         """Останавливает брокер."""
+        self._plugin_trigger("broker_stop", broker=self)
         self.running = False
         self.client.close()
 
@@ -347,8 +405,22 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
+        new_model = self._plugin_trigger(
+            "broker_remove_finished_task",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
+        if new_model:
+            model = new_model[-1]
+
         self.storage.remove_finished_task(task_broker, model)
+
+    def _running_older_tasks(self, worker):
+        self._plugin_trigger("broker_running_older_tasks", broker=self, worker=worker)
+        return self.storage._running_older_tasks(worker)
 
     def flush_all(self) -> None:
         """Удалить все данные."""
+        self._plugin_trigger("broker_flush_all", broker=self)
         self.storage.flush_all()

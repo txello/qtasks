@@ -28,4 +28,4 @@ async def main2(num):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(20000))
+    asyncio.run(main(10))

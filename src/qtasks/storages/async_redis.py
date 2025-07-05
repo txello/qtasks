@@ -173,6 +173,13 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             task_status (TaskStatusNewSchema): Схема статуса новой задачи.
         """
         uuid = str(uuid)
+
+        new_data = await self._plugin_trigger("storage_add", storage=self, uuid=uuid, task_status=task_status)
+        if new_data:
+            new_data = new_data[-1]
+            uuid = new_data.get("uuid", uuid)
+            task_status = new_data.get("task_status", task_status)
+
         await self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
         return
 
@@ -193,7 +200,11 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         if not result:
             return None
 
-        return self._build_task(uuid=uuid, result=result)
+        result = self._build_task(uuid=uuid, result=result)
+        new_result = await self._plugin_trigger("storage_get", storage=self, result=result)
+        if new_result:
+            result = new_result[-1]
+        return result
 
     async def get_all(self) -> list[Task]:
         """Получить все задачи.
@@ -203,7 +214,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """
         pattern = f"{self.name}:*"
 
-        result: list[Task] = []
+        results: list[Task] = []
         async for key in self.client.scan_iter(pattern):
             name, uuid, *_ = key.split(":")
             if uuid in [self._queue_process, "task_queue"]:
@@ -212,9 +223,13 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                 continue
 
             task = await self.get(uuid=uuid)
-            result.append(task)
+            results.append(task)
 
-        return result
+        new_results = await self._plugin_trigger("storage_get_all", storage=self, results=results)
+        if new_results:
+            results = new_results[-1]
+
+        return results
 
     async def update(
         self,
@@ -232,6 +247,10 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
+        new_kw = await self._plugin_trigger("storage_update", storage=self, kw=kwargs)
+        if new_kw:
+            kwargs = new_kw[-1]
+
         return await self.redis_contrib.execute(
             "hset", kwargs["name"], mapping=kwargs["mapping"]
         )
@@ -286,17 +305,19 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         )
 
         await self._plugin_trigger(
-            "storage_task_finished", storage=self, task_broker=task_broker, model=model
+            "storage_remove_finished_task", storage=self, task_broker=task_broker, model=model
         )
         return
 
     async def start(self):
         """Запускает хранилище."""
+        await self._plugin_trigger("storage_start", storage=self)
         if self.global_config:
             await self.global_config.start()
 
     async def stop(self):
         """Останавливает хранилище."""
+        await self._plugin_trigger("storage_stop", storage=self)
         return await self.client.close()
 
     async def add_process(
@@ -324,6 +345,12 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             task_data (str): Данные задачи из брокера.
             priority (int): Приоритет задачи.
         """
+        new_data = await self._plugin_trigger("storage_add_process", storage=self)
+        if new_data:
+            new_data = new_data[-1]
+            task_data = new_data.get("task_data", task_data)
+            priority = new_data.get("priority", priority)
+
         await self.client.zadd(self.queue_process, {task_data: priority})
         return
 
@@ -342,6 +369,15 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                 json.loads(kwargs) or {},
                 float(created_at),
             )
+            new_data = await self._plugin_trigger("storage_running_older_tasks", storage=self, worker=worker)
+            if new_data:
+                new_data = new_data[-1]
+                task_name = new_data.get("task_name", task_name)
+                uuid = new_data.get("uuid", uuid)
+                priority = new_data.get("priority", priority)
+                created_at = new_data.get("created_at", created_at)
+                args = new_data.get("args", args)
+                kwargs = new_data.get("kwargs", kwargs)
 
             await worker.add(
                 name=task_name,
@@ -354,6 +390,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         return
 
     async def _delete_finished_tasks(self):
+        await self._plugin_trigger("storage_delete_finished_tasks", storage=self)
         pattern = f"{self.name}:"
         try:
             tasks: list[Task] = list(
@@ -380,6 +417,8 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """Удалить все данные."""
         loop = asyncio.get_running_loop()
         asyncio_atexit.register(self.stop, loop=loop)
+
+        await self._plugin_trigger("storage_flush_all", storage=self)
 
         pipe = self.client.pipeline()
 

@@ -13,6 +13,7 @@ from typing import (
 )
 from typing_extensions import Annotated, Doc
 
+from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.types.annotations import P, R
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
 
 
-class Router:
+class Router(SyncPluginMixin):
     """
     Роутер, который хранит в себе задачи, которые подключает к себе основной `QueueTasks`.
 

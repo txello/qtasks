@@ -1,6 +1,8 @@
+"""Base Broker."""
+
 from abc import ABC, abstractmethod
 from dataclasses import asdict, field, fields, make_dataclass
-from typing import List, Optional, Type, Union
+from typing import List, Optional, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 from typing import TYPE_CHECKING
@@ -40,7 +42,7 @@ class BaseBroker(ABC):
             Doc(
                 """
                     Имя проекта. Это имя можно использовать для тегов для Брокеров.
-                    
+
                     По умолчанию: `None`.
                     """
             ),
@@ -50,7 +52,7 @@ class BaseBroker(ABC):
             Doc(
                 """
                     Хранилище `qtasks.storages.base.BaseStorage`.
-                    
+
                     По умолчанию: `None`.
                     """
             ),
@@ -60,7 +62,7 @@ class BaseBroker(ABC):
             Doc(
                 """
                     Логгер.
-                    
+
                     По умолчанию: `qtasks.logs.Logger`.
                     """
             ),
@@ -70,12 +72,20 @@ class BaseBroker(ABC):
             Doc(
                 """
                     Конфиг.
-                    
+
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
             ),
         ] = None,
     ):
+        """Инициализация BaseBroker.
+
+        Args:
+            name (str, optional): Имя проекта. По умолчанию: `None`.
+            storage (BaseStorage, optional): Хранилище. По умолчанию: `None`.
+            log (Logger, optional): Логгер. По умолчанию: `None`.
+            config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
+        """
         self.name = name
         self.config = config or QueueConfig()
         self.storage = storage
@@ -109,7 +119,7 @@ class BaseBroker(ABC):
             Doc(
                 """
                     Приоритет задачи.
-                    
+
                     По умолчанию: `0`.
                     """
             ),
@@ -202,7 +212,7 @@ class BaseBroker(ABC):
             Doc(
                 """
                     Класс Воркера.
-                    
+
                     По умолчанию: `None`.
                     """
             ),
@@ -213,7 +223,6 @@ class BaseBroker(ABC):
         Args:
             worker (BaseWorker, optional): класс Воркера. По умолчанию: `None`.
         """
-
         pass
 
     @abstractmethod
@@ -255,7 +264,7 @@ class BaseBroker(ABC):
             Doc(
                 """
                     Имя триггеров для плагина.
-                    
+
                     По умолчанию: По умолчанию: будет добавлен в `Globals`.
                     """
             ),
@@ -281,6 +290,7 @@ class BaseBroker(ABC):
         pass
 
     def init_plugins(self):
+        """Инициализация плагинов."""
         pass
 
     def _dynamic_model(

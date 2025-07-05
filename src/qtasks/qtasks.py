@@ -208,8 +208,37 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             priority = self.tasks.get(task_name).priority
 
         args, kwargs = args or (), kwargs or {}
+        extra = None
+
+        new_args = self._plugin_trigger(
+            "qtasks_add_task_before_broker",
+            qtasks=self,
+            broker=self.broker,
+            task_name=task_name,
+            priority=priority,
+            args=args,
+            kwargs=kwargs
+        )
+        if new_args:
+            new_args = new_args[-1]
+            task_name = new_args.get("task_name", task_name)
+            priority = new_args.get("priority", priority)
+            extra = new_args.get("extra", extra)
+            args = new_args.get("args", args)
+            kwargs = new_args.get("kwargs", kwargs)
+
         task = self.broker.add(
-            task_name=task_name, priority=priority, extra=None, args=args, kwargs=kwargs
+            task_name=task_name, priority=priority, extra=extra, args=args, kwargs=kwargs
+        )
+
+        self._plugin_trigger(
+            "qtasks_add_task_after_broker",
+            qtasks=self,
+            broker=self.broker,
+            task_name=task_name,
+            priority=priority,
+            args=args,
+            kwargs=kwargs
         )
         if timeout is not None:
             return SyncResult(uuid=task.uuid, app=self, log=self.log).result(
@@ -238,8 +267,10 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
-
-        return self.broker.get(uuid=uuid)
+        result = self.broker.get(uuid=uuid)
+        new_result = self._plugin_trigger("qtasks_get", qtasks=self, broker=self.broker, task=result)
+        result = new_result[-1] if new_result else result
+        return result
 
     def run_forever(
         self,
@@ -313,6 +344,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
 
     def stop(self):
         """Останавливает все компоненты."""
+        self._plugin_trigger("qtasks_stop", qtasks=self, starter=self.starter)
         self.starter.stop()
 
     @property
@@ -502,6 +534,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         Returns:
             bool: True - Работает, False - Не работает.
         """
+        self._plugin_trigger("qtasks_ping", qtasks=self, global_config=self.broker.storage.global_config)
         if server:
             status = self.broker.storage.global_config.get("main", "status")
             if status is None:
@@ -511,6 +544,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
 
     def flush_all(self) -> None:
         """Удалить все данные."""
+        self._plugin_trigger("qtasks_flush_all", qtasks=self)
         self.broker.flush_all()
 
     @overload

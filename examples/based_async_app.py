@@ -6,7 +6,7 @@ from qtasks.registries import AsyncTask, SyncTask
 import shared_tasks
 import router_tasks
 
-app = QueueTasks() 
+app = QueueTasks()
 app.config.logs_default_level = logging.INFO
 app.config.running_older_tasks = True
 
@@ -15,7 +15,7 @@ app.include_router(router_tasks.router)
 
 @app.task()
 async def load_test_job(num):
-    print("Задача {num}")
+    print(f"Задача {num}")
 
 
 @app.task(name="test")

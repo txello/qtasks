@@ -103,6 +103,8 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
             name=name, broker=broker, worker=worker, log=log, config=config
         )
 
+        self._started_plugins: set[int] = set()
+
     def start(
         self,
         num_workers: Annotated[
@@ -162,8 +164,11 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
         Args:
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
         """
-        for model_plugin in [i for y in self.plugins.values() for i in y]:
-            model_plugin.start()
+        self._plugin_trigger("starter_start", starter=self)
+        for plugin in [i for y in self.plugins.values() for i in y]:
+            if plugin not in self._started_plugins:
+                self._started_plugins.add(plugin)
+                plugin.start()
 
         for model in self._inits["init_starting"]:
             model.func(worker=self.worker, broker=self.broker)
@@ -180,6 +185,7 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
     def stop(self):
         """Останавливает все компоненты."""
         self.log.info("Остановка QueueTasks...")
+        self._plugin_trigger("starter_stop", starter=self)
 
         if self.broker:
             self.broker.stop()
@@ -195,3 +201,7 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
 
         for model_plugin in [i for y in self.plugins.values() for i in y]:
             model_plugin.stop()
+
+        for plugin in self._started_plugins:
+            plugin.stop()
+        self._started_plugins.clear()

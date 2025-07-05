@@ -221,10 +221,39 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             priority = self.tasks.get(task_name).priority
 
         args, kwargs = args or (), kwargs or {}
+        extra = None
+
+        new_args = await self._plugin_trigger(
+            "qtasks_add_task_before_broker",
+            qtasks=self,
+            broker=self.broker,
+            task_name=task_name,
+            priority=priority,
+            args=args,
+            kwargs=kwargs
+        )
+        if new_args:
+            new_args = new_args[-1]
+            task_name = new_args.get("task_name", task_name)
+            priority = new_args.get("priority", priority)
+            extra = new_args.get("extra", extra)
+            args = new_args.get("args", args)
+            kwargs = new_args.get("kwargs", kwargs)
 
         task = await self.broker.add(
-            task_name=task_name, priority=priority, extra=None, args=args, kwargs=kwargs
+            task_name=task_name, priority=priority, extra=extra, args=args, kwargs=kwargs
         )
+
+        await self._plugin_trigger(
+            "qtasks_add_task_after_broker",
+            qtasks=self,
+            broker=self.broker,
+            task_name=task_name,
+            priority=priority,
+            args=args,
+            kwargs=kwargs
+        )
+
         if timeout is not None:
             return await AsyncResult(uuid=task.uuid, app=self, log=self.log).result(
                 timeout=timeout
@@ -253,7 +282,10 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         if isinstance(uuid, str):
             uuid = UUID(uuid)
 
-        return await self.broker.get(uuid=uuid)
+        result = await self.broker.get(uuid=uuid)
+        new_result = await self._plugin_trigger("qtasks_get", qtasks=self, broker=self.broker, task=result)
+        result = new_result[-1] if new_result else result
+        return result
 
     def run_forever(
         self,
@@ -341,6 +373,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
 
     async def stop(self):
         """Останавливает все компоненты."""
+        await self._plugin_trigger("qtasks_stop", qtasks=self, starter=self.starter)
         await self.starter.stop()
 
     @property
@@ -396,6 +429,8 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
                 func=func,
                 awaiting=inspect.iscoroutinefunction(func),
             )
+            new_model = self._plugin_trigger("qtasks_init_stoping", qtasks=self, model=model)
+            model = new_model[-1] if new_model else model
             self._inits["init_stoping"].append(model)
             return func
 
@@ -530,6 +565,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         Returns:
             bool: True - Работает, False - Не работает.
         """
+        await self._plugin_trigger("qtasks_ping", qtasks=self, global_config=self.broker.storage.global_config)
         if server:
             loop = asyncio.get_running_loop()
             asyncio_atexit.register(self.broker.storage.global_config.stop, loop=loop)
@@ -542,6 +578,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
 
     async def flush_all(self) -> None:
         """Удалить все данные."""
+        await self._plugin_trigger("qtasks_flush_all", qtasks=self, broker=self.broker)
         await self.broker.flush_all()
 
     @overload

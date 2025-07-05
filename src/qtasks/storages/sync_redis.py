@@ -170,7 +170,15 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             task_status (TaskStatusNewSchema): Схема статуса новой задачи.
         """
         uuid = str(uuid)
+
+        new_data = self._plugin_trigger("storage_add", storage=self, uuid=uuid, task_status=task_status)
+        if new_data:
+            new_data = new_data[-1]
+            uuid = new_data.get("uuid", uuid)
+            task_status = new_data.get("task_status", task_status)
+
         self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
+        return
 
     def get(self, uuid: UUID | str) -> Task | None:
         """Получение информации о задаче.
@@ -186,7 +194,11 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         if not result:
             return None
 
-        return self._build_task(uuid, result)
+        result = self._build_task(uuid=uuid, result=result)
+        new_result = self._plugin_trigger("storage_get", storage=self, result=result)
+        if new_result:
+            result = new_result[-1]
+        return result
 
     def get_all(self) -> list[Task]:
         """Получить все задачи.
@@ -195,7 +207,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             list[Task]: Массив задач.
         """
         pattern = f"{self.name}:*"
-        result = []
+        results: list[Task] = []
         for key in self.client.scan_iter(pattern):
             try:
                 _, uuid = key.split(":")
@@ -203,10 +215,15 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
                     continue
                 task = self.get(uuid=uuid)
                 if task:
-                    result.append(task)
+                    results.append(task)
             except Exception:
                 continue
-        return result
+
+        new_results = self._plugin_trigger("storage_get_all", storage=self, results=results)
+        if new_results:
+            results = new_results[-1]
+
+        return results
 
     def update(
         self,
@@ -224,6 +241,10 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
+        new_kw = self._plugin_trigger("storage_update", storage=self, kw=kwargs)
+        if new_kw:
+            kwargs = new_kw[-1]
+
         return self.redis_contrib.execute(
             "hset", kwargs["name"], mapping=kwargs["mapping"]
         )
@@ -274,15 +295,21 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             self.queue_process,
             f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}",
         )
+
+        self._plugin_trigger(
+            "storage_remove_finished_task", storage=self, task_broker=task_broker, model=model
+        )
         return
 
     def start(self):
         """Запускает хранилище."""
+        self._plugin_trigger("storage_start", storage=self)
         if self.global_config:
             self.global_config.start()
 
     def stop(self) -> None:
         """Останавливает хранилище."""
+        self._plugin_trigger("storage_stop", storage=self)
         self.client.close()
 
     def add_process(
@@ -310,7 +337,14 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             task_data (str): Данные задачи из брокера.
             priority (int): Приоритет задачи.
         """
+        new_data = self._plugin_trigger("storage_add_process", storage=self)
+        if new_data:
+            new_data = new_data[-1]
+            task_data = new_data.get("task_data", task_data)
+            priority = new_data.get("priority", priority)
+
         self.client.zadd(self.queue_process, {task_data: priority})
+        return
 
     def _running_older_tasks(self, worker: "BaseWorker") -> None:
         tasks = self.client.zrange(self.queue_process, 0, -1)
@@ -327,6 +361,15 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
                 json.loads(kwargs) or {},
                 float(created_at),
             )
+            new_data = self._plugin_trigger("storage_running_older_tasks", storage=self, worker=worker)
+            if new_data:
+                new_data = new_data[-1]
+                task_name = new_data.get("task_name", task_name)
+                uuid = new_data.get("uuid", uuid)
+                priority = new_data.get("priority", priority)
+                created_at = new_data.get("created_at", created_at)
+                args = new_data.get("args", args)
+                kwargs = new_data.get("kwargs", kwargs)
 
             worker.add(
                 name=task_name,
@@ -338,6 +381,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             )
 
     def _delete_finished_tasks(self):
+        self._plugin_trigger("storage_delete_finished_tasks", storage=self)
         pattern = f"{self.name}:"
         try:
             tasks: list[Task] = list(
@@ -361,6 +405,8 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
 
     def flush_all(self) -> None:
         """Удалить все данные."""
+        self._plugin_trigger("storage_flush_all", storage=self)
+
         pipe = self.client.pipeline()
 
         pattern = f"{self.name}:*"

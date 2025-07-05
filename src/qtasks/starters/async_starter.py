@@ -186,6 +186,7 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
         Args:
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
         """
+        await self._plugin_trigger("starter_start", starter=self)
         for plugin in [i for y in self.plugins.values() for i in y]:
             if plugin not in self._started_plugins:
                 self._started_plugins.add(plugin)
@@ -209,6 +210,8 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
     async def stop(self):
         """Останавливает все компоненты."""
         self.log.info("Остановка QueueTasks...")
+        await self._plugin_trigger("starter_stop", starter=self)
+
         if self.broker:
             await self.broker.stop()
         if self.worker:
@@ -227,6 +230,9 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
                 if model_init.awaiting
                 else model_init.func(worker=self.worker, broker=self.broker)
             )
+
+        for model_plugin in [i for y in self.plugins.values() for i in y]:
+            await model_plugin.stop()
 
         for plugin in self._started_plugins:
             await plugin.stop()

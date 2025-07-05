@@ -1,3 +1,5 @@
+"""Async Kafka Broker."""
+
 try:
     from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 except ImportError:
@@ -55,7 +57,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Имя проекта. Это имя также используется брокером.
-                    
+
                     По умолчанию: `QueueTasks`.
                     """
             ),
@@ -65,7 +67,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     URL для подключения к Kafka.
-                    
+
                     По умолчанию: `localhost:9092`.
                     """
             ),
@@ -75,7 +77,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Хранилище.
-                    
+
                     По умолчанию: `AsyncRedisStorage`.
                     """
             ),
@@ -85,7 +87,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Топик Kafka.
-                    
+
                     По умолчанию: `task_queue`.
                     """
             ),
@@ -95,7 +97,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Логгер.
-                    
+
                     По умолчанию: `qtasks.logs.Logger`.
                     """
             ),
@@ -105,12 +107,22 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Конфиг.
-                    
+
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
             ),
         ] = None,
     ):
+        """Инициализация AsyncKafkaBroker.
+
+        Args:
+            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
+            url (str, optional): URL для подключения к Kafka. По умолчанию: None.
+            storage (BaseStorage, optional): Хранилище. По умолчанию: None.
+            topic (str, optional): Топик Kafka. По умолчанию: "task_queue".
+            log (Logger, optional): Логгер. По умолчанию: None.
+            config (QueueConfig, optional): Конфиг. По умолчанию: None.
+        """
         super().__init__(name=name, log=log, config=config)
         self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
@@ -144,6 +156,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         Args:
             worker (BaseWorker): Класс воркера.
         """
+        await self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         await self._consumer_start()
         self.running = True
         try:
@@ -157,6 +170,27 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                     model_get.created_at.timestamp(),
                 )
                 self.log.info(f"Получена новая задача: {uuid}")
+                new_args = await self._plugin_trigger(
+                    "broker_add_worker",
+                    broker=self,
+                    worker=worker,
+
+                    task_name=task_name,
+                    uuid=uuid,
+                    priority=int(priority),
+                    args=args,
+                    kwargs=kwargs,
+                    created_at=created_at
+                )
+                if new_args:
+                    new_args = new_args[-1]
+                    task_name = new_args.get("task_name", task_name)
+                    uuid = new_args.get("uuid", uuid)
+                    priority = new_args.get("priority", priority)
+                    args = new_args.get("args", args)
+                    kwargs = new_args.get("kwargs", kwargs)
+                    created_at = new_args.get("created_at", created_at)
+
                 await worker.add(
                     name=task_name,
                     uuid=uuid,
@@ -183,7 +217,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Приоритет задачи.
-                    
+
                     По умолчанию: `0`.
                     """
             ),
@@ -193,6 +227,14 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Дополнительные параметры задачи.
+                    """
+            ),
+        ] = None,
+        args: Annotated[
+            tuple,
+            Doc(
+                """
+                    Аргументы задачи типа args.
                     """
             ),
         ] = None,
@@ -219,7 +261,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         """
         args, kwargs = args or (), kwargs or {}
 
-        uuid = uuid4()
+        uuid = str(uuid4())
         created_at = time()
         model = TaskStatusNewSchema(
             task_name=task_name,
@@ -232,6 +274,15 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
 
+        new_model = await self._plugin_trigger(
+            "broker_add_before",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
+        if new_model:
+            model = new_model[-1]
+
         await self.storage.add(uuid=uuid, task_status=model)
 
         task_data = f"{task_name}:{uuid}:{priority}"
@@ -239,6 +290,12 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         await self.producer.send_and_wait(self.topic, task_data)
         await self.producer.stop()
 
+        await self._plugin_trigger(
+            "broker_add_after",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
         return Task(
             status=TaskStatusEnum.NEW.value,
             task_name=task_name,
@@ -271,7 +328,11 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
-        return await self.storage.get(uuid=uuid)
+        task = await self.storage.get(uuid=uuid)
+        new_task = await self._plugin_trigger("broker_get", broker=self, task=task)
+        if new_task:
+            task = new_task[-1]
+        return task
 
     async def update(
         self,
@@ -289,6 +350,9 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
+        new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs)
+        if new_kw:
+            kwargs = new_kw[-1]
         return await self.storage.update(**kwargs)
 
     async def start(
@@ -307,6 +371,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         Args:
             worker (BaseWorker): Класс Воркера.
         """
+        await self._plugin_trigger("broker_start", broker=self, worker=worker)
         await self.storage.start()
 
         if self.config.delete_finished_tasks:
@@ -319,6 +384,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
 
     async def stop(self):
         """Останавливает брокер."""
+        await self._plugin_trigger("broker_stop", broker=self)
         self.running = False
         await self.consumer.stop()
         await self.producer.stop()
@@ -350,7 +416,20 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
+        new_model = await self._plugin_trigger(
+            "broker_remove_finished_task",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
+        if new_model:
+            model = new_model[-1]
+
         await self.storage.remove_finished_task(task_broker, model)
+
+    async def _running_older_tasks(self, worker):
+        await self._plugin_trigger("broker_running_older_tasks", broker=self, worker=worker)
+        return await self.storage._running_older_tasks(worker)
 
     async def _consumer_start(self):
         """Запускает Kafka Consumer."""
@@ -371,4 +450,5 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
 
     async def flush_all(self) -> None:
         """Удалить все данные."""
+        await self._plugin_trigger("broker_flush_all", broker=self)
         await self.storage.flush_all()

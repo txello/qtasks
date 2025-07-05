@@ -142,8 +142,11 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         if new_args:
             self._args, self._kwargs = new_args[-1]
 
+        await self._plugin_trigger("task_executor_before_execute", task_executor=self)
+
     async def after_execute(self):
         """Вызов после запуска задач."""
+        await self._plugin_trigger("task_executor_after_execute", task_executor=self)
         result: Any = await self._plugin_trigger(
             "task_executor_result_replace", result=self._result
         )
@@ -153,6 +156,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
 
     async def execute_middlewares(self):
         """Вызов мидлварей."""
+        await self._plugin_trigger("task_executor_middlewares_execute", task_executor=self, middlewares=self.middlewares)
         for m in self.middlewares:
             m = await m(self)()
             self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
@@ -191,6 +195,10 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         if self.task_func.generating:
             return await self.run_task_gen(result)
 
+        new_result = await self._plugin_trigger("task_executor_run_task", task_executor=self, result=result)
+        if new_result:
+            result = new_result[-1]
+
         return result
 
     async def run_task_gen(self, func: AsyncGenerator) -> list[Any]:
@@ -225,7 +233,9 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                     results.append(result)
             except StopIteration:
                 pass
-
+        new_results = await self._plugin_trigger("task_executor_run_task_gen", task_executor=self, results=results)
+        if new_results:
+            results = new_results[-1]
         return results
 
     async def _maybe_await(self, value):
@@ -257,4 +267,8 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         Returns:
             str: Результат задачи.
         """
-        return json.dumps(self._result, ensure_ascii=False)
+        result = json.dumps(self._result, ensure_ascii=False)
+        new_result = await self._plugin_trigger("task_executor_decode", task_executor=self, result=result)
+        if new_result:
+            result = new_result[-1]
+        return result

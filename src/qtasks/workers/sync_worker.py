@@ -4,10 +4,11 @@ from threading import Event, Lock, Semaphore, Thread
 from time import time, sleep
 import traceback
 from queue import PriorityQueue
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
+from .base import BaseWorker
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.exc.task import TaskCancelError
@@ -17,7 +18,6 @@ from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.schemas.task import Task
 from qtasks.plugins.retries import sync_retry_plugin
 
-from .base import BaseWorker
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 from qtasks.schemas.task_status import (
     TaskStatusCancelSchema,
@@ -25,8 +25,10 @@ from qtasks.schemas.task_status import (
     TaskStatusProcessSchema,
     TaskStatusSuccessSchema,
 )
-from qtasks.brokers.base import BaseBroker
 from qtasks.brokers import SyncRedisBroker
+
+if TYPE_CHECKING:
+    from qtasks.brokers.base import BaseBroker
 
 
 class SyncThreadWorker(BaseWorker, SyncPluginMixin):
@@ -172,6 +174,11 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 updated_at=time(),
             )
             model.set_json(task_broker.args, task_broker.kwargs)
+
+            new_model = self._plugin_trigger("worker_execute_before", model=model)
+            if new_model:
+                model = new_model[-1]
+
             self.broker.update(
                 name=f"{self.name}:{task_broker.uuid}", mapping=model.__dict__
             )
@@ -190,6 +197,8 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             )
 
             self.broker.remove_finished_task(task_broker, model)
+
+            self._plugin_trigger("worker_execute_after", task_func=task_func, task_broker=task_broker, model=model)
 
             self.queue.task_done()
 
@@ -254,6 +263,25 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             args (tuple): Аргументы задачи типа args.
             kwargs (dict): Аргументы задачи типа kwargs.
         """
+        new_data = self._plugin_trigger(
+            "worker_add",
+            worker=self,
+            task_name=name,
+            uuid=uuid,
+            priority=priority,
+            args=args,
+            kwargs=kwargs,
+            created_at=created_at
+        )
+        if new_data:
+            new_data = new_data[-1]
+            name = new_data.get("name", name)
+            uuid = new_data.get("uuid", uuid)
+            priority = new_data.get("priority", priority)
+            args = new_data.get("args", args)
+            kwargs = new_data.get("kwargs", kwargs)
+            created_at = new_data.get("created_at", created_at)
+
         model = TaskPrioritySchema(
             priority=priority,
             uuid=uuid,
@@ -295,13 +323,17 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         Args:
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
         """
-        for number in range(num_workers):
+        self.num_workers = num_workers
+        self._plugin_trigger("worker_start", worker=self)
+
+        for number in range(self.num_workers):
             thread = Thread(target=self.worker, args=(number,), daemon=True)
             thread.start()
             self.threads.append(thread)
 
     def stop(self):
         """Останавливает воркеры."""
+        self._plugin_trigger("worker_stop", worker=self)
         self._stop_event.set()
         for thread in self.threads:
             thread.join()
@@ -327,6 +359,12 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}"
         )
 
+        new_data = self._plugin_trigger("worker_run_task_before", worker=self, task_func=task_func, task_broker=task_broker)
+        if new_data:
+            new_data = new_data[-1]
+            task_func = new_data.get("task_func", task_func)
+            task_broker = new_data.get("task_broker", task_broker)
+
         middlewares = self.task_middlewares[:]
         if task_func.middlewares:
             middlewares.extend(task_func.middlewares)
@@ -347,62 +385,73 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             )
         try:
             result = executor.execute()
-
-            model = TaskStatusSuccessSchema(
-                task_name=task_func.name,
-                priority=task_func.priority,
-                returning=result,
-                created_at=task_broker.created_at,
-                updated_at=time(),
-            )
-            model.set_json(task_broker.args, task_broker.kwargs)
-            self.log.info(
-                f"Задача {task_broker.uuid} успешно завершена, результат: {result}"
-            )
-            return model
+            return self._task_success(result, task_func, task_broker)
         except TaskCancelError as e:
-            model = TaskStatusCancelSchema(
+            return self._task_cancel(e, task_func, task_broker)
+        except BaseException as e:
+            return self._task_error(e, task_func, task_broker)
+
+    def _task_success(self, result: Any, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> None:
+        """Событие успешного завершения задачи."""
+        model = TaskStatusSuccessSchema(
+            task_name=task_func.name,
+            priority=task_func.priority,
+            returning=result,
+            created_at=task_broker.created_at,
+            updated_at=time(),
+        )
+        model.set_json(task_broker.args, task_broker.kwargs)
+        self.log.info(
+            f"Задача {task_broker.uuid} успешно завершена, результат: {result}"
+        )
+        return model
+
+    def _task_error(self, e, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> None:
+        """Событие завершения задачи с ошибкой."""
+        trace = traceback.format_exc()
+
+        # plugin: retry
+        plugin_result = None
+
+        if task_func.retry_on_exc and type(e) not in task_func.retry_on_exc:
+            pass
+        else:
+            if task_func.retry:
+                plugin_result = self._plugin_trigger(
+                    "retry",
+                    broker=self.broker,
+                    task_func=task_func,
+                    task_broker=task_broker,
+                    trace=trace,
+                )
+
+        if not plugin_result:
+            model = TaskStatusErrorSchema(
                 task_name=task_func.name,
                 priority=task_func.priority,
-                cancel_reason=str(e),
+                traceback=trace,
                 created_at=task_broker.created_at,
                 updated_at=time(),
             )
-            self.log.info(f"Задача {task_broker.uuid} была отменена по причине: {e}")
-            return model
-        except BaseException as e:
-            trace = traceback.format_exc()
+            model.set_json(args=task_broker.args, kwargs=task_broker.kwargs)
+        else:
+            model: TaskStatusErrorSchema = plugin_result[-1]
+        #
 
-            # plugin: retry
-            plugin_result = None
+        self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+        return model
 
-            if task_func.retry_on_exc and type(e) not in task_func.retry_on_exc:
-                pass
-            else:
-                if task_func.retry:
-                    plugin_result = self._plugin_trigger(
-                        "retry",
-                        broker=self.broker,
-                        task_func=task_func,
-                        task_broker=task_broker,
-                        trace=trace,
-                    )
-
-            if not plugin_result:
-                model = TaskStatusErrorSchema(
-                    task_name=task_func.name,
-                    priority=task_func.priority,
-                    traceback=trace,
-                    created_at=task_broker.created_at,
-                    updated_at=time(),
-                )
-                model.set_json(args=task_broker.args, kwargs=task_broker.kwargs)
-            else:
-                model: TaskStatusErrorSchema = plugin_result[-1]
-            ###
-
-            self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
-            return model
+    def _task_cancel(self, e, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> None:
+        """Событие отмены задачи."""
+        model = TaskStatusCancelSchema(
+            task_name=task_func.name,
+            priority=task_func.priority,
+            cancel_reason=str(e),
+            created_at=task_broker.created_at,
+            updated_at=time(),
+        )
+        self.log.info(f"Задача {task_broker.uuid} была отменена по причине: {e}")
+        return model
 
     def _task_exists(self, task_broker: TaskPrioritySchema) -> TaskExecSchema | None:
         """Проверка существования задачи.

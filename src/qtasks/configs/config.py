@@ -1,3 +1,5 @@
+"""QueueConfig Schema."""
+
 from dataclasses import dataclass, field
 import logging
 from typing import Any, Callable, Dict, List
@@ -47,6 +49,7 @@ class QueueConfig:
             callback(self, key, value)
 
     def __getattr__(self, item):
+        """Получение атрибута."""
         # Проверяем динамические поля
         if item in self._dynamic_fields:
             return self._dynamic_fields[item]
@@ -54,6 +57,7 @@ class QueueConfig:
         raise AttributeError(f"{type(self).__name__} has no attribute '{item}'")
 
     def __setattr__(self, key, value):
+        """Установка атрибута."""
         # Для полей dataclass
         if key in self.__annotations__:
             object.__setattr__(self, key, value)

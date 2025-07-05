@@ -1,6 +1,6 @@
+"""Async Redis Broker."""
+
 import asyncio
-from dataclasses import asdict, field, fields, make_dataclass
-import datetime
 import asyncio_atexit
 from typing import Optional, Union
 from typing_extensions import Annotated, Doc
@@ -9,26 +9,24 @@ from time import time
 from typing import TYPE_CHECKING
 import redis.asyncio as aioredis
 
+from .base import BaseBroker
+from qtasks.storages.async_redis import AsyncRedisStorage
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
-from qtasks.schemas.task_exec import TaskPrioritySchema
-from qtasks.storages.async_redis import AsyncRedisStorage
-
-if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
-    from qtasks.storages.base import BaseStorage
-
-from .base import BaseBroker
 from qtasks.schemas.task import Task
+from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import (
     TaskStatusCancelSchema,
     TaskStatusErrorSchema,
     TaskStatusNewSchema,
     TaskStatusProcessSchema,
 )
-from qtasks.storages import AsyncRedisStorage
+
+if TYPE_CHECKING:
+    from qtasks.workers.base import BaseWorker
+    from qtasks.storages.base import BaseStorage
 
 
 class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
@@ -54,7 +52,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Имя проекта. Это имя также используется брокером.
-                    
+
                     По умолчанию: `QueueTasks`.
                     """
             ),
@@ -64,7 +62,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     URL для подключения к Redis.
-                    
+
                     По умолчанию: `redis://localhost:6379/0`.
                     """
             ),
@@ -74,7 +72,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Хранилище.
-                    
+
                     По умолчанию: `AsyncRedisStorage`.
                     """
             ),
@@ -84,7 +82,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Имя массива очереди задач для Redis. Название обновляется на: `name:queue_name`.
-                    
+
                     По умолчанию: `task_queue`.
                     """
             ),
@@ -94,7 +92,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Логгер.
-                    
+
                     По умолчанию: `qtasks.logs.Logger`.
                     """
             ),
@@ -104,12 +102,22 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Конфиг.
-                    
+
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
             ),
-        ] = None,
+        ] = None
     ):
+        """Инициализация AsyncRedisBroker.
+
+        Args:
+            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
+            url (str, optional): URL для подключения к Redis. По умолчанию: None.
+            storage (BaseStorage, optional): Хранилище. По умолчанию: None.
+            queue_name (str, optional): Имя массива очереди задач для Redis. По умолчанию: "task_queue".
+            log (Logger, optional): Логгер. По умолчанию: None.
+            config (QueueConfig, optional): Конфиг. По умолчанию: None.
+        """
         super().__init__(name=name, log=log, config=config)
         self.url = url or "redis://localhost:6379/0"
         self.queue_name = f"{self.name}:{queue_name}"
@@ -144,6 +152,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
         Args:
             worker (BaseWorker): Класс воркера.
         """
+        await self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
 
         while self.running:
@@ -163,10 +172,11 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
                 model_get.created_at.timestamp(),
             )
             self.log.info(f"Получена новая задача: {uuid}")
-
-            await self._plugin_trigger(
-                "broker_new_task",
+            new_args = await self._plugin_trigger(
+                "broker_add_worker",
                 broker=self,
+                worker=worker,
+
                 task_name=task_name,
                 uuid=uuid,
                 priority=int(priority),
@@ -174,6 +184,15 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
                 kwargs=kwargs,
                 created_at=created_at,
             )
+            if new_args:
+                new_args = new_args[-1]
+                task_name = new_args.get("task_name", task_name)
+                uuid = new_args.get("uuid", uuid)
+                priority = new_args.get("priority", priority)
+                args = new_args.get("args", args)
+                kwargs = new_args.get("kwargs", kwargs)
+                created_at = new_args.get("created_at", created_at)
+
             await worker.add(
                 name=task_name,
                 uuid=uuid,
@@ -181,7 +200,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
                 args=args,
                 kwargs=kwargs,
                 created_at=created_at,
-            )  # Передаём задачу в AsyncWorker
+            )
 
     async def add(
         self,
@@ -198,7 +217,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             Doc(
                 """
                     Приоритет задачи.
-                    
+
                     По умолчанию: `0`.
                     """
             ),
@@ -251,10 +270,25 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
 
+        new_model = await self._plugin_trigger(
+            "broker_add_before",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
+        if new_model:
+            model = new_model[-1]
+
         await self.storage.add(uuid=uuid, task_status=model)
         await self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")
 
-        model = Task(
+        await self._plugin_trigger(
+            "broker_add_after",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
+        return Task(
             status=TaskStatusEnum.NEW.value,
             task_name=task_name,
             uuid=uuid,
@@ -264,7 +298,6 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             created_at=created_at,
             updated_at=created_at,
         )
-        return model
 
     async def get(
         self,
@@ -287,7 +320,11 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
-        return await self.storage.get(uuid=uuid)
+        task = await self.storage.get(uuid=uuid)
+        new_task = await self._plugin_trigger("broker_get", broker=self, task=task)
+        if new_task:
+            task = new_task[-1]
+        return task
 
     async def update(
         self,
@@ -305,6 +342,9 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
+        new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs)
+        if new_kw:
+            kwargs = new_kw[-1]
         return await self.storage.update(**kwargs)
 
     async def start(
@@ -323,6 +363,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
         Args:
             worker (BaseWorker): Класс Воркера.
         """
+        await self._plugin_trigger("broker_start", broker=self, worker=worker)
         await self.storage.start()
 
         if self.config.delete_finished_tasks:
@@ -335,6 +376,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
 
     async def stop(self):
         """Останавливает брокер."""
+        await self._plugin_trigger("broker_stop", broker=self)
         self.running = False
         await self.client.aclose()
 
@@ -365,9 +407,23 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
+        new_model = await self._plugin_trigger(
+            "broker_remove_finished_task",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
+        if new_model:
+            model = new_model[-1]
+
         await self.storage.remove_finished_task(task_broker, model)
         return
 
+    async def _running_older_tasks(self, worker):
+        await self._plugin_trigger("broker_running_older_tasks", broker=self, worker=worker)
+        return await self.storage._running_older_tasks(worker)
+
     async def flush_all(self) -> None:
         """Удалить все данные."""
+        await self._plugin_trigger("broker_flush_all", broker=self)
         await self.storage.flush_all()

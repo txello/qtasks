@@ -128,12 +128,21 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         if new_args:
             self._args, self._kwargs = new_args[-1]
 
+        self._plugin_trigger("task_executor_before_execute", task_executor=self)
+
     def after_execute(self):
         """Вызывается после выполнения задачи."""
-        pass
+        self._plugin_trigger("task_executor_after_execute", task_executor=self)
+        result: Any = self._plugin_trigger(
+            "task_executor_result_replace", result=self._result
+        )
+        if result:
+            self._result = result[-1]
+        return
 
     def execute_middlewares(self):
         """Вызов мидлварей."""
+        self._plugin_trigger("task_executor_middlewares_execute", task_executor=self, middlewares=self.middlewares)
         for m in self.middlewares:
             m = m(self)
             self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
@@ -155,6 +164,10 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
 
         if self.task_func.generating:
             return self.run_task_gen(result)
+
+        new_result = self._plugin_trigger("task_executor_run_task", task_executor=self, result=result)
+        if new_result:
+            result = new_result[-1]
 
         return result
 
@@ -189,6 +202,9 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             except StopIteration:
                 pass
 
+        new_results = self._plugin_trigger("task_executor_run_task_gen", task_executor=self, results=results)
+        if new_results:
+            results = new_results[-1]
         return results
 
     def execute(self, decode: bool = True) -> Any | str:
@@ -215,4 +231,8 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         Returns:
             str: Результат задачи.
         """
-        return json.dumps(self._result, ensure_ascii=False)
+        result = json.dumps(self._result, ensure_ascii=False)
+        new_result = self._plugin_trigger("task_executor_decode", task_executor=self, result=result)
+        if new_result:
+            result = new_result[-1]
+        return result
