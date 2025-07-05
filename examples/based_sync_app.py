@@ -11,14 +11,17 @@ app.config.running_older_tasks = True
 
 app.include_router(router_tasks.router)
 
+
 @app.task(name="test")
 def test():
     print("Это тестовая задача!")
-    
+
+
 @app.task(name="test_num")
 def test_num(number: int):
     print(f"Number: {number}")
     return number
+
 
 @app.task(name="test_echo", echo=True)
 def test_echo(self: SyncTask):
@@ -26,13 +29,17 @@ def test_echo(self: SyncTask):
     print(f"Задача {task.task_name}, результат: {task.returning}")
     return
 
+
 @app.task(retry=5, retry_on_exc=[ZeroDivisionError])
 def error_zero():
     result = 1/0
+    print(result)
+
 
 def yield_func(result):
     print(result)
     return result
+
 
 @app.task(generate_handler=yield_func, echo=True)
 def test_yield(self: SyncTask, n: int):

@@ -1,3 +1,5 @@
+"""TaskPriority and TaskExec Schema."""
+
 from dataclasses import dataclass, field
 from types import FunctionType
 from typing import TYPE_CHECKING, Callable, Literal, Type
@@ -20,17 +22,18 @@ class TaskPrioritySchema:
 
         args (tuple[str]): Аргументы типа args.
         kwargs (dict[str, str]): Аргументы типа kwargs.
-        
+
         created_at (float): Дата создания в формате `timestamp`.
         updated_at (float): Дата обновления в формате `timestamp`.
     """
+
     priority: int
     uuid: UUID = field(compare=False)
     name: str = field(compare=False)
-    
+
     args: list = field(default_factory=list, compare=False)
     kwargs: dict = field(default_factory=dict, compare=False)
-    
+
     created_at: float = 0.0
     updated_at: float = 0.0
 
@@ -57,18 +60,19 @@ class TaskExecSchema:
         middlewares (list[Type[TaskMiddleware]]): Мидлвари. По умолчанию: `Пустой массив`.
 
     """
+
     priority: int
     name: str
-    
+
     func: FunctionType
     awaiting: bool = False
-    generating: str|Literal[False] = False
-    
-    echo: bool = False
-    retry: int|None = None
-    retry_on_exc: list[Type[Exception]]|None = None
+    generating: str | Literal[False] = False
 
-    generate_handler: Callable|None = None
+    echo: bool = False
+    retry: int | None = None
+    retry_on_exc: list[Type[Exception]] | None = None
+
+    generate_handler: Callable | None = None
 
     executor: Type["BaseTaskExecutor"] = None
     middlewares: list[Type["TaskMiddleware"]] = field(default_factory=list)

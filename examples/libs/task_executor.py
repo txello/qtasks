@@ -3,7 +3,7 @@ from qtasks.executors.base import BaseTaskExecutor
 
 
 class MySyncTaskExecutor(BaseTaskExecutor):
-    def __init__(self, task_func, task_broker, middlewares = None, log = None):
+    def __init__(self, task_func, task_broker, middlewares=None, log=None):
         super().__init__(task_func, task_broker, middlewares, log)
 
     def before_execute(self):
@@ -17,17 +17,19 @@ class MySyncTaskExecutor(BaseTaskExecutor):
 
     def run_task(self) -> Any:
         pass
-    
-    def execute(self,
-            decode: bool = True
-        ) -> Any|str:
+
+    def execute(
+        self,
+        decode: bool = True
+    ) -> Any | str:
         pass
 
     def decode(self) -> str:
         pass
 
+
 class MyAsyncTaskExecutor(BaseTaskExecutor):
-    def __init__(self, task_func, task_broker, middlewares = None, log = None):
+    def __init__(self, task_func, task_broker, middlewares=None, log=None):
         super().__init__(task_func, task_broker, middlewares, log)
 
     def before_execute(self):
@@ -41,10 +43,11 @@ class MyAsyncTaskExecutor(BaseTaskExecutor):
 
     def run_task(self) -> Any:
         pass
-    
-    async def execute(self,
-            decode: bool = True
-        ) -> Any|str:
+
+    async def execute(
+        self,
+        decode: bool = True
+    ) -> Any | str:
         pass
 
     def decode(self) -> str:

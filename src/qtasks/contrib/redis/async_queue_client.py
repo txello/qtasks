@@ -1,7 +1,10 @@
+"""Async Redis command queue."""
+
 import asyncio
 import redis.asyncio as aioredis
 
 from qtasks.logs import Logger
+
 
 class AsyncRedisCommandQueue:
     """
@@ -13,14 +16,13 @@ class AsyncRedisCommandQueue:
     import asyncio
     from qtasks import QueueTasks
     from qtasks.contrib.redis import AsyncRedisCommandQueue
-    
+
     redis_contrib = AsyncRedisCommandQueue(redis)
     asyncio.run(redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"]))
     ```
     """
-    def __init__(self,
-            redis: aioredis.Redis,
-            log: Logger = None):
+
+    def __init__(self, redis: aioredis.Redis, log: Logger = None):
         """Экземпляр класса.
 
         Args:
@@ -60,9 +62,9 @@ class AsyncRedisCommandQueue:
             if self.worker_task is None or self.worker_task.done():
                 self.worker_task = asyncio.create_task(self._worker())
 
-
-    def _get_log(self, log: Logger|None):
+    def _get_log(self, log: Logger | None):
         if log is None:
             import qtasks._state
+
             log = qtasks._state.log_main
         return log.with_subname("AsyncRedisCommandQueue")

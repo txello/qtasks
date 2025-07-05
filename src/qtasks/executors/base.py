@@ -1,11 +1,14 @@
+"""Base Task Executor."""
+
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 from typing_extensions import Annotated, Doc
 from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 if TYPE_CHECKING:
     from qtasks.middlewares.task import TaskMiddleware
+    from qtasks.plugins.base import BasePlugin
 
 
 class BaseTaskExecutor(ABC):
@@ -16,51 +19,63 @@ class BaseTaskExecutor(ABC):
 
     ```python
     from qtasks.executors.base import BaseTaskExecutor
-    
+
     class MyTaskExecutor(BaseTaskExecutor):
         def __init__(self, name: str):
             super().__init__(name=name)
             pass
     ```
     """
-    def __init__(self,
-            task_func: Annotated[
-                TaskExecSchema,
-                Doc(
-                    """
+
+    def __init__(
+        self,
+        task_func: Annotated[
+            TaskExecSchema,
+            Doc(
+                """
                     `TaskExecSchema` схема.
                     """
-                )
-            ],
-            task_broker: Annotated[
-                TaskPrioritySchema,
-                Doc(
-                    """
+            ),
+        ],
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
                     `TaskPrioritySchema` схема.
                     """
-                )
-            ],
-            middlewares: Annotated[
-                Optional[List[Type["TaskMiddleware"]]],
-                Doc(
-                    """
+            ),
+        ],
+        middlewares: Annotated[
+            Optional[List[Type["TaskMiddleware"]]],
+            Doc(
+                """
                     Массив Миддлварей.
-                    
+
                     По умолчанию: `Пустой массив`.
                     """
-                )
-            ] = None,
-            log: Annotated[
-                Optional[Logger],
-                Doc(
-                    """
+            ),
+        ] = None,
+        log: Annotated[
+            Optional[Logger],
+            Doc(
+                """
                     Логгер.
-                    
+
                     По умолчанию: `qtasks.logs.Logger`.
                     """
-                )
-            ] = None
-        ):
+            ),
+        ] = None,
+        plugins: Annotated[
+            Optional[Dict[str, List[Type["BasePlugin"]]]],
+            Doc(
+                """
+                    Массив Плагинов.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+            ),
+        ] = None,
+    ):
         """Инициализация класса. Происходит внутри `Worker` перед обработкой задачи.
 
         Args:
@@ -77,9 +92,11 @@ class BaseTaskExecutor(ABC):
         self.log = log
         if self.log is None:
             import qtasks._state
+
             self.log = qtasks._state.log_main
         self.log = self.log.with_subname(self.__class__.__name__)
 
+        self.plugins = plugins or {}
 
     def before_execute(self):
         """Вызывается перед выполнением задачи."""
@@ -100,11 +117,9 @@ class BaseTaskExecutor(ABC):
             Any: Результат задачи.
         """
         pass
-    
+
     @abstractmethod
-    def execute(self,
-            decode: bool = True
-        ) -> Any|str:
+    def execute(self, decode: bool = True) -> Any | str:
         """Обработка задачи.
 
         Args:
@@ -122,3 +137,39 @@ class BaseTaskExecutor(ABC):
             str: Результат задачи.
         """
         pass
+
+    def add_plugin(
+        self,
+        plugin: Annotated[
+            "BasePlugin",
+            Doc(
+                """
+                    Плагин.
+                    """
+            ),
+        ],
+        trigger_names: Annotated[
+            Optional[List[str]],
+            Doc(
+                """
+                    Имя триггеров для плагина.
+
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
+                    """
+            ),
+        ] = None,
+    ) -> None:
+        """Добавить плагин в класс.
+
+        Args:
+            plugin (BasePlugin): Плагин
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return

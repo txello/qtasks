@@ -24,7 +24,13 @@ if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
 
 from qtasks.schemas.task import Task
-from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
+from qtasks.schemas.task_status import (
+    TaskStatusCancelSchema,
+    TaskStatusErrorSchema,
+    TaskStatusNewSchema,
+    TaskStatusProcessSchema,
+)
+
 
 class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
     """
@@ -35,101 +41,103 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
     ```python
     from qtasks.asyncio import QueueTasks
     from qtasks.brokers import AsyncKafkaBroker
-    
+
     broker = AsyncKafkaBroker(name="QueueTasks", url="localhost:9092")
-    
+
     app = QueueTasks(broker=broker)
     ```
     """
-    
-    def __init__(self,
-            name: Annotated[
-                str,
-                Doc(
-                    """
+
+    def __init__(
+        self,
+        name: Annotated[
+            str,
+            Doc(
+                """
                     Имя проекта. Это имя также используется брокером.
                     
                     По умолчанию: `QueueTasks`.
                     """
-                )
-            ] = "QueueTasks",
-            url: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = "QueueTasks",
+        url: Annotated[
+            str,
+            Doc(
+                """
                     URL для подключения к Kafka.
                     
                     По умолчанию: `localhost:9092`.
                     """
-                )
-            ] = None,
-            storage: Annotated[
-                Optional["BaseStorage"],
-                Doc(
-                    """
+            ),
+        ] = None,
+        storage: Annotated[
+            Optional["BaseStorage"],
+            Doc(
+                """
                     Хранилище.
                     
                     По умолчанию: `AsyncRedisStorage`.
                     """
-                )
-            ] = None,
-            topic: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = None,
+        topic: Annotated[
+            str,
+            Doc(
+                """
                     Топик Kafka.
                     
                     По умолчанию: `task_queue`.
                     """
-                )
-            ] = "task_queue",
-
-            log: Annotated[
-                Optional[Logger],
-                Doc(
-                    """
+            ),
+        ] = "task_queue",
+        log: Annotated[
+            Optional[Logger],
+            Doc(
+                """
                     Логгер.
                     
                     По умолчанию: `qtasks.logs.Logger`.
                     """
-                )
-            ] = None,
-            config: Annotated[
-                Optional[QueueConfig],
-                Doc(
-                    """
+            ),
+        ] = None,
+        config: Annotated[
+            Optional[QueueConfig],
+            Doc(
+                """
                     Конфиг.
                     
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
-                )
-            ] = None
-        ):
+            ),
+        ] = None,
+    ):
         super().__init__(name=name, log=log, config=config)
         self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
-        
+
         self.consumer = AIOKafkaConsumer(
             self.topic,
             loop=asyncio.get_event_loop(),
             bootstrap_servers=self.url,
             group_id=f"{self.name}_group",
-            auto_offset_reset='earliest',
+            auto_offset_reset="earliest",
             enable_auto_commit=True,
-            value_deserializer=lambda m: m.decode('utf-8')
+            value_deserializer=lambda m: m.decode("utf-8"),
         )
         self.producer = AIOKafkaProducer(
             loop=asyncio.get_event_loop(),
             bootstrap_servers=self.url,
-            auto_offset_reset='earliest',
+            auto_offset_reset="earliest",
             enable_auto_commit=True,
-            value_deserializer=lambda m: m.decode('utf-8')
+            value_deserializer=lambda m: m.decode("utf-8"),
         )
-        
-        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log, config=config)
+
+        self.storage = storage or SyncRedisStorage(
+            name=self.name, log=self.log, config=config
+        )
 
         self.running = False
-    
+
     async def listen(self, worker: "BaseWorker"):
         """Слушает Kafka и передаёт задачи воркеру.
 
@@ -143,48 +151,60 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                 task_data = msg.value
                 task_name, uuid, priority = task_data.split(":")
                 model_get = await self.get(uuid=uuid)
-                args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
+                args, kwargs, created_at = (
+                    model_get.args or (),
+                    model_get.kwargs or {},
+                    model_get.created_at.timestamp(),
+                )
                 self.log.info(f"Получена новая задача: {uuid}")
-                await worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)
+                await worker.add(
+                    name=task_name,
+                    uuid=uuid,
+                    priority=int(priority),
+                    args=args,
+                    kwargs=kwargs,
+                    created_at=created_at,
+                )
         finally:
             await self.consumer.stop()
-    
-    async def add(self,
-            task_name: Annotated[
-                str,
-                Doc(
-                    """
+
+    async def add(
+        self,
+        task_name: Annotated[
+            str,
+            Doc(
+                """
                     Имя задачи.
                     """
-                )
-            ],
-            priority: Annotated[
-                int,
-                Doc(
-                    """
+            ),
+        ],
+        priority: Annotated[
+            int,
+            Doc(
+                """
                     Приоритет задачи.
                     
                     По умолчанию: `0`.
                     """
-                )
-            ] = 0,
-            extra: Annotated[
-                dict,
-                Doc(
-                    """
+            ),
+        ] = 0,
+        extra: Annotated[
+            dict,
+            Doc(
+                """
                     Дополнительные параметры задачи.
                     """
-                )
-            ] = None,
-            kwargs: Annotated[
-                dict,
-                Doc(
-                    """
+            ),
+        ] = None,
+        kwargs: Annotated[
+            dict,
+            Doc(
+                """
                     Аргументы задачи типа kwargs.
                     """
-                )
-            ] = None
-        ) -> Task:
+            ),
+        ] = None,
+    ) -> Task:
         """Добавляет задачу в брокер.
 
         Args:
@@ -201,7 +221,12 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
 
         uuid = uuid4()
         created_at = time()
-        model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
+        model = TaskStatusNewSchema(
+            task_name=task_name,
+            priority=priority,
+            created_at=created_at,
+            updated_at=created_at,
+        )
         model.set_json(args, kwargs)
 
         if extra:
@@ -213,19 +238,29 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         await self._producer_start()
         await self.producer.send_and_wait(self.topic, task_data)
         await self.producer.stop()
-        
-        return Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
-    
-    async def get(self,
-            uuid: Annotated[
-                Union[UUID|str],
-                Doc(
-                    """
+
+        return Task(
+            status=TaskStatusEnum.NEW.value,
+            task_name=task_name,
+            uuid=uuid,
+            priority=priority,
+            args=args,
+            kwargs=kwargs,
+            created_at=created_at,
+            updated_at=created_at,
+        )
+
+    async def get(
+        self,
+        uuid: Annotated[
+            Union[UUID | str],
+            Doc(
+                """
                     UUID задачи.
                     """
-                )
-            ]
-        ) -> Task|None:
+            ),
+        ],
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -234,36 +269,39 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         Returns:
             Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
         """
-        if isinstance(uuid, str): uuid = UUID(uuid)
+        if isinstance(uuid, str):
+            uuid = UUID(uuid)
         return await self.storage.get(uuid=uuid)
-    
-    async def update(self,
-            **kwargs: Annotated[
-                dict,
-                Doc(
-                    """
+
+    async def update(
+        self,
+        **kwargs: Annotated[
+            dict,
+            Doc(
+                """
                     Аргументы обновления для хранилища типа kwargs.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет информацию о задаче.
-        
+
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
         return await self.storage.update(**kwargs)
-    
-    async def start(self,
-            worker: Annotated[
-                "BaseWorker",
-                Doc(
-                    """
+
+    async def start(
+        self,
+        worker: Annotated[
+            "BaseWorker",
+            Doc(
+                """
                     Класс Воркера.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Запускает брокер.
 
         Args:
@@ -273,36 +311,39 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
 
         if self.config.delete_finished_tasks:
             await self.storage._delete_finished_tasks()
-        
+
         if self.config.running_older_tasks:
             await self.storage._running_older_tasks(worker)
-        
+
         await self.listen(worker)
-    
+
     async def stop(self):
         """Останавливает брокер."""
         self.running = False
         await self.consumer.stop()
         await self.producer.stop()
-    
-    async def remove_finished_task(self,
-            task_broker: Annotated[
-                TaskPrioritySchema,
-                Doc(
-                    """
+
+    async def remove_finished_task(
+        self,
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
                     Схема приоритетной задачи.
                     """
-                )
+            ),
+        ],
+        model: Annotated[
+            Union[
+                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
             ],
-            model: Annotated[
-                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
-                Doc(
-                    """
+            Doc(
+                """
                     Модель результата задачи.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
 
         Args:
@@ -310,17 +351,15 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
         await self.storage.remove_finished_task(task_broker, model)
-    
+
     async def _consumer_start(self):
         """Запускает Kafka Consumer."""
         loop = asyncio.get_running_loop()
         self.consumer = AIOKafkaConsumer(
-            self.topic,
-            bootstrap_servers=self.url,
-            loop=loop
+            self.topic, bootstrap_servers=self.url, loop=loop
         )
         await self.consumer.start()
-        
+
     async def _producer_start(self):
         """Запускает Kafka Producer."""
         loop = asyncio.get_running_loop()
@@ -329,7 +368,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             loop=loop,
         )
         await self.producer.start()
-    
+
     async def flush_all(self) -> None:
         """Удалить все данные."""
         await self.storage.flush_all()

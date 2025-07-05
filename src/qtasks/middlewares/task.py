@@ -1,3 +1,5 @@
+"""Base Task Middleware."""
+
 from typing import TYPE_CHECKING
 
 from .base import BaseMiddleware
@@ -22,8 +24,12 @@ class TaskMiddleware(BaseMiddleware):
             self.task_executor = task_executor
     ```
     """
-    def __init__(self,
-            task_executor: "BaseTaskExecutor"
-        ):
+
+    def __init__(self, task_executor: "BaseTaskExecutor"):
+        """Инициализация мидлвары задач.
+
+        Args:
+            task_executor (BaseTaskExecutor): Экземпляр исполнителя задач.
+        """
         super().__init__(name="TaskMiddleware")
         self.task_executor = task_executor

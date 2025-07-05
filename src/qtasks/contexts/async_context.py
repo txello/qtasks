@@ -1,3 +1,5 @@
+"""Async context for tasks."""
+
 import asyncio
 from typing import TYPE_CHECKING, NoReturn
 from uuid import UUID
@@ -28,7 +30,9 @@ class AsyncContext:
         self.ctx # AsyncContext
     ```
     """
+
     def __init__(self, **kwargs):
+        """Инициализация контекста."""
         self.task_uuid = kwargs.get("task_uuid")
         """UUID задачи."""
 
@@ -42,10 +46,10 @@ class AsyncContext:
         self._log: "Logger" = kwargs.get("log")
         """Логгер."""
 
-        self._metadata: Task|None = None
+        self._metadata: Task | None = None
         """Метаданные задачи."""
 
-    def get_logger(self, name: str|None = None) -> "Logger":
+    def get_logger(self, name: str | None = None) -> "Logger":
         """Возвращает логгер для текущего контекста.
 
         Args:
@@ -56,7 +60,7 @@ class AsyncContext:
         """
         self._log = self._app.log.with_subname(name or "AsyncContext")
         return self._log
-    
+
     def get_config(self) -> QueueConfig:
         """Возвращает конфигурацию приложения.
 
@@ -65,7 +69,7 @@ class AsyncContext:
         """
         return self._app.config
 
-    async def get_metadata(self, cache=True) -> Task|None:
+    async def get_metadata(self, cache=True) -> Task | None:
         """Возвращает метаданные задачи.
 
         Args:
@@ -80,7 +84,7 @@ class AsyncContext:
             return self._metadata
         return await self._app.get(self.task_uuid)
 
-    async def get_task(self, uuid: UUID|str) -> Task|None:
+    async def get_task(self, uuid: UUID | str) -> Task | None:
         """Возвращает задачу по UUID.
 
         Args:
@@ -108,7 +112,6 @@ class AsyncContext:
         Raises:
             TaskCancelError: Исключение, вызываемое при отмене задачи.
         """
-
         raise TaskCancelError(reason or "AsyncContext.cancel")
 
     def get_component(self, name: str):
@@ -126,6 +129,7 @@ class AsyncContext:
         """Обновляет приложение для текущего контекста."""
         if not self._app:
             import qtasks._state
+
             self._app = qtasks._state.app_main
         return
 

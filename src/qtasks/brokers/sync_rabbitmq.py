@@ -6,6 +6,7 @@ from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.schemas.task_exec import TaskPrioritySchema
+
 try:
     import pika
 except ImportError:
@@ -16,12 +17,17 @@ from uuid import UUID, uuid4
 from time import time
 from .base import BaseBroker
 from qtasks.schemas.task import Task
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusSuccessSchema
+from qtasks.schemas.task_status import (
+    TaskStatusErrorSchema,
+    TaskStatusNewSchema,
+    TaskStatusSuccessSchema,
+)
 from qtasks.storages import SyncRedisStorage
 
 if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
+
 
 class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     """
@@ -32,80 +38,83 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     ```python
     from qtasks import QueueTasks
     from qtasks.brokers import SyncRabbitMQBroker
-    
+
     broker = SyncRabbitMQBroker(name="QueueTasks", url="amqp://guest:guest@localhost/")
-    
+
     app = QueueTasks(broker=broker)
     ```
     """
-    def __init__(self,
-            name: Annotated[
-                str,
-                Doc(
-                    """
+
+    def __init__(
+        self,
+        name: Annotated[
+            str,
+            Doc(
+                """
                     Имя проекта. Это имя также используется брокером.
                     
                     По умолчанию: `QueueTasks`.
                     """
-                )
-            ] = "QueueTasks",
-            url: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = "QueueTasks",
+        url: Annotated[
+            str,
+            Doc(
+                """
                     URL для подключения к RabbitMQ.
                     
                     По умолчанию: `amqp://guest:guest@localhost/`.
                     """
-                )
-            ] = None,
-            storage: Annotated[
-                Optional["BaseStorage"],
-                Doc(
-                    """
+            ),
+        ] = None,
+        storage: Annotated[
+            Optional["BaseStorage"],
+            Doc(
+                """
                     Хранилище.
                     
                     По умолчанию: `SyncRedisStorage`.
                     """
-                )
-            ] = None,
-            queue_name: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = None,
+        queue_name: Annotated[
+            str,
+            Doc(
+                """
                     Имя очереди задач для RabbitMQ. Название обновляется на: `name:queue_name`
                     
                     По умолчанию: `task_queue`.
                     """
-                )
-            ] = "task_queue",
-
-            log: Annotated[
-                Optional[Logger],
-                Doc(
-                    """
+            ),
+        ] = "task_queue",
+        log: Annotated[
+            Optional[Logger],
+            Doc(
+                """
                     Логгер.
                     
                     По умолчанию: `qtasks.logs.Logger`.
                     """
-                )
-            ] = None,
-            config: Annotated[
-                Optional[QueueConfig],
-                Doc(
-                    """
+            ),
+        ] = None,
+        config: Annotated[
+            Optional[QueueConfig],
+            Doc(
+                """
                     Конфиг.
                     
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
-                )
-            ] = None
-        ):
+            ),
+        ] = None,
+    ):
         super().__init__(name=name, log=log)
         self.url = url or "amqp://guest:guest@localhost/"
         self.queue_name = f"{self.name}:{queue_name}"
-        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log, config=self.config)
-        
+        self.storage = storage or SyncRedisStorage(
+            name=self.name, log=self.log, config=self.config
+        )
+
         self.connection = None
         self.channel = None
         self.running = False
@@ -115,19 +124,20 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         self.connection = pika.BlockingConnection(pika.URLParameters(self.url))
         self.channel = self.connection.channel()
         self.channel.basic_qos(prefetch_count=1)
-        
+
         self.queue = self.channel.queue_declare(self.queue_name, durable=True)
 
-    def listen(self,
-            worker: Annotated[
-                "BaseWorker",
-                Doc(
-                    """
+    def listen(
+        self,
+        worker: Annotated[
+            "BaseWorker",
+            Doc(
+                """
                     Класс воркера.
                     """
-                )
-            ]
-        ):
+            ),
+        ],
+    ):
         """Слушает очередь RabbitMQ и передаёт задачи воркеру.
 
         Args:
@@ -135,61 +145,67 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         """
         if not self.channel:
             self.connect()
-        
+
         def callback(ch, method, properties, body):
             task_data = json.loads(body)
-            self.storage.add_process(f'{task_data["task_name"]}:{task_data["uuid"]}:{task_data["priority"]}', task_data["priority"])
+            self.storage.add_process(
+                f'{task_data["task_name"]}:{task_data["uuid"]}:{task_data["priority"]}',
+                task_data["priority"],
+            )
             self.log.info(f"Получена новая задача: {task_data['uuid']}")
-            
+
             worker.add(
                 name=task_data["task_name"],
                 uuid=task_data["uuid"],
                 priority=task_data["priority"],
                 args=task_data["args"],
                 kwargs=task_data["kwargs"],
-                created_at=task_data["created_at"]
+                created_at=task_data["created_at"],
             )
-        
-        self.channel.basic_consume(queue=self.queue_name, on_message_callback=callback, auto_ack=True)
+
+        self.channel.basic_consume(
+            queue=self.queue_name, on_message_callback=callback, auto_ack=True
+        )
         self.running = True
         self.channel.start_consuming()
 
-    def add(self, 
-            task_name: Annotated[
-                str,
-                Doc(
-                    """
+    def add(
+        self,
+        task_name: Annotated[
+            str,
+            Doc(
+                """
                     Имя задачи.
                     """
-                )
-            ],
-            priority: Annotated[
-                int,
-                Doc(
-                    """
+            ),
+        ],
+        priority: Annotated[
+            int,
+            Doc(
+                """
                     Приоритет задачи.
                     
                     По умолчанию: `0`.
                     """
-                )
-            ] = 0,
-            extra: Annotated[
-                dict,
-                Doc(
-                    """
+            ),
+        ] = 0,
+        extra: Annotated[
+            dict,
+            Doc(
+                """
                     Дополнительные параметры задачи.
                     """
-                )
-            ] = None,
-            kwargs: Annotated[
-                dict,
-                Doc(
-                    """
+            ),
+        ] = None,
+        kwargs: Annotated[
+            dict,
+            Doc(
+                """
                     Аргументы задачи типа kwargs.
                     """
-                )
-            ] = None
-        ) -> Task:
+            ),
+        ] = None,
+    ) -> Task:
         """Добавляет задачу в брокер.
 
         Args:
@@ -208,8 +224,13 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
 
         uuid = str(uuid4())
         created_at = time()
-        
-        model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
+
+        model = TaskStatusNewSchema(
+            task_name=task_name,
+            priority=priority,
+            created_at=created_at,
+            updated_at=created_at,
+        )
         model.set_json(args, kwargs)
 
         if extra:
@@ -223,34 +244,40 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             "priority": priority,
             "args": args,
             "kwargs": kwargs,
-            "created_at": created_at
+            "created_at": created_at,
         }
-        
+
         self.channel.basic_publish(
-            exchange='',
+            exchange="",
             routing_key=self.queue_name,
             body=json.dumps(task_data).encode(),
             properties=pika.BasicProperties(
                 delivery_mode=2,  # Поставить задачу в очередь как persistent
-            )
+            ),
         )
 
         return Task(
-            status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid,
-            priority=priority, args=args, kwargs=kwargs,
-            created_at=created_at, updated_at=created_at
+            status=TaskStatusEnum.NEW.value,
+            task_name=task_name,
+            uuid=uuid,
+            priority=priority,
+            args=args,
+            kwargs=kwargs,
+            created_at=created_at,
+            updated_at=created_at,
         )
 
-    def get(self,
-            uuid: Annotated[
-                Union[UUID|str],
-                Doc(
-                    """
+    def get(
+        self,
+        uuid: Annotated[
+            Union[UUID | str],
+            Doc(
+                """
                     UUID задачи.
                     """
-                )
-            ]
-        ) -> Task|None:
+            ),
+        ],
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -261,33 +288,35 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         """
         return self.storage.get(uuid=uuid)
 
-    def update(self,
-            **kwargs: Annotated[
-                dict,
-                Doc(
-                    """
+    def update(
+        self,
+        **kwargs: Annotated[
+            dict,
+            Doc(
+                """
                     Аргументы обновления для хранилища типа kwargs.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет информацию о задаче.
-        
+
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
         return self.storage.update(**kwargs)
 
-    def start(self,
-            worker: Annotated[
-                "BaseWorker",
-                Doc(
-                    """
+    def start(
+        self,
+        worker: Annotated[
+            "BaseWorker",
+            Doc(
+                """
                     Класс Воркера.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Запускает брокер.
 
         Args:
@@ -297,10 +326,10 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
 
         if self.config.delete_finished_tasks:
             self.storage._delete_finished_tasks()
-        
+
         if self.config.running_older_tasks:
             self.storage._running_older_tasks(worker)
-        
+
         self.listen(worker)
 
     def stop(self):
@@ -312,24 +341,25 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             self.channel = None
         self.storage.stop()
 
-    def remove_finished_task(self,
-            task_broker: Annotated[
-                TaskPrioritySchema,
-                Doc(
-                    """
+    def remove_finished_task(
+        self,
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
                     Схема приоритетной задачи.
                     """
-                )
-            ],
-            model: Annotated[
-                Union[TaskStatusSuccessSchema|TaskStatusErrorSchema],
-                Doc(
-                    """
+            ),
+        ],
+        model: Annotated[
+            Union[TaskStatusSuccessSchema | TaskStatusErrorSchema],
+            Doc(
+                """
                     Модель результата задачи.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
 
         Args:
@@ -337,7 +367,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
         return self.storage.remove_finished_task(task_broker, model)
-    
+
     def _running_older_tasks(self, worker):
         return self.storage._running_older_tasks(worker)
 

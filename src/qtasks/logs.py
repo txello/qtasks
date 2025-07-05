@@ -1,3 +1,5 @@
+"""Логирование."""
+
 import logging
 from typing_extensions import Annotated, Doc
 
@@ -11,7 +13,7 @@ class Logger:
     ```python
     from qtasks import QueueTasks
     from qtasks.logs import Logger
-    
+
     logger = Logger(name="QueueTasks", subname="Global")
     app = QueueTasks(log=logger)
 
@@ -19,47 +21,47 @@ class Logger:
     ```
     """
 
-    def __init__(self,
-            name: Annotated[
-                str,
-                Doc(
-                    """
+    def __init__(
+        self,
+        name: Annotated[
+            str,
+            Doc(
+                """
                     Имя. Используется в шаблоне `%(name)s`.
                     """
-                )
-            ],
-
-            subname: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ],
+        subname: Annotated[
+            str,
+            Doc(
+                """
                     Имя компонента.
 
                     По умолчанию: None.
                     """
-                )
-            ] = None,
-            default_level: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = None,
+        default_level: Annotated[
+            str,
+            Doc(
+                """
                     Level по умолчанию.
-                    
+
                     По умолчанию: `logging.INFO`.
                     """
-                )
-            ] = logging.INFO,
-            format: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = logging.INFO,
+        format: Annotated[
+            str,
+            Doc(
+                """
                     Формат логирования.
-                    
+
                     По умолчанию: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`.
                     """
-                )
-            ] = None
-        ):
+            ),
+        ] = None,
+    ):
         """Экземпляр Logger.
 
         Args:
@@ -85,24 +87,27 @@ class Logger:
             self.logger.addHandler(handler)
 
         self.logger.setLevel(default_level)
-    
+
     def critical(self, *args, **kwargs):
-        """Critical"""
+        """Critical."""
         self._log(logging.CRITICAL, *args, **kwargs)
+
     def error(self, *args, **kwargs):
-        """Error"""
+        """Error."""
         self._log(logging.ERROR, *args, **kwargs)
+
     def warning(self, *args, **kwargs):
-        """Warning"""
+        """Warning."""
         self._log(logging.WARNING, *args, **kwargs)
+
     def info(self, *args, **kwargs):
-        """Info"""
+        """Info."""
         self._log(logging.INFO, *args, **kwargs)
+
     def debug(self, *args, **kwargs):
-        """Debug"""
+        """Debug."""
         self._log(logging.DEBUG, *args, **kwargs)
-    
-    
+
     def with_subname(self, new_subname: str) -> "Logger":
         """Обновляем `subname`.
 
@@ -112,14 +117,16 @@ class Logger:
         Returns:
             Logger: Новый `Logger`.
         """
-        return Logger(self.name, new_subname, default_level=self.default_level, format=self.format)
-    
+        return Logger(
+            self.name, new_subname, default_level=self.default_level, format=self.format
+        )
+
     def update_logger(self, **kwargs) -> "Logger":
         """Обновляем `Logger`.
 
         Args:
             kwargs (dict): Новые данные задачи.
-            
+
         Returns:
             Logger: Новый `Logger`.
         """
@@ -127,8 +134,10 @@ class Logger:
         subname = kwargs.get("subname", None) or self.subname
         default_level = kwargs.get("default_level", None) or self.default_level
         format = kwargs.get("format", None) or self.format
-        return Logger(name=name, subname=subname, default_level=default_level, format=format)
-    
+        return Logger(
+            name=name, subname=subname, default_level=default_level, format=format
+        )
+
     def _log(self, level, msg, *args, **kwargs):
         extra = kwargs.pop("extra", {})
         if "subname" not in extra:

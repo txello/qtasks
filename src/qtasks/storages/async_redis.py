@@ -1,7 +1,8 @@
+"""Async Redis storage."""
+
 import asyncio
 import time
 import asyncio_atexit
-import datetime
 import json
 from typing import Optional, Union
 from typing_extensions import Annotated, Doc
@@ -18,12 +19,18 @@ from qtasks.mixins.plugin import AsyncPluginMixin
 from .base import BaseStorage
 from qtasks.configs.async_redisglobalconfig import AsyncRedisGlobalConfig
 from qtasks.schemas.task_exec import TaskPrioritySchema
-from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusSuccessSchema
+from qtasks.schemas.task_status import (
+    TaskStatusCancelSchema,
+    TaskStatusErrorSchema,
+    TaskStatusNewSchema,
+    TaskStatusSuccessSchema,
+)
 from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.workers.base import BaseWorker
+
 
 class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     """
@@ -35,128 +42,141 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     from qtasks import QueueTasks
     from qtasks.brokers import AsyncRedisBroker
     from qtasks.storages import AsyncRedisStorage
-    
+
     storage = AsyncRedisBroker(name="QueueTasks")
     broker = AsyncRedisBroker(name="QueueTasks", storage=storage)
-    
+
     app = QueueTasks(broker=broker)
     ```
     """
-    
-    def __init__(self,
-            name: Annotated[
-                str,
-                Doc(
-                    """
+
+    def __init__(
+        self,
+        name: Annotated[
+            str,
+            Doc(
+                """
                     Имя проекта. Это имя также используется Хранилищем.
-                    
+
                     По умолчанию: `QueueTasks`.
                     """
-                )
-            ] = "QueueTasks",
-            url: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = "QueueTasks",
+        url: Annotated[
+            str,
+            Doc(
+                """
                     URL для подключения к Redis.
-                    
+
                     По умолчанию: `redis://localhost:6379/0`.
                     """
-                )
-            ] = "redis://localhost:6379/0",
-            queue_process: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = "redis://localhost:6379/0",
+        queue_process: Annotated[
+            str,
+            Doc(
+                """
                     Имя канала для задач в процессе.
-                    
+
                     По умолчанию: `task_process`.
                     """
-                )
-            ] = "task_process",
-            redis_connect: Annotated[
-                Optional[aioredis.Redis],
-                Doc(
-                    """
+            ),
+        ] = "task_process",
+        redis_connect: Annotated[
+            Optional[aioredis.Redis],
+            Doc(
+                """
                     Внешний класс подключения к Redis.
-                    
-                    По умолчанию: `None`.
-                    """
-                )
-            ] = None,
-            global_config: Annotated[
-                Optional["BaseGlobalConfig"],
-                Doc(
-                    """
-                    Глобальный конфиг.
-                    
-                    По умолчанию: `None`.
-                    """
-                )
-            ] = None,
 
-            log: Annotated[
-                Optional[Logger],
-                Doc(
+                    По умолчанию: `None`.
                     """
+            ),
+        ] = None,
+        global_config: Annotated[
+            Optional["BaseGlobalConfig"],
+            Doc(
+                """
+                    Глобальный конфиг.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
+        log: Annotated[
+            Optional[Logger],
+            Doc(
+                """
                     Логгер.
-                    
+
                     По умолчанию: `qtasks.logs.Logger`.
                     """
-                )
-            ] = None,
-            config: Annotated[
-                Optional[QueueConfig],
-                Doc(
-                    """
+            ),
+        ] = None,
+        config: Annotated[
+            Optional[QueueConfig],
+            Doc(
+                """
                     Конфиг.
-                    
+
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
-                )
-            ] = None
-        ):
+            ),
+        ] = None,
+    ):
+        """Инициализация асинхронного Redis хранилища.
+
+        Args:
+            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
+            url (str, optional): URL для подключения к Redis. По умолчанию: "redis://localhost:6379/0".
+            queue_process (str, optional): Имя канала для задач в процессе. По умолчанию: "task_process".
+            redis_connect (aioredis.Redis, optional): Внешний класс подключения к Redis. По умолчанию: None.
+            global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: None.
+            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+        """
         super().__init__(name, log=log, config=config)
         self.url = url
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"
-        self.client = redis_connect or aioredis.from_url(self.url, decode_responses=True, encoding=u'utf-8')
+        self.client = redis_connect or aioredis.from_url(
+            self.url, decode_responses=True, encoding="utf-8"
+        )
         self.redis_contrib = AsyncRedisCommandQueue(redis=self.client, log=self.log)
-        
-        self.global_config = global_config or AsyncRedisGlobalConfig(name=self.name, redis_connect=self.client, log=self.log, config=self.config)
-        
-    async def add(self,
-            uuid: Annotated[
-                Union[UUID|str],
-                Doc(
-                    """
+
+        self.global_config = global_config or AsyncRedisGlobalConfig(
+            name=self.name, redis_connect=self.client, log=self.log, config=self.config
+        )
+
+    async def add(
+        self,
+        uuid: Annotated[
+            Union[UUID | str],
+            Doc(
+                """
                     UUID задачи.
                     """
-                )
-            ],
-            task_status: Annotated[
-                TaskStatusNewSchema,
-                Doc(
-                    """
+            ),
+        ],
+        task_status: Annotated[
+            TaskStatusNewSchema,
+            Doc(
+                """
                     Схема статуса новой задачи.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Добавление задачи в хранилище.
 
         Args:
             uuid (UUID | str): UUID задачи.
             task_status (TaskStatusNewSchema): Схема статуса новой задачи.
         """
-        
         uuid = str(uuid)
         await self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
         return
-    
-    async def get(self,
-            uuid: UUID|str
-        ) -> Task|None:
+
+    async def get(self, uuid: UUID | str) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -167,7 +187,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """
         loop = asyncio.get_running_loop()
         asyncio_atexit.register(self.stop, loop=loop)
-        
+
         key = f"{self.name}:{uuid}"
         result = await self.client.hgetall(key)
         if not result:
@@ -182,7 +202,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             list[Task]: Массив задач.
         """
         pattern = f"{self.name}:*"
-        
+
         result: list[Task] = []
         async for key in self.client.scan_iter(pattern):
             name, uuid, *_ = key.split(":")
@@ -190,91 +210,114 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                 continue
             if f"{name}:{uuid}".find(self.global_config.config_name) != -1:
                 continue
-            
+
             task = await self.get(uuid=uuid)
             result.append(task)
-        
+
         return result
-    
-    async def update(self,
-            **kwargs: Annotated[
-                dict,
-                Doc(
-                    """
+
+    async def update(
+        self,
+        **kwargs: Annotated[
+            dict,
+            Doc(
+                """
                     Аргументы обновления типа kwargs.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет информацию о задаче.
-        
+
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        return await self.redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
-        
-    async def remove_finished_task(self,
-            task_broker: Annotated[
-                TaskPrioritySchema,
-                Doc(
-                    """
+        return await self.redis_contrib.execute(
+            "hset", kwargs["name"], mapping=kwargs["mapping"]
+        )
+
+    async def remove_finished_task(
+        self,
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
                     Схема приоритетной задачи.
                     """
-                )
+            ),
+        ],
+        model: Annotated[
+            Union[
+                TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
             ],
-            model: Annotated[
-                Union[TaskStatusSuccessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
-                Doc(
-                    """
+            Doc(
+                """
                     Модель результата задачи.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет данные завершенной задачи.
 
         Args:
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Модель результата задачи.
         """
-        if model.status == TaskStatusEnum.SUCCESS.value and not isinstance(model.returning, (bytes, str, int, float)):
+        if model.status == TaskStatusEnum.SUCCESS.value and not isinstance(
+            model.returning, (bytes, str, int, float)
+        ):
             trace = "Invalid input of type: 'NoneType'. Convert to a bytes, string, int or float first."
-            model = TaskStatusErrorSchema(task_name=task_broker.name, priority=task_broker.priority, traceback=trace, created_at=task_broker.created_at, updated_at=time.time())
+            model = TaskStatusErrorSchema(
+                task_name=task_broker.name,
+                priority=task_broker.priority,
+                traceback=trace,
+                created_at=task_broker.created_at,
+                updated_at=time.time(),
+            )
             self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
-        
-        await self.redis_contrib.execute("hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__)
-        await self.redis_contrib.execute("zrem", self.queue_process, f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}")
 
-        await self._plugin_trigger("storage_task_finished", task_broker=task_broker, model=model)
+        await self.redis_contrib.execute(
+            "hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__
+        )
+        await self.redis_contrib.execute(
+            "zrem",
+            self.queue_process,
+            f"{task_broker.name}:{task_broker.uuid}:{task_broker.priority}",
+        )
+
+        await self._plugin_trigger(
+            "storage_task_finished", storage=self, task_broker=task_broker, model=model
+        )
         return
-    
+
     async def start(self):
         """Запускает хранилище."""
         if self.global_config:
             await self.global_config.start()
-    
+
     async def stop(self):
         """Останавливает хранилище."""
         return await self.client.close()
-    
-    async def add_process(self,
-            task_data: Annotated[
-                str,
-                Doc(
-                    """
+
+    async def add_process(
+        self,
+        task_data: Annotated[
+            str,
+            Doc(
+                """
                     Данные задачи из брокера.
                     """
-                )
-            ],
-            priority: Annotated[
-                int,
-                Doc(
-                    """
+            ),
+        ],
+        priority: Annotated[
+            int,
+            Doc(
+                """
                     Приоритет задачи.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Добавляет задачу в список задач в процессе.
 
         Args:
@@ -283,31 +326,53 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """
         await self.client.zadd(self.queue_process, {task_data: priority})
         return
-    
-    async def _running_older_tasks(self, worker:"BaseWorker"):
+
+    async def _running_older_tasks(self, worker: "BaseWorker"):
         tasks = await self.client.zrange(self.queue_process, 0, -1)
         for task_data in tasks:
-            task_name, uuid, priority = task_data.split(':')
+            task_name, uuid, priority = task_data.split(":")
             name_ = f"{self.name}:{uuid}"
-            args, kwargs, created_at = await self.client.hget(name_, "args"), await self.client.hget(name_, "kwargs"), await self.client.hget(name_, "created_at")
-            args, kwargs, created_at = json.loads(args) or (), json.loads(kwargs) or {}, float(created_at)
-            
-            await worker.add(name=task_name, uuid=uuid, priority=int(priority), created_at=created_at, args=args, kwargs=kwargs)
+            args, kwargs, created_at = (
+                await self.client.hget(name_, "args"),
+                await self.client.hget(name_, "kwargs"),
+                await self.client.hget(name_, "created_at"),
+            )
+            args, kwargs, created_at = (
+                json.loads(args) or (),
+                json.loads(kwargs) or {},
+                float(created_at),
+            )
+
+            await worker.add(
+                name=task_name,
+                uuid=uuid,
+                priority=int(priority),
+                created_at=created_at,
+                args=args,
+                kwargs=kwargs,
+            )
         return
 
     async def _delete_finished_tasks(self):
         pattern = f"{self.name}:"
         try:
-            tasks: list[Task] = list(filter(lambda task: task.status != TaskStatusEnum.NEW.value, await self.get_all()))
-        
+            tasks: list[Task] = list(
+                filter(
+                    lambda task: task.status != TaskStatusEnum.NEW.value,
+                    await self.get_all(),
+                )
+            )
+
             tasks_hash = [pattern + str(task.uuid) for task in tasks]
-            tasks_queue = [f"{task.task_name}:{task.uuid}:{task.priority}" for task in tasks]
-            
+            tasks_queue = [
+                f"{task.task_name}:{task.uuid}:{task.priority}" for task in tasks
+            ]
+
             if tasks_queue:
                 await self.client.zrem(self.queue_process, *tasks_queue)
             if tasks_hash:
                 await self.client.delete(*tasks_hash)
-        except:
+        except BaseException:
             pass
         return
 
@@ -315,7 +380,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """Удалить все данные."""
         loop = asyncio.get_running_loop()
         asyncio_atexit.register(self.stop, loop=loop)
-        
+
         pipe = self.client.pipeline()
 
         pattern = f"{self.name}:*"

@@ -1,8 +1,11 @@
+"""Sync Redis command queue."""
+
 import threading
 from queue import Queue, Empty
 import redis
 
 from qtasks.logs import Logger
+
 
 class SyncRedisCommandQueue:
     """
@@ -13,14 +16,13 @@ class SyncRedisCommandQueue:
     ```python
     from qtasks import QueueTasks
     from qtasks.contrib.redis import SyncRedisCommandQueue
-    
+
     redis_contrib = SyncRedisCommandQueue(redis)
     redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
     ```
     """
-    def __init__(self,
-            redis: redis.Redis,
-            log: Logger = None):
+
+    def __init__(self, redis: redis.Redis, log: Logger = None):
         """Экземпляр класса.
 
         Args:
@@ -60,8 +62,9 @@ class SyncRedisCommandQueue:
                 self.worker_thread = threading.Thread(target=self._worker, daemon=True)
                 self.worker_thread.start()
 
-    def _get_log(self, log: Logger|None):
+    def _get_log(self, log: Logger | None):
         if log is None:
             import qtasks._state
+
             log = qtasks._state.log_main
         return log.with_subname("SyncRedisCommandQueue")

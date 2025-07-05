@@ -1,3 +1,5 @@
+"""QTasks registry utilities."""
+
 from typing import Annotated, Callable, List, Optional, Type, Union
 from typing_extensions import Doc
 
@@ -10,93 +12,95 @@ from qtasks.registries.async_task_decorator import AsyncTask
 
 def shared_task(
     name: Annotated[
-                Optional[str],
-                Doc(
-                    """
+        Optional[str],
+        Doc(
+            """
                     Имя задачи.
-                    
+
                     По умолчанию: `func.__name__`.
                     """
-                )
-            ] = None,
-            priority: Annotated[
-                Optional[int],
-                Doc(
-                    """
+        ),
+    ] = None,
+    priority: Annotated[
+        Optional[int],
+        Doc(
+            """
                     Приоритет у задачи по умолчанию.
-                    
+
                     По умолчанию: `config.default_task_priority`.
                     """
-                )
-            ] = None,
-
-            echo: Annotated[
-                bool,
-                Doc("""
+        ),
+    ] = None,
+    echo: Annotated[
+        bool,
+        Doc(
+            """
                     Включить вывод в консоль.
-                    
+
                     По умолчанию: `False`.
                     """
-                )
-            ] = False,
-            retry: Annotated[
-                int|None,
-                Doc("""
+        ),
+    ] = False,
+    retry: Annotated[
+        int | None,
+        Doc(
+            """
                     Количество попыток повторного выполнения задачи.
 
                     По умолчанию: `None`.
                     """
-                )
-            ] = None,
-            retry_on_exc: Annotated[
-                list[Type[Exception]]|None,
-                Doc("""
+        ),
+    ] = None,
+    retry_on_exc: Annotated[
+        list[Type[Exception]] | None,
+        Doc(
+            """
                     Исключения, при которых задача будет повторно выполнена.
 
                     По умолчанию: `None`.
                     """
-                )
-            ] = None,
-            generate_handler: Annotated[
-                Callable|None,
-                Doc("""
+        ),
+    ] = None,
+    generate_handler: Annotated[
+        Callable | None,
+        Doc(
+            """
                     Генератор обработчика.
 
                     По умолчанию: `None`.
                     """
-                )
-            ] = None,
-
-            executor: Annotated[
-                Type["BaseTaskExecutor"],
-                Doc(
-                    """
+        ),
+    ] = None,
+    executor: Annotated[
+        Type["BaseTaskExecutor"],
+        Doc(
+            """
                     Класс `BaseTaskExecutor`.
-                    
+
                     По умолчанию: `SyncTaskExecutor`.
                     """
-                )
-            ] = None,
-            middlewares: Annotated[
-                List["TaskMiddleware"],
-                Doc(
-                    """
+        ),
+    ] = None,
+    middlewares: Annotated[
+        List["TaskMiddleware"],
+        Doc(
+            """
                     Мидлвари.
 
                     По умолчанию: `Пустой массив`.
                     """
-                )
-            ] = None,
-            awaiting: Annotated[
-                bool,
-                Doc(
-                    """
+        ),
+    ] = None,
+    awaiting: Annotated[
+        bool,
+        Doc(
+            """
                     Async версия.
 
                     По умолчанию: `False`.
                     """
-                )
-            ] = False
+        ),
+    ] = False,
 ) -> Union[Type[SyncTask], Type[AsyncTask]]:
     """Декоратор для регистрации задач.
 

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import logging
 from typing import Any, Callable, Dict, List
 
+
 @dataclass
 class QueueConfig:
     """
@@ -11,12 +12,13 @@ class QueueConfig:
         max_tasks_process (int): Максимум задач в процессе. По умолчанию: 10
         running_older_tasks (bool): Запустить прошлые задачи. По умолчанию: False
         delete_finished_tasks (bool): Удаление выполненных задач. По умолчанию: False
-        
+
         default_task_priority (int): Приоритет задач по умолчанию. По умолчанию: 0
 
         logs_default_level (int): Уровень логирования. По умолчанию: logging.INFO (20)
         logs_format (str): Формат логирования. По умолчанию: "%(asctime)s [%(name)s: %(levelname)s] %(message)s"
     """
+
     max_tasks_process: int = 10
     running_older_tasks: bool = False
     delete_finished_tasks: bool = True
@@ -29,9 +31,12 @@ class QueueConfig:
     logs_default_level: int = logging.INFO
     logs_format: str = "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s"
 
-
-    _callbacks: List[Callable[["QueueConfig", str, Any], None]] = field(default_factory=list, init=False, repr=False)
-    _dynamic_fields: Dict[str, Any] = field(default_factory=dict, init=False, repr=False)
+    _callbacks: List[Callable[["QueueConfig", str, Any], None]] = field(
+        default_factory=list, init=False, repr=False
+    )
+    _dynamic_fields: Dict[str, Any] = field(
+        default_factory=dict, init=False, repr=False
+    )
 
     def subscribe(self, callback: Callable[["QueueConfig", str, Any], None]):
         """Подписка на изменение."""
@@ -52,13 +57,15 @@ class QueueConfig:
         # Для полей dataclass
         if key in self.__annotations__:
             object.__setattr__(self, key, value)
-            if '_callbacks' in self.__dict__:  # Проверяем наличие для избежания рекурсии
+            if (
+                "_callbacks" in self.__dict__
+            ):  # Проверяем наличие для избежания рекурсии
                 self._notify(key, value)
         # Для внутренних атрибутов
         elif key.startswith("_"):
             object.__setattr__(self, key, value)
         # Для динамических полей
         else:
-            dynamic_fields = object.__getattribute__(self, '_dynamic_fields')
+            dynamic_fields = object.__getattribute__(self, "_dynamic_fields")
             dynamic_fields[key] = value
             self._notify(key, value)

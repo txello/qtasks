@@ -1,3 +1,5 @@
+"""Base storage class."""
+
 from abc import ABC, abstractmethod
 from dataclasses import field, fields, make_dataclass
 import datetime
@@ -11,7 +13,12 @@ from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskPrioritySchema
-from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema, TaskStatusSuccessSchema
+from qtasks.schemas.task_status import (
+    TaskStatusCancelSchema,
+    TaskStatusErrorSchema,
+    TaskStatusNewSchema,
+    TaskStatusProcessSchema
+)
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
@@ -26,86 +33,104 @@ class BaseStorage(ABC):
 
     ```python
     from qtasks.storages.base import BaseStorage
-    
+
     class MyStorage(BaseStorage):
         def __init__(self, name: str = None):
             super().__init__(name=name)
             pass
     ```
     """
-    
-    def __init__(self,
-            name: Annotated[
-                Optional[str],
-                Doc(
-                    """
-                    Имя проекта. Это имя можно использовать для тегов для Storage.
-                    
-                    По умолчанию: `None`.
-                    """
-                )
-            ] = None,
-            global_config: Annotated[
-                Optional["BaseGlobalConfig"],
-                Doc(
-                    """
-                    Глобальный конфиг.
-                    
-                    По умолчанию: `None`.
-                    """
-                )
-            ] = None,
 
-            log: Annotated[
-                Optional[Logger],
-                Doc(
+    def __init__(
+        self,
+        name: Annotated[
+            Optional[str],
+            Doc(
+                """
+                    Имя проекта. Это имя можно использовать для тегов для Storage.
+
+                    По умолчанию: `None`.
                     """
+            ),
+        ] = None,
+        global_config: Annotated[
+            Optional["BaseGlobalConfig"],
+            Doc(
+                """
+                    Глобальный конфиг.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
+        log: Annotated[
+            Optional[Logger],
+            Doc(
+                """
                     Логгер.
-                    
+
                     По умолчанию: `qtasks.logs.Logger`.
                     """
-                )
-            ] = None,
-            config: Annotated[
-                Optional[QueueConfig],
-                Doc(
-                    """
+            ),
+        ] = None,
+        config: Annotated[
+            Optional[QueueConfig],
+            Doc(
+                """
                     Конфиг.
-                    
+
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
-                )
-            ] = None
-        ):
+            ),
+        ] = None,
+    ):
+        """Инициализация базового хранилища.
+
+        Args:
+            name (str, optional): Имя проекта. По умолчанию: `None`.
+            global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: `None`.
+            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+        """
         self.name = name
         self.client = None
-        self.global_config: "BaseGlobalConfig"|None = global_config
+        self.global_config: "BaseGlobalConfig" | None = global_config
 
         self.config = config or QueueConfig()
-        self.log = log.with_subname("Storage") if log else Logger(name=self.name, subname="Storage", default_level=self.config.logs_default_level, format=self.config.logs_format)
+        self.log = (
+            log.with_subname("Storage")
+            if log
+            else Logger(
+                name=self.name,
+                subname="Storage",
+                default_level=self.config.logs_default_level,
+                format=self.config.logs_format,
+            )
+        )
         self.plugins: dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
-    
+
     @abstractmethod
-    def add(self,
-            uuid: Annotated[
-                Union[UUID|str],
-                Doc(
-                    """
+    def add(
+        self,
+        uuid: Annotated[
+            Union[UUID | str],
+            Doc(
+                """
                     UUID задачи.
                     """
-                )
-            ],
-            task_status: Annotated[
-                TaskStatusNewSchema,
-                Doc(
-                    """
+            ),
+        ],
+        task_status: Annotated[
+            TaskStatusNewSchema,
+            Doc(
+                """
                     Схема статуса новой задачи.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Добавление задачи в хранилище.
 
         Args:
@@ -113,18 +138,19 @@ class BaseStorage(ABC):
             task_status (TaskStatusNewSchema): Схема статуса новой задачи.
         """
         pass
-    
+
     @abstractmethod
-    def get(self,
-            uuid: Annotated[
-                Union[UUID|str],
-                Doc(
-                    """
+    def get(
+        self,
+        uuid: Annotated[
+            Union[UUID | str],
+            Doc(
+                """
                     UUID задачи.
                     """
-                )
-            ]
-        ) -> Task|None:
+            ),
+        ],
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -134,7 +160,7 @@ class BaseStorage(ABC):
             Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
         """
         pass
-    
+
     @abstractmethod
     def get_all(self) -> list[Task]:
         """Получить все задачи.
@@ -143,55 +169,57 @@ class BaseStorage(ABC):
             list[Task]: Массив задач.
         """
         pass
-    
+
     @abstractmethod
-    def update(self,
-            **kwargs: Annotated[
-                dict,
-                Doc(
-                    """
+    def update(
+        self,
+        **kwargs: Annotated[
+            dict,
+            Doc(
+                """
                     Аргументы обновления типа kwargs.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет информацию о задаче.
-        
+
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
         pass
-    
+
     @abstractmethod
     def start(self):
         """Запускает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после запуске функции `run_forever`."""
         pass
-    
+
     @abstractmethod
     def stop(self):
         """Останавливает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
-    
-    def add_plugin(self, 
-            plugin: Annotated[
-                "BasePlugin",
-                Doc(
-                    """
+
+    def add_plugin(
+        self,
+        plugin: Annotated[
+            "BasePlugin",
+            Doc(
+                """
                     Плагин.
                     """
-                )
-            ],
-            trigger_names: Annotated[
-                Optional[List[str]],
-                Doc(
-                    """
+            ),
+        ],
+        trigger_names: Annotated[
+            Optional[List[str]],
+            Doc(
+                """
                     Имя триггеров для плагина.
-                    
+
                     По умолчанию: По умолчанию: будет добавлен в `Globals`.
                     """
-                )
-            ] = None
-        ) -> None:
+            ),
+        ] = None,
+    ) -> None:
         """Добавить плагин в класс.
 
         Args:
@@ -206,25 +234,28 @@ class BaseStorage(ABC):
             else:
                 self.plugins[name].append(plugin)
         return
-        
-    def remove_finished_task(self,
-            task_broker: Annotated[
-                TaskPrioritySchema,
-                Doc(
-                    """
+
+    def remove_finished_task(
+        self,
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
                     Схема приоритетной задачи.
                     """
-                )
+            ),
+        ],
+        model: Annotated[
+            Union[
+                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
             ],
-            model: Annotated[
-                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
-                Doc(
-                    """
+            Doc(
+                """
                     Модель результата задачи.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
 
         Args:
@@ -232,23 +263,24 @@ class BaseStorage(ABC):
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
         pass
-    
+
     def _delete_finished_tasks(self, **kwargs) -> None:
         pass
-    
+
     def _running_older_tasks(self, **kwargs) -> None:
         pass
-    
-    def update_config(self,
-            config: Annotated[
-                QueueConfig,
-                Doc(
-                    """
+
+    def update_config(
+        self,
+        config: Annotated[
+            QueueConfig,
+            Doc(
+                """
                     Конфиг.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет конфиг брокера.
 
         Args:
@@ -256,7 +288,7 @@ class BaseStorage(ABC):
         """
         self.config = config
         return
-    
+
     def flush_all(self) -> None:
         """Удалить все данные."""
         pass
@@ -307,10 +339,12 @@ class BaseStorage(ABC):
         # Объединяем все аргументы
         task = NewTask(**base_kwargs, **extra_values)
         if hasattr(task, "returning"):
-            try: task.returning = json.loads(task.returning)
-            except: pass
+            try:
+                task.returning = json.loads(task.returning)
+            except BaseException:
+                pass
         return task
-    
+
     def _infer_type(self, value: str):
         """Пытается определить реальный тип из строки."""
         if value.lower() in {"true", "false"}:
@@ -326,6 +360,7 @@ class BaseStorage(ABC):
         except ValueError:
             pass
         return str
-    
+
     def init_plugins(self):
+        """Инициализация плагинов."""
         pass
