@@ -180,7 +180,7 @@ class Router(SyncPluginMixin):
         """
 
         def wrapper(func):
-            nonlocal name, priority, executor, middlewares, echo, retry, retry_on_exc
+            nonlocal priority, middlewares
 
             task_name = name or func.__name__
             if task_name in self.tasks:

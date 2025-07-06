@@ -1,7 +1,7 @@
 import logging
 
 from qtasks.asyncio import QueueTasks
-from qtasks.registries import AsyncTask, SyncTask
+from qtasks.registries import AsyncTask
 
 import shared_tasks
 import router_tasks
@@ -53,28 +53,6 @@ async def test_yield(self: AsyncTask, n: int):
     for _ in range(n):
         n += 1
         yield n
-
-
-from pydantic import BaseModel
-from libs.plugins.taskexecutor import AsyncTaskExecutorArgsPydanticPlugin
-
-
-class TestPydanticModel(BaseModel):
-    name: str
-
-
-j = 0
-
-
-@app.task(echo=True, retry=3)
-async def test_pydantic(self: AsyncTask, model: TestPydanticModel):
-    global j
-    if j != 2:
-        j += 1
-        raise ValueError("Test error")
-
-    print(model.name)
-    return model
 
 
 if __name__ == "__main__":

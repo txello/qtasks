@@ -37,7 +37,7 @@ async def async_task(text: str):
 app.run_forever()
 
 # Добавление асинхронной задачи
-app.add_task("async_task", args=("Асинхронный пример",))
+asyncio.run(app.add_task("async_task", args=("Асинхронный пример",)))
 ```
 
 ## Использование различных брокеров
@@ -53,12 +53,12 @@ broker = AsyncRabbitMQBroker(url="amqp://guest:guest@localhost/")
 app = QueueTasks(broker=broker)
 
 @app.task(name="rabbitmq_example")
-def rabbitmq_example(text: str):
+async def rabbitmq_example(text: str):
     print(f"Получено сообщение: {text}")
     return text
 
 app.run_forever()
 
 # Добавление задачи в очередь
-app.add_task("rabbitmq_example", args=("Сообщение через RabbitMQ",))
+asyncio.run(app.add_task("rabbitmq_example", args=("Сообщение через RabbitMQ",)))
 ```

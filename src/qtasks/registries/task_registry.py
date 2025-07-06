@@ -94,7 +94,7 @@ class TaskRegistry:
         """
 
         def wrapper(func: Callable):
-            nonlocal name, priority, executor, middlewares
+            nonlocal middlewares
 
             task_name = name or func.__name__
 
