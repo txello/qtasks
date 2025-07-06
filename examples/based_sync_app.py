@@ -1,4 +1,6 @@
 import logging
+
+import pydantic
 from qtasks import QueueTasks
 from qtasks.registries import SyncTask
 
@@ -46,6 +48,16 @@ def test_yield(self: SyncTask, n: int):
     for _ in range(n):
         n += 1
         yield n
+
+
+class Item(pydantic.BaseModel):
+    name: str
+    value: int
+
+
+@app.task(echo=True)
+def example_pydantic(self: SyncTask, item: Item):
+    return f"Hello, {item.name}!"
 
 
 if __name__ == "__main__":

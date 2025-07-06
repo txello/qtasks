@@ -585,6 +585,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
     def task(
         self,
         name: str | None = None,
+        *,
         priority: int | None = None,
         echo: bool = False,
         retry: int | None = None,
@@ -592,6 +593,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         generate_handler: Callable | None = None,
         executor: Type["BaseTaskExecutor"] | None = None,
         middlewares: List["TaskMiddleware"] | None = None,
+        **kwargs
     ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
         ...
 

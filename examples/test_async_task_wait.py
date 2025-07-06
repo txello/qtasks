@@ -1,6 +1,6 @@
 import asyncio
 
-from based_async_app import test_num, error_zero, test_yield, router_tasks, test_echo, test_retry
+from based_async_app import example_pydantic, test_num, error_zero, test_yield, router_tasks, test_echo, test_retry
 
 
 async def main():
@@ -10,7 +10,10 @@ async def main():
     # task = router_tasks.router_test.add_task(timeout=50)
     # task = await test_echo.add_task(timeout=50)
     # task = await test_pydantic.add_task(kwargs={"name": "Test"}, timeout=50)
-    task = await test_retry.add_task(timeout=50)
+    # task = await test_retry.add_task(timeout=50)
+    task = await example_pydantic.add_task(args=("Test", 42), timeout=50)
+    # task = await example_pydantic.add_task(kwargs={"item": {"name": "Test", "value": 42}}, timeout=50)
+    # task = await example_pydantic.add_task(kwargs={"name": "Test", "value": 42}, timeout=50)
     print(task)
 
 asyncio.run(main())

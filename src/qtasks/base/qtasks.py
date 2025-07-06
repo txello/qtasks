@@ -208,6 +208,7 @@ class BaseQueueTasks:
     def task(
         self,
         name: str | None = None,
+        *,
         priority: int | None = None,
         echo: bool = False,
         retry: int | None = None,
@@ -215,6 +216,7 @@ class BaseQueueTasks:
         generate_handler: Callable | None = None,
         executor: Type["BaseTaskExecutor"] | None = None,
         middlewares: List["TaskMiddleware"] | None = None,
+        **kwargs
     ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
         ...
 
@@ -230,6 +232,7 @@ class BaseQueueTasks:
                     """
             ),
         ] = None,
+        *,
         priority: Annotated[
             Optional[int],
             Doc(
@@ -300,6 +303,7 @@ class BaseQueueTasks:
                     """
             ),
         ] = None,
+        **kwargs
     ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
         """Декоратор для регистрации задач.
 
@@ -353,6 +357,7 @@ class BaseQueueTasks:
                 generate_handler=generate_handler,
                 executor=executor,
                 middlewares=middlewares,
+                extra=kwargs
             )
 
             self.tasks[task_name] = model

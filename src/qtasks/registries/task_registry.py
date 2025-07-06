@@ -85,6 +85,7 @@ class TaskRegistry:
                     """
             ),
         ] = None,
+        **kwargs
     ) -> Callable[[Callable], Union[SyncTask, AsyncTask]]:
         """Регистрация задачи.
 
@@ -118,6 +119,7 @@ class TaskRegistry:
                 generate_handler=generate_handler,
                 executor=executor,
                 middlewares=middlewares,
+                extra=kwargs
             )
 
             cls._tasks[task_name] = model

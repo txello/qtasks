@@ -101,6 +101,7 @@ def shared_task(
                     """
         ),
     ] = False,
+    **kwargs
 ) -> Union[Type[SyncTask], Type[AsyncTask]]:
     """Декоратор для регистрации задач.
 
@@ -134,6 +135,7 @@ def shared_task(
             generate_handler=generate_handler,
             executor=executor,
             middlewares=middlewares,
+            **kwargs
         )(name)
 
     # Декоратор со скобками
@@ -147,6 +149,7 @@ def shared_task(
             generate_handler=generate_handler,
             executor=executor,
             middlewares=middlewares,
+            **kwargs
         )(func)
 
     return wrapper

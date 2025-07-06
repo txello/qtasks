@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from types import FunctionType
-from typing import TYPE_CHECKING, Callable, Literal, Type
+from typing import TYPE_CHECKING, Any, Callable, Literal, Type
 from uuid import UUID
 
 
@@ -76,3 +76,5 @@ class TaskExecSchema:
 
     executor: Type["BaseTaskExecutor"] = None
     middlewares: list[Type["TaskMiddleware"]] = field(default_factory=list)
+
+    extra: dict[str, Any] = field(default_factory=dict)

@@ -88,6 +88,7 @@ class Router(SyncPluginMixin):
                     """
             ),
         ] = None,
+        *,
         priority: Annotated[
             Optional[int],
             Doc(
@@ -158,6 +159,7 @@ class Router(SyncPluginMixin):
                     """
             ),
         ] = None,
+        **kwargs
     ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
         """Декоратор для регистрации задач.
 
@@ -209,6 +211,7 @@ class Router(SyncPluginMixin):
                 generate_handler=generate_handler,
                 executor=executor,
                 middlewares=middlewares,
+                extra=kwargs
             )
 
             self.tasks[task_name] = model

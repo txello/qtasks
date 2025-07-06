@@ -1,9 +1,11 @@
 """Base Task Executor."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
+import inspect
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, get_args, get_origin
 from typing_extensions import Annotated, Doc
 from qtasks.logs import Logger
+from qtasks.schemas.argmeta import ArgMeta
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 if TYPE_CHECKING:
@@ -173,3 +175,55 @@ class BaseTaskExecutor(ABC):
             else:
                 self.plugins[name].append(plugin)
         return
+
+    def _build_args_info(self, args: list, kwargs: dict) -> list[ArgMeta]:
+        """Строит список ArgMeta из args и kwargs на основе аннотаций функции.
+
+        Args:
+            args (list): Позиционные аргументы.
+            kwargs (dict): Именованные аргументы.
+
+        Returns:
+            list[ArgMeta]: Список метаданных аргументов.
+        """
+        args_info: list[ArgMeta] = []
+        func = self.task_func.func
+
+        try:
+            sig = inspect.signature(func)
+            parameters = list(sig.parameters.items())
+        except (ValueError, TypeError):
+            parameters = []
+
+        annotations = getattr(func, "__annotations__", {})
+
+        # Обработка позиционных аргументов
+        for idx, value in enumerate(args):
+            param_name = parameters[idx][0] if idx < len(parameters) else f"arg{idx}"
+            annotation = annotations.get(param_name)
+            origin = get_origin(annotation)
+            raw_type = get_args(annotation)[0] if get_args(annotation) else annotation
+            args_info.append(ArgMeta(
+                name=param_name,
+                origin=origin,
+                raw_type=raw_type,
+                annotation=annotation,
+                is_kwarg=False,
+                index=idx,
+            ))
+
+        # Обработка именованных аргументов
+        for key, value in kwargs.items():
+            annotation = annotations.get(key)
+            origin = get_origin(annotation)
+            raw_type = get_args(annotation)[0] if get_args(annotation) else annotation
+            args_info.append(ArgMeta(
+                name=key,
+                origin=origin,
+                raw_type=raw_type,
+                annotation=annotation,
+                is_kwarg=True,
+                key=key,
+            ))
+
+        return args_info

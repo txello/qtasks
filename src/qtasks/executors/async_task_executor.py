@@ -107,37 +107,34 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     async def before_execute(self):
         """Вызывается перед выполнением задачи."""
         if self.task_func.echo:
-            if not self.task_func.awaiting or self.task_func.generating == "sync":
-                self.echo = SyncTask(
-                    task_name=self.task_broker.name,
-                    priority=self.task_broker.priority,
-                    echo=self.task_func.echo,
-                    retry=self.task_func.retry,
-                    retry_on_exc=self.task_func.retry_on_exc,
-                    executor=self.task_func.executor,
-                    middlewares=self.task_func.middlewares,
-                )
-            else:
-                self.echo = AsyncTask(
-                    task_name=self.task_broker.name,
-                    priority=self.task_broker.priority,
-                    echo=self.task_func.echo,
-                    retry=self.task_func.retry,
-                    retry_on_exc=self.task_func.retry_on_exc,
-                    executor=self.task_func.executor,
-                    middlewares=self.task_func.middlewares,
-                )
+            task_cls = SyncTask if not self.task_func.awaiting or self.task_func.generating == "sync" else AsyncTask
+            self.echo = task_cls(
+                task_name=self.task_broker.name,
+                priority=self.task_broker.priority,
+                echo=self.task_func.echo,
+                retry=self.task_func.retry,
+                retry_on_exc=self.task_func.retry_on_exc,
+                executor=self.task_func.executor,
+                middlewares=self.task_func.middlewares,
+            )
             self.echo.ctx._update(task_uuid=self.task_broker.uuid)
             self._args = self.task_broker.args[:]
             self._args.insert(0, self.echo)
         else:
             self._args = self.task_broker.args
+
         self._kwargs = self.task_broker.kwargs
 
-        new_args: Tuple[List, Dict] = await self._plugin_trigger(
+        args_info = self._build_args_info(self._args, self._kwargs)
+
+        new_args: Tuple[list, dict] = await self._plugin_trigger(
             "task_executor_args_replace",
             task_executor=self,
-            **{"args": self._args, "kwargs": self._kwargs},
+            **{
+                "args": self._args,
+                "kwargs": self._kwargs,
+                "args_info": args_info,
+            }
         )
         if new_args:
             self._args, self._kwargs = new_args[-1]
@@ -148,7 +145,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         """Вызов после запуска задач."""
         await self._plugin_trigger("task_executor_after_execute", task_executor=self)
         result: Any = await self._plugin_trigger(
-            "task_executor_result_replace", result=self._result
+            "task_executor_result_replace", task_executor=self, result=self._result
         )
         if result:
             self._result = result[-1]

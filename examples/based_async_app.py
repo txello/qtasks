@@ -1,5 +1,7 @@
 import logging
 
+import pydantic
+
 from qtasks.asyncio import QueueTasks
 from qtasks.registries import AsyncTask
 
@@ -59,6 +61,16 @@ async def test_yield(self: AsyncTask, n: int):
 async def test_retry(self: AsyncTask):
     self.ctx.get_logger().info("Повтор...")
     raise KeyError("Test error")
+
+
+class Item(pydantic.BaseModel):
+    name: str
+    value: int
+
+
+@app.task(echo=True)
+async def example_pydantic(self: AsyncTask, item: Item):
+    return f"Hello, {item.name}!"
 
 
 if __name__ == "__main__":

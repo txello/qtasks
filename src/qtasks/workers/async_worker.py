@@ -1,13 +1,16 @@
 """Init module for async worker."""
 
 import asyncio
+from dataclasses import asdict
 from time import time
 import traceback
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
 from anyio import Semaphore
+
+from qtasks.plugins.pydantic import AsyncPydanticWrapperPlugin
 
 
 from .base import BaseWorker
@@ -18,7 +21,7 @@ from qtasks.executors.async_task_executor import AsyncTaskExecutor
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.schemas.task import Task
-from qtasks.plugins.retries import async_retry_plugin
+from qtasks.plugins.retries import AsyncRetryPlugin
 
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 from qtasks.schemas.task_status import (
@@ -180,18 +183,18 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             )
             model.set_json(task_broker.args, task_broker.kwargs)
 
-            new_model = await self._plugin_trigger("worker_execute_before", model=model)
-            if new_model:
-                model = new_model[-1]
-
-            await self.broker.update(
-                name=f"{self.name}:{task_broker.uuid}", mapping=model.__dict__
-            )
-
             task_func = await self._task_exists(task_broker=task_broker)
             if not task_func:
                 self.queue.task_done()
                 return
+
+            new_model = await self._plugin_trigger("worker_execute_before", worker=self, task_broker=task_broker, task_func=task_func, model=model)
+            if new_model:
+                model = new_model[-1]
+
+            await self.broker.update(
+                name=f"{self.name}:{task_broker.uuid}", mapping=asdict(model)
+            )
 
             await self._init_task_running(task_func=task_func, task_broker=task_broker)
 
@@ -200,7 +203,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             await self._init_task_stoping(
                 task_func=task_func, task_broker=task_broker, model=model
             )
-            await self.broker.remove_finished_task(task_broker, model)
+            await self.remove_finished_task(task_func=task_func, task_broker=task_broker, model=model)
 
             await self._plugin_trigger("worker_execute_after", task_func=task_func, task_broker=task_broker, model=model)
 
@@ -439,9 +442,12 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         # plugin: retry
         plugin_result = None
 
-        if task_func.retry_on_exc and type(e) not in task_func.retry_on_exc:
-            pass
-        else:
+        should_retry = (
+            task_func.retry and (
+                not task_func.retry_on_exc or type(e) in task_func.retry_on_exc
+            )
+        )
+        if should_retry:
             if task_func.retry:
                 plugin_result = await self._plugin_trigger(
                     "retry",
@@ -464,7 +470,10 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             model: TaskStatusErrorSchema = plugin_result[-1]
         #
 
-        self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+        if plugin_result and model.retry != 0:
+            self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой и будет повторена.")
+        else:
+            self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
         return model
 
     async def _task_cancel(self, e, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> None:
@@ -502,7 +511,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
                 created_at=task_broker.created_at,
                 updated_at=time(),
             )
-            await self.broker.remove_finished_task(task_broker, model)
+            await self.remove_finished_task(task_func=None, task_broker=task_broker, model=model)
             self.log.warning(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
             return None
 
@@ -554,6 +563,48 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
                 pass
         return
 
+    async def remove_finished_task(
+        self,
+        task_func: Annotated[
+            Optional[TaskExecSchema],
+            Doc(
+                """
+                    Схема функции задачи.
+                    """
+            )
+        ],
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
+                    Схема приоритетной задачи.
+                    """
+            ),
+        ],
+        model: Annotated[
+            Union[
+                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+            ],
+            Doc(
+                """
+                    Модель результата задачи.
+                    """
+            ),
+        ],
+    ) -> None:
+        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
+
+        Args:
+            task_func (TaskExecSchema, optional): Схема функции задачи. По умолчанию: `None`.
+            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
+            model (TaskStatusNewSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Модель результата задачи.
+        """
+        new_data = await self._plugin_trigger("worker_remove_finished_task", worker=self, broker=self.broker, task_func=task_func, task_broker=task_broker, model=model)
+        if new_data:
+            task_broker, model = new_data[-1]
+        await self.broker.remove_finished_task(task_broker, model)
+
     def init_plugins(self):
         """Инициализация плагинов."""
-        self.add_plugin(async_retry_plugin, trigger_names=["retry"])
+        self.add_plugin(AsyncRetryPlugin(), trigger_names=["retry"])
+        self.add_plugin(AsyncPydanticWrapperPlugin(), trigger_names=["task_executor_args_replace", "task_executor_result_replace"])

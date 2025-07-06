@@ -120,10 +120,16 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             self._args = self.task_broker.args
         self._kwargs = self.task_broker.kwargs
 
-        new_args: Tuple[List, Dict] = self._plugin_trigger(
+        args_info = self._build_args_info(self._args, self._kwargs)
+
+        new_args: Tuple[list, dict] = self._plugin_trigger(
             "task_executor_args_replace",
             task_executor=self,
-            **{"args": self._args, "kwargs": self._kwargs},
+            **{
+                "args": self._args,
+                "kwargs": self._kwargs,
+                "args_info": args_info,
+            }
         )
         if new_args:
             self._args, self._kwargs = new_args[-1]
@@ -134,7 +140,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         """Вызывается после выполнения задачи."""
         self._plugin_trigger("task_executor_after_execute", task_executor=self)
         result: Any = self._plugin_trigger(
-            "task_executor_result_replace", result=self._result
+            "task_executor_result_replace", task_executor=self, result=self._result
         )
         if result:
             self._result = result[-1]
