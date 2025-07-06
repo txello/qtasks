@@ -55,5 +55,11 @@ async def test_yield(self: AsyncTask, n: int):
         yield n
 
 
+@app.task(echo=True, retry=2)
+async def test_retry(self: AsyncTask):
+    self.ctx.get_logger().info("Повтор...")
+    raise KeyError("Test error")
+
+
 if __name__ == "__main__":
     app.run_forever(num_workers=10)

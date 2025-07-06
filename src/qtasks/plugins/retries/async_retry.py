@@ -74,4 +74,5 @@ class AsyncRetryPlugin(BasePlugin):
         model.retry = task_retry
         if new_task is not None:
             model.retry_child_uuid = new_task.uuid if task_retry > 0 else "None"
+            model.status = "retry"
         return model
