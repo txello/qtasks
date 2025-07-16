@@ -132,10 +132,10 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             global_config=self,
             name=name,
             key=key,
-            value=value
+            value=value,
+            return_last=True
         )
         if new_data:
-            new_data = new_data[-1]
             name = new_data.get("name", name)
             key = new_data.get("key", key)
             value = new_data.get("value", value)
@@ -157,10 +157,11 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         new_result = self._plugin_trigger(
             "global_config_get",
             global_config=self,
-            get=result
+            get=result,
+            return_last=True
         )
         if new_result:
-            result = new_result[-1]
+            result = new_result
         return result
 
     def get_all(self, key: str) -> dict[Any]:
@@ -176,10 +177,11 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         new_result = self._plugin_trigger(
             "global_config_get_all",
             global_config=self,
-            get=result
+            get=result,
+            return_last=True
         )
         if new_result:
-            result = new_result[-1]
+            result = new_result
         return result
 
     def get_match(self, match: str) -> Any | dict[Any]:
@@ -195,10 +197,11 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         new_result = self._plugin_trigger(
             "global_config_get_match",
             global_config=self,
-            get=result
+            get=result,
+            return_last=True
         )
         if new_result:
-            result = new_result[-1]
+            result = new_result
         return result
 
     def start(self) -> None:

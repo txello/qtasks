@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, NoReturn
 from uuid import UUID
 
 from qtasks.configs.config import QueueConfig
+from qtasks.exc.plugins import TaskPluginTriggerError
 from qtasks.exc.task import TaskCancelError
 from qtasks.schemas.task import Task
 
@@ -33,6 +34,9 @@ class SyncContext:
 
     def __init__(self, **kwargs):
         """Инициализация контекста."""
+        self.task_name = kwargs.get("task_name")
+        """Имя задачи."""
+
         self.task_uuid = kwargs.get("task_uuid")
         """UUID задачи."""
 
@@ -58,7 +62,7 @@ class SyncContext:
         Returns:
             Logger: Логгер для текущего контекста.
         """
-        self._log = self._app.log.with_subname(name or "SyncContext")
+        self._log = self._app.log.with_subname(name or self.task_name)
         return self._log
 
     def get_config(self) -> QueueConfig:
@@ -113,7 +117,15 @@ class SyncContext:
         Raises:
             TaskCancelError: Исключение, вызываемое при отмене задачи.
         """
-        raise TaskCancelError(reason or "AsyncContext.cancel")
+        raise TaskCancelError(reason or f"{self.task_name}.cancel")
+
+    def plugin_error(self, **kwargs):
+        """Вызывает ошибку плагина.
+
+        Args:
+            **kwargs: Аргументы для передачи в обработчик ошибки плагина.
+        """
+        raise TaskPluginTriggerError(**kwargs)
 
     def get_component(self, name: str):
         """Возвращает компонент приложения по имени.

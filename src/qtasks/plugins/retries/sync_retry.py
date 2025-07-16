@@ -20,7 +20,7 @@ class SyncRetryPlugin(BasePlugin):
             name (str, optional): Имя проекта. По умолчанию: "AsyncRetryPlugin".
         """
         super().__init__(name=name)
-        self.handlers = {"retry": self._execute}
+        self.handlers = {"worker_task_error_retry": self._execute}
 
     def start(self, *args, **kwargs):
         """Запуск плагина."""

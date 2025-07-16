@@ -217,10 +217,10 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             task_name=task_name,
             priority=priority,
             args=args,
-            kwargs=kwargs
+            kwargs=kwargs,
+            return_last=True
         )
         if new_args:
-            new_args = new_args[-1]
             task_name = new_args.get("task_name", task_name)
             priority = new_args.get("priority", priority)
             extra = new_args.get("extra", extra)
@@ -238,7 +238,8 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             task_name=task_name,
             priority=priority,
             args=args,
-            kwargs=kwargs
+            kwargs=kwargs,
+            return_last=True
         )
         if timeout is not None:
             return SyncResult(uuid=task.uuid, app=self, log=self.log).result(
@@ -268,8 +269,9 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         result = self.broker.get(uuid=uuid)
-        new_result = self._plugin_trigger("qtasks_get", qtasks=self, broker=self.broker, task=result)
-        result = new_result[-1] if new_result else result
+        new_result = self._plugin_trigger("qtasks_get", qtasks=self, broker=self.broker, task=result, return_last=True)
+        if new_result:
+            result = new_result
         return result
 
     def run_forever(
@@ -556,6 +558,8 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         echo: bool = False,
         retry: int | None = None,
         retry_on_exc: list[Type[Exception]] | None = None,
+        decode: Callable | None = None,
+        tags: list[str] | None = None,
         generate_handler: Callable | None = None,
         executor: Type["BaseTaskExecutor"] | None = None,
         middlewares: List["TaskMiddleware"] | None = None,
@@ -572,6 +576,8 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
+            tags (list[str], optional): Теги задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
             middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
@@ -581,6 +587,6 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ValueError: Неизвестный метод {self._method}.
 
         Returns:
-            Callable[SyncTask]: Декоратор для регистрации задачи.
+            SyncTask: Декоратор для регистрации задачи.
         """
         return super().task(*args, **kwargs)

@@ -16,7 +16,7 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
 
         self.handlers = {
             "task_executor_args_replace": self.replace_args,
-            "task_executor_result_replace": self.replace_result,
+            "task_executor_after_execute_result_replace": self.replace_result,
         }
 
     async def start(self, *args, **kwargs):

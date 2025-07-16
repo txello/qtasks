@@ -36,15 +36,14 @@ class AsyncRedisCommandQueue:
         self.lock = asyncio.Lock()
 
     async def _worker(self):
-        while True:
+        while not self.queue.empty():
+            cmd, args, kwargs = await self.queue.get()
+            self.log.debug(f"Задача {cmd} с параметрами {args} и {kwargs} вызвана")
             try:
-                # Если очередь пуста - подождём 2 секунды
-                cmd, args, kwargs = await asyncio.wait_for(self.queue.get(), timeout=2)
-                self.log.debug(f"Задача {cmd} с параметрами {args} и {kwargs} вызвана")
                 await getattr(self.redis, cmd)(*args, **kwargs)
-                self.queue.task_done()
-            except asyncio.TimeoutError:
-                break  # Завершаем работу при простое 2 секунды
+            except Exception as e:
+                self.log.error(f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}")
+            self.queue.task_done()
 
         async with self.lock:
             self.worker_task = None

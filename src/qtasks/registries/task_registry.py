@@ -61,10 +61,66 @@ class TaskRegistry:
                     """
             ),
         ] = False,
-        echo: bool = False,
-        retry: int | None = None,
-        retry_on_exc: list[Type[Exception]] | None = None,
-        generate_handler: Callable | None = None,
+        echo: Annotated[
+            bool,
+            Doc(
+                """
+                    Включить вывод в консоль.
+
+                    По умолчанию: `False`.
+                    """
+            ),
+        ] = False,
+        retry: Annotated[
+            int | None,
+            Doc(
+                """
+                    Количество попыток повторного выполнения задачи.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
+        retry_on_exc: Annotated[
+            list[Type[Exception]] | None,
+            Doc(
+                """
+                    Исключения, при которых задача будет повторно выполнена.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
+        decode: Annotated[
+            Callable | None,
+            Doc(
+                """
+                    Декодер результата задачи.
+
+                    По умолчанию: `None`.
+                    """
+            )
+        ] = None,
+        tags: Annotated[
+            list[str] | None,
+            Doc(
+                """
+                    Теги задачи.
+
+                    По умолчанию: `None`.
+                    """
+            )
+        ] = None,
+        generate_handler: Annotated[
+            Callable | None,
+            Doc(
+                """
+                    Генератор обработчика.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
         executor: Annotated[
             Type["BaseTaskExecutor"],
             Doc(
@@ -76,7 +132,7 @@ class TaskRegistry:
             ),
         ] = None,
         middlewares: Annotated[
-            List[TaskMiddleware],
+            List["TaskMiddleware"],
             Doc(
                 """
                     Мидлвари.
@@ -91,7 +147,15 @@ class TaskRegistry:
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int): Приоритет задачи. По умолчанию: `0`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
+            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
+            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
+            tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
+            middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
         """
 
         def wrapper(func: Callable):
@@ -116,6 +180,8 @@ class TaskRegistry:
                 echo=echo,
                 retry=retry,
                 retry_on_exc=retry_on_exc,
+                decode=decode,
+                tags=tags,
                 generate_handler=generate_handler,
                 executor=executor,
                 middlewares=middlewares,
@@ -124,28 +190,19 @@ class TaskRegistry:
 
             cls._tasks[task_name] = model
 
-            if awaiting:
-                return AsyncTask(
-                    task_name=task_name,
-                    priority=priority,
-                    echo=echo,
-                    retry=retry,
-                    retry_on_exc=retry_on_exc,
-                    generate_handler=generate_handler,
-                    executor=executor,
-                    middlewares=middlewares,
-                )
-            else:
-                return SyncTask(
-                    task_name=task_name,
-                    priority=priority,
-                    echo=echo,
-                    retry=retry,
-                    retry_on_exc=retry_on_exc,
-                    generate_handler=generate_handler,
-                    executor=executor,
-                    middlewares=middlewares,
-                )
+            method = AsyncTask if awaiting else SyncTask
+            return method(
+                task_name=model.name,
+                priority=model.priority,
+                echo=model.echo,
+                retry=model.retry,
+                retry_on_exc=model.retry_on_exc,
+                decode=model.decode,
+                tags=model.tags,
+                generate_handler=model.generate_handler,
+                executor=model.executor,
+                middlewares=model.middlewares,
+            )
 
         return wrapper
 

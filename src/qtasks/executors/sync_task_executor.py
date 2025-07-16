@@ -4,6 +4,7 @@ import json
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Tuple, Type
 from typing_extensions import Annotated, Doc
 
+from qtasks.exc.plugins import TaskPluginTriggerError
 from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.registries.sync_task_decorator import SyncTask
 
@@ -29,6 +30,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
     task_broker = TaskPrioritySchema(...)
     executor = SyncTaskExecutor(task_func, task_broker)
     result = executor.execute()
+    ```
     """
 
     def __init__(
@@ -110,6 +112,8 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 echo=self.task_func.echo,
                 retry=self.task_func.retry,
                 retry_on_exc=self.task_func.retry_on_exc,
+                decode=self.task_func.decode,
+                tags=self.task_func.tags,
                 executor=self.task_func.executor,
                 middlewares=self.task_func.middlewares,
             )
@@ -125,6 +129,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         new_args: Tuple[list, dict] = self._plugin_trigger(
             "task_executor_args_replace",
             task_executor=self,
+            return_last=True,
             **{
                 "args": self._args,
                 "kwargs": self._kwargs,
@@ -132,7 +137,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             }
         )
         if new_args:
-            self._args, self._kwargs = new_args[-1]
+            self._args, self._kwargs = new_args
 
         self._plugin_trigger("task_executor_before_execute", task_executor=self)
 
@@ -140,7 +145,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         """Вызывается после выполнения задачи."""
         self._plugin_trigger("task_executor_after_execute", task_executor=self)
         result: Any = self._plugin_trigger(
-            "task_executor_result_replace", task_executor=self, result=self._result
+            "task_executor_after_execute_result_replace", task_executor=self, result=self._result
         )
         if result:
             self._result = result[-1]
@@ -225,19 +230,37 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         self.log.debug(f"Вызван execute для {self.task_func.name}")
         self.before_execute()
         self.execute_middlewares()
-        self._result = self.run_task()
+        try:
+            self._result = self.run_task()
+        except TaskPluginTriggerError as e:
+            new_result = self._plugin_trigger(
+                "task_executor_run_task_trigger_error",
+                task_executor=self,
+                task_func=self.task_func,
+                task_broker=self.task_broker,
+                e=e,
+                return_last=True
+            )
+            if new_result:
+                self._result = new_result
+            else:
+                raise e
+
         self.after_execute()
         if decode:
             return self.decode()
         return self._result
 
-    def decode(self) -> str:
+    def decode(self) -> Any:
         """Декодирование задачи.
 
         Returns:
-            str: Результат задачи.
+            Any: Результат задачи.
         """
-        result = json.dumps(self._result, ensure_ascii=False)
+        if self.task_func.decode is not None:
+            result = self.task_func.decode(self._result)
+        else:
+            result = json.dumps(self._result, ensure_ascii=False)
         new_result = self._plugin_trigger("task_executor_decode", task_executor=self, result=result)
         if new_result:
             result = new_result[-1]

@@ -112,6 +112,8 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self.threads: list[Thread] = []
         self.semaphore = Semaphore(self.config.max_tasks_process)
 
+        self.task_executor = SyncTaskExecutor
+
     def worker(
         self,
         number: Annotated[
@@ -183,9 +185,16 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 self.queue.task_done()
                 return
 
-            new_model = self._plugin_trigger("worker_execute_before", worker=self, task_broker=task_broker, task_func=task_func, model=model)
+            new_model = self._plugin_trigger(
+                "worker_execute_before",
+                worker=self,
+                task_broker=task_broker,
+                task_func=task_func,
+                model=model,
+                return_last=True
+            )
             if new_model:
-                model = new_model[-1]
+                model = new_model
 
             self.broker.update(
                 name=f"{self.name}:{task_broker.uuid}", mapping=asdict(model)
@@ -274,10 +283,10 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             priority=priority,
             args=args,
             kwargs=kwargs,
-            created_at=created_at
+            created_at=created_at,
+            return_last=True
         )
         if new_data:
-            new_data = new_data[-1]
             name = new_data.get("name", name)
             uuid = new_data.get("uuid", uuid)
             priority = new_data.get("priority", priority)
@@ -362,9 +371,14 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}"
         )
 
-        new_data = self._plugin_trigger("worker_run_task_before", worker=self, task_func=task_func, task_broker=task_broker)
+        new_data = self._plugin_trigger(
+            "worker_run_task_before",
+            worker=self,
+            task_func=task_func,
+            task_broker=task_broker,
+            return_last=True
+        )
         if new_data:
-            new_data = new_data[-1]
             task_func = new_data.get("task_func", task_func)
             task_broker = new_data.get("task_broker", task_broker)
 
@@ -372,22 +386,15 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         if task_func.middlewares:
             middlewares.extend(task_func.middlewares)
 
-        if task_func.executor is not None:
-            executor = task_func.executor(
-                task_func=task_func,
-                task_broker=task_broker,
-                middlewares=middlewares,
-                log=self.log,
-                plugins=self.plugins
-            )
-        else:
-            executor = SyncTaskExecutor(
-                task_func=task_func,
-                task_broker=task_broker,
-                middlewares=middlewares,
-                log=self.log,
-                plugins=self.plugins
-            )
+        executor = task_func.executor if task_func.executor is not None else self.task_executor
+        executor = executor(
+            task_func=task_func,
+            task_broker=task_broker,
+            middlewares=middlewares,
+            log=self.log,
+            plugins=self.plugins,
+        )
+
         try:
             result = executor.execute()
             return self._task_success(result, task_func, task_broker)
@@ -426,11 +433,12 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         if should_retry:
             if task_func.retry:
                 plugin_result = self._plugin_trigger(
-                    "retry",
+                    "worker_task_error_retry",
                     broker=self.broker,
                     task_func=task_func,
                     task_broker=task_broker,
                     trace=trace,
+                    return_last=True
                 )
 
         if not plugin_result:
@@ -443,7 +451,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             )
             model.set_json(args=task_broker.args, kwargs=task_broker.kwargs)
         else:
-            model: TaskStatusErrorSchema = plugin_result[-1]
+            model: TaskStatusErrorSchema = plugin_result
         #
 
         self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
@@ -560,12 +568,20 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusNewSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Модель результата задачи.
         """
-        new_data = self._plugin_trigger("worker_remove_finished_task", worker=self, broker=self.broker, task_func=task_func, task_broker=task_broker, model=model)
+        new_data = self._plugin_trigger(
+            "worker_remove_finished_task",
+            worker=self,
+            broker=self.broker,
+            task_func=task_func,
+            task_broker=task_broker,
+            model=model,
+            return_last=True
+        )
         if new_data:
-            task_broker, model = new_data[-1]
+            task_broker, model = new_data
         self.broker.remove_finished_task(task_broker, model)
 
     def init_plugins(self):
         """Инициализация плагинов."""
-        self.add_plugin(SyncRetryPlugin(), trigger_names=["retry"])
-        self.add_plugin(SyncPydanticWrapperPlugin(), trigger_names=["task_executor_args_replace", "task_executor_result_replace"])
+        self.add_plugin(SyncRetryPlugin(), trigger_names=["worker_task_error_retry"])
+        self.add_plugin(SyncPydanticWrapperPlugin(), trigger_names=["task_executor_args_replace", "task_executor_after_execute_result_replace"])

@@ -171,9 +171,8 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         """
         uuid = str(uuid)
 
-        new_data = self._plugin_trigger("storage_add", storage=self, uuid=uuid, task_status=task_status)
+        new_data = self._plugin_trigger("storage_add", storage=self, uuid=uuid, task_status=task_status, return_last=True)
         if new_data:
-            new_data = new_data[-1]
             uuid = new_data.get("uuid", uuid)
             task_status = new_data.get("task_status", task_status)
 
@@ -195,9 +194,9 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             return None
 
         result = self._build_task(uuid=uuid, result=result)
-        new_result = self._plugin_trigger("storage_get", storage=self, result=result)
+        new_result = self._plugin_trigger("storage_get", storage=self, result=result, return_last=True)
         if new_result:
-            result = new_result[-1]
+            result = new_result
         return result
 
     def get_all(self) -> list[Task]:
@@ -219,9 +218,9 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             except Exception:
                 continue
 
-        new_results = self._plugin_trigger("storage_get_all", storage=self, results=results)
+        new_results = self._plugin_trigger("storage_get_all", storage=self, results=results, return_last=True)
         if new_results:
-            results = new_results[-1]
+            results = new_results
 
         return results
 
@@ -241,9 +240,9 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        new_kw = self._plugin_trigger("storage_update", storage=self, kw=kwargs)
+        new_kw = self._plugin_trigger("storage_update", storage=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw[-1]
+            kwargs = new_kw
 
         return self.redis_contrib.execute(
             "hset", kwargs["name"], mapping=kwargs["mapping"]
@@ -337,9 +336,8 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             task_data (str): Данные задачи из брокера.
             priority (int): Приоритет задачи.
         """
-        new_data = self._plugin_trigger("storage_add_process", storage=self)
+        new_data = self._plugin_trigger("storage_add_process", storage=self, return_last=True)
         if new_data:
-            new_data = new_data[-1]
             task_data = new_data.get("task_data", task_data)
             priority = new_data.get("priority", priority)
 
@@ -361,9 +359,8 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
                 json.loads(kwargs) or {},
                 float(created_at),
             )
-            new_data = self._plugin_trigger("storage_running_older_tasks", storage=self, worker=worker)
+            new_data = self._plugin_trigger("storage_running_older_tasks", storage=self, worker=worker, return_last=True)
             if new_data:
-                new_data = new_data[-1]
                 task_name = new_data.get("task_name", task_name)
                 uuid = new_data.get("uuid", uuid)
                 priority = new_data.get("priority", priority)

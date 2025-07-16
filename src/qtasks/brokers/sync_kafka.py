@@ -181,10 +181,10 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
                 priority=int(priority),
                 args=args,
                 kwargs=kwargs,
-                created_at=created_at
+                created_at=created_at,
+                return_last=True
             )
             if new_args:
-                new_args = new_args[-1]
                 task_name = new_args.get("task_name", task_name)
                 uuid = new_args.get("uuid", uuid)
                 priority = new_args.get("priority", priority)
@@ -276,10 +276,11 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             "broker_add_before",
             broker=self,
             storage=self.storage,
-            model=model
+            model=model,
+            return_last=True
         )
         if new_model:
-            model = new_model[-1]
+            model = new_model
 
         self.storage.add(uuid=uuid, task_status=model)
 
@@ -327,9 +328,9 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         task = self.storage.get(uuid=uuid)
-        new_task = self._plugin_trigger("broker_get", broker=self, task=task)
+        new_task = self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
         if new_task:
-            task = new_task[-1]
+            task = new_task
         return task
 
     def update(
@@ -348,9 +349,9 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        new_kw = self._plugin_trigger("broker_update", broker=self, kw=kwargs)
+        new_kw = self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw[-1]
+            kwargs = new_kw
         return self.storage.update(**kwargs)
 
     def start(
@@ -418,10 +419,11 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             "broker_remove_finished_task",
             broker=self,
             storage=self.storage,
-            model=model
+            model=model,
+            return_last=True
         )
         if new_model:
-            model = new_model[-1]
+            model = new_model
 
         self.storage.remove_finished_task(task_broker, model)
 

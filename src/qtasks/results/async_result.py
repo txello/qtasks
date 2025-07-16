@@ -149,21 +149,3 @@ class AsyncResult:
                 raise ImportError("Невозможно получить app!")
         if not self.log:
             self.log = qtasks._state.log_main
-
-    async def _plugin_trigger(self, name: str, *args, **kwargs):
-        """
-        Вызвать триггер плагина.
-
-        Args:
-            name (str): Имя триггера.
-            *args: Позиционные аргументы для триггера.
-            **kwargs: Именованные аргументы для триггера.
-        """
-        results = []
-        for plugin in self._app.plugins.get(name, []) + self._app.plugins.get(
-            "Globals", []
-        ):
-            result = await plugin.trigger(name=name, *args, **kwargs)
-            if result is not None:
-                results.append(result)
-        return results

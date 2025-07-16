@@ -2,6 +2,7 @@ import logging
 
 import pydantic
 from qtasks import QueueTasks
+from qtasks.plugins.testing.sync_test import SyncTestPlugin
 from qtasks.registries import SyncTask
 
 import shared_tasks
@@ -12,6 +13,7 @@ app.config.logs_default_level = logging.INFO
 app.config.running_older_tasks = True
 
 app.include_router(router_tasks.router)
+app.add_plugin(SyncTestPlugin(), trigger_names=["worker_execute_before", "worker_remove_finished_task"], component="worker")
 
 
 @app.task(name="test")
@@ -55,7 +57,7 @@ class Item(pydantic.BaseModel):
     value: int
 
 
-@app.task(echo=True)
+@app.task(echo=True, test=True)
 def example_pydantic(self: SyncTask, item: Item):
     return f"Hello, {item.name}!"
 

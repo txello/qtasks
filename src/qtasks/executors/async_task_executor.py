@@ -5,6 +5,7 @@ import json
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Tuple, Type
 from typing_extensions import Annotated, Doc
 
+from qtasks.exc.plugins import TaskPluginTriggerError
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
@@ -32,6 +33,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     task_broker = TaskPrioritySchema(...)
     executor = AsyncTaskExecutor(task_func, task_broker)
     result = asyncio.run(executor.execute())
+    ```
     """
 
     def __init__(
@@ -114,6 +116,8 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 echo=self.task_func.echo,
                 retry=self.task_func.retry,
                 retry_on_exc=self.task_func.retry_on_exc,
+                decode=self.task_func.decode,
+                tags=self.task_func.tags,
                 executor=self.task_func.executor,
                 middlewares=self.task_func.middlewares,
             )
@@ -130,6 +134,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         new_args: Tuple[list, dict] = await self._plugin_trigger(
             "task_executor_args_replace",
             task_executor=self,
+            return_last=True,
             **{
                 "args": self._args,
                 "kwargs": self._kwargs,
@@ -137,7 +142,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             }
         )
         if new_args:
-            self._args, self._kwargs = new_args[-1]
+            self._args, self._kwargs = new_args
 
         await self._plugin_trigger("task_executor_before_execute", task_executor=self)
 
@@ -145,7 +150,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         """Вызов после запуска задач."""
         await self._plugin_trigger("task_executor_after_execute", task_executor=self)
         result: Any = await self._plugin_trigger(
-            "task_executor_result_replace", task_executor=self, result=self._result
+            "task_executor_after_execute_result_replace", task_executor=self, result=self._result
         )
         if result:
             self._result = result[-1]
@@ -252,19 +257,37 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         self.log.debug(f"Вызван execute для {self.task_func.name}")
         await self.execute_middlewares()
         await self.before_execute()
-        self._result = await self.run_task()
+        try:
+            self._result = await self.run_task()
+        except TaskPluginTriggerError as e:
+            new_result = await self._plugin_trigger(
+                "task_executor_run_task_trigger_error",
+                task_executor=self,
+                task_func=self.task_func,
+                task_broker=self.task_broker,
+                e=e,
+                return_last=True
+            )
+            if new_result:
+                self._result = new_result
+            else:
+                raise e
+
         await self.after_execute()
         if decode:
             return await self.decode()
         return self._result
 
-    async def decode(self) -> str:
+    async def decode(self) -> Any:
         """Декодирование задачи.
 
         Returns:
-            str: Результат задачи.
+            Any: Результат задачи.
         """
-        result = json.dumps(self._result, ensure_ascii=False)
+        if self.task_func.decode is not None:
+            result = await self._maybe_await(self.task_func.decode(self._result))
+        else:
+            result = json.dumps(self._result, ensure_ascii=False)
         new_result = await self._plugin_trigger("task_executor_decode", task_executor=self, result=result)
         if new_result:
             result = new_result[-1]

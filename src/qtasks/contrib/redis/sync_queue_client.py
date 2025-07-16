@@ -36,17 +36,20 @@ class SyncRedisCommandQueue:
         self.lock = threading.Lock()
 
     def _worker(self):
-        while True:
+        while not self.queue.empty():
             try:
-                cmd, args, kwargs = self.queue.get(timeout=2)  # 2 секунды "жизни"
+                cmd, args, kwargs = self.queue.get(timeout=2)
                 self.log.debug(f"Задача {cmd} с параметрами {args} и {kwargs} вызвана")
-                getattr(self.redis, cmd)(*args, **kwargs)
+                try:
+                    getattr(self.redis, cmd)(*args, **kwargs)
+                except Exception as e:
+                    self.log.error(f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}")
                 self.queue.task_done()
             except Empty:
-                break  # Если очередь пуста 2 секунды — выходим
+                break
 
         with self.lock:
-            self.worker_thread = None  # Отмечаем, что воркер завершился
+            self.worker_thread = None
 
     def execute(self, cmd: str, *args, **kwargs):
         """Запрос в `Redis`.

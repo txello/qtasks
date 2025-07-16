@@ -1,6 +1,6 @@
 """Async Task."""
 
-from typing import TYPE_CHECKING, Annotated, Callable, Generic, List, Optional, Type
+from typing import TYPE_CHECKING, Annotated, Any, Callable, Generic, List, Optional, Type
 from typing_extensions import Doc
 
 from qtasks.types.annotations import P, R
@@ -84,6 +84,26 @@ class AsyncTask(Generic[P, R]):
                     """
             ),
         ] = None,
+        decode: Annotated[
+            Callable | None,
+            Doc(
+                """
+                    Декодер результата задачи.
+
+                    По умолчанию: `None`.
+                """
+            )
+        ] = None,
+        tags: Annotated[
+            list[str] | None,
+            Doc(
+                """
+                    Теги задачи.
+
+                    По умолчанию: `None`.
+                """
+            )
+        ] = None,
         generate_handler: Annotated[
             Callable | None,
             Doc(
@@ -114,6 +134,16 @@ class AsyncTask(Generic[P, R]):
                     """
             ),
         ] = None,
+        extra: Annotated[
+            dict[str, Any],
+            Doc(
+                """
+                    Дополнительные параметры.
+
+                    По умолчанию: `Пустой словарь`.
+                    """
+            ),
+        ] = None,
         app: Annotated[
             "QueueTasks",
             Doc(
@@ -133,6 +163,8 @@ class AsyncTask(Generic[P, R]):
             echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
             retry (int | None, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (list[Type[Exception]] | None, optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
+            tags (list[str] | None, optional): Теги задачи. По умолчанию: `None`.
             generate_handler (Callable | None, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `None`.
             middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `None`.
@@ -145,11 +177,18 @@ class AsyncTask(Generic[P, R]):
         self.retry = retry
         self.retry_on_exc = retry_on_exc
 
+        self.decode = decode
+        self.tags = tags
+
         self.executor = executor
         self.middlewares = middlewares
+
+        self.extra = extra or {}
+
         self._app = app
 
         self.ctx = AsyncContext(
+            task_name=task_name,
             generate_handler=generate_handler,
             executor=executor,
             middlewares=middlewares,

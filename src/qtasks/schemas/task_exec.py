@@ -51,12 +51,15 @@ class TaskExecSchema:
         generating (str|Literal[False]): Генерация задачи. По умолчанию: False
 
         echo (bool): Включить параметр self в задачу. По умолчанию: False
-        retry (int|None): Количество попыток повторного выполнения задачи. По умолчанию: None
-        retry_on_exc (list[Type[Exception]]|None): Исключения, при которых задача будет повторно выполнена. По умолчанию: None
+        retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: None
+        retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: None
 
-        generate_handler (Callable|None): Генератор обработчика. По умолчанию: None
+        decode (Callable, optional): Декодер результата задачи. По умолчанию: None
+        tags (list[str], optional): Теги задачи. По умолчанию: None
 
-        executor (Type[BaseTaskExecutor]|None): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`|`AsyncTaskExecutor`.
+        generate_handler (Callable, optional): Генератор обработчика. По умолчанию: None
+
+        executor (Type[BaseTaskExecutor], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`|`AsyncTaskExecutor`.
         middlewares (list[Type[TaskMiddleware]]): Мидлвари. По умолчанию: `Пустой массив`.
 
     """
@@ -71,6 +74,9 @@ class TaskExecSchema:
     echo: bool = False
     retry: int | None = None
     retry_on_exc: list[Type[Exception]] | None = None
+
+    decode: Callable | None = None
+    tags: list[str] | None = None
 
     generate_handler: Callable | None = None
 

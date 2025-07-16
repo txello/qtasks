@@ -140,6 +140,9 @@ nav:
       - Общее: ru/features/features.md
       - Уникальность: ru/features/uniqueness.md
   - API:
+      - Триггеры плагинов:
+        - Триггеры: ru/api/plugins/triggers.md
+        - Ошибки: ru/api/plugins/errors.md
       - QueueTasks: ru/api/queuetasks.md
       - Asyncio:
         - QueueTasks: ru/api/asyncio/queuetasks.md
@@ -209,9 +212,11 @@ nav:
         - SyncTimer: ru/api/timers/sync_timer.md
         - AsyncTimer: ru/api/timers/async_timer.md
       - WebView: ru/api/webview.md
+      - Исключения: ru/api/exceptions.md
   - Примеры:
     - Примеры: ru/examples/examples.md
     - Генераторы: ru/examples/yield.md
+    - Контексты: ru/examples/echo.md
     - Практика:
       - Фрилансер: ru/examples/practice/freelancer.md
       - Малый бизнес: ru/examples/practice/small_business.md

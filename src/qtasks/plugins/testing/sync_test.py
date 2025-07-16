@@ -1,4 +1,4 @@
-"""Async Test Plugin."""
+"""Sync Test Plugin."""
 
 from qtasks.plugins.base import BasePlugin
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
@@ -6,16 +6,14 @@ from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusProcessS
 from qtasks.utils import _build_task
 
 
-class AsyncTestPlugin(BasePlugin):
-    """Плагин для асинхронной обработки тестов."""
+class SyncTestPlugin(BasePlugin):
+    """Плагин для синхронной обработки тестов."""
 
-    def __init__(self,
-                 name: str = "AsyncTestPlugin"
-                 ):
+    def __init__(self, name: str = "SyncTestPlugin"):
         """Инициализация плагина.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: "AsyncTestPlugin".
+            name (str, optional): Имя проекта. По умолчанию: "SyncTestPlugin".
         """
         super().__init__(name=name)
         self.handlers = {
@@ -23,30 +21,32 @@ class AsyncTestPlugin(BasePlugin):
             "worker_remove_finished_task": self.worker_remove_finished_task
         }
 
-    async def start(self, *args, **kwargs):
+    def start(self, *args, **kwargs):
         """Запуск плагина."""
         pass
 
-    async def stop(self, *args, **kwargs):
+    def stop(self, *args, **kwargs):
         """Остановка плагина."""
         pass
 
-    async def trigger(self, name, **kwargs):
+    def trigger(self, name, **kwargs):
         """Триггер для запуска обработчика."""
         handler = self.handlers.get(name)
-        return await handler(kwargs.get("task_func"), kwargs.get("task_broker"), kwargs.get("model")) if handler else None
+        return handler(
+            kwargs.get("task_func"),
+            kwargs.get("task_broker"),
+            kwargs.get("model")
+        ) if handler else None
 
-    async def worker_execute_before(self, *args, **kwargs):
+    def worker_execute_before(self, *args, **kwargs):
         """Обработчик перед выполнением задачи."""
-        result = await self._execute(*args, **kwargs)
-        if result:
-            return result[1]
+        return self._execute(*args, **kwargs)[1]
 
-    async def worker_remove_finished_task(self, *args, **kwargs):
+    def worker_remove_finished_task(self, *args, **kwargs):
         """Обработчик завершения задачи."""
-        return await self._execute(*args, **kwargs)
+        return self._execute(*args, **kwargs)
 
-    async def _execute(
+    def _execute(
         self,
         task_func: TaskExecSchema | None,
         task_broker: TaskPrioritySchema | None,

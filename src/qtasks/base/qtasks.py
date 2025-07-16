@@ -213,6 +213,8 @@ class BaseQueueTasks:
         echo: bool = False,
         retry: int | None = None,
         retry_on_exc: list[Type[Exception]] | None = None,
+        decode: Callable | None = None,
+        tags: list[str] | None = None,
         generate_handler: Callable | None = None,
         executor: Type["BaseTaskExecutor"] | None = None,
         middlewares: List["TaskMiddleware"] | None = None,
@@ -273,6 +275,26 @@ class BaseQueueTasks:
                     """
             ),
         ] = None,
+        decode: Annotated[
+            Callable | None,
+            Doc(
+                """
+                    Декодер результата задачи.
+
+                    По умолчанию: `None`.
+                """
+            )
+        ] = None,
+        tags: Annotated[
+            list[str] | None,
+            Doc(
+                """
+                    Теги задачи.
+
+                    По умолчанию: `None`.
+                """
+            )
+        ] = None,
         generate_handler: Annotated[
             Callable | None,
             Doc(
@@ -313,6 +335,8 @@ class BaseQueueTasks:
             echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
+            tags (list[str], optional): Теги задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
             middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
@@ -322,7 +346,7 @@ class BaseQueueTasks:
             ValueError: Неизвестный метод {self._method}.
 
         Returns:
-            Callable[SyncTask|AsyncTask]: Декоратор для регистрации задачи.
+            SyncTask | AsyncTask: Декоратор для регистрации задачи.
         """
 
         def wrapper(func):
@@ -354,6 +378,8 @@ class BaseQueueTasks:
                 echo=echo,
                 retry=retry,
                 retry_on_exc=retry_on_exc,
+                decode=decode,
+                tags=tags,
                 generate_handler=generate_handler,
                 executor=executor,
                 middlewares=middlewares,
@@ -362,32 +388,24 @@ class BaseQueueTasks:
 
             self.tasks[task_name] = model
             self.worker._tasks[task_name] = model
-            if self._method == "async":
-                return AsyncTask(
-                    app=self,
-                    task_name=task_name,
-                    priority=priority,
-                    echo=echo,
-                    retry=retry,
-                    retry_on_exc=retry_on_exc,
-                    generate_handler=generate_handler,
-                    executor=executor,
-                    middlewares=middlewares,
-                )
-            elif self._method == "sync":
-                return SyncTask(
-                    app=self,
-                    task_name=task_name,
-                    priority=priority,
-                    echo=echo,
-                    retry=retry,
-                    retry_on_exc=retry_on_exc,
-                    generate_handler=generate_handler,
-                    executor=executor,
-                    middlewares=middlewares,
-                )
-            else:
+            if self._method not in ["async", "sync"]:
                 raise ValueError(f"Неизвестный метод {self._method}")
+
+            method = AsyncTask if self._method == "async" else SyncTask
+            return method(
+                app=self,
+                task_name=model.name,
+                priority=model.priority,
+                echo=model.echo,
+                retry=model.retry,
+                retry_on_exc=model.retry_on_exc,
+                decode=model.decode,
+                tags=model.tags,
+                generate_handler=model.generate_handler,
+                executor=model.executor,
+                middlewares=model.middlewares,
+                extra=model.extra
+            )
 
         return wrapper
 

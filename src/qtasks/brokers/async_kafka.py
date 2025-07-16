@@ -180,10 +180,10 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                     priority=int(priority),
                     args=args,
                     kwargs=kwargs,
-                    created_at=created_at
+                    created_at=created_at,
+                    return_last=True
                 )
                 if new_args:
-                    new_args = new_args[-1]
                     task_name = new_args.get("task_name", task_name)
                     uuid = new_args.get("uuid", uuid)
                     priority = new_args.get("priority", priority)
@@ -278,10 +278,11 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             "broker_add_before",
             broker=self,
             storage=self.storage,
-            model=model
+            model=model,
+            return_last=True
         )
         if new_model:
-            model = new_model[-1]
+            model = new_model
 
         await self.storage.add(uuid=uuid, task_status=model)
 
@@ -329,9 +330,9 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         task = await self.storage.get(uuid=uuid)
-        new_task = await self._plugin_trigger("broker_get", broker=self, task=task)
+        new_task = await self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
         if new_task:
-            task = new_task[-1]
+            task = new_task
         return task
 
     async def update(
@@ -350,9 +351,9 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs)
+        new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw[-1]
+            kwargs = new_kw
         return await self.storage.update(**kwargs)
 
     async def start(
@@ -420,10 +421,11 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             "broker_remove_finished_task",
             broker=self,
             storage=self.storage,
-            model=model
+            model=model,
+            return_last=True
         )
         if new_model:
-            model = new_model[-1]
+            model = new_model
 
         await self.storage.remove_finished_task(task_broker, model)
 

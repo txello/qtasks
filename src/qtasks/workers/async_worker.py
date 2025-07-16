@@ -188,9 +188,16 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
                 self.queue.task_done()
                 return
 
-            new_model = await self._plugin_trigger("worker_execute_before", worker=self, task_broker=task_broker, task_func=task_func, model=model)
+            new_model = await self._plugin_trigger(
+                "worker_execute_before",
+                worker=self,
+                task_broker=task_broker,
+                task_func=task_func,
+                model=model,
+                return_last=True
+            )
             if new_model:
-                model = new_model[-1]
+                model = new_model
 
             await self.broker.update(
                 name=f"{self.name}:{task_broker.uuid}", mapping=asdict(model)
@@ -278,10 +285,10 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             priority=priority,
             args=args,
             kwargs=kwargs,
-            created_at=created_at
+            created_at=created_at,
+            return_last=True
         )
         if new_data:
-            new_data = new_data[-1]
             name = new_data.get("name", name)
             uuid = new_data.get("uuid", uuid)
             priority = new_data.get("priority", priority)
@@ -386,9 +393,14 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}"
         )
 
-        new_data = await self._plugin_trigger("worker_run_task_before", worker=self, task_func=task_func, task_broker=task_broker)
+        new_data = await self._plugin_trigger(
+            "worker_run_task_before",
+            worker=self,
+            task_func=task_func,
+            task_broker=task_broker,
+            return_last=True
+        )
         if new_data:
-            new_data = new_data[-1]
             task_func = new_data.get("task_func", task_func)
             task_broker = new_data.get("task_broker", task_broker)
 
@@ -396,22 +408,15 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         if task_func.middlewares:
             middlewares.extend(task_func.middlewares)
 
-        if task_func.executor is not None:
-            executor = task_func.executor(
-                task_func=task_func,
-                task_broker=task_broker,
-                middlewares=middlewares,
-                log=self.log,
-                plugins=self.plugins,
-            )
-        else:
-            executor = self.task_executor(
-                task_func=task_func,
-                task_broker=task_broker,
-                middlewares=middlewares,
-                log=self.log,
-                plugins=self.plugins,
-            )
+        executor = task_func.executor if task_func.executor is not None else self.task_executor
+        executor = executor(
+            task_func=task_func,
+            task_broker=task_broker,
+            middlewares=middlewares,
+            log=self.log,
+            plugins=self.plugins,
+        )
+
         try:
             result = await executor.execute()
             return await self._task_success(result, task_func, task_broker)
@@ -450,7 +455,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         if should_retry:
             if task_func.retry:
                 plugin_result = await self._plugin_trigger(
-                    "retry",
+                    "worker_task_error_retry",
                     broker=self.broker,
                     task_func=task_func,
                     task_broker=task_broker,
@@ -599,12 +604,20 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusNewSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Модель результата задачи.
         """
-        new_data = await self._plugin_trigger("worker_remove_finished_task", worker=self, broker=self.broker, task_func=task_func, task_broker=task_broker, model=model)
+        new_data = await self._plugin_trigger(
+            "worker_remove_finished_task",
+            worker=self,
+            broker=self.broker,
+            task_func=task_func,
+            task_broker=task_broker,
+            model=model,
+            return_last=True
+        )
         if new_data:
-            task_broker, model = new_data[-1]
+            task_broker, model = new_data
         await self.broker.remove_finished_task(task_broker, model)
 
     def init_plugins(self):
         """Инициализация плагинов."""
-        self.add_plugin(AsyncRetryPlugin(), trigger_names=["retry"])
-        self.add_plugin(AsyncPydanticWrapperPlugin(), trigger_names=["task_executor_args_replace", "task_executor_result_replace"])
+        self.add_plugin(AsyncRetryPlugin(), trigger_names=["worker_task_error_retry"])
+        self.add_plugin(AsyncPydanticWrapperPlugin(), trigger_names=["task_executor_args_replace", "task_executor_after_execute_result_replace"])
