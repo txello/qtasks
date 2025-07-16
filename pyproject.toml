@@ -24,7 +24,8 @@ dependencies = [
     "redis>=5.2.1",
     "anyio>=4.9.0",
     "asyncio_atexit>=1.0.1",
-    "apscheduler>=3.11.0"
+    "apscheduler>=3.11.0",
+    "pydantic>=2.11.7"
 ]
 
 classifiers = [
