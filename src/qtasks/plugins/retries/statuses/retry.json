@@ -1,0 +1,45 @@
+{
+    "status": "retry",
+    "name": {
+        "en": "Retry",
+        "ru": "Повторить"
+    },
+    "desc": {
+        "en": "The task has failed but will be retried.",
+        "ru": "Задача завершена с ошибкой, но будет повторена."
+    },
+    "final": false,
+
+    "vars": {
+        "retry": {
+            "type": "int",
+            "desc": {
+                "en": "The number of retry attempts for the task. If set to 0, the task will not be retried.",
+                "ru": "Количество попыток повторного выполнения задачи. Если указано 0 - задача не будет повторена."
+            }
+        },
+        "retry_parent_uuid": {
+            "type": "string",
+            "desc": {
+                "en": "The UUID of the parent task.",
+                "ru": "UUID родительской задачи."
+            }
+        },
+        "retry_child_uuid": {
+            "type": "string",
+            "desc": {
+                "en": "The UUID of the child task, if a new task was created.",
+                "ru": "UUID дочерней задачи, если новая задача была создана."
+            }
+        }
+    },
+
+    "UI": {
+        "status": {
+            "color": "yellow",
+            "icon": "🔄"
+        }
+    },
+
+    "plugin": "RetryCardPlugin"
+}

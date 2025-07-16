@@ -1,7 +1,10 @@
+"""Async Redis command queue."""
+
 import asyncio
 import redis.asyncio as aioredis
 
 from qtasks.logs import Logger
+
 
 class AsyncRedisCommandQueue:
     """
@@ -13,14 +16,13 @@ class AsyncRedisCommandQueue:
     import asyncio
     from qtasks import QueueTasks
     from qtasks.contrib.redis import AsyncRedisCommandQueue
-    
+
     redis_contrib = AsyncRedisCommandQueue(redis)
     asyncio.run(redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"]))
     ```
     """
-    def __init__(self,
-            redis: aioredis.Redis,
-            log: Logger = None):
+
+    def __init__(self, redis: aioredis.Redis, log: Logger = None):
         """Экземпляр класса.
 
         Args:
@@ -34,15 +36,14 @@ class AsyncRedisCommandQueue:
         self.lock = asyncio.Lock()
 
     async def _worker(self):
-        while True:
+        while not self.queue.empty():
+            cmd, args, kwargs = await self.queue.get()
+            self.log.debug(f"Задача {cmd} с параметрами {args} и {kwargs} вызвана")
             try:
-                # Если очередь пуста - подождём 2 секунды
-                cmd, args, kwargs = await asyncio.wait_for(self.queue.get(), timeout=2)
-                self.log.debug(f"Задача {cmd} с параметрами {args} и {kwargs} вызвана")
                 await getattr(self.redis, cmd)(*args, **kwargs)
-                self.queue.task_done()
-            except asyncio.TimeoutError:
-                break  # Завершаем работу при простое 2 секунды
+            except Exception as e:
+                self.log.error(f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}")
+            self.queue.task_done()
 
         async with self.lock:
             self.worker_task = None
@@ -60,9 +61,9 @@ class AsyncRedisCommandQueue:
             if self.worker_task is None or self.worker_task.done():
                 self.worker_task = asyncio.create_task(self._worker())
 
-
-    def _get_log(self, log: Logger|None):
+    def _get_log(self, log: Logger | None):
         if log is None:
             import qtasks._state
+
             log = qtasks._state.log_main
         return log.with_subname("AsyncRedisCommandQueue")

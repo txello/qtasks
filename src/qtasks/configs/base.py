@@ -1,3 +1,5 @@
+"""Base Configurations."""
+
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, List, Optional
 from typing_extensions import Annotated, Doc
@@ -18,56 +20,72 @@ class BaseGlobalConfig(ABC):
     ```python
     from qtasks import QueueTasks
     from qtasks.configs.base import BaseGlobalConfig
-    
+
     class MyGlobalConfig(BaseGlobalConfig):
         def __init__(self, name: str = None):
             super().__init__(name=name)
             pass
     ```
     """
-    
-    def __init__(self, 
-            name: Annotated[
-                Optional[str],
-                Doc(
-                    """
+
+    def __init__(
+        self,
+        name: Annotated[
+            Optional[str],
+            Doc(
+                """
                     Имя проекта. Это имя можно использовать для тегов для GlobalConfig.
-                    
+
                     По умолчанию: `None`.
                     """
-                )
-            ] = None,
-
-            log: Annotated[
-                Optional[Logger],
-                Doc(
-                    """
+            ),
+        ] = None,
+        log: Annotated[
+            Optional[Logger],
+            Doc(
+                """
                     Логгер.
-                    
+
                     По умолчанию: `qtasks.logs.Logger`.
                     """
-                )
-            ] = None,
-            config: Annotated[
-                Optional[QueueConfig],
-                Doc(
-                    """
+            ),
+        ] = None,
+        config: Annotated[
+            Optional[QueueConfig],
+            Doc(
+                """
                     Конфиг.
-                    
+
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
-                )
-            ] = None
-        ):
+            ),
+        ] = None,
+    ):
+        """Инициализация контекста.
+
+        Args:
+            name (str, optional): Имя проекта. По умолчанию: `None`.
+            log (Logger, optional): Логгер. По умолчанию: `None`.
+            config (QueueConfig, optional): Конфигурация. По умолчанию: `None`.
+        """
         self.name = name
         self.client = None
         self.config = config or QueueConfig()
-        
-        self.log = log.with_subname("GlobalConfig") if log else Logger(name=self.name, subname="GlobalConfig", default_level=self.config.logs_default_level, format=self.config.logs_format)
+
+        self.log = (
+            log.with_subname("GlobalConfig")
+            if log
+            else Logger(
+                name=self.name,
+                subname="GlobalConfig",
+                default_level=self.config.logs_default_level,
+                format=self.config.logs_format,
+            )
+        )
         self.plugins: dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
-    
+
     @abstractmethod
     def set(self, **kwargs) -> None:
         """Добавить новое значение.
@@ -76,7 +94,7 @@ class BaseGlobalConfig(ABC):
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
         """
         pass
-    
+
     @abstractmethod
     def get(self, key: str, name: str) -> Any:
         """Получить значение.
@@ -89,7 +107,7 @@ class BaseGlobalConfig(ABC):
             Any: Значение.
         """
         pass
-    
+
     @abstractmethod
     def get_all(self, key: str) -> dict[Any] | list[Any] | tuple[Any]:
         """Получить все значения.
@@ -101,7 +119,7 @@ class BaseGlobalConfig(ABC):
             dict[Any] | list[Any] | tuple[Any]: Значения.
         """
         pass
-    
+
     @abstractmethod
     def get_match(self, match: str) -> Any | dict[Any] | list[Any] | tuple[Any]:
         """Получить значения по паттерну.
@@ -113,29 +131,28 @@ class BaseGlobalConfig(ABC):
             Any | dict[Any] | list[Any] | tuple[Any]: Значение или Значения.
         """
         pass
-    
+
     @abstractmethod
-    def start(self
-        ) -> None:
+    def start(self) -> None:
         """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
-        
         pass
-    
+
     @abstractmethod
     def stop(self) -> None:
         """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever."""
         pass
-    
-    def update_config(self,
-            config: Annotated[
-                QueueConfig,
-                Doc(
-                    """
+
+    def update_config(
+        self,
+        config: Annotated[
+            QueueConfig,
+            Doc(
+                """
                     Конфиг.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет конфиг брокера.
 
         Args:
@@ -143,27 +160,28 @@ class BaseGlobalConfig(ABC):
         """
         self.config = config
         return
-    
-    def add_plugin(self, 
-            plugin: Annotated[
-                "BasePlugin",
-                Doc(
-                    """
+
+    def add_plugin(
+        self,
+        plugin: Annotated[
+            "BasePlugin",
+            Doc(
+                """
                     Плагин.
                     """
-                )
-            ],
-            trigger_names: Annotated[
-                Optional[List[str]],
-                Doc(
-                    """
+            ),
+        ],
+        trigger_names: Annotated[
+            Optional[List[str]],
+            Doc(
+                """
                     Имя триггеров для плагина.
-                    
+
                     По умолчанию: По умолчанию: будет добавлен в `Globals`.
                     """
-                )
-            ] = None
-        ) -> None:
+            ),
+        ] = None,
+    ) -> None:
         """Добавить плагин в класс.
 
         Args:
@@ -180,4 +198,5 @@ class BaseGlobalConfig(ABC):
         return
 
     def init_plugins(self):
+        """Инициализация плагинов."""
         pass

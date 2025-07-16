@@ -1,8 +1,11 @@
+"""Sync context for tasks."""
+
 import time
 from typing import TYPE_CHECKING, NoReturn
 from uuid import UUID
 
 from qtasks.configs.config import QueueConfig
+from qtasks.exc.plugins import TaskPluginTriggerError
 from qtasks.exc.task import TaskCancelError
 from qtasks.schemas.task import Task
 
@@ -28,7 +31,12 @@ class SyncContext:
         self.ctx # SyncContext
     ```
     """
+
     def __init__(self, **kwargs):
+        """Инициализация контекста."""
+        self.task_name = kwargs.get("task_name")
+        """Имя задачи."""
+
         self.task_uuid = kwargs.get("task_uuid")
         """UUID задачи."""
 
@@ -42,10 +50,10 @@ class SyncContext:
         self._log: "Logger" = kwargs.get("log")
         """Логгер."""
 
-        self._metadata: Task|None = None
+        self._metadata: Task | None = None
         """Метаданные задачи."""
 
-    def get_logger(self, name: str|None = None) -> "Logger":
+    def get_logger(self, name: str | None = None) -> "Logger":
         """Возвращает логгер для текущего контекста.
 
         Args:
@@ -54,9 +62,9 @@ class SyncContext:
         Returns:
             Logger: Логгер для текущего контекста.
         """
-        self._log = self._app.log.with_subname(name or "SyncContext")
+        self._log = self._app.log.with_subname(name or self.task_name)
         return self._log
-    
+
     def get_config(self) -> QueueConfig:
         """Возвращает конфигурацию приложения.
 
@@ -64,8 +72,8 @@ class SyncContext:
             QueueConfig: Конфигурация приложения.
         """
         return self._app.config
-    
-    def get_metadata(self, cache=True) -> Task|None:
+
+    def get_metadata(self, cache=True) -> Task | None:
         """Возвращает метаданные задачи.
 
         Args:
@@ -79,8 +87,8 @@ class SyncContext:
                 self._metadata = self._app.get(self.task_uuid)
             return self._metadata
         return self._app.get(self.task_uuid)
-    
-    def get_task(self, uuid: UUID|str) -> Task|None:
+
+    def get_task(self, uuid: UUID | str) -> Task | None:
         """Возвращает задачу по UUID.
 
         Args:
@@ -90,7 +98,7 @@ class SyncContext:
             Task|None: Задача или None, если не найдена.
         """
         return self._app.get(uuid)
-    
+
     def sleep(self, seconds: float) -> None:
         """Приостанавливает выполнение на заданное количество секунд.
 
@@ -109,9 +117,16 @@ class SyncContext:
         Raises:
             TaskCancelError: Исключение, вызываемое при отмене задачи.
         """
+        raise TaskCancelError(reason or f"{self.task_name}.cancel")
 
-        raise TaskCancelError(reason or "AsyncContext.cancel")
-    
+    def plugin_error(self, **kwargs):
+        """Вызывает ошибку плагина.
+
+        Args:
+            **kwargs: Аргументы для передачи в обработчик ошибки плагина.
+        """
+        raise TaskPluginTriggerError(**kwargs)
+
     def get_component(self, name: str):
         """Возвращает компонент приложения по имени.
 
@@ -122,11 +137,12 @@ class SyncContext:
             Any: Компонент приложения или None, если не найден.
         """
         return getattr(self._app, name, None)
-    
+
     def _update_app(self):
         """Обновляет приложение для текущего контекста."""
         if not self._app:
             import qtasks._state
+
             self._app = qtasks._state.app_main
         return
 

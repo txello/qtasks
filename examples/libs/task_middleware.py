@@ -1,5 +1,6 @@
 from qtasks.middlewares import TaskMiddleware
 
+
 class MyTaskMiddleware(TaskMiddleware):
     def __init__(self, task_executor):
         super().__init__(task_executor)

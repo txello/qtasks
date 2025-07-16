@@ -1,8 +1,11 @@
+"""Task status enums."""
+
 from enum import Enum
 
 
 class TaskStatusEnum(Enum):
-    """ `TaskStatusEnum` - Статусы задач."""
+    """`TaskStatusEnum` - Статусы задач."""
+
     NEW = "new"
     """Новая задача"""
     PROCESS = "process"
@@ -11,5 +14,5 @@ class TaskStatusEnum(Enum):
     """Задача успешно выполнена"""
     ERROR = "error"
     """Задача выполнена с ошибкой"""
-    CANCEL = 'cancel'
+    CANCEL = "cancel"
     """Задача отменена"""

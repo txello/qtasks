@@ -1,3 +1,5 @@
+"""Main tests."""
+
 import unittest
 
 from test_async_task import TestAsyncQTasks

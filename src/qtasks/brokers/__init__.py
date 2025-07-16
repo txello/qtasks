@@ -1,3 +1,5 @@
+"""Init Brokers."""
+
 import importlib
 from typing import TYPE_CHECKING
 
@@ -10,12 +12,14 @@ _brokers = {
     "AsyncKafkaBroker": "qtasks.brokers.async_kafka",
 }
 
+
 def __getattr__(name: str):
     if name in _brokers:
         module_path = _brokers[name]
         module = importlib.import_module(module_path)
         return getattr(module, name)
     raise AttributeError(f"module {__name__} has no attribute {name}")
+
 
 if TYPE_CHECKING:
     from .sync_redis import SyncRedisBroker

@@ -1,3 +1,5 @@
+"""QTasks type annotations."""
+
 from typing import Callable, ParamSpec, TypeVar
 
 P = ParamSpec("P", bound=Callable)

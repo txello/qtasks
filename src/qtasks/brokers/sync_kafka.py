@@ -1,3 +1,5 @@
+"""Sync Kafka Broker."""
+
 try:
     from kafka import KafkaConsumer, KafkaProducer
 except ImportError:
@@ -12,6 +14,7 @@ from typing import TYPE_CHECKING
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
+from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.storages.sync_redis import SyncRedisStorage
 
 from .base import BaseBroker
@@ -22,9 +25,15 @@ if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
 
 from qtasks.schemas.task import Task
-from qtasks.schemas.task_status import TaskStatusCancelSchema, TaskStatusErrorSchema, TaskStatusNewSchema, TaskStatusProcessSchema
+from qtasks.schemas.task_status import (
+    TaskStatusCancelSchema,
+    TaskStatusErrorSchema,
+    TaskStatusNewSchema,
+    TaskStatusProcessSchema,
+)
 
-class SyncKafkaBroker(BaseBroker):
+
+class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
     """
     Брокер, слушающий Kafka и добавляющий задачи в очередь.
 
@@ -33,105 +42,118 @@ class SyncKafkaBroker(BaseBroker):
     ```python
     from qtasks import QueueTasks
     from qtasks.brokers import SyncKafkaBroker
-    
+
     broker = SyncKafkaBroker(name="QueueTasks", url="localhost:9092")
-    
+
     app = QueueTasks(broker=broker)
     ```
     """
-    
-    def __init__(self,
-            name: Annotated[
-                str,
-                Doc(
-                    """
+
+    def __init__(
+        self,
+        name: Annotated[
+            str,
+            Doc(
+                """
                     Имя проекта. Это имя также используется брокером.
-                    
+
                     По умолчанию: `QueueTasks`.
                     """
-                )
-            ] = "QueueTasks",
-            url: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = "QueueTasks",
+        url: Annotated[
+            str,
+            Doc(
+                """
                     URL для подключения к Kafka.
-                    
+
                     По умолчанию: `localhost:9092`.
                     """
-                )
-            ] = None,
-            storage: Annotated[
-                Optional["BaseStorage"],
-                Doc(
-                    """
+            ),
+        ] = None,
+        storage: Annotated[
+            Optional["BaseStorage"],
+            Doc(
+                """
                     Хранилище.
-                    
-                    По умолчанию: `AsyncRedisStorage`.
+
+                    По умолчанию: `SyncRedisStorage`.
                     """
-                )
-            ] = None,
-            topic: Annotated[
-                str,
-                Doc(
-                    """
+            ),
+        ] = None,
+        topic: Annotated[
+            str,
+            Doc(
+                """
                     Топик Kafka.
-                    
+
                     По умолчанию: `task_queue`.
                     """
-                )
-            ] = "task_queue",
-
-            log: Annotated[
-                Optional[Logger],
-                Doc(
-                    """
+            ),
+        ] = "task_queue",
+        log: Annotated[
+            Optional[Logger],
+            Doc(
+                """
                     Логгер.
-                    
+
                     По умолчанию: `qtasks.logs.Logger`.
                     """
-                )
-            ] = None,
-            config: Annotated[
-                Optional[QueueConfig],
-                Doc(
-                    """
+            ),
+        ] = None,
+        config: Annotated[
+            Optional[QueueConfig],
+            Doc(
+                """
                     Конфиг.
-                    
+
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
-                )
-            ] = None
-        ):
+            ),
+        ] = None,
+    ):
+        """Инициализация SyncKafkaBroker.
+
+        Args:
+            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
+            url (str, optional): URL для подключения к Kafka. По умолчанию: None.
+            storage (BaseStorage, optional): Хранилище. По умолчанию: None.
+            topic (str, optional): Топик Kafka. По умолчанию: "task_queue".
+            log (Logger, optional): Логгер. По умолчанию: None.
+            config (QueueConfig, optional): Конфиг. По умолчанию: None.
+        """
         super().__init__(name=name, log=log, config=config)
         self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
-        
+
         self.consumer = KafkaConsumer(
             self.topic,
             bootstrap_servers=self.url,
             group_id=f"{self.name}_group",
-            auto_offset_reset='earliest',
+            auto_offset_reset="earliest",
             enable_auto_commit=True,
-            value_deserializer=lambda m: m.decode('utf-8')
+            value_deserializer=lambda m: m.decode("utf-8"),
         )
         self.producer = KafkaProducer(
             bootstrap_servers=self.url,
-            auto_offset_reset='earliest',
+            auto_offset_reset="earliest",
             enable_auto_commit=True,
-            value_deserializer=lambda m: m.decode('utf-8')
+            value_deserializer=lambda m: m.decode("utf-8"),
         )
-        
-        self.storage = storage or SyncRedisStorage(name=self.name, log=self.log, config=config)
+
+        self.storage = storage or SyncRedisStorage(
+            name=self.name, log=self.log, config=config
+        )
 
         self.running = False
-    
+
     def listen(self, worker: "BaseWorker"):
         """Слушает Kafka и передаёт задачи воркеру.
 
         Args:
             worker (BaseWorker): Класс воркера.
         """
+        self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
         for msg in self.consumer:
             if not self.running:
@@ -143,46 +165,87 @@ class SyncKafkaBroker(BaseBroker):
             if model_get is None:
                 self.log.warning(f"Задача {uuid} не найдена в хранилище.")
                 continue
-            args, kwargs, created_at = model_get.args or (), model_get.kwargs or {}, model_get.created_at.timestamp()
+            args, kwargs, created_at = (
+                model_get.args or (),
+                model_get.kwargs or {},
+                model_get.created_at.timestamp(),
+            )
             self.log.info(f"Получена новая задача: {uuid}")
-            worker.add(name=task_name, uuid=uuid, priority=int(priority), args=args, kwargs=kwargs, created_at=created_at)
-    
-    def add(self,
-            task_name: Annotated[
-                str,
-                Doc(
-                    """
+            new_args = self._plugin_trigger(
+                "broker_add_worker",
+                broker=self,
+                worker=worker,
+
+                task_name=task_name,
+                uuid=uuid,
+                priority=int(priority),
+                args=args,
+                kwargs=kwargs,
+                created_at=created_at,
+                return_last=True
+            )
+            if new_args:
+                task_name = new_args.get("task_name", task_name)
+                uuid = new_args.get("uuid", uuid)
+                priority = new_args.get("priority", priority)
+                args = new_args.get("args", args)
+                kwargs = new_args.get("kwargs", kwargs)
+                created_at = new_args.get("created_at", created_at)
+
+            worker.add(
+                name=task_name,
+                uuid=uuid,
+                priority=int(priority),
+                args=args,
+                kwargs=kwargs,
+                created_at=created_at,
+            )
+
+    def add(
+        self,
+        task_name: Annotated[
+            str,
+            Doc(
+                """
                     Имя задачи.
                     """
-                )
-            ],
-            priority: Annotated[
-                int,
-                Doc(
-                    """
+            ),
+        ],
+        priority: Annotated[
+            int,
+            Doc(
+                """
                     Приоритет задачи.
-                    
+
                     По умолчанию: `0`.
                     """
-                )
-            ] = 0,
-            extra: Annotated[
-                dict,
-                Doc(
-                    """
+            ),
+        ] = 0,
+        extra: Annotated[
+            dict,
+            Doc(
+                """
                     Дополнительные параметры задачи.
                     """
-                )
-            ] = None,
-            kwargs: Annotated[
-                dict,
-                Doc(
+            ),
+        ] = None,
+        args: Annotated[
+            tuple,
+            Doc(
+                """
+                    Аргументы задачи типа args.
                     """
+            ),
+        ] = None,
+        kwargs: Annotated[
+            dict,
+            Doc(
+                """
                     Аргументы задачи типа kwargs.
                     """
-                )
-            ] = None
-        ) -> Task:
+            ),
+        ] = None,
+    ) -> Task:
         """Добавляет задачу в брокер.
 
         Args:
@@ -195,33 +258,65 @@ class SyncKafkaBroker(BaseBroker):
             Task: `schemas.task.Task`
         """
         args, kwargs = args or (), kwargs or {}
-        uuid = uuid4()
+        uuid = str(uuid4())
         created_at = time()
 
-        model = TaskStatusNewSchema(task_name=task_name, priority=priority, created_at=created_at, updated_at=created_at)
+        model = TaskStatusNewSchema(
+            task_name=task_name,
+            priority=priority,
+            created_at=created_at,
+            updated_at=created_at,
+        )
         model.set_json(args, kwargs)
 
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
+
+        new_model = self._plugin_trigger(
+            "broker_add_before",
+            broker=self,
+            storage=self.storage,
+            model=model,
+            return_last=True
+        )
+        if new_model:
+            model = new_model
 
         self.storage.add(uuid=uuid, task_status=model)
 
         task_data = f"{task_name}:{uuid}:{priority}"
         self.producer.send(self.topic, task_data)
         self.producer.flush()
-        
-        return Task(status=TaskStatusEnum.NEW.value, task_name=task_name, uuid=uuid, priority=priority, args=args, kwargs=kwargs, created_at=created_at, updated_at=created_at)
-    
-    def get(self,
-            uuid: Annotated[
-                Union[UUID|str],
-                Doc(
-                    """
+
+        self._plugin_trigger(
+            "broker_add_after",
+            broker=self,
+            storage=self.storage,
+            model=model
+        )
+
+        return Task(
+            status=TaskStatusEnum.NEW.value,
+            task_name=task_name,
+            uuid=uuid,
+            priority=priority,
+            args=args,
+            kwargs=kwargs,
+            created_at=created_at,
+            updated_at=created_at,
+        )
+
+    def get(
+        self,
+        uuid: Annotated[
+            Union[UUID | str],
+            Doc(
+                """
                     UUID задачи.
                     """
-                )
-            ]
-        ) -> Task|None:
+            ),
+        ],
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -230,99 +325,113 @@ class SyncKafkaBroker(BaseBroker):
         Returns:
             Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
         """
-        if isinstance(uuid, str): uuid = UUID(uuid)
-        return self.storage.get(uuid=uuid)
-    
-    def update(self,
-            **kwargs: Annotated[
-                dict,
-                Doc(
-                    """
+        if isinstance(uuid, str):
+            uuid = UUID(uuid)
+        task = self.storage.get(uuid=uuid)
+        new_task = self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
+        if new_task:
+            task = new_task
+        return task
+
+    def update(
+        self,
+        **kwargs: Annotated[
+            dict,
+            Doc(
+                """
                     Аргументы обновления для хранилища типа kwargs.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет информацию о задаче.
-        
+
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
+        new_kw = self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
+        if new_kw:
+            kwargs = new_kw
         return self.storage.update(**kwargs)
-    
-    def start(self,
-            worker: Annotated[
-                "BaseWorker",
-                Doc(
-                    """
+
+    def start(
+        self,
+        worker: Annotated[
+            "BaseWorker",
+            Doc(
+                """
                     Класс Воркера.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Запускает брокер.
 
         Args:
             worker (BaseWorker): Класс Воркера.
         """
+        self._plugin_trigger("broker_start", broker=self, worker=worker)
         self.storage.start()
 
         if self.config.delete_finished_tasks:
             self.storage._delete_finished_tasks()
-        
+
         if self.config.running_older_tasks:
             self.storage._running_older_tasks(worker)
-        
+
         self.listen(worker)
-    
+
     def stop(self):
         """Останавливает брокер."""
+        self._plugin_trigger("broker_stop", broker=self)
         self.running = False
         self.consumer.stop()
         self.producer.stop()
-    
-    def remove_finished_task(self,
-            task_broker: Annotated[
-                TaskPrioritySchema,
-                Doc(
-                    """
+
+    def remove_finished_task(
+        self,
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
                     Схема приоритетной задачи.
                     """
-                )
+            ),
+        ],
+        model: Annotated[
+            Union[
+                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
             ],
-            model: Annotated[
-                Union[TaskStatusProcessSchema|TaskStatusErrorSchema|TaskStatusCancelSchema],
-                Doc(
-                    """
+            Doc(
+                """
                     Модель результата задачи.
                     """
-                )
-            ]
-        ) -> None:
+            ),
+        ],
+    ) -> None:
         """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
 
         Args:
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
-        self.storage.remove_finished_task(task_broker, model)
-        
-    def _plugin_trigger(self, name: str, *args, **kwargs):
-        """
-        Вызвать триггер плагина.
+        new_model = self._plugin_trigger(
+            "broker_remove_finished_task",
+            broker=self,
+            storage=self.storage,
+            model=model,
+            return_last=True
+        )
+        if new_model:
+            model = new_model
 
-        Args:
-            name (str): Имя триггера.
-            *args: Позиционные аргументы для триггера.
-            **kwargs: Именованные аргументы для триггера.
-        """
-        results = []
-        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            result = plugin.trigger(name=name, *args, **kwargs)
-            if result is not None:
-                results.append(result)
-        return results
-    
+        self.storage.remove_finished_task(task_broker, model)
+
+    def _running_older_tasks(self, worker):
+        self._plugin_trigger("broker_running_older_tasks", broker=self, worker=worker)
+        return self.storage._running_older_tasks(worker)
+
     def flush_all(self) -> None:
         """Удалить все данные."""
+        self._plugin_trigger("broker_flush_all", broker=self)
         self.storage.flush_all()

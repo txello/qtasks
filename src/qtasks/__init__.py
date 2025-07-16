@@ -1,3 +1,5 @@
+"""Init module for qtasks."""
+
 from qtasks.version import __version__
 
 from qtasks.qtasks import QueueTasks

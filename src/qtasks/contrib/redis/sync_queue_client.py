@@ -1,8 +1,11 @@
+"""Sync Redis command queue."""
+
 import threading
 from queue import Queue, Empty
 import redis
 
 from qtasks.logs import Logger
+
 
 class SyncRedisCommandQueue:
     """
@@ -13,14 +16,13 @@ class SyncRedisCommandQueue:
     ```python
     from qtasks import QueueTasks
     from qtasks.contrib.redis import SyncRedisCommandQueue
-    
+
     redis_contrib = SyncRedisCommandQueue(redis)
     redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
     ```
     """
-    def __init__(self,
-            redis: redis.Redis,
-            log: Logger = None):
+
+    def __init__(self, redis: redis.Redis, log: Logger = None):
         """Экземпляр класса.
 
         Args:
@@ -34,17 +36,20 @@ class SyncRedisCommandQueue:
         self.lock = threading.Lock()
 
     def _worker(self):
-        while True:
+        while not self.queue.empty():
             try:
-                cmd, args, kwargs = self.queue.get(timeout=2)  # 2 секунды "жизни"
+                cmd, args, kwargs = self.queue.get(timeout=2)
                 self.log.debug(f"Задача {cmd} с параметрами {args} и {kwargs} вызвана")
-                getattr(self.redis, cmd)(*args, **kwargs)
+                try:
+                    getattr(self.redis, cmd)(*args, **kwargs)
+                except Exception as e:
+                    self.log.error(f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}")
                 self.queue.task_done()
             except Empty:
-                break  # Если очередь пуста 2 секунды — выходим
+                break
 
         with self.lock:
-            self.worker_thread = None  # Отмечаем, что воркер завершился
+            self.worker_thread = None
 
     def execute(self, cmd: str, *args, **kwargs):
         """Запрос в `Redis`.
@@ -60,8 +65,9 @@ class SyncRedisCommandQueue:
                 self.worker_thread = threading.Thread(target=self._worker, daemon=True)
                 self.worker_thread.start()
 
-    def _get_log(self, log: Logger|None):
+    def _get_log(self, log: Logger | None):
         if log is None:
             import qtasks._state
+
             log = qtasks._state.log_main
         return log.with_subname("SyncRedisCommandQueue")
