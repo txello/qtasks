@@ -1,7 +1,20 @@
 # История обновлений
 
-## v1.5.0 2025-07-06
-
+## v1.5.0 2025-07-16
+- Добавлен `AsyncPluginMixin`.
+- Добавлены триггеры плагинов.
+- Добавлен статус `Retry` через встроенный плагин `(A)syncRetryPlugin`.
+- Добавлены параметры `**kwargs` как `extra` для `@app.task()`.
+- Добавлены параметры `tags` и `decode` для `@app.task()`.
+- Добавлена поддержка `pydantic` через встроенный плагин `(A)syncPydanticWrapperPlugin`.
+- Добавлена поддержка `ArgMeta` для работы с параметрами функции задач.
+- Добавлен `(A)syncTestPlugin` как необязательный плагин.
+- Добавлены примеры в `examples/`.
+- Добавлены параметры для вызова триггеров плагинов `_plugin_trigger()`.
+- Добавлено исключение `TaskPluginTriggerError`.
+- Исправлены способы исполнения для `(A)syncRedisCommandQueue`.
+- Исправлены ошибки передачи данных между компонентами.
+- Рефакторинг кода.
 
 ## v1.4.0 2025-06-12
 - Добавлена поддержка генераторов для задач.
@@ -16,7 +29,7 @@
 - Добавлены функции для работы с плагинами.
 - Добавлены функции для тестирования.
 - Добавлен `subcribe` в [`QueueConfig`](/qtasks/ru/api/schemas/queueconfig/).
-- Добавлены примеры в examples/.
+- Добавлены примеры в `examples/`.
 - Исправлены параметры задач.
 - Исправлен [`Router`](/qtasks/ru/api/router/).
 - Убран `ConfigObserver` из `QueueTasks.config`, был возвращен [`QueueConfig`](/qtasks/ru/api/schemas/queueconfig/).
@@ -44,7 +57,7 @@
 - Добавлены [`SyncTask`](/qtasks/ru/api/registries/sync_task_decorator)/[`AsyncTask`](/qtasks/ru/api/registries/async_task_decorator) для замены функции декоратором.
 - Добавлен [`qtasks._state.app_main`](/qtasks/ru/api/states/#qtasks._state.app_main) для хранения дубликата приложения [`QueueTasks`](/qtasks/ru/api/queuetasks).
 - Добавлен [`SyncRedisGlobalConfig`](/qtasks/ru/api/globalconfig/sync_redisglobalconfig).
-- Добавлены примеры в examples/.
+- Добавлены примеры в `examples/`.
 - Заменен `aiounittest` на `unittest.IsolatedAsyncioTestCase`.
 - Исправлены запуски компонентов.
 
