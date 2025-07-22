@@ -404,15 +404,15 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             task_func = new_data.get("task_func", task_func)
             task_broker = new_data.get("task_broker", task_broker)
 
-        middlewares = self.task_middlewares[:]
-        if task_func.middlewares:
-            middlewares.extend(task_func.middlewares)
+        if self.task_middlewares_before:
+            task_func.add_middlewares_before(self.task_middlewares_before)
+        if self.task_middlewares_after:
+            task_func.add_middlewares_after(self.task_middlewares_after)
 
         executor = task_func.executor if task_func.executor is not None else self.task_executor
         executor = executor(
             task_func=task_func,
             task_broker=task_broker,
-            middlewares=middlewares,
             log=self.log,
             plugins=self.plugins,
         )

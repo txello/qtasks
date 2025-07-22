@@ -132,11 +132,21 @@ class SyncTask(Generic[P, R]):
                     """
             ),
         ] = None,
-        middlewares: Annotated[
+        middlewares_before: Annotated[
             List["TaskMiddleware"],
             Doc(
                 """
-                    Мидлвари.
+                    Мидлвари, которые будут выполнены перед задачей.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+            ),
+        ] = None,
+        middlewares_after: Annotated[
+            List["TaskMiddleware"],
+            Doc(
+                """
+                    Мидлвари, которые будут выполнены после задачи.
 
                     По умолчанию: `Пустой массив`.
                     """
@@ -176,7 +186,8 @@ class SyncTask(Generic[P, R]):
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `None`.
-            middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `None`.
+            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
             app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: `None`.
         """
         self.task_name = task_name
@@ -191,7 +202,8 @@ class SyncTask(Generic[P, R]):
         self.description = description
 
         self.executor = executor
-        self.middlewares = middlewares
+        self.middlewares_before = middlewares_before or []
+        self.middlewares_after = middlewares_after or []
 
         self.extra = extra or {}
 
@@ -201,7 +213,6 @@ class SyncTask(Generic[P, R]):
             task_name=task_name,
             generate_handler=generate_handler,
             executor=executor,
-            middlewares=middlewares,
             app=app,
         )
 

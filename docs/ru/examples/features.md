@@ -115,7 +115,7 @@ def custom_exec():
 Массив middleware'ов, вызываемых внутри executor'а до и после выполнения задачи. Позволяют реализовать логику до/после вызова задачи.
 
 ```python
-@shared_task(middlewares=[MyTaskMiddleware])
+@shared_task(middlewares_after=[MyTaskMiddleware], middlewares_before=[MyTaskMiddleware])
 def with_mw():
     print("middleware")
 ```

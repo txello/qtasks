@@ -51,16 +51,6 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                     """
             ),
         ],
-        middlewares: Annotated[
-            Optional["TaskMiddleware"],
-            Doc(
-                """
-                    Массив Миддлварей.
-
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
-        ] = None,
         log: Annotated[
             Optional[Logger],
             Doc(
@@ -87,21 +77,15 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         Args:
             task_func (TaskExecSchema): Схема `TaskExecSchema`.
             task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-            middlewares (List[Type[TaskMiddleware]], optional): _description_. По умолчанию `None`.
             log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
+            plugins (Dict[str, List[Type[BasePlugin]]], optional): Словарь плагинов. По умолчанию: `Пустой словарь`.
         """
         super().__init__(
             task_func=task_func,
             task_broker=task_broker,
-            middlewares=middlewares,
             log=log,
             plugins=plugins,
         )
-
-        self._args = []
-        self._kwargs = {}
-        self._result: Any = None
-        self.echo = None
 
     def before_execute(self):
         """Вызывается перед выполнением задачи."""
@@ -116,14 +100,11 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 tags=self.task_func.tags,
                 description=self.task_func.description,
                 executor=self.task_func.executor,
-                middlewares=self.task_func.middlewares,
+                middlewares_before=self.task_func.middlewares_before,
+                middlewares_after=self.task_func.middlewares_after,
             )
             self.echo.ctx._update(task_uuid=self.task_broker.uuid)
-            self._args = self.task_broker.args[:]
             self._args.insert(0, self.echo)
-        else:
-            self._args = self.task_broker.args
-        self._kwargs = self.task_broker.kwargs
 
         args_info = self._build_args_info(self._args, self._kwargs)
 
@@ -152,11 +133,32 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             self._result = result[-1]
         return
 
-    def execute_middlewares(self):
-        """Вызов мидлварей."""
-        self._plugin_trigger("task_executor_middlewares_execute", task_executor=self, middlewares=self.middlewares)
-        for m in self.middlewares:
-            m = m(self)
+    def execute_middlewares_before(self):
+        """Вызов мидлварей до выполнения задачи."""
+        self._plugin_trigger(
+            "task_executor_middlewares_execute",
+            task_executor=self,
+            middlewares_before=self.task_func.middlewares_before
+        )
+        for m in self.task_func.middlewares_before:
+            m: "TaskMiddleware" = m(self)
+            new_task_executor: BaseTaskExecutor = m()
+            if new_task_executor:
+                self = new_task_executor
+            self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+
+    def execute_middlewares_after(self):
+        """Вызов мидлварей после выполнения задачи."""
+        self._plugin_trigger(
+            "task_executor_middlewares_execute",
+            task_executor=self,
+            middlewares_after=self.task_func.middlewares_after
+        )
+        for m in self.task_func.middlewares_after:
+            m: "TaskMiddleware" = m(self)
+            new_task_executor: BaseTaskExecutor = m()
+            if new_task_executor:
+                self = new_task_executor
             self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
     def run_task(self) -> Any | list[Any]:
@@ -230,7 +232,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         """
         self.log.debug(f"Вызван execute для {self.task_func.name}")
         self.before_execute()
-        self.execute_middlewares()
+        self.execute_middlewares_before()
         try:
             self._result = self.run_task()
         except TaskPluginTriggerError as e:
@@ -248,8 +250,9 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 raise e
 
         self.after_execute()
+        self.execute_middlewares_after()
         if decode:
-            return self.decode()
+            self._result = self.decode()
         return self._result
 
     def decode(self) -> Any:

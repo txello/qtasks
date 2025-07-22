@@ -101,8 +101,10 @@ class UtilsInspectStats:
                 task_info["Генератор"] = str(task.generate_handler)
             if task.executor:
                 task_info["Исполнитель"] = str(task.executor)
-            if task.middlewares:
-                task_info["Мидлвари"] = pformat(task.middlewares)
+            if task.middlewares_before:
+                task_info["Мидлвари до"] = pformat(task.middlewares_before)
+            if task.middlewares_after:
+                task_info["Мидлвари после"] = pformat(task.middlewares_after)
             if task.extra:
                 # Вставляем многострочное значение с отступом
                 extra_lines = "\n" + "\n".join(f" * {k}: {v}" for k, v in task.extra.items())

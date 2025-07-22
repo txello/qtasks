@@ -3,8 +3,8 @@ from qtasks.executors.base import BaseTaskExecutor
 
 
 class MySyncTaskExecutor(BaseTaskExecutor):
-    def __init__(self, task_func, task_broker, middlewares=None, log=None):
-        super().__init__(task_func, task_broker, middlewares, log)
+    def __init__(self, task_func, task_broker, log=None):
+        super().__init__(task_func, task_broker, log)
 
     def before_execute(self):
         pass
@@ -29,8 +29,8 @@ class MySyncTaskExecutor(BaseTaskExecutor):
 
 
 class MyAsyncTaskExecutor(BaseTaskExecutor):
-    def __init__(self, task_func, task_broker, middlewares=None, log=None):
-        super().__init__(task_func, task_broker, middlewares, log)
+    def __init__(self, task_func, task_broker, log=None):
+        super().__init__(task_func, task_broker, log)
 
     def before_execute(self):
         pass

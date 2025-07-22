@@ -9,7 +9,6 @@ from qtasks.schemas.argmeta import ArgMeta
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 if TYPE_CHECKING:
-    from qtasks.middlewares.task import TaskMiddleware
     from qtasks.plugins.base import BasePlugin
 
 
@@ -47,16 +46,6 @@ class BaseTaskExecutor(ABC):
                     """
             ),
         ],
-        middlewares: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
-            Doc(
-                """
-                    Массив Миддлварей.
-
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
-        ] = None,
         log: Annotated[
             Optional[Logger],
             Doc(
@@ -83,13 +72,15 @@ class BaseTaskExecutor(ABC):
         Args:
             task_func (TaskExecSchema): Схема `TaskExecSchema`.
             task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-            middlewares (List[Type[TaskMiddleware]], optional): _description_. По умолчанию `None`.
             log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
+            plugins (Dict[str, List[Type[BasePlugin]]], optional): Словарь плагинов. По умолчанию: `Пустой словарь`.
         """
         self.task_func = task_func
         self.task_broker = task_broker
-
-        self.middlewares: list["TaskMiddleware"] = middlewares or []
+        self._args = self.task_broker.args.copy()
+        self._kwargs = self.task_broker.kwargs.copy()
+        self._result: Any = None
+        self.echo = None
 
         self.log = log
         if self.log is None:
@@ -108,8 +99,12 @@ class BaseTaskExecutor(ABC):
         """Вызывается после выполнения задачи."""
         pass
 
-    def execute_middlewares(self):
-        """Вызов мидлварей."""
+    def execute_middlewares_before(self):
+        """Вызов мидлварей до выполнения задачи."""
+        pass
+
+    def execute_middlewares_after(self):
+        """Вызов мидлварей после выполнения задачи."""
         pass
 
     def run_task(self) -> Any:

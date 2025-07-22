@@ -61,7 +61,10 @@ class TaskExecSchema:
         generate_handler (Callable, optional): Генератор обработчика. По умолчанию: None
 
         executor (Type[BaseTaskExecutor], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`|`AsyncTaskExecutor`.
-        middlewares (list[Type[TaskMiddleware]]): Мидлвари. По умолчанию: `Пустой массив`.
+        middlewares_before (list[Type[TaskMiddleware]]): Мидлвари до выполнения задачи. По умолчанию: `Пустой массив`.
+        middlewares_after (list[Type[TaskMiddleware]]): Мидлвари после выполнения задачи. По умолчанию: `Пустой массив`.
+
+        extra (dict[str, Any]): Дополнительные параметры задачи. По умолчанию: `Пустой словарь`.
 
     """
 
@@ -83,6 +86,23 @@ class TaskExecSchema:
     generate_handler: Callable | None = None
 
     executor: Type["BaseTaskExecutor"] = None
-    middlewares: list[Type["TaskMiddleware"]] = field(default_factory=list)
+    middlewares_before: list[Type["TaskMiddleware"]] = field(default_factory=list)
+    middlewares_after: list[Type["TaskMiddleware"]] = field(default_factory=list)
 
     extra: dict[str, Any] = field(default_factory=dict)
+
+    def add_middlewares_before(self, middlewares: list[Type["TaskMiddleware"]]) -> None:
+        """Добавляет мидлвари к задаче.
+
+        Args:
+            middlewares (list[Type[TaskMiddleware]]): Список мидлварей.
+        """
+        self.middlewares_before.extend(middlewares)
+
+    def add_middlewares_after(self, middlewares: list[Type["TaskMiddleware"]]) -> None:
+        """Добавляет мидлвари к задаче.
+
+        Args:
+            middlewares (list[Type[TaskMiddleware]]): Список мидлварей.
+        """
+        self.middlewares_after.extend(middlewares)

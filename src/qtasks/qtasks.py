@@ -563,7 +563,8 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         description: str | None = None,
         generate_handler: Callable | None = None,
         executor: Type["BaseTaskExecutor"] | None = None,
-        middlewares: List["TaskMiddleware"] | None = None,
+        middlewares_before: List["TaskMiddleware"] | None = None,
+        middlewares_after: List["TaskMiddleware"] | None = None,
         **kwargs
     ) -> Callable[[Callable[P, R]], SyncTask[P, R]]:
         ...
@@ -582,7 +583,8 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
+            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
+            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
 
         Raises:
             ValueError: Если задача с таким именем уже зарегистрирована.

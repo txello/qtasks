@@ -105,7 +105,8 @@ class BaseWorker(ABC):
         self.init_task_running: list[InitsExecSchema] = []
         self.init_task_stoping: list[InitsExecSchema] = []
         self.init_worker_stoping: list[InitsExecSchema] = []
-        self.task_middlewares: list[TaskMiddleware] = []
+        self.task_middlewares_before: list[TaskMiddleware] = []
+        self.task_middlewares_after: list[TaskMiddleware] = []
 
         self.task_executor: Type["BaseTaskExecutor"] = None
 

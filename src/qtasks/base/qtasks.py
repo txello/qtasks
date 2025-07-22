@@ -218,7 +218,8 @@ class BaseQueueTasks:
         description: str | None = None,
         generate_handler: Callable | None = None,
         executor: Type["BaseTaskExecutor"] | None = None,
-        middlewares: List["TaskMiddleware"] | None = None,
+        middlewares_before: List["TaskMiddleware"] | None = None,
+        middlewares_after: List["TaskMiddleware"] | None = None,
         **kwargs
     ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
         ...
@@ -326,11 +327,21 @@ class BaseQueueTasks:
                     """
             ),
         ] = None,
-        middlewares: Annotated[
+        middlewares_before: Annotated[
             List["TaskMiddleware"],
             Doc(
                 """
-                    Мидлвари.
+                    Мидлвари, которые будут выполнены до задачи.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+            ),
+        ] = None,
+        middlewares_after: Annotated[
+            List["TaskMiddleware"],
+            Doc(
+                """
+                    Мидлвари, которые будут выполнены после задачи.
 
                     По умолчанию: `Пустой массив`.
                     """
@@ -351,7 +362,8 @@ class BaseQueueTasks:
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
+            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
+            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
 
         Raises:
             ValueError: Если задача с таким именем уже зарегистрирована.
@@ -362,7 +374,8 @@ class BaseQueueTasks:
         """
 
         def wrapper(func):
-            nonlocal priority, middlewares
+            nonlocal priority, middlewares_before, middlewares_after
+
             task_name = name or func.__name__
             priority = priority or self.config.default_task_priority
 
@@ -379,7 +392,8 @@ class BaseQueueTasks:
             if inspect.isasyncgenfunction(func):
                 generating = "async"
 
-            middlewares = middlewares or []
+            middlewares_before = middlewares_before or []
+            middlewares_after = middlewares_after or []
 
             model = TaskExecSchema(
                 name=task_name,
@@ -395,7 +409,8 @@ class BaseQueueTasks:
                 description=description,
                 generate_handler=generate_handler,
                 executor=executor,
-                middlewares=middlewares,
+                middlewares_before=middlewares_before,
+                middlewares_after=middlewares_after,
                 extra=kwargs
             )
 
@@ -417,7 +432,8 @@ class BaseQueueTasks:
                 description=model.description,
                 generate_handler=model.generate_handler,
                 executor=model.executor,
-                middlewares=model.middlewares,
+                middlewares_before=model.middlewares_before,
+                middlewares_after=model.middlewares_after,
                 extra=model.extra
             )
 
@@ -480,7 +496,7 @@ class BaseQueueTasks:
         component_data.add_plugin(plugin, trigger_names)
         return
 
-    def add_middleware(self, middleware: Type["BaseMiddleware"]) -> None:
+    def add_middleware(self, middleware: Type["BaseMiddleware"], **kwargs) -> None:
         """Добавить мидлварь.
 
         Args:
@@ -496,7 +512,11 @@ class BaseQueueTasks:
                 f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!"
             )
         if middleware.__base__.__name__ == "TaskMiddleware":
-            self.worker.task_middlewares.append(middleware)
+            position = kwargs.get("position", "before")
+            if position == "before":
+                self.worker.task_middlewares_before.append(middleware)
+            elif position == "after":
+                self.worker.task_middlewares_after.append(middleware)
         self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
         return
 

@@ -54,16 +54,6 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                     """
             ),
         ],
-        middlewares: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
-            Doc(
-                """
-                    Массив Миддлварей.
-
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
-        ] = None,
         log: Annotated[
             Optional[Logger],
             Doc(
@@ -90,21 +80,15 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         Args:
             task_func (TaskExecSchema): Схема `TaskExecSchema`.
             task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-            middlewares (List[Type[TaskMiddleware]], optional): _description_. По умолчанию `None`.
             log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
+            plugins (Dict[str, List[Type[BasePlugin]]], optional): Массив плагинов. По умолчанию: `Пустой массив`.
         """
         super().__init__(
             task_func=task_func,
             task_broker=task_broker,
-            middlewares=middlewares,
             log=log,
             plugins=plugins,
         )
-
-        self._args = []
-        self._kwargs = {}
-        self._result: Any = None
-        self.echo = None
 
     async def before_execute(self):
         """Вызывается перед выполнением задачи."""
@@ -120,15 +104,11 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 tags=self.task_func.tags,
                 description=self.task_func.description,
                 executor=self.task_func.executor,
-                middlewares=self.task_func.middlewares,
+                middlewares_before=self.task_func.middlewares_before,
+                middlewares_after=self.task_func.middlewares_after,
             )
             self.echo.ctx._update(task_uuid=self.task_broker.uuid)
-            self._args = self.task_broker.args[:]
             self._args.insert(0, self.echo)
-        else:
-            self._args = self.task_broker.args
-
-        self._kwargs = self.task_broker.kwargs
 
         args_info = self._build_args_info(self._args, self._kwargs)
 
@@ -157,11 +137,32 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             self._result = result[-1]
         return
 
-    async def execute_middlewares(self):
-        """Вызов мидлварей."""
-        await self._plugin_trigger("task_executor_middlewares_execute", task_executor=self, middlewares=self.middlewares)
-        for m in self.middlewares:
-            m = await m(self)()
+    async def execute_middlewares_before(self):
+        """Вызов мидлварей до выполнения задачи."""
+        await self._plugin_trigger(
+            "task_executor_middlewares_execute",
+            task_executor=self,
+            middlewares_before=self.task_func.middlewares_before
+        )
+        for m in self.task_func.middlewares_before:
+            m: "TaskMiddleware" = m(self)
+            new_task_executor: BaseTaskExecutor = await m()
+            if new_task_executor:
+                self = new_task_executor
+            self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+
+    async def execute_middlewares_after(self):
+        """Вызов мидлварей после выполнения задачи."""
+        await self._plugin_trigger(
+            "task_executor_middlewares_execute",
+            task_executor=self,
+            middlewares_after=self.task_func.middlewares_after
+        )
+        for m in self.task_func.middlewares_after:
+            m: "TaskMiddleware" = m(self)
+            new_task_executor: BaseTaskExecutor = await m()
+            if new_task_executor:
+                self = new_task_executor
             self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
     async def run_task(self) -> Any:
@@ -256,7 +257,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             Any|str: Результат задачи.
         """
         self.log.debug(f"Вызван execute для {self.task_func.name}")
-        await self.execute_middlewares()
+        await self.execute_middlewares_before()
         await self.before_execute()
         try:
             self._result = await self.run_task()
@@ -275,8 +276,9 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 raise e
 
         await self.after_execute()
+        await self.execute_middlewares_after()
         if decode:
-            return await self.decode()
+            self._result = await self.decode()
         return self._result
 
     async def decode(self) -> Any:

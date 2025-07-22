@@ -111,7 +111,8 @@ async def example_pydantic(self: AsyncTask, item: Item):
     description="Тестовая задача для демонстрации работы с контекстом.",
     echo=True, tags=["test"], priority=1,
     retry=3, retry_on_exc=[KeyError], decode=json.dumps,
-    # generate_handler=yield_func, executor=MyTaskExecutor, middlewares=[MyTaskMiddleware],
+    # generate_handler=yield_func, executor=MyTaskExecutor,
+    # middlewares_before=[MyTaskMiddleware], middlewares_after=[MyTaskMiddleware],
     test="test"
 )
 async def test_echo_ctx(self: AsyncTask):

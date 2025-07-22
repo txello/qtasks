@@ -111,11 +111,21 @@ def shared_task(
                     """
         ),
     ] = None,
-    middlewares: Annotated[
+    middlewares_before: Annotated[
         List["TaskMiddleware"],
         Doc(
             """
-                    Мидлвари.
+                    Мидлвари, которые будут выполнены перед задачей.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+        ),
+    ] = None,
+    middlewares_after: Annotated[
+        List["TaskMiddleware"],
+        Doc(
+            """
+                    Мидлвари, которые будут выполнены после задачи.
 
                     По умолчанию: `Пустой массив`.
                     """
@@ -146,7 +156,8 @@ def shared_task(
         description (str, optional): Описание задачи. По умолчанию: `None`.
         generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
         executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-        middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
+        middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+        middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
         awaiting (bool, optional): Использовать ли AsyncTask вместо SyncTask. По умолчанию: `False`.
 
     Raises:
@@ -156,7 +167,8 @@ def shared_task(
     Returns:
         SyncTask | AsyncTask: Декоратор для регистрации задачи.
     """
-    middlewares = middlewares or []
+    middlewares_before = middlewares_before or []
+    middlewares_after = middlewares_after or []
 
     if callable(name):
         # Декоратор без скобок
@@ -172,7 +184,8 @@ def shared_task(
             description=description,
             generate_handler=generate_handler,
             executor=executor,
-            middlewares=middlewares,
+            middlewares_before=middlewares_before,
+            middlewares_after=middlewares_after,
             **kwargs
         )(name)
 
@@ -190,7 +203,8 @@ def shared_task(
             description=description,
             generate_handler=generate_handler,
             executor=executor,
-            middlewares=middlewares,
+            middlewares_before=middlewares_before,
+            middlewares_after=middlewares_after,
             **kwargs
         )(func)
 
