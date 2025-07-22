@@ -71,17 +71,17 @@ class SyncResult:
             log (Logger, optional): Логгер. По умолчанию: None.
         """
         self._app = app
+        self._update_state()
         self.log = (
-            log.with_subname("AsyncResult")
+            log.with_subname("SyncResult")
             if log
             else Logger(
                 name=self._app.name,
-                subname="AsyncResult",
+                subname="SyncResult",
                 default_level=self._app.config.logs_default_level,
                 format=self._app.config.logs_format,
             )
         )
-        self._update_state()
         self._stop_event = threading.Event()
 
         self.uuid = uuid
@@ -146,5 +146,4 @@ class SyncResult:
         if not self._app:
             if qtasks._state.app_main is None:
                 raise ImportError("Невозможно получить app!")
-        if not self.log:
-            self.log = qtasks._state.log_main.with_subname("AsyncResult")
+            self._app = qtasks._state.app_main

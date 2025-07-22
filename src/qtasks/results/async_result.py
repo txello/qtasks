@@ -73,6 +73,7 @@ class AsyncResult:
             log (Logger, optional): Логгер. По умолчанию: None.
         """
         self._app = app
+        self._update_state()
         self.log = (
             log.with_subname("AsyncResult")
             if log
@@ -83,7 +84,6 @@ class AsyncResult:
                 format=self._app.config.logs_format,
             )
         )
-        self._update_state()
         self._stop_event = asyncio.Event()
 
         self.uuid = uuid
@@ -147,5 +147,4 @@ class AsyncResult:
         if not self._app:
             if qtasks._state.app_main is None:
                 raise ImportError("Невозможно получить app!")
-        if not self.log:
-            self.log = qtasks._state.log_main
+            self._app = qtasks._state.app_main
