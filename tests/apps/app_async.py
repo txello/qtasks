@@ -24,4 +24,5 @@ async def error_zero():
 
 
 if __name__ == "__main__":
+    print("[INFO] QTasks Сервер запущен...")
     app.run_forever()

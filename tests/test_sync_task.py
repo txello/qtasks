@@ -1,82 +1,92 @@
 """Sync Task Tests."""
 
 import time
-import unittest
-import multiprocessing
+import pytest
+import sys
+import subprocess
+from pathlib import Path
 from uuid import uuid4
 
 from qtasks import tests
 from qtasks.enums.task_status import TaskStatusEnum
-from qtasks.schemas.task import Task
 from qtasks.schemas.test import TestConfig
 
 from apps.app_sync import app
 
 
+@pytest.fixture(scope="session", autouse=True)
 def run_server():
-    """Запуск сервера."""
-    app.run_forever()
+    """Запуск QTasks-сервера через subprocess и лог ошибок."""
+    script_path = Path(__file__).parent / "apps" / "app_sync.py"
+    assert script_path.exists(), f"Script not found: {script_path}"
+
+    process = subprocess.Popen(
+        [sys.executable, str(script_path)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    time.sleep(1)
+
+    # Выводим первые 500 символов stdout (если вдруг сразу завершилось)
+    if process.poll() is not None:  # Процесс уже завершился?
+        output = process.stdout.read(500)
+        raise RuntimeError(f"Server exited early with output:\n{output}")
+
+    yield
+
+    time.sleep(2)
+    process.terminate()
+    process.wait()
 
 
-class TestSyncQTasks(unittest.TestCase):
-    """Тесты для синхронных задач QTasks."""
+@pytest.fixture()
+def test_case():
+    """Создаёт конфигурацию тестов."""
+    case = tests.SyncTestCase(app=app)
+    case.settings(TestConfig.full())
+    return case
 
-    @classmethod
-    def setUpClass(cls):
-        """Запуск сервера."""
-        cls.server_process = multiprocessing.Process(target=run_server)
-        cls.server_process.start()
-        time.sleep(0.5)
 
-    @classmethod
-    def tearDownClass(cls):
-        """Остановка сервера."""
-        time.sleep(2)
-        cls.server_process.terminate()
-        cls.server_process.join()
-        pass
+@pytest.mark.sync
+def test_task_get_result(test_case):
+    """Получение результата задачи."""
+    task = test_case.add_task("test", args=(5,))
+    result = app.get(uuid=task.uuid)
+    assert result is not None
 
-    def setUp(self):
-        """Настройка теста."""
-        self.test_case = tests.SyncTestCase(app=app)
-        self.test_case.settings(TestConfig.full())
 
-    def _add_task(self, timeout: float | None = None) -> Task | None:
-        """Добавление задачи."""
-        return self.test_case.add_task("test", args=(5,), timeout=timeout)
+@pytest.mark.sync
+def test_task_get_wait(test_case):
+    """Ожидание завершения задачи."""
+    result = test_case.add_task("test", args=(5,), timeout=50)
+    assert result.status == TaskStatusEnum.SUCCESS.value
 
-    def _add_error_task(self, timeout: float | None = None) -> Task | None:
-        """Добавление задачи с ошибкой."""
-        return self.test_case.add_task("error_task", timeout=timeout)
 
-    def test_task_get_result(self):
-        """Получение результата задачи."""
-        uuid = self._add_task().uuid
-        result = app.get(uuid=uuid)
-        self.assertIsNotNone(result)
+@pytest.mark.sync
+def test_task_error_get_wait(test_case):
+    """Ожидание завершения задачи с ошибкой."""
+    result = test_case.add_task("error_task", timeout=50)
+    assert result.status == TaskStatusEnum.ERROR.value
 
-    def test_task_get_wait(self):
-        """Ожидание завершения задачи."""
-        result = self._add_task(timeout=50)
-        self.assertEqual(result.status, TaskStatusEnum.SUCCESS.value)
 
-    def test_task_error_get_wait(self):
-        """Ожидание завершения задачи с ошибкой."""
-        result = self._add_error_task(timeout=50)
-        self.assertEqual(result.status, TaskStatusEnum.ERROR.value)
+@pytest.mark.sync
+def test_task_returns_expected_result(test_case):
+    """Проверка ожидаемого результата задачи."""
+    result = test_case.add_task("test", args=(5,), timeout=50)
+    assert result.returning == "Пользователь 5 записан"
 
-    def test_task_returns_expected_result(self):
-        """Проверка ожидаемого результата задачи."""
-        result = self._add_task(timeout=50)
-        self.assertEqual(result.returning, "Пользователь 5 записан")
 
-    def test_task_not_found(self):
-        """Проверка отсутствия задачи."""
-        fake_uuid = str(uuid4())
-        result = app.get(uuid=fake_uuid)
-        self.assertIsNone(result)
+@pytest.mark.sync
+def test_task_not_found():
+    """Проверка отсутствия задачи."""
+    fake_uuid = str(uuid4())
+    result = app.get(uuid=fake_uuid)
+    assert result is None
 
-    def test_task_timeout(self):
-        """Проверка истечения времени ожидания задачи."""
-        task = self._add_task(timeout=0.1)
-        self.assertIsNone(task, "Истекло время ожидания задачи (None)")
+
+@pytest.mark.sync
+def test_task_timeout(test_case):
+    """Проверка истечения времени ожидания задачи."""
+    result = test_case.add_task("test", args=(5,), timeout=0.1)
+    assert result is None
