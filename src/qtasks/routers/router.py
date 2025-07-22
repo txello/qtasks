@@ -149,6 +149,16 @@ class Router(SyncPluginMixin):
                 """
             )
         ] = None,
+        description: Annotated[
+            str | None,
+            Doc(
+                """
+                    Описание задачи.
+
+                    По умолчанию: `None`.
+                """
+            )
+        ] = None,
         generate_handler: Annotated[
             Callable | None,
             Doc(
@@ -191,6 +201,7 @@ class Router(SyncPluginMixin):
             retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
             tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
             middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
@@ -232,6 +243,7 @@ class Router(SyncPluginMixin):
                 retry_on_exc=retry_on_exc,
                 decode=decode,
                 tags=tags,
+                description=description,
                 generate_handler=generate_handler,
                 executor=executor,
                 middlewares=middlewares,
@@ -252,6 +264,7 @@ class Router(SyncPluginMixin):
                 retry_on_exc=model.retry_on_exc,
                 decode=model.decode,
                 tags=model.tags,
+                description=model.description,
                 generate_handler=model.generate_handler,
                 executor=model.executor,
                 middlewares=model.middlewares,

@@ -10,12 +10,21 @@ def yield_func(result):
     return result
 
 
-@shared_task(middlewares=[MyTaskMiddleware], echo=True, generate_handler=yield_func)
+@shared_task(
+    description="Тестовая синхронная задача с декоратором.",
+    middlewares=[MyTaskMiddleware],
+    echo=True,
+    generate_handler=yield_func
+)
 def sync_test(self: SyncTask):
     print("sync_test")
     yield 1
 
 
-@shared_task(middlewares=[MyTaskMiddleware], awaiting=True)
+@shared_task(
+    description="Тестовая асинхронная задача.",
+    middlewares=[MyTaskMiddleware],
+    awaiting=True
+)
 async def async_test():
     print("async_test")

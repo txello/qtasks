@@ -114,6 +114,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 retry_on_exc=self.task_func.retry_on_exc,
                 decode=self.task_func.decode,
                 tags=self.task_func.tags,
+                description=self.task_func.description,
                 executor=self.task_func.executor,
                 middlewares=self.task_func.middlewares,
             )

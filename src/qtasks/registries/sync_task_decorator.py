@@ -65,7 +65,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = False,
         retry: Annotated[
-            int | None,
+            int,
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -75,7 +75,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         retry_on_exc: Annotated[
-            list[Type[Exception]] | None,
+            list[Type[Exception]],
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -85,7 +85,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         decode: Annotated[
-            Callable | None,
+            Callable,
             Doc(
                 """
                     Декодер результата задачи.
@@ -93,7 +93,7 @@ class SyncTask(Generic[P, R]):
             )
         ] = None,
         tags: Annotated[
-            list[str] | None,
+            list[str],
             Doc(
                 """
                     Теги задачи.
@@ -102,8 +102,18 @@ class SyncTask(Generic[P, R]):
                 """
             )
         ] = None,
+        description: Annotated[
+            str,
+            Doc(
+                """
+                    Описание задачи.
+
+                    По умолчанию: `None`.
+                """
+            )
+        ] = None,
         generate_handler: Annotated[
-            Callable | None,
+            Callable,
             Doc(
                 """
                     Генератор обработчика.
@@ -159,11 +169,12 @@ class SyncTask(Generic[P, R]):
             task_name (str, optional): Имя задачи. По умолчанию: `None`.
             priority (int, optional): Приоритет задачи. По умолчанию: `None`.
             echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
-            retry (int | None, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (list[Type[Exception]] | None, optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
+            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
             tags (list[str], optional): Теги задачи. По умолчанию: `None`.
-            generate_handler (Callable | None, optional): Генератор обработчика. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
+            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `None`.
             middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `None`.
             app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: `None`.
@@ -177,6 +188,7 @@ class SyncTask(Generic[P, R]):
 
         self.decode = decode
         self.tags = tags
+        self.description = description
 
         self.executor = executor
         self.middlewares = middlewares
@@ -243,7 +255,7 @@ class SyncTask(Generic[P, R]):
                     """
             ),
         ] = None,
-    ) -> Task | None:
+    ) -> Task:
         """Добавить задачу.
 
         Args:

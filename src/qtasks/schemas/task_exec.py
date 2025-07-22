@@ -56,6 +56,7 @@ class TaskExecSchema:
 
         decode (Callable, optional): Декодер результата задачи. По умолчанию: None
         tags (list[str], optional): Теги задачи. По умолчанию: None
+        description (str, optional): Описание задачи. По умолчанию: `None`.
 
         generate_handler (Callable, optional): Генератор обработчика. По умолчанию: None
 
@@ -77,6 +78,7 @@ class TaskExecSchema:
 
     decode: Callable | None = None
     tags: list[str] | None = None
+    description: str | None = None
 
     generate_handler: Callable | None = None
 

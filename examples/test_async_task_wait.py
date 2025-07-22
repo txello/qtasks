@@ -8,6 +8,7 @@ from based_async_app import (
     test_echo,
     test_retry,
     test_echo_ctx,
+    example_stats,
     router_tasks,
 )
 
@@ -23,7 +24,8 @@ async def main():
     # task = await example_pydantic.add_task(args=("Test", 42), timeout=50)
     # task = await example_pydantic.add_task(kwargs={"item": {"name": "Test", "value": 42}}, timeout=50)
     # task = await example_pydantic.add_task(kwargs={"name": "Test", "value": 42}, timeout=50)
-    task = await test_echo_ctx.add_task(timeout=50)
+    # task = await test_echo_ctx.add_task(timeout=50)
+    task = await example_stats.add_task(timeout=50)
     print(task)
 
 asyncio.run(main())

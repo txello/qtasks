@@ -112,7 +112,7 @@ class BaseQueueTasks:
         """
         self.name = name
 
-        self.version: Annotated[str, Doc("Версия проекта.")] = "1.5.0"
+        self.version: Annotated[str, Doc("Версия проекта.")] = "1.6.0"
 
         self.config: Annotated[
             QueueConfig,
@@ -215,6 +215,7 @@ class BaseQueueTasks:
         retry_on_exc: list[Type[Exception]] | None = None,
         decode: Callable | None = None,
         tags: list[str] | None = None,
+        description: str | None = None,
         generate_handler: Callable | None = None,
         executor: Type["BaseTaskExecutor"] | None = None,
         middlewares: List["TaskMiddleware"] | None = None,
@@ -295,6 +296,16 @@ class BaseQueueTasks:
                 """
             )
         ] = None,
+        description: Annotated[
+            str | None,
+            Doc(
+                """
+                    Описание задачи.
+
+                    По умолчанию: `None`.
+                """
+            )
+        ] = None,
         generate_handler: Annotated[
             Callable | None,
             Doc(
@@ -337,6 +348,7 @@ class BaseQueueTasks:
             retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
             tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
             middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
@@ -380,6 +392,7 @@ class BaseQueueTasks:
                 retry_on_exc=retry_on_exc,
                 decode=decode,
                 tags=tags,
+                description=description,
                 generate_handler=generate_handler,
                 executor=executor,
                 middlewares=middlewares,
@@ -401,6 +414,7 @@ class BaseQueueTasks:
                 retry_on_exc=model.retry_on_exc,
                 decode=model.decode,
                 tags=model.tags,
+                description=model.description,
                 generate_handler=model.generate_handler,
                 executor=model.executor,
                 middlewares=model.middlewares,
@@ -496,10 +510,16 @@ class BaseQueueTasks:
         Зарегистрировать задачи из реестра задач.
 
         Обновляет `self.tasks` и `self.worker._tasks` всеми задачами,
-        зарегистрированными в `TaskRegistry`.
+        зарегистрированными в `TaskRegistry`, устанавливая приоритет по умолчанию.
         """
-        self.tasks.update(TaskRegistry.all_tasks())
-        self.worker._tasks.update(TaskRegistry.all_tasks())
+        all_tasks = TaskRegistry.all_tasks()
+
+        for task in all_tasks.values():
+            if task.priority is None:
+                task.priority = self.config.default_task_priority
+
+        self.tasks.update(all_tasks)
+        self.worker._tasks.update(all_tasks)
 
     def _set_state(self):
         """Установить параметры в `qtasks._state`."""

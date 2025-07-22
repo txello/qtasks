@@ -560,6 +560,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         retry_on_exc: list[Type[Exception]] | None = None,
         decode: Callable | None = None,
         tags: list[str] | None = None,
+        description: str | None = None,
         generate_handler: Callable | None = None,
         executor: Type["BaseTaskExecutor"] | None = None,
         middlewares: List["TaskMiddleware"] | None = None,
@@ -578,6 +579,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
             tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
             middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
