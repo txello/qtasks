@@ -4,7 +4,7 @@ import asyncio
 import time
 import asyncio_atexit
 import json
-from typing import Optional, Union
+from typing import List, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import redis.asyncio as aioredis
@@ -150,7 +150,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     async def add(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
@@ -182,7 +182,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
         return
 
-    async def get(self, uuid: UUID | str) -> Task | None:
+    async def get(self, uuid: Union[UUID, str]) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -205,15 +205,15 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             result = new_result
         return result
 
-    async def get_all(self) -> list[Task]:
+    async def get_all(self) -> List[Task]:
         """Получить все задачи.
 
         Returns:
-            list[Task]: Массив задач.
+            List[Task]: Массив задач.
         """
         pattern = f"{self.name}:*"
 
-        results: list[Task] = []
+        results: List[Task] = []
         async for key in self.client.scan_iter(pattern):
             name, uuid, *_ = key.split(":")
             if uuid in [self._queue_process, "task_queue"]:
@@ -266,7 +266,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         ],
         model: Annotated[
             Union[
-                TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusSuccessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """
@@ -317,7 +317,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     async def stop(self):
         """Останавливает хранилище."""
         await self._plugin_trigger("storage_stop", storage=self)
-        return await self.client.close()
+        return await self.client.aclose()
 
     async def add_process(
         self,
@@ -390,7 +390,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await self._plugin_trigger("storage_delete_finished_tasks", storage=self)
         pattern = f"{self.name}:"
         try:
-            tasks: list[Task] = list(
+            tasks: List[Task] = list(
                 filter(
                     lambda task: task.status != TaskStatusEnum.NEW.value,
                     await self.get_all(),

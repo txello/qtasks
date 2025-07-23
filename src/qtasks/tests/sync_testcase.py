@@ -209,7 +209,7 @@ class SyncTestCase(BaseTestCase):
                 """
             ),
         ] = None,
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Добавить задачу.
 
         Args:
@@ -257,7 +257,7 @@ class SyncTestCase(BaseTestCase):
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получить задачу.
 
         Args:

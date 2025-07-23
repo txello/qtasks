@@ -1,7 +1,7 @@
 """Async context for tasks."""
 
 import asyncio
-from typing import TYPE_CHECKING, NoReturn
+from typing import TYPE_CHECKING, NoReturn, Union
 from uuid import UUID
 
 from qtasks.configs.config import QueueConfig
@@ -50,10 +50,10 @@ class AsyncContext:
         self._log: "Logger" = kwargs.get("log")
         """Логгер."""
 
-        self._metadata: Task | None = None
+        self._metadata: Union[Task, None] = None
         """Метаданные задачи."""
 
-    def get_logger(self, name: str | None = None) -> "Logger":
+    def get_logger(self, name: Union[str, None] = None) -> "Logger":
         """Возвращает логгер для текущего контекста.
 
         Args:
@@ -73,7 +73,7 @@ class AsyncContext:
         """
         return self._app.config
 
-    async def get_metadata(self, cache=True) -> Task | None:
+    async def get_metadata(self, cache=True) -> Union[Task, None]:
         """Возвращает метаданные задачи.
 
         Args:
@@ -88,7 +88,7 @@ class AsyncContext:
             return self._metadata
         return await self._app.get(self.task_uuid)
 
-    async def get_task(self, uuid: UUID | str) -> Task | None:
+    async def get_task(self, uuid: Union[UUID, str]) -> Union[Task, None]:
         """Возвращает задачу по UUID.
 
         Args:

@@ -4,7 +4,7 @@ from dataclasses import asdict, is_dataclass
 from inspect import signature, _empty
 import json
 from pprint import pformat
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Tuple, Union
 from collections.abc import ValuesView
 
 from qtasks.schemas.task_exec import TaskExecSchema
@@ -64,7 +64,7 @@ class UtilsInspectStats:
         lines.append("-" * 50)
         return "\n".join(lines)
 
-    def _parser_json(self, data: tuple[Any] | Any) -> str:
+    def _parser_json(self, data: Union[Any, Tuple[Any]]) -> str:
         def formatter(d):
             if is_dataclass(d):
                 return asdict(d)
@@ -72,7 +72,7 @@ class UtilsInspectStats:
         data = [formatter(d) for d in data] if isinstance(data, (tuple, list, ValuesView)) else formatter(data)
         return json.dumps(data, ensure_ascii=False, indent=2, default=str)
 
-    def _tasks_parser(self, tasks: tuple[TaskExecSchema]) -> str:
+    def _tasks_parser(self, tasks: Tuple[TaskExecSchema]) -> str:
         """Форматированный вывод всех зарегистрированных задач."""
         lines = []
 

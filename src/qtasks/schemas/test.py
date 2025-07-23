@@ -17,6 +17,8 @@ class TestConfig:
 
     """
 
+    __test__ = False
+
     worker: bool = False
     broker: bool = False
     storage: bool = False

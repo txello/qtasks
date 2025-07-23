@@ -2,7 +2,7 @@
 
 from dataclasses import InitVar, dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, Tuple, Union
 from uuid import UUID
 
 
@@ -16,8 +16,8 @@ class Task:
         priority (int): Приоритет.
         task_name (str): Название.
 
-        args (tuple[str]): Аргументы типа args.
-        kwargs (dict[str, Any]): Аргументы типа kwargs.
+        args (Tuple[str]): Аргументы типа args.
+        kwargs (Dict[str, Any]): Аргументы типа kwargs.
 
         created_at (datetime): Дата создания.
         updated_at (datetime): Дата обновления.
@@ -31,11 +31,11 @@ class Task:
     priority: int
     task_name: str
 
-    args: tuple[str]
-    kwargs: dict[str, Any]
+    args: Tuple[str]
+    kwargs: Dict[str, Any]
 
     created_at: datetime
     updated_at: datetime
 
-    returning: InitVar[str | None] = None
-    traceback: InitVar[str | None] = None
+    returning: InitVar[Union[str, None]] = None
+    traceback: InitVar[Union[str, None]] = None

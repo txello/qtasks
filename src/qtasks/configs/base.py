@@ -1,7 +1,7 @@
 """Base Configurations."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
@@ -82,7 +82,7 @@ class BaseGlobalConfig(ABC):
                 format=self.config.logs_format,
             )
         )
-        self.plugins: dict[str, List["BasePlugin"]] = {}
+        self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
 
@@ -109,26 +109,26 @@ class BaseGlobalConfig(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, key: str) -> dict[Any] | list[Any] | tuple[Any]:
+    def get_all(self, key: str) -> Union[dict, list, tuple]:
         """Получить все значения.
 
         Args:
             key (str): Ключ.
 
         Returns:
-            dict[Any] | list[Any] | tuple[Any]: Значения.
+            Dict[str, Any] | List[Any] | Tuple[Any]: Значения.
         """
         pass
 
     @abstractmethod
-    def get_match(self, match: str) -> Any | dict[Any] | list[Any] | tuple[Any]:
+    def get_match(self, match: str) -> Union[Any, dict, list, tuple]:
         """Получить значения по паттерну.
 
         Args:
             match (str): Паттерн.
 
         Returns:
-            Any | dict[Any] | list[Any] | tuple[Any]: Значение или Значения.
+            Any | Dict[str, Any] | List[Any] | Tuple[Any]: Значение или Значения.
         """
         pass
 

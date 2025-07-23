@@ -311,14 +311,14 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -402,7 +402,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         ],
         model: Annotated[
             Union[
-                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """

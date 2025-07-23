@@ -1,7 +1,7 @@
 """Base worker class."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Optional, Type
+from typing import TYPE_CHECKING, Dict, List, Optional, Type
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
@@ -100,17 +100,17 @@ class BaseWorker(ABC):
             )
         )
 
-        self._tasks: dict[str, TaskExecSchema] = {}
-        self.init_worker_running: list[InitsExecSchema] = []
-        self.init_task_running: list[InitsExecSchema] = []
-        self.init_task_stoping: list[InitsExecSchema] = []
-        self.init_worker_stoping: list[InitsExecSchema] = []
-        self.task_middlewares_before: list[TaskMiddleware] = []
-        self.task_middlewares_after: list[TaskMiddleware] = []
+        self._tasks: Dict[str, TaskExecSchema] = {}
+        self.init_worker_running: List[InitsExecSchema] = []
+        self.init_task_running: List[InitsExecSchema] = []
+        self.init_task_stoping: List[InitsExecSchema] = []
+        self.init_worker_stoping: List[InitsExecSchema] = []
+        self.task_middlewares_before: List[TaskMiddleware] = []
+        self.task_middlewares_after: List[TaskMiddleware] = []
 
         self.task_executor: Type["BaseTaskExecutor"] = None
 
-        self.plugins: dict[str, List["BasePlugin"]] = {}
+        self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.num_workers = 0
 

@@ -129,7 +129,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         self.worker: "BaseWorker" = worker or SyncThreadWorker(
             name=name, broker=self.broker, log=self.log, config=self.config
         )
-        self.starter: "BaseStarter" | None = None
+        self.starter: Union["BaseStarter", None] = None
 
         self._registry_tasks()
 
@@ -257,7 +257,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получить задачу.
 
         Args:
@@ -552,19 +552,19 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
     @overload
     def task(
         self,
-        name: str | None = None,
+        name: Union[str, None] = None,
         *,
-        priority: int | None = None,
+        priority: Union[int, None] = None,
         echo: bool = False,
-        retry: int | None = None,
-        retry_on_exc: list[Type[Exception]] | None = None,
-        decode: Callable | None = None,
-        tags: list[str] | None = None,
-        description: str | None = None,
-        generate_handler: Callable | None = None,
-        executor: Type["BaseTaskExecutor"] | None = None,
-        middlewares_before: List["TaskMiddleware"] | None = None,
-        middlewares_after: List["TaskMiddleware"] | None = None,
+        retry: Union[int, None] = None,
+        retry_on_exc: Union[List[Type[Exception]], None] = None,
+        decode: Union[Callable, None] = None,
+        tags: Union[List[str], None] = None,
+        description: Union[str, None] = None,
+        generate_handler: Union[Callable, None] = None,
+        executor: Union[Type["BaseTaskExecutor"], None] = None,
+        middlewares_before: Union[List["TaskMiddleware"], None] = None,
+        middlewares_after: Union[List["TaskMiddleware"], None] = None,
         **kwargs
     ) -> Callable[[Callable[P, R]], SyncTask[P, R]]:
         ...
@@ -577,9 +577,9 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
             echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.

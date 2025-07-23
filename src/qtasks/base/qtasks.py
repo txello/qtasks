@@ -3,15 +3,15 @@
 import inspect
 from typing import (
     TYPE_CHECKING,
-    Annotated,
     Callable,
+    Dict,
     List,
     Optional,
     Type,
     Union,
     overload,
 )
-from typing_extensions import Doc
+from typing_extensions import Annotated, Doc
 
 from qtasks.types.annotations import P, R
 import qtasks._state
@@ -141,10 +141,10 @@ class BaseQueueTasks:
 
         self.broker: "BaseBroker" = broker
         self.worker: "BaseWorker" = worker
-        self.starter: "BaseStarter" | None = None
+        self.starter: Union["BaseStarter", None] = None
 
         self.routers: Annotated[
-            list[Router],
+            List[Router],
             Doc(
                 """
                 Роутеры, тип `qtasks.routers.Router`.
@@ -155,7 +155,7 @@ class BaseQueueTasks:
         ] = []
 
         self.tasks: Annotated[
-            dict[str, TaskExecSchema],
+            Dict[str, TaskExecSchema],
             Doc(
                 """
                 Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
@@ -166,7 +166,7 @@ class BaseQueueTasks:
         ] = {}
 
         self.plugins: Annotated[
-            dict[str, List["BasePlugin"]],
+            Dict[str, List["BasePlugin"]],
             Doc(
                 """
                 Задачи, тип `{trigger_name:[qtasks.plugins.base.BasePlugin]}`.
@@ -177,7 +177,7 @@ class BaseQueueTasks:
         ] = {}
 
         self._inits: Annotated[
-            dict[str, list[InitsExecSchema]],
+            Dict[str, List[InitsExecSchema]],
             Doc(
                 """
                 функции инициализаций.
@@ -207,19 +207,19 @@ class BaseQueueTasks:
     @overload
     def task(
         self,
-        name: str | None = None,
+        name: Union[str, None] = None,
         *,
-        priority: int | None = None,
+        priority: Union[int, None] = None,
         echo: bool = False,
-        retry: int | None = None,
-        retry_on_exc: list[Type[Exception]] | None = None,
-        decode: Callable | None = None,
-        tags: list[str] | None = None,
-        description: str | None = None,
-        generate_handler: Callable | None = None,
-        executor: Type["BaseTaskExecutor"] | None = None,
-        middlewares_before: List["TaskMiddleware"] | None = None,
-        middlewares_after: List["TaskMiddleware"] | None = None,
+        retry: Union[int, None] = None,
+        retry_on_exc: Union[List[Type[Exception]], None] = None,
+        decode: Union[Callable, None] = None,
+        tags: Union[List[str], None] = None,
+        description: Union[str, None] = None,
+        generate_handler: Union[Callable, None] = None,
+        executor: Union[Type["BaseTaskExecutor"], None] = None,
+        middlewares_before: Union[List["TaskMiddleware"], None] = None,
+        middlewares_after: Union[List["TaskMiddleware"], None] = None,
         **kwargs
     ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
         ...
@@ -258,7 +258,7 @@ class BaseQueueTasks:
             ),
         ] = False,
         retry: Annotated[
-            int | None,
+            Union[int, None],
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -268,7 +268,7 @@ class BaseQueueTasks:
             ),
         ] = None,
         retry_on_exc: Annotated[
-            list[Type[Exception]] | None,
+            Union[List[Type[Exception]], None],
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -278,7 +278,7 @@ class BaseQueueTasks:
             ),
         ] = None,
         decode: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Декодер результата задачи.
@@ -288,7 +288,7 @@ class BaseQueueTasks:
             )
         ] = None,
         tags: Annotated[
-            list[str] | None,
+            Union[List[str], None],
             Doc(
                 """
                     Теги задачи.
@@ -298,7 +298,7 @@ class BaseQueueTasks:
             )
         ] = None,
         description: Annotated[
-            str | None,
+            Union[str, None],
             Doc(
                 """
                     Описание задачи.
@@ -308,7 +308,7 @@ class BaseQueueTasks:
             )
         ] = None,
         generate_handler: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Генератор обработчика.
@@ -356,9 +356,9 @@ class BaseQueueTasks:
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
             echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.

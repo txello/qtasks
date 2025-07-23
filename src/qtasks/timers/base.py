@@ -1,7 +1,7 @@
 """Base timer class."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 from typing_extensions import Annotated, Doc
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -132,7 +132,7 @@ class BaseTimer(ABC):
                     """
             ),
         ] = None,
-    ) -> Any | None:
+    ) -> Union[Any, None]:
         """Добавление задачи.
 
         Args:

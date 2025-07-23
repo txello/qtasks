@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from types import FunctionType
-from typing import TYPE_CHECKING, Any, Callable, Literal, Type
+from typing import TYPE_CHECKING, Callable, List, Literal, Type, Union
 from uuid import UUID
 
 
@@ -20,8 +20,8 @@ class TaskPrioritySchema:
         uuid (UUID): UUID.
         name (str): Название.
 
-        args (tuple[str]): Аргументы типа args.
-        kwargs (dict[str, str]): Аргументы типа kwargs.
+        args (Tuple[str]): Аргументы типа args.
+        kwargs (Dict[str, str]): Аргументы типа kwargs.
 
         created_at (float): Дата создания в формате `timestamp`.
         updated_at (float): Дата обновления в формате `timestamp`.
@@ -52,19 +52,19 @@ class TaskExecSchema:
 
         echo (bool): Включить параметр self в задачу. По умолчанию: False
         retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: None
-        retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: None
+        retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: None
 
         decode (Callable, optional): Декодер результата задачи. По умолчанию: None
-        tags (list[str], optional): Теги задачи. По умолчанию: None
+        tags (List[str], optional): Теги задачи. По умолчанию: None
         description (str, optional): Описание задачи. По умолчанию: `None`.
 
         generate_handler (Callable, optional): Генератор обработчика. По умолчанию: None
 
         executor (Type[BaseTaskExecutor], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`|`AsyncTaskExecutor`.
-        middlewares_before (list[Type[TaskMiddleware]]): Мидлвари до выполнения задачи. По умолчанию: `Пустой массив`.
-        middlewares_after (list[Type[TaskMiddleware]]): Мидлвари после выполнения задачи. По умолчанию: `Пустой массив`.
+        middlewares_before (List[Type[TaskMiddleware]]): Мидлвари до выполнения задачи. По умолчанию: `Пустой массив`.
+        middlewares_after (List[Type[TaskMiddleware]]): Мидлвари после выполнения задачи. По умолчанию: `Пустой массив`.
 
-        extra (dict[str, Any]): Дополнительные параметры задачи. По умолчанию: `Пустой словарь`.
+        extra (Dict[str, Any]): Дополнительные параметры задачи. По умолчанию: `Пустой словарь`.
 
     """
 
@@ -73,36 +73,36 @@ class TaskExecSchema:
 
     func: FunctionType
     awaiting: bool = False
-    generating: str | Literal[False] = False
+    generating: Union[str, Literal[False]] = False
 
     echo: bool = False
-    retry: int | None = None
-    retry_on_exc: list[Type[Exception]] | None = None
+    retry: Union[int, None] = None
+    retry_on_exc: Union[List[Type[Exception]], None] = None
 
-    decode: Callable | None = None
-    tags: list[str] | None = None
-    description: str | None = None
+    decode: Union[Callable, None] = None
+    tags: Union[List[str], None] = None
+    description: Union[str, None] = None
 
-    generate_handler: Callable | None = None
+    generate_handler: Union[Callable, None] = None
 
-    executor: Type["BaseTaskExecutor"] = None
-    middlewares_before: list[Type["TaskMiddleware"]] = field(default_factory=list)
-    middlewares_after: list[Type["TaskMiddleware"]] = field(default_factory=list)
+    executor: Union[Type["BaseTaskExecutor"], None] = None
+    middlewares_before: List[Type["TaskMiddleware"]] = field(default_factory=list)
+    middlewares_after: List[Type["TaskMiddleware"]] = field(default_factory=list)
 
-    extra: dict[str, Any] = field(default_factory=dict)
+    extra: dict = field(default_factory=dict)
 
-    def add_middlewares_before(self, middlewares: list[Type["TaskMiddleware"]]) -> None:
+    def add_middlewares_before(self, middlewares: List[Type["TaskMiddleware"]]) -> None:
         """Добавляет мидлвари к задаче.
 
         Args:
-            middlewares (list[Type[TaskMiddleware]]): Список мидлварей.
+            middlewares (List[Type[TaskMiddleware]]): Список мидлварей.
         """
         self.middlewares_before.extend(middlewares)
 
-    def add_middlewares_after(self, middlewares: list[Type["TaskMiddleware"]]) -> None:
+    def add_middlewares_after(self, middlewares: List[Type["TaskMiddleware"]]) -> None:
         """Добавляет мидлвари к задаче.
 
         Args:
-            middlewares (list[Type[TaskMiddleware]]): Список мидлварей.
+            middlewares (List[Type[TaskMiddleware]]): Список мидлварей.
         """
         self.middlewares_after.extend(middlewares)

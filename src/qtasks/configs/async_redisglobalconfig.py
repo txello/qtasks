@@ -1,7 +1,7 @@
 """Async Redis Global Config."""
 
 import asyncio
-from typing import Any, Optional
+from typing import Any, Dict, Optional, Union
 from typing_extensions import Annotated, Doc
 import redis.asyncio as aioredis
 
@@ -165,14 +165,14 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             result = new_result
         return result
 
-    async def get_all(self, key: str) -> dict[Any]:
+    async def get_all(self, key: str) -> Dict[str, Any]:
         """Получить все значения.
 
         Args:
             key (str): Ключ.
 
         Returns:
-            dict[Any]: Значения.
+            Dict[str, Any]: Значения.
         """
         result = await self.client.hgetall(name=f"{self.config_name}:{key}")
         new_result = await self._plugin_trigger(
@@ -185,14 +185,14 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             result = new_result
         return result
 
-    async def get_match(self, match: str) -> Any | dict[Any]:
+    async def get_match(self, match: str) -> Union[Any, dict]:
         """Получить значения по паттерну.
 
         Args:
             match (str): Паттерн.
 
         Returns:
-            Any | dict[Any]: Значение или Значения.
+            Any | Dict[str, Any]: Значение или Значения.
         """
         result = await self.client.hscan(key=self.config_name, match=match)
         new_result = await self._plugin_trigger(
@@ -222,7 +222,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
         self.running = False
         if self.status_event:
             self.status_event.cancel()
-        await self.client.close()
+        await self.client.aclose()
 
     async def _set_status(self):
         """Обновляет статус запуска глобального конфига."""

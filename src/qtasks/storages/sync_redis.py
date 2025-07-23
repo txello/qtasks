@@ -2,7 +2,7 @@
 
 import json
 import time
-from typing import Optional, Union
+from typing import List, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import redis
@@ -147,7 +147,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
     def add(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
@@ -179,7 +179,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
         return
 
-    def get(self, uuid: UUID | str) -> Task | None:
+    def get(self, uuid: Union[UUID, str]) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -199,14 +199,14 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             result = new_result
         return result
 
-    def get_all(self) -> list[Task]:
+    def get_all(self) -> List[Task]:
         """Получить все задачи.
 
         Returns:
-            list[Task]: Массив задач.
+            List[Task]: Массив задач.
         """
         pattern = f"{self.name}:*"
-        results: list[Task] = []
+        results: List[Task] = []
         for key in self.client.scan_iter(pattern):
             try:
                 _, uuid = key.split(":")
@@ -259,7 +259,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema | TaskStatusErrorSchema],
+            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
             Doc(
                 """
                     Модель результата задачи.
@@ -381,7 +381,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         self._plugin_trigger("storage_delete_finished_tasks", storage=self)
         pattern = f"{self.name}:"
         try:
-            tasks: list[Task] = list(
+            tasks: List[Task] = list(
                 filter(
                     lambda task: task.status != TaskStatusEnum.NEW.value, self.get_all()
                 )

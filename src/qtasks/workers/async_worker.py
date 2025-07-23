@@ -4,7 +4,7 @@ import asyncio
 from dataclasses import asdict
 from time import time
 import traceback
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
@@ -109,10 +109,10 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         )
         self.queue = asyncio.PriorityQueue()
 
-        self._tasks: dict[str, TaskExecSchema] = {}
-        self._stop_event = asyncio.Event()
+        self._tasks: Dict[str, TaskExecSchema] = {}
+        self._stop_event: Optional[asyncio.Event] = None
         self.semaphore = asyncio.Semaphore(self.config.max_tasks_process)
-        self.condition = asyncio.Condition()
+        self.condition: Optional[asyncio.Condition] = None
 
         self.task_executor = AsyncTaskExecutor
 
@@ -145,10 +145,9 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
                     while self.queue.empty():
                         await self.condition.wait()
 
-                task_broker: TaskPrioritySchema | None = await self.queue.get()
+                task_broker: Union[TaskPrioritySchema, None] = await self.queue.get()
                 if task_broker is None:
                     break
-
                 asyncio.create_task(self._execute_task(task_broker))
         finally:
             for model_init in self.init_worker_stoping:
@@ -307,8 +306,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         )
         async with self.condition:
             await self.queue.put(model)
-            self.condition.notify()
-
+            self.condition.notify_all()
         return Task(
             status=TaskStatusEnum.NEW.value,
             task_name=name,
@@ -339,11 +337,17 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
         """
         self.num_workers = num_workers
+
+        if self.condition is None:
+            self.condition = asyncio.Condition()
+        if self._stop_event is None:
+            self._stop_event = asyncio.Event()
         await self._plugin_trigger("worker_start", worker=self)
 
         # Запускаем несколько воркеров
+        loop = asyncio.get_event_loop()
         workers = [
-            asyncio.create_task(self.worker(number))
+            loop.create_task(self.worker(number))
             for number in range(self.num_workers)
         ]
         await self._stop_event.wait()  # Ожидание сигнала остановки
@@ -379,7 +383,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
 
     async def _run_task(
         self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
-    ) -> TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema:
+    ) -> Union[TaskStatusSuccessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema]:
         """Запуск функции задачи.
 
         Args:
@@ -495,7 +499,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
 
     async def _task_exists(
         self, task_broker: TaskPrioritySchema
-    ) -> TaskExecSchema | None:
+    ) -> Union[TaskExecSchema, None]:
         """Проверка существования задачи.
 
         Args:
@@ -544,7 +548,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         self,
         task_func: TaskExecSchema,
         task_broker: TaskPrioritySchema,
-        model: TaskStatusSuccessSchema | TaskStatusErrorSchema,
+        model: Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
     ) -> None:
         """Вызов задач `init_task_stoping`.
 
@@ -588,7 +592,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         ],
         model: Annotated[
             Union[
-                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """

@@ -192,7 +192,6 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
                 args = new_args.get("args", args)
                 kwargs = new_args.get("kwargs", kwargs)
                 created_at = new_args.get("created_at", created_at)
-
             await worker.add(
                 name=task_name,
                 uuid=uuid,
@@ -302,14 +301,14 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -392,7 +391,7 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
         ],
         model: Annotated[
             Union[
-                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """

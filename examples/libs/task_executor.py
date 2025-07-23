@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 from qtasks.executors.base import BaseTaskExecutor
 
 
@@ -21,7 +21,7 @@ class MySyncTaskExecutor(BaseTaskExecutor):
     def execute(
         self,
         decode: bool = True
-    ) -> Any | str:
+    ) -> Union[Any, str]:
         pass
 
     def decode(self) -> str:
@@ -47,7 +47,7 @@ class MyAsyncTaskExecutor(BaseTaskExecutor):
     async def execute(
         self,
         decode: bool = True
-    ) -> Any | str:
+    ) -> Union[Any, str]:
         pass
 
     def decode(self) -> str:

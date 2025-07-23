@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import asdict, field, fields, make_dataclass
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 from typing import TYPE_CHECKING
@@ -99,7 +99,7 @@ class BaseBroker(ABC):
                 format=self.config.logs_format,
             )
         )
-        self.plugins: dict[str, List["BasePlugin"]] = {}
+        self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
 
@@ -167,14 +167,14 @@ class BaseBroker(ABC):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:

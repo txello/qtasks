@@ -1,7 +1,7 @@
 """Task Registry."""
 
 import inspect
-from typing import Callable, List, Optional, Type, Union
+from typing import Callable, Dict, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.executors.base import BaseTaskExecutor
@@ -18,7 +18,7 @@ class TaskRegistry:
     """
 
     _tasks: Annotated[
-        dict[str, TaskExecSchema],
+        Dict[str, TaskExecSchema],
         Doc(
             """
             Задачи.
@@ -72,7 +72,7 @@ class TaskRegistry:
             ),
         ] = False,
         retry: Annotated[
-            int | None,
+            Union[int, None],
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -82,7 +82,7 @@ class TaskRegistry:
             ),
         ] = None,
         retry_on_exc: Annotated[
-            list[Type[Exception]] | None,
+            Union[List[Type[Exception]], None],
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -92,7 +92,7 @@ class TaskRegistry:
             ),
         ] = None,
         decode: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Декодер результата задачи.
@@ -102,7 +102,7 @@ class TaskRegistry:
             )
         ] = None,
         tags: Annotated[
-            list[str] | None,
+            Union[List[str], None],
             Doc(
                 """
                     Теги задачи.
@@ -112,7 +112,7 @@ class TaskRegistry:
             )
         ] = None,
         description: Annotated[
-            str | None,
+            Union[str, None],
             Doc(
                 """
                     Описание задачи.
@@ -122,7 +122,7 @@ class TaskRegistry:
             )
         ] = None,
         generate_handler: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Генератор обработчика.
@@ -170,9 +170,9 @@ class TaskRegistry:
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
             echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
@@ -258,10 +258,10 @@ class TaskRegistry:
         return cls._tasks.get(name)
 
     @classmethod
-    def all_tasks(cls) -> dict[str, TaskExecSchema]:
+    def all_tasks(cls) -> Dict[str, TaskExecSchema]:
         """Получение всех задач.
 
         Returns:
-            dict[str, TaskExecSchema]: Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
+            Dict[str, TaskExecSchema]: Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
         """
         return cls._tasks

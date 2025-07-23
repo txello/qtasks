@@ -1,7 +1,7 @@
 """Async Task."""
 
-from typing import TYPE_CHECKING, Annotated, Any, Callable, Generic, List, Optional, Type
-from typing_extensions import Doc
+from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, List, Optional, Type, Union
+from typing_extensions import Annotated, Doc
 
 from qtasks.types.annotations import P, R
 from qtasks.contexts.async_context import AsyncContext
@@ -65,7 +65,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = False,
         retry: Annotated[
-            int | None,
+            Union[int, None],
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -75,7 +75,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         retry_on_exc: Annotated[
-            list[Type[Exception]] | None,
+            Union[List[Type[Exception]], None],
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -85,7 +85,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         decode: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Декодер результата задачи.
@@ -95,7 +95,7 @@ class AsyncTask(Generic[P, R]):
             )
         ] = None,
         tags: Annotated[
-            list[str] | None,
+            Union[List[str], None],
             Doc(
                 """
                     Теги задачи.
@@ -105,7 +105,7 @@ class AsyncTask(Generic[P, R]):
             )
         ] = None,
         description: Annotated[
-            str | None,
+            Union[str, None],
             Doc(
                 """
                     Описание задачи.
@@ -115,7 +115,7 @@ class AsyncTask(Generic[P, R]):
             )
         ] = None,
         generate_handler: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Генератор обработчика.
@@ -155,7 +155,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         extra: Annotated[
-            dict[str, Any],
+            Dict[str, Any],
             Doc(
                 """
                     Дополнительные параметры.
@@ -182,9 +182,9 @@ class AsyncTask(Generic[P, R]):
             priority (int, optional): Приоритет задачи. По умолчанию: `None`.
             echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `None`.
@@ -270,7 +270,7 @@ class AsyncTask(Generic[P, R]):
                     """
             ),
         ] = None,
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Добавить задачу.
 
         Args:

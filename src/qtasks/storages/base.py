@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import field, fields, make_dataclass
 import datetime
 import json
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 from typing import TYPE_CHECKING
@@ -94,7 +94,7 @@ class BaseStorage(ABC):
         """
         self.name = name
         self.client = None
-        self.global_config: "BaseGlobalConfig" | None = global_config
+        self.global_config: Union["BaseGlobalConfig", None] = global_config
 
         self.config = config or QueueConfig()
         self.log = (
@@ -107,7 +107,7 @@ class BaseStorage(ABC):
                 format=self.config.logs_format,
             )
         )
-        self.plugins: dict[str, List["BasePlugin"]] = {}
+        self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
 
@@ -115,7 +115,7 @@ class BaseStorage(ABC):
     def add(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
@@ -143,14 +143,14 @@ class BaseStorage(ABC):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -162,11 +162,11 @@ class BaseStorage(ABC):
         pass
 
     @abstractmethod
-    def get_all(self) -> list[Task]:
+    def get_all(self) -> List[Task]:
         """Получить все задачи.
 
         Returns:
-            list[Task]: Массив задач.
+            List[Task]: Массив задач.
         """
         pass
 
@@ -247,7 +247,7 @@ class BaseStorage(ABC):
         ],
         model: Annotated[
             Union[
-                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """

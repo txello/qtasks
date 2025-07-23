@@ -1,6 +1,6 @@
 """Sync Pydantic Wrapper."""
 
-from typing import Any
+from typing import Any, List, Tuple, Union
 from pydantic import BaseModel
 
 from qtasks.plugins.base import BasePlugin
@@ -33,13 +33,13 @@ class SyncPydanticWrapperPlugin(BasePlugin):
             return self.handlers[name](**kwargs)
         return None
 
-    def replace_args(self, args: list, kwargs: dict, args_info: list[ArgMeta]) -> tuple[list, dict] | None:
+    def replace_args(self, args: list, kwargs: dict, args_info: List[ArgMeta]) -> Union[Tuple[list, dict], None]:
         """Заменяет аргументы на Pydantic-модели.
 
         Args:
             args (list): Позиционные аргументы.
             kwargs (dict): Именованные аргументы.
-            args_info (list[ArgMeta]): Информация об аргументах.
+            args_info (List[ArgMeta]): Информация об аргументах.
         """
         echo = args[0] if args_info and not args_info[0].is_kwarg and args_info[0].name == "self" else None
         start_index = 1 if echo else 0

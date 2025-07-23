@@ -2,7 +2,7 @@
 
 from threading import Thread
 import time
-from typing import Any, Optional
+from typing import Any, Dict, Optional, Union
 from typing_extensions import Annotated, Doc
 import redis
 
@@ -164,14 +164,14 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             result = new_result
         return result
 
-    def get_all(self, key: str) -> dict[Any]:
+    def get_all(self, key: str) -> Dict[str, Any]:
         """Получить все значения.
 
         Args:
             key (str): Ключ.
 
         Returns:
-            dict[Any]: Значения.
+            Dict[str, Any]: Значения.
         """
         result = self.client.hgetall(name=f"{self.config_name}:{key}")
         new_result = self._plugin_trigger(
@@ -184,14 +184,14 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             result = new_result
         return result
 
-    def get_match(self, match: str) -> Any | dict[Any]:
+    def get_match(self, match: str) -> Union[Any, dict]:
         """Получить значения по паттерну.
 
         Args:
             match (str): Паттерн.
 
         Returns:
-            Any | dict[Any]: Значение или Значения.
+            Any | Dict[str, Any]: Значение или Значения.
         """
         result = self.client.hscan(key=self.config_name, match=match)
         new_result = self._plugin_trigger(

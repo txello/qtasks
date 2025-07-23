@@ -1,7 +1,7 @@
 """Base Plugin."""
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 from typing_extensions import Annotated, Doc
 
 
@@ -40,7 +40,7 @@ class BasePlugin(ABC):
         Args:
             name (str, optional): Имя проекта. По умолчанию: `None`.
         """
-        self.name: str | None = name
+        self.name: Union[str, None] = name
         pass
 
     @abstractmethod

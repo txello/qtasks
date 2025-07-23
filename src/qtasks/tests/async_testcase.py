@@ -60,7 +60,7 @@ class AsyncTestCase(BaseTestCase):
         """
         super().__init__(app=app, name=name)
 
-        self._global_loop: asyncio.AbstractEventLoop | None = None
+        self._global_loop: Union[asyncio.AbstractEventLoop, None] = None
 
     def start_in_background(
         self,
@@ -230,7 +230,7 @@ class AsyncTestCase(BaseTestCase):
                 """
             ),
         ] = None,
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Добавить задачу.
 
         Args:
@@ -278,7 +278,7 @@ class AsyncTestCase(BaseTestCase):
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получить задачу.
 
         Args:

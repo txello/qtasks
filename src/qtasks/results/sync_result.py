@@ -2,7 +2,7 @@
 
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import time
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import threading
@@ -35,7 +35,7 @@ class SyncResult:
     def __init__(
         self,
         uuid: Annotated[
-            UUID | str,
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
@@ -99,7 +99,7 @@ class SyncResult:
                     """
             ),
         ] = 100,
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Ожидание результата задачи.
 
         Args:
@@ -120,7 +120,7 @@ class SyncResult:
                 self._stop_event.set()
                 return None
 
-    def _execute_task(self) -> Task | None:
+    def _execute_task(self) -> Union[Task, None]:
         uuid = self.uuid
         while True:
             if self._stop_event.is_set():

@@ -330,14 +330,14 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -422,7 +422,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema | TaskStatusErrorSchema],
+            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
             Doc(
                 """
                     Модель результата задачи.

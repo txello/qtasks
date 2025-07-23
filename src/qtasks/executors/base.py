@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, get_args, get_origin
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union, get_args, get_origin
 from typing_extensions import Annotated, Doc
 from qtasks.logs import Logger
 from qtasks.schemas.argmeta import ArgMeta
@@ -116,7 +116,7 @@ class BaseTaskExecutor(ABC):
         pass
 
     @abstractmethod
-    def execute(self, decode: bool = True) -> Any | str:
+    def execute(self, decode: bool = True) -> Union[Any, str]:
         """Обработка задачи.
 
         Args:
@@ -171,7 +171,7 @@ class BaseTaskExecutor(ABC):
                 self.plugins[name].append(plugin)
         return
 
-    def _build_args_info(self, args: list, kwargs: dict) -> list[ArgMeta]:
+    def _build_args_info(self, args: list, kwargs: dict) -> List[ArgMeta]:
         """Строит список ArgMeta из args и kwargs на основе аннотаций функции.
 
         Args:
@@ -179,9 +179,9 @@ class BaseTaskExecutor(ABC):
             kwargs (dict): Именованные аргументы.
 
         Returns:
-            list[ArgMeta]: Список метаданных аргументов.
+            List[ArgMeta]: Список метаданных аргументов.
         """
-        args_info: list[ArgMeta] = []
+        args_info: List[ArgMeta] = []
         func = self.task_func.func
 
         try:

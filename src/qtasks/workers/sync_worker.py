@@ -5,7 +5,7 @@ from threading import Event, Lock, Semaphore, Thread
 from time import time, sleep
 import traceback
 from queue import PriorityQueue
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
@@ -106,10 +106,10 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             name=self.name, log=self.log, config=self.config
         )
         self.queue = PriorityQueue()
-        self._tasks: dict[str, TaskExecSchema] = {}
+        self._tasks: Dict[str, TaskExecSchema] = {}
         self._stop_event = Event()
         self.lock = Lock()
-        self.threads: list[Thread] = []
+        self.threads: List[Thread] = []
         self.semaphore = Semaphore(self.config.max_tasks_process)
 
         self.task_executor = SyncTaskExecutor
@@ -357,7 +357,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
 
     def _run_task(
         self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
-    ) -> TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema:
+    ) -> Union[TaskStatusSuccessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema]:
         """Запуск функции задачи.
 
         Args:
@@ -469,7 +469,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self.log.info(f"Задача {task_broker.uuid} была отменена по причине: {e}")
         return model
 
-    def _task_exists(self, task_broker: TaskPrioritySchema) -> TaskExecSchema | None:
+    def _task_exists(self, task_broker: TaskPrioritySchema) -> Union[TaskExecSchema, None]:
         """Проверка существования задачи.
 
         Args:
@@ -514,7 +514,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self,
         task_func: TaskExecSchema,
         task_broker: TaskPrioritySchema,
-        model: TaskStatusSuccessSchema | TaskStatusErrorSchema,
+        model: Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
     ) -> None:
         """Вызов задач `init_task_stoping`.
 
@@ -552,7 +552,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         ],
         model: Annotated[
             Union[
-                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """

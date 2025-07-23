@@ -1,5 +1,6 @@
 """InspectStats."""
 
+from typing import Tuple
 from .base import UtilsInspectStats
 from qtasks.asyncio import QueueTasks
 
@@ -43,7 +44,7 @@ class InspectStats(UtilsInspectStats):
             return self._parser_json((self._app.tasks[task_name], ))
         return self._tasks_parser((self._app.tasks[task_name], ))
 
-    def tasks(self, *tasks: tuple[str], json: bool = False):
+    def tasks(self, *tasks: Tuple[str], json: bool = False):
         """Получение информации о задачах.
 
         Returns:

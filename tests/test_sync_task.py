@@ -28,9 +28,9 @@ def run_server():
     )
     time.sleep(1)
 
-    # Выводим первые 500 символов stdout (если вдруг сразу завершилось)
+    # Выводим stdout (если вдруг сразу завершилось)
     if process.poll() is not None:  # Процесс уже завершился?
-        output = process.stdout.read(500)
+        output = process.stdout.read()
         raise RuntimeError(f"Server exited early with output:\n{output}")
 
     yield

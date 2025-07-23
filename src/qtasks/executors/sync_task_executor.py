@@ -1,7 +1,7 @@
 """Sync Task Executor."""
 
 import json
-from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Tuple, Type, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.exc.plugins import TaskPluginTriggerError
@@ -161,7 +161,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 self = new_task_executor
             self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
-    def run_task(self) -> Any | list[Any]:
+    def run_task(self) -> Union[Any, list]:
         """Вызов задачи.
 
         Returns:
@@ -185,7 +185,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
 
         return result
 
-    def run_task_gen(self, func: Generator) -> list[Any]:
+    def run_task_gen(self, func: Generator) -> List[Any]:
         """Вызов генератора задачи.
 
         Args:
@@ -221,7 +221,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             results = new_results[-1]
         return results
 
-    def execute(self, decode: bool = True) -> Any | str:
+    def execute(self, decode: bool = True) -> Union[Any, str]:
         """Вызов задачи.
 
         Args:

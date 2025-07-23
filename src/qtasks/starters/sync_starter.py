@@ -2,7 +2,7 @@
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Dict, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.mixins.plugin import SyncPluginMixin
@@ -128,7 +128,7 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
             ),
         ] = True,
         plugins: Annotated[
-            Optional[dict[str, "BasePlugin"]],
+            Optional[Dict[str, "BasePlugin"]],
             Doc(
                 """
                     Плагины для воркера и брокера.
@@ -143,7 +143,7 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
         Args:
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
-            plugins (dict[str, BasePlugin] | None, optional): Плагины. По умолчанию: None.
+            plugins (Dict[str, BasePlugin] | None, optional): Плагины. По умолчанию: None.
         """
         self.log.info("Запуск QueueTasks...")
 

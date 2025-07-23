@@ -1,7 +1,7 @@
 """QTasks registry utilities."""
 
-from typing import Annotated, Callable, List, Optional, Type, Union
-from typing_extensions import Doc
+from typing import Callable, List, Optional, Type, Union
+from typing_extensions import Annotated, Doc
 
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
@@ -42,7 +42,7 @@ def shared_task(
         ),
     ] = False,
     retry: Annotated[
-        int | None,
+        Union[int, None],
         Doc(
             """
                     Количество попыток повторного выполнения задачи.
@@ -52,7 +52,7 @@ def shared_task(
         ),
     ] = None,
     retry_on_exc: Annotated[
-        list[Type[Exception]] | None,
+        Union[List[Type[Exception]], None],
         Doc(
             """
                     Исключения, при которых задача будет повторно выполнена.
@@ -62,7 +62,7 @@ def shared_task(
         ),
     ] = None,
     decode: Annotated[
-        Callable | None,
+        Union[Callable, None],
         Doc(
             """
                 Декодер результата задачи.
@@ -72,7 +72,7 @@ def shared_task(
         )
     ] = None,
     tags: Annotated[
-        list[str] | None,
+        Union[List[str], None],
         Doc(
             """
                 Теги задачи.
@@ -82,7 +82,7 @@ def shared_task(
         )
     ] = None,
     description: Annotated[
-        str | None,
+        Union[str, None],
         Doc(
             """
                 Описание задачи.
@@ -92,7 +92,7 @@ def shared_task(
         )
     ] = None,
     generate_handler: Annotated[
-        Callable | None,
+        Union[Callable, None],
         Doc(
             """
                     Генератор обработчика.
@@ -150,9 +150,9 @@ def shared_task(
         priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
         echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
         retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-        retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+        retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
         decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-        tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+        tags (List[str], optional): Теги задачи. По умолчанию: `None`.
         description (str, optional): Описание задачи. По умолчанию: `None`.
         generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
         executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.

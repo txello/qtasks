@@ -1,7 +1,7 @@
 """Async Starter."""
 
 import asyncio
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Dict, Optional, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
@@ -104,7 +104,7 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
             name=name, broker=broker, worker=worker, log=log, config=config
         )
 
-        self._global_loop: asyncio.AbstractEventLoop | None = None
+        self._global_loop: Union[asyncio.AbstractEventLoop, None] = None
         self._started_plugins: set[int] = set()
 
     def start(
@@ -140,7 +140,7 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
             ),
         ] = True,
         plugins: Annotated[
-            Optional[dict[str, "BasePlugin"]],
+            Optional[Dict[str, "BasePlugin"]],
             Doc(
                 """
                     Плагины для воркера и брокера.
@@ -156,7 +156,7 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
             loop (asyncio.AbstractEventLoop, optional): Асинхронный loop. По умолчанию: None.
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
-            plugins (dict[str, BasePlugin] | None, optional): Плагины. По умолчанию: None.
+            plugins (Dict[str, BasePlugin] | None, optional): Плагины. По умолчанию: None.
         """
         self.log.info("Запуск QueueTasks...")
 

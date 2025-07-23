@@ -332,14 +332,14 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -425,7 +425,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema | TaskStatusErrorSchema],
+            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
             Doc(
                 """
                     Модель результата задачи.

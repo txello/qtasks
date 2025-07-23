@@ -2,7 +2,7 @@
 
 import asyncio
 import json
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Tuple, Type, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.exc.plugins import TaskPluginTriggerError
@@ -205,7 +205,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
 
         return result
 
-    async def run_task_gen(self, func: AsyncGenerator) -> list[Any]:
+    async def run_task_gen(self, func: AsyncGenerator) -> List[Any]:
         """Вызов генератора задачи.
 
         Args:
@@ -247,7 +247,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             return await value
         return value
 
-    async def execute(self, decode: bool = True) -> Any | str:
+    async def execute(self, decode: bool = True) -> Union[Any, str]:
         """Вызов задачи.
 
         Args:

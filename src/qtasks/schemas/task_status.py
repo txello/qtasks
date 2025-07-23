@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from time import time
 import json
+from typing import Dict, Tuple
 
 from qtasks.enums.task_status import TaskStatusEnum
 
@@ -15,8 +16,8 @@ class BaseTaskStatusSchema:
         status (str): Статус.
         priority (int): Приоритет.
         task_name (str): Название.
-        args (tuple[str]): Аргументы типа args.
-        kwargs (dict[str, str]): Аргументы типа kwargs.
+        args (Tuple[str]): Аргументы типа args.
+        kwargs (Dict[str, str]): Аргументы типа kwargs.
 
         created_at (float): Дата создания в формате `timestamp`.
         updated_at (float): Дата обновления в формате `timestamp`.
@@ -27,8 +28,8 @@ class BaseTaskStatusSchema:
     task_name: str = ""
     priority: int = 0
 
-    args: tuple[str] = field(default_factory=lambda: json.dumps(()))
-    kwargs: dict[str, str] = field(default_factory=lambda: json.dumps({}))
+    args: Tuple[str] = field(default_factory=lambda: json.dumps(()))
+    kwargs: Dict[str, str] = field(default_factory=lambda: json.dumps({}))
 
     created_at: float = 0.0
     updated_at: float = field(default_factory=time)

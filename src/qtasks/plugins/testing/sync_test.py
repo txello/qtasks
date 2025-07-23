@@ -1,5 +1,6 @@
 """Sync Test Plugin."""
 
+from typing import Union
 from qtasks.plugins.base import BasePlugin
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusProcessSchema
@@ -48,10 +49,10 @@ class SyncTestPlugin(BasePlugin):
 
     def _execute(
         self,
-        task_func: TaskExecSchema | None,
-        task_broker: TaskPrioritySchema | None,
+        task_func: Union[TaskExecSchema, None],
+        task_broker: Union[TaskPrioritySchema, None],
         model: TaskStatusProcessSchema,
-    ) -> TaskStatusErrorSchema:
+    ) -> Union[TaskStatusErrorSchema, None]:
         if not task_func or "test" not in task_func.extra or not task_func.extra["test"]:
             return
         model = _build_task(model, is_testing=task_func.extra["test"])

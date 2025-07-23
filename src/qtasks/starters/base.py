@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from qtasks.logs import Logger
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 from typing_extensions import Annotated, Doc
 
 
@@ -110,12 +110,12 @@ class BaseStarter(ABC):
         self.broker = broker
         self.worker = worker
 
-        self._inits: dict[str, list[InitsExecSchema]] = {
+        self._inits: Dict[str, List[InitsExecSchema]] = {
             "init_starting": [],
             "init_stoping": [],
         }
 
-        self.plugins: dict[str, List["BasePlugin"]] = {}
+        self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
 

@@ -1,6 +1,6 @@
 """Async Result."""
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import asyncio
@@ -37,7 +37,7 @@ class AsyncResult:
     def __init__(
         self,
         uuid: Annotated[
-            UUID | str,
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
@@ -101,7 +101,7 @@ class AsyncResult:
                     """
             ),
         ] = 100,
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Ожидание результата задачи.
 
         Args:
@@ -112,8 +112,7 @@ class AsyncResult:
         """
         self._stop_event.clear()
         try:
-            async with asyncio.timeout(timeout):
-                result = await self._execute_task()
+            result = await asyncio.wait_for(self._execute_task(), timeout)
             self.log.debug(f"Задача {result.uuid} выполнена!")
             return result
         except asyncio.TimeoutError:
@@ -121,7 +120,7 @@ class AsyncResult:
             self._stop_event.set()
             return None
 
-    async def _execute_task(self) -> Task | None:
+    async def _execute_task(self) -> Union[Task, None]:
         uuid = self.uuid
         while True:
             if self._stop_event.is_set():
