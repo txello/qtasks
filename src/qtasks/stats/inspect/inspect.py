@@ -41,7 +41,7 @@ class InspectStats(UtilsInspectStats):
             TaskExecSchema: Схема функции задачи.
         """
         if json:
-            return self._parser_json((self._app.tasks[task_name], ))
+            return self._parser_json(self._app.tasks[task_name])
         return self._tasks_parser((self._app.tasks[task_name], ))
 
     def tasks(self, *tasks: Tuple[str], json: bool = False):

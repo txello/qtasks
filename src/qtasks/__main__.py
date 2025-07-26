@@ -13,6 +13,8 @@ from qtasks.stats.sync_stats import SyncStats
 if TYPE_CHECKING:
     from qtasks.qtasks import QueueTasks
     from qtasks.asyncio.qtasks import QueueTasks as aioQueueTasks
+
+
 sys.path.append(os.path.abspath(os.getcwd()))
 
 
@@ -122,8 +124,10 @@ def main():
 
             positional_args, keyword_args = positional(args)
 
-            result = target_func(*positional_args, **keyword_args)
-            print(result)
+            print(target_func(*positional_args, **keyword_args))
+
+        else:
+            stats_parser.print_help()
 
     else:
         parser.print_help()
