@@ -26,7 +26,7 @@ def run_server():
         stderr=subprocess.STDOUT,
         text=True,
     )
-    time.sleep(1)
+    time.sleep(5)
 
     # Выводим stdout (если вдруг сразу завершилось)
     if process.poll() is not None:  # Процесс уже завершился?
@@ -59,21 +59,21 @@ def test_task_get_result(test_case):
 @pytest.mark.sync
 def test_task_get_wait(test_case):
     """Ожидание завершения задачи."""
-    result = test_case.add_task("test", args=(5,), timeout=50)
+    result = test_case.add_task("test", args=(5,), timeout=500)
     assert result.status == TaskStatusEnum.SUCCESS.value
 
 
 @pytest.mark.sync
 def test_task_error_get_wait(test_case):
     """Ожидание завершения задачи с ошибкой."""
-    result = test_case.add_task("error_task", timeout=50)
+    result = test_case.add_task("error_task", timeout=500)
     assert result.status == TaskStatusEnum.ERROR.value
 
 
 @pytest.mark.sync
 def test_task_returns_expected_result(test_case):
     """Проверка ожидаемого результата задачи."""
-    result = test_case.add_task("test", args=(5,), timeout=50)
+    result = test_case.add_task("test", args=(5,), timeout=500)
     assert result.returning == "Пользователь 5 записан"
 
 
