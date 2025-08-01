@@ -66,13 +66,12 @@ def main():
         description="QueueTasks framework",
         epilog="Text at the bottom of help",
     )
-
     parser.add_argument("-A", "-app")
     parser.add_argument("--port", type=int, default=8000)
     subparsers = parser.add_subparsers(dest="command")
 
-    # subcommand: worker
-    subparsers.add_parser("worker", help="Запустить приложение")
+    # subcommand: run
+    subparsers.add_parser("run", help="Запустить приложение")
 
     # subcommand: web
     subparsers.add_parser("web", help="Запустить WebView")
@@ -91,18 +90,17 @@ def main():
 
     app = get_app(args.A)
 
-    if args.command == "worker":
+    if args.command == "run":
         if not app:
             parser.error("Не удалось получить экземпляр приложения!")
         app.run_forever()
 
     elif args.command == "web":
         # Эксперементально!
-        import qtasks_webview.webview as webview
-        import uvicorn
+        import qtasks_webview
 
-        webview.app_qtasks = app
-        uvicorn.run(webview.app, port=args.port)
+        qtasks_webview.app_qtasks = app
+        qtasks_webview.run(port=args.port)
 
     elif args.command == "stats":
         if not app:

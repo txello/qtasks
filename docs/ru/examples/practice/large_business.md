@@ -19,8 +19,8 @@ QTasks масштабируется для использования в выс�
 Развёртывание воркеров на разных серверах/контейнерах:
 
 ```bash
-py -m qtasks worker -A myproject.qtasks_app --worker-id node1
-py -m qtasks worker -A myproject.qtasks_app --worker-id node2
+py -m qtasks -A myproject.qtasks_app run --worker-id node1
+py -m qtasks -A myproject.qtasks_app run --worker-id node2
 ```
 
 Можно запускать с разными конфигурациями при помощи переменных окружения или аргументов командной строки.

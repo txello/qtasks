@@ -13,7 +13,7 @@ include = ["qtasks*"]
 name = "qtasks"
 version = "1.6.0"
 authors = [
-  { name="txello", email="txello@inbox.ru" },
+  { name="txello", email="txello7@proton.me" },
 ]
 description = "Queue Tasks Framework"
 readme = "README.md"

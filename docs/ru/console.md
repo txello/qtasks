@@ -12,18 +12,18 @@
 ### Пример использования
 
 ```bash
-qtasks <команда> [опции]
+qtasks [опции] <команда> [опции]
 ```
 
 #### Примеры команд
 
 - Запустить приложение:
     ```bash
-    qtasks worker -A <путь_к_модулю:имя_приложения>
+    qtasks -A <путь_к_модулю:имя_приложения> run
     ```
     Пример:
     ```bash
-    qtasks worker -A based_async_app:app
+    qtasks -A based_async_app:app run
     ```
 - Запустить веб-интерфейс (экспериментально):
     ```bash
@@ -31,7 +31,7 @@ qtasks <команда> [опции]
     ```
     Пример:
     ```bash
-    qtasks web -A based_async_app:app --port 8000
+    qtasks -A based_async_app:app web --port 8000
     ```
 
 ### Параметры
