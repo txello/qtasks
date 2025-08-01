@@ -28,7 +28,7 @@ class BaseTaskStatusSchema:
     task_name: str = ""
     priority: int = 0
 
-    args: Tuple[str] = field(default="()")
+    args: Tuple[str] = field(default="[]")
     kwargs: Dict[str, str] = field(default="{}")
 
     created_at: float = 0.0
