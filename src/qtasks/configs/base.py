@@ -78,7 +78,7 @@ class BaseGlobalConfig(ABC):
             else Logger(
                 name=self.name,
                 subname="GlobalConfig",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )

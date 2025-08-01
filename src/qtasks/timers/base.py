@@ -77,7 +77,7 @@ class BaseTimer(ABC):
             else Logger(
                 name=self.app.name,
                 subname="Timer",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )

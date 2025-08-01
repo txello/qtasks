@@ -102,7 +102,7 @@ class BaseStarter(ABC):
             else Logger(
                 name=self.name,
                 subname="Starter",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )

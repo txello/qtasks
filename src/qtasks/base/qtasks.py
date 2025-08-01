@@ -134,7 +134,7 @@ class BaseQueueTasks:
             else Logger(
                 name=self.name,
                 subname="QueueTasks",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )
@@ -555,7 +555,7 @@ class BaseQueueTasks:
             key (str): Ключ конфигурации.
             value (Any): Значение конфигурации.
         """
-        if key == "logs_default_level":
+        if key == "logs_default_level_server":
             self.log.default_level = value
             self.log = self.log.update_logger()
             self._update_logs(default_level=value)

@@ -78,7 +78,7 @@ class SyncResult:
             else Logger(
                 name=self._app.name,
                 subname="SyncResult",
-                default_level=self._app.config.logs_default_level,
+                default_level=self._app.config.logs_default_level_client,
                 format=self._app.config.logs_format,
             )
         )

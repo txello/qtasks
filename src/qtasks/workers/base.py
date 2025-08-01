@@ -95,7 +95,7 @@ class BaseWorker(ABC):
             else Logger(
                 name=self.name,
                 subname="Worker",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )
