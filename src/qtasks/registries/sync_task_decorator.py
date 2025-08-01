@@ -218,17 +218,7 @@ class SyncTask(Generic[P, R]):
 
     def add_task(
         self,
-        priority: Annotated[
-            int,
-            Doc(
-                """
-                    Приоритет задачи.
-
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
-        ] = None,
-        args: Annotated[
+        *args: Annotated[
             Optional[tuple],
             Doc(
                 """
@@ -237,14 +227,22 @@ class SyncTask(Generic[P, R]):
                     По умолчанию: `()`.
                     """
             ),
-        ] = None,
-        kwargs: Annotated[
-            Optional[dict],
+        ],
+        task_name: Annotated[
+            str,
             Doc(
                 """
-                    kwargs задачи.
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
 
-                    По умолчанию: `{}`.
+                    По умолчанию: Значение приоритета у задачи.
                     """
             ),
         ] = None,
@@ -254,18 +252,20 @@ class SyncTask(Generic[P, R]):
                 """
                     Таймаут задачи.
 
-                    Если указан, задача возвращается через `qtasks.results.SyncTask`.
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
                     """
             ),
         ] = None,
-        task_name: Annotated[
-            str,
+        **kwargs: Annotated[
+            Optional[dict],
             Doc(
                 """
-                    Имя задачи.
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
                     """
             ),
-        ] = None,
+        ],
     ) -> Task:
         """Добавить задачу.
 

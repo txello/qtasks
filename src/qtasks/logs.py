@@ -1,6 +1,7 @@
 """Логирование."""
 
 import logging
+from typing import Union
 from typing_extensions import Annotated, Doc
 
 
@@ -108,17 +109,24 @@ class Logger:
         """Debug."""
         self._log(logging.DEBUG, *args, **kwargs)
 
-    def with_subname(self, new_subname: str) -> "Logger":
+    def with_subname(
+        self,
+        new_subname: str,
+        default_level: Union[int, None] = None,
+        format: Union[str, None] = None,
+    ) -> "Logger":
         """Обновляем `subname`.
 
         Args:
             new_subname (str): Новый `subname`.
+            default_level (int, optional): Новый уровень логирования. По умолчанию: `None`.
+            format (str, optional): Новый формат логирования. По умолчанию: `None`.
 
         Returns:
             Logger: Новый `Logger`.
         """
         return Logger(
-            self.name, new_subname, default_level=self.default_level, format=self.format
+            self.name, new_subname, default_level=default_level or self.default_level, format=format or self.format
         )
 
     def update_logger(self, **kwargs) -> "Logger":

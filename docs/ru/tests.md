@@ -27,7 +27,7 @@ from app import app
 
 class TestTasks(unittest.TestCase):
     def setUp(self):
-        self._result = app.add_task("test", args=(5,))
+        self._result = app.add_task(task_name="test", 5)
 
     def test_task_get_result(self):
         uuid = self._result.uuid
@@ -45,7 +45,7 @@ from app import app
 
 class TestAsyncTasks(unittest.IsolatedAsyncioTestCase):
     async def _add_task(self) -> Task | None:
-        return await app.add_task("test", args=(5,))
+        return await app.add_task(task_name="test", 5)
 
     async def test_task_get_result(self):
         uuid = (await self._add_task()).uuid
@@ -68,7 +68,7 @@ class TestTasks(unittest.TestCase):
 
     def test_task_add(self):
         self.test_case.settings(TestConfig.full())
-        result = self.test_case.add_task("test", args=(5,))
+        result = self.test_case.add_task(task_name="test", 5)
         self.assertIsNotNone(result)
 ```
 

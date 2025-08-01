@@ -152,6 +152,16 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
 
     async def add_task(
         self,
+        *args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
         task_name: Annotated[
             str,
             Doc(
@@ -170,26 +180,6 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
                     """
             ),
         ] = None,
-        args: Annotated[
-            Optional[tuple],
-            Doc(
-                """
-                    args задачи.
-
-                    По умолчанию: `()`.
-                    """
-            ),
-        ] = None,
-        kwargs: Annotated[
-            Optional[dict],
-            Doc(
-                """
-                    kwargs задачи.
-
-                    По умолчанию: `{}`.
-                    """
-            ),
-        ] = None,
         timeout: Annotated[
             Optional[float],
             Doc(
@@ -200,7 +190,17 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
                     """
             ),
         ] = None,
-    ) -> Task:
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Union[Task, None]:
         """Добавить задачу.
 
         Args:
@@ -598,6 +598,13 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         middlewares_after: Union[List["TaskMiddleware"], None] = None,
         **kwargs
     ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
+        ...
+
+    @overload
+    def task(
+        self,
+        func: Callable[P, R],
+    ) -> AsyncTask[P, R]:
         ...
 
     def task(self, *args, **kwargs):

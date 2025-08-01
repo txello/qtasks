@@ -168,47 +168,54 @@ class SyncTestCase(BaseTestCase):
 
     def add_task(
         self,
-        task_name: Annotated[str, Doc("Имя задачи.")],
-        priority: Annotated[
-            int,
-            Doc(
-                """
-                Приоритет задачи.
-
-                По умолчанию: `0`.
-                """
-            ),
-        ] = 0,
-        args: Annotated[
+        *args: Annotated[
             Optional[tuple],
             Doc(
                 """
-                args задачи.
+                    args задачи.
 
-                По умолчанию: `()`.
-                """
+                    По умолчанию: `()`.
+                    """
             ),
-        ] = None,
-        kwargs: Annotated[
-            Optional[dict],
+        ],
+        task_name: Annotated[
+            str,
             Doc(
                 """
-                kwargs задачи.
-
-                По умолчанию: `{}`.
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
                 """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
             ),
         ] = None,
         timeout: Annotated[
             Optional[float],
             Doc(
                 """
-                Таймаут задачи.
+                    Таймаут задачи.
 
-                Если указан, задача вызывается через `qtasks.results.SyncTask`.
-                """
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
             ),
         ] = None,
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
     ) -> Union[Task, None]:
         """Добавить задачу.
 

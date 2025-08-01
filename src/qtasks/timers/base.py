@@ -86,33 +86,7 @@ class BaseTimer(ABC):
     @abstractmethod
     def add_task(
         self,
-        task_name: Annotated[
-            str,
-            Doc(
-                """
-                    Название задачи.
-                    """
-            ),
-        ],
-        trigger: Annotated[
-            Any,
-            Doc(
-                """
-                    Триггер задачи.
-                    """
-            ),
-        ],
-        priority: Annotated[
-            int,
-            Doc(
-                """
-                    Приоритет задачи.
-
-                    По умолчанию: `0`.
-                    """
-            ),
-        ] = 0,
-        args: Annotated[
+        *args: Annotated[
             Optional[tuple],
             Doc(
                 """
@@ -121,8 +95,44 @@ class BaseTimer(ABC):
                     По умолчанию: `()`.
                     """
             ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
         ] = None,
-        kwargs: Annotated[
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        trigger: Annotated[
+            Any,
+            Doc(
+                """
+                    Триггер задачи.
+                    """
+            ),
+        ],
+        **kwargs: Annotated[
             Optional[dict],
             Doc(
                 """
@@ -131,7 +141,7 @@ class BaseTimer(ABC):
                     По умолчанию: `{}`.
                     """
             ),
-        ] = None,
+        ],
     ) -> Union[Any, None]:
         """Добавление задачи.
 

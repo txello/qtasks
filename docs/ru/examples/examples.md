@@ -16,7 +16,7 @@ def print_text(text: str):
 app.run_forever()
 
 # Добавление задачи в очередь
-app.add_task("print_text", args=("Привет, мир!",))
+app.add_task(task_name="print_text", "Привет, мир!")
 ```
 
 ## Асинхронная задача
@@ -37,7 +37,7 @@ async def async_task(text: str):
 app.run_forever()
 
 # Добавление асинхронной задачи
-asyncio.run(app.add_task("async_task", args=("Асинхронный пример",)))
+asyncio.run(app.add_task(task_name="async_task", "Асинхронный пример"))
 ```
 
 ## Использование различных брокеров
@@ -60,5 +60,5 @@ async def rabbitmq_example(text: str):
 app.run_forever()
 
 # Добавление задачи в очередь
-asyncio.run(app.add_task("rabbitmq_example", args=("Сообщение через RabbitMQ",)))
+asyncio.run(app.add_task(task_name="rabbitmq_example", "Сообщение через RabbitMQ"))
 ```

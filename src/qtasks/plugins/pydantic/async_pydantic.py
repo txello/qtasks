@@ -43,9 +43,8 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
         """
         echo = args[0] if args_info and not args_info[0].is_kwarg and args_info[0].name == "self" else None
         start_index = 1 if echo else 0
-
         model_meta = next(
-            (meta for meta in args_info[start_index:] if meta.annotation and isinstance(meta.annotation, type) and issubclass(meta.annotation, BaseModel) and not meta.is_kwarg),
+            (meta for meta in args_info[start_index:] if meta.annotation and isinstance(meta.annotation, type) and issubclass(meta.annotation, BaseModel)),
             None
         )
 

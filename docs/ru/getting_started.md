@@ -51,8 +51,8 @@ app.run_forever()
 ```py
 from app import app, mytest
 
-app.add_task("mytest", args=("Тест",))
-mytest.add_task(args=("Тест",))
-app.add_task("error_zero")
+app.add_task(task_name="mytest", "Тест")
+mytest.add_task("Тест")
+app.add_task(task_name="error_zero")
 
 ```

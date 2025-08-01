@@ -1,10 +1,9 @@
 """Sync timer for scheduling tasks."""
 
 from time import sleep
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from typing_extensions import Annotated, Doc
 from apscheduler.job import Job
-from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from qtasks.configs.config import QueueConfig
@@ -81,33 +80,7 @@ class SyncTimer(BaseTimer):
 
     def add_task(
         self,
-        task_name: Annotated[
-            str,
-            Doc(
-                """
-                    Название задачи.
-                    """
-            ),
-        ],
-        trigger: Annotated[
-            CronTrigger,
-            Doc(
-                """
-                    Триггер задачи.
-                    """
-            ),
-        ],
-        priority: Annotated[
-            int,
-            Doc(
-                """
-                    Приоритет задачи.
-
-                    По умолчанию: `0`.
-                    """
-            ),
-        ] = 0,
-        args: Annotated[
+        *args: Annotated[
             Optional[tuple],
             Doc(
                 """
@@ -116,8 +89,44 @@ class SyncTimer(BaseTimer):
                     По умолчанию: `()`.
                     """
             ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
         ] = None,
-        kwargs: Annotated[
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        trigger: Annotated[
+            Any,
+            Doc(
+                """
+                    Триггер задачи.
+                    """
+            ),
+        ],
+        **kwargs: Annotated[
             Optional[dict],
             Doc(
                 """
@@ -126,7 +135,7 @@ class SyncTimer(BaseTimer):
                     По умолчанию: `{}`.
                     """
             ),
-        ] = None,
+        ]
     ) -> Job:
         """Добавление задачи.
 

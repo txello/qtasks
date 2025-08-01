@@ -220,17 +220,7 @@ class AsyncTask(Generic[P, R]):
 
     async def add_task(
         self,
-        priority: Annotated[
-            int,
-            Doc(
-                """
-                    Приоритет задачи.
-
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
-        ] = None,
-        args: Annotated[
+        *args: Annotated[
             Optional[tuple],
             Doc(
                 """
@@ -239,14 +229,14 @@ class AsyncTask(Generic[P, R]):
                     По умолчанию: `()`.
                     """
             ),
-        ] = None,
-        kwargs: Annotated[
-            Optional[dict],
+        ],
+        priority: Annotated[
+            int,
             Doc(
                 """
-                    kwargs задачи.
+                    Приоритет задачи.
 
-                    По умолчанию: `{}`.
+                    По умолчанию: Значение приоритета у задачи.
                     """
             ),
         ] = None,
@@ -270,6 +260,16 @@ class AsyncTask(Generic[P, R]):
                     """
             ),
         ] = None,
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ]
     ) -> Union[Task, None]:
         """Добавить задачу.
 

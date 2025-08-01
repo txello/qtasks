@@ -372,7 +372,6 @@ class BaseQueueTasks:
         Returns:
             SyncTask | AsyncTask: Декоратор для регистрации задачи.
         """
-
         def wrapper(func):
             nonlocal priority, middlewares_before, middlewares_after
 
@@ -437,6 +436,10 @@ class BaseQueueTasks:
                 extra=model.extra
             )
 
+        if callable(name):
+            func = name
+            name = func.__name__
+            return wrapper(func)
         return wrapper
 
     def include_router(

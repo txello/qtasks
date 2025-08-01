@@ -73,7 +73,7 @@ class SyncResult:
         self._app = app
         self._update_state()
         self.log = (
-            log.with_subname("SyncResult")
+            log.with_subname("SyncResult", default_level=self._app.config.logs_default_level_client)
             if log
             else Logger(
                 name=self._app.name,

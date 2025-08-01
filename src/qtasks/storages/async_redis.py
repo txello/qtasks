@@ -249,7 +249,6 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         new_kw = await self._plugin_trigger("storage_update", storage=self, kw=kwargs, return_last=True)
         if new_kw:
             kwargs = new_kw
-        self.log.debug("123, {}".format(kwargs))
         return await self.redis_contrib.execute(
             "hset", kwargs["name"], mapping=kwargs["mapping"]
         )

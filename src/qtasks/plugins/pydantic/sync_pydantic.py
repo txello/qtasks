@@ -72,7 +72,7 @@ class SyncPydanticWrapperPlugin(BasePlugin):
                 new_args = [model_instance]
                 if echo:
                     new_args.insert(0, echo)
-                return new_args, {}
+                return new_args, kwargs
 
         for meta in args_info:
             if not meta.is_kwarg or meta.name not in kwargs:

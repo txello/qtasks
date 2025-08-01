@@ -139,6 +139,16 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
 
     def add_task(
         self,
+        *args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
         task_name: Annotated[
             str,
             Doc(
@@ -151,29 +161,9 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             Optional[int],
             Doc(
                 """
-                    Приоритет задачи.
+                    Приоритет у задачи.
 
                     По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
-        ] = None,
-        args: Annotated[
-            Optional[tuple],
-            Doc(
-                """
-                    args задачи.
-
-                    По умолчанию: `()`.
-                    """
-            ),
-        ] = None,
-        kwargs: Annotated[
-            Optional[dict],
-            Doc(
-                """
-                    kwargs задачи.
-
-                    По умолчанию: `{}`.
                     """
             ),
         ] = None,
@@ -183,11 +173,21 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
                 """
                     Таймаут задачи.
 
-                    Если указан, задача возвращается через `qtasks.results.SyncTask`.
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
                     """
             ),
         ] = None,
-    ) -> Task:
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Union[Task, None]:
         """Добавить задачу.
 
         Args:
@@ -567,6 +567,13 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         middlewares_after: Union[List["TaskMiddleware"], None] = None,
         **kwargs
     ) -> Callable[[Callable[P, R]], SyncTask[P, R]]:
+        ...
+
+    @overload
+    def task(
+        self,
+        func: Callable[P, R],
+    ) -> SyncTask[P, R]:
         ...
 
     def task(self, *args, **kwargs):
