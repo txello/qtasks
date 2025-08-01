@@ -58,7 +58,7 @@ class AsyncTask(Generic[P, R]):
             bool,
             Doc(
                 """
-                    Включить вывод в консоль.
+                    Добавить AsyncTask первым параметром.
 
                     По умолчанию: `False`.
                     """
@@ -180,7 +180,7 @@ class AsyncTask(Generic[P, R]):
         Args:
             task_name (str, optional): Имя задачи. По умолчанию: `None`.
             priority (int, optional): Приоритет задачи. По умолчанию: `None`.
-            echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
+            echo (bool, optional): Добавить AsyncTask первым параметром. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.

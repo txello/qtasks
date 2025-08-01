@@ -104,7 +104,7 @@ class Router(SyncPluginMixin):
             bool,
             Doc(
                 """
-                    Включить вывод в консоль.
+                    Добавить (A)syncTask первым параметром.
 
                     По умолчанию: `False`.
                     """
@@ -207,7 +207,7 @@ class Router(SyncPluginMixin):
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
-            echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
+            echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.

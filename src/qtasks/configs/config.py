@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 import logging
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List
 
 
 @dataclass
