@@ -177,8 +177,9 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 priority=task_broker.priority,
                 created_at=task_broker.created_at,
                 updated_at=time(),
+                args=task_broker.args,
+                kwargs=task_broker.kwargs,
             )
-            model.set_json(task_broker.args, task_broker.kwargs)
 
             task_func = self._task_exists(task_broker=task_broker)
             if not task_func:
@@ -411,8 +412,9 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             returning=result,
             created_at=task_broker.created_at,
             updated_at=time(),
+            args=task_broker.args,
+            kwargs=task_broker.kwargs,
         )
-        model.set_json(task_broker.args, task_broker.kwargs)
         self.log.info(
             f"Задача {task_broker.uuid} успешно завершена, результат: {result}"
         )
@@ -448,8 +450,9 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 traceback=trace,
                 created_at=task_broker.created_at,
                 updated_at=time(),
+                args=task_broker.args,
+                kwargs=task_broker.kwargs,
             )
-            model.set_json(args=task_broker.args, kwargs=task_broker.kwargs)
         else:
             model: TaskStatusErrorSchema = plugin_result
         #
