@@ -1,17 +1,17 @@
 """Sync Task."""
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.types.annotations import P, R
 from qtasks.contexts.sync_context import SyncContext
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
-from qtasks.schemas.task import Task
 
 
 if TYPE_CHECKING:
     from qtasks import QueueTasks
+    from qtasks.schemas.task import Task
 
 
 class SyncTask(Generic[P, R]):
@@ -266,7 +266,7 @@ class SyncTask(Generic[P, R]):
                     """
             ),
         ],
-    ) -> Task:
+    ) -> Union["Task", None]:
         """Добавить задачу.
 
         Args:
@@ -286,11 +286,11 @@ class SyncTask(Generic[P, R]):
             priority = self.priority
 
         return self._app.add_task(
+            *args,
             task_name=task_name or self.task_name,
             priority=priority,
-            args=args,
-            kwargs=kwargs,
             timeout=timeout,
+            **kwargs
         )
 
     def _update_app(self) -> "QueueTasks":

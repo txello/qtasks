@@ -6,12 +6,12 @@ from typing import TYPE_CHECKING, Optional, Union
 from uuid import UUID, uuid4
 from typing_extensions import Annotated, Doc
 
-from qtasks.schemas.task import Task
 from qtasks.tests.base import BaseTestCase
 
 if TYPE_CHECKING:
     from qtasks import QueueTasks
     from qtasks.starters.base import BaseStarter
+    from qtasks.schemas.task import Task
 
 
 class SyncTestCase(BaseTestCase):
@@ -216,7 +216,7 @@ class SyncTestCase(BaseTestCase):
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Union["Task", None]:
         """Добавить задачу.
 
         Args:
@@ -233,11 +233,11 @@ class SyncTestCase(BaseTestCase):
         if self.test_config.broker:
             args, kwargs = args or (), kwargs or {}
             return self.app.add_task(
+                *args,
                 task_name=task_name,
                 priority=priority,
-                args=args,
-                kwargs=kwargs,
                 timeout=timeout,
+                **kwargs
             )
         elif self.test_config.worker:
             return self.app.worker.add(
@@ -264,7 +264,7 @@ class SyncTestCase(BaseTestCase):
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Union["Task", None]:
         """Получить задачу.
 
         Args:

@@ -18,7 +18,6 @@ from qtasks.results.sync_result import SyncResult
 
 from qtasks.configs import QueueConfig
 from qtasks.schemas.inits import InitsExecSchema
-from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
@@ -26,6 +25,7 @@ if TYPE_CHECKING:
     from qtasks.starters.base import BaseStarter
     from qtasks.executors.base import BaseTaskExecutor
     from qtasks.middlewares.task import TaskMiddleware
+    from qtasks.schemas.task import Task
 
 
 class QueueTasks(BaseQueueTasks, SyncPluginMixin):
@@ -187,7 +187,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Union["Task", None]:
         """Добавить задачу.
 
         Args:
@@ -257,7 +257,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Union["Task", None]:
         """Получить задачу.
 
         Args:

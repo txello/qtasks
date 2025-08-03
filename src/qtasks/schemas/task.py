@@ -2,8 +2,12 @@
 
 from dataclasses import InitVar, dataclass
 from datetime import datetime
-from typing import Any, Dict, Tuple, Union
+from typing import Annotated, Any, Dict, Optional, Tuple, Union
+from typing_extensions import Doc
 from uuid import UUID
+
+from qtasks.results.async_result import AsyncResult
+from qtasks.results.sync_result import SyncResult
 
 
 @dataclass
@@ -39,3 +43,43 @@ class Task:
 
     returning: InitVar[Union[str, None]] = None
     traceback: InitVar[Union[str, None]] = None
+
+    def wait_result(
+        self,
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.SyncTask`.
+                    """
+            ),
+        ] = None
+    ) -> Union["Task", None]:
+        """Ожидание результата задачи Синхронно.
+
+        Args:
+            timeout (Annotated[Optional[float], Doc], optional): Таймаут ожидания результата. По умолчанию: `None`.
+        """
+        return SyncResult(uuid=self.uuid).result(timeout=timeout)
+
+    async def wait_result_async(
+        self,
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None
+    ) -> Union["Task", None]:
+        """Ожидание результата задачи Асинхронно.
+
+        Args:
+            timeout (Annotated[Optional[float], Doc], optional): Таймаут ожидания результата. По умолчанию: `None`.
+        """
+        return await AsyncResult(uuid=self.uuid).result(timeout=timeout)

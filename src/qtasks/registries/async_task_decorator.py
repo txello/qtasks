@@ -5,12 +5,12 @@ from typing_extensions import Annotated, Doc
 
 from qtasks.types.annotations import P, R
 from qtasks.contexts.async_context import AsyncContext
-from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.asyncio import QueueTasks
     from qtasks.executors.base import BaseTaskExecutor
     from qtasks.middlewares.task import TaskMiddleware
+    from qtasks.schemas.task import Task
 
 
 class AsyncTask(Generic[P, R]):
@@ -270,7 +270,7 @@ class AsyncTask(Generic[P, R]):
                     """
             ),
         ]
-    ) -> Union[Task, None]:
+    ) -> Union["Task", None]:
         """Добавить задачу.
 
         Args:
@@ -288,13 +288,12 @@ class AsyncTask(Generic[P, R]):
 
         if priority is None:
             priority = self.priority
-
         return await self._app.add_task(
+            *args,
             task_name=task_name or self.task_name,
             priority=priority,
-            args=args,
-            kwargs=kwargs,
             timeout=timeout,
+            **kwargs
         )
 
     def _update_app(self) -> "QueueTasks":

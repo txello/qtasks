@@ -7,11 +7,11 @@ from uuid import UUID
 from qtasks.configs.config import QueueConfig
 from qtasks.exc.plugins import TaskPluginTriggerError
 from qtasks.exc.task import TaskCancelError
-from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.qtasks import QueueTasks
     from qtasks.logs import Logger
+    from qtasks.schemas.task import Task
 
 
 class SyncContext:
@@ -50,7 +50,7 @@ class SyncContext:
         self._log: "Logger" = kwargs.get("log")
         """Логгер."""
 
-        self._metadata: Union[Task, None] = None
+        self._metadata: Union["Task", None] = None
         """Метаданные задачи."""
 
     def get_logger(self, name: Union[str, None] = None) -> "Logger":
@@ -73,7 +73,7 @@ class SyncContext:
         """
         return self._app.config
 
-    def get_metadata(self, cache=True) -> Union[Task, None]:
+    def get_metadata(self, cache=True) -> Union["Task", None]:
         """Возвращает метаданные задачи.
 
         Args:
@@ -88,7 +88,7 @@ class SyncContext:
             return self._metadata
         return self._app.get(self.task_uuid)
 
-    def get_task(self, uuid: Union[UUID, str]) -> Union[Task, None]:
+    def get_task(self, uuid: Union[UUID, str]) -> Union["Task", None]:
         """Возвращает задачу по UUID.
 
         Args:

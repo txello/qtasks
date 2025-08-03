@@ -25,11 +25,11 @@ from qtasks.schemas.task_status import (
     TaskStatusNewSchema,
     TaskStatusSuccessSchema,
 )
-from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.workers.base import BaseWorker
+    from qtasks.schemas.task import Task
 
 
 class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
@@ -182,7 +182,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
         return
 
-    async def get(self, uuid: Union[UUID, str]) -> Union[Task, None]:
+    async def get(self, uuid: Union[UUID, str]) -> Union["Task", None]:
         """Получение информации о задаче.
 
         Args:
@@ -205,7 +205,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             result = new_result
         return result
 
-    async def get_all(self) -> List[Task]:
+    async def get_all(self) -> List["Task"]:
         """Получить все задачи.
 
         Returns:
@@ -213,7 +213,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """
         pattern = f"{self.name}:*"
 
-        results: List[Task] = []
+        results: List["Task"] = []
         async for key in self.client.scan_iter(pattern):
             name, uuid, *_ = key.split(":")
             if uuid in [self._queue_process, "task_queue"]:
@@ -389,7 +389,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await self._plugin_trigger("storage_delete_finished_tasks", storage=self)
         pattern = f"{self.name}:"
         try:
-            tasks: List[Task] = list(
+            tasks: List["Task"] = list(
                 filter(
                     lambda task: task.status != TaskStatusEnum.NEW.value,
                     await self.get_all(),

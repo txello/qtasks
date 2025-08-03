@@ -9,10 +9,10 @@ import threading
 
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
-from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.qtasks import QueueTasks
+    from qtasks.schemas.task import Task
 
 
 class SyncResult:
@@ -27,7 +27,7 @@ class SyncResult:
 
     app = QueueTasks()
 
-    task = app.add_task("test")
+    task = app.add_task(task_name="test")
     result = SyncResult(uuid=task.uuid).result(timeout=50)
     ```
     """
@@ -99,7 +99,7 @@ class SyncResult:
                     """
             ),
         ] = 100,
-    ) -> Union[Task, None]:
+    ) -> Union["Task", None]:
         """Ожидание результата задачи.
 
         Args:
@@ -120,7 +120,7 @@ class SyncResult:
                 self._stop_event.set()
                 return None
 
-    def _execute_task(self) -> Union[Task, None]:
+    def _execute_task(self) -> Union["Task", None]:
         uuid = self.uuid
         while True:
             if self._stop_event.is_set():

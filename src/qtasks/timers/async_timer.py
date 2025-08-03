@@ -29,7 +29,7 @@ class AsyncTimer(BaseTimer):
     timer = AsyncTimer(app=app)
 
     trigger = CronTrigger(second="*/10") # Запуск каждые 10 секунд
-    timer.add_task("test", trigger=trigger, args=(2,))
+    timer.add_task(task_name="test", trigger=trigger)
 
     timer.run_forever()
     ```
@@ -208,7 +208,7 @@ class AsyncTimer(BaseTimer):
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
         """
         task = await self.app.add_task(
-            task_name=task_name, priority=priority, args=args, kwargs=kwargs
+            *args, task_name=task_name, priority=priority, **kwargs
         )
         self.log.info(f"Отправлена задача {task_name}: {task.uuid}...")
 

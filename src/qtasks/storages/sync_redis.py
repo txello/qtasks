@@ -22,11 +22,11 @@ from qtasks.schemas.task_status import (
     TaskStatusNewSchema,
     TaskStatusSuccessSchema,
 )
-from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.workers.base import BaseWorker
+    from qtasks.schemas.task import Task
 
 
 class SyncRedisStorage(BaseStorage, SyncPluginMixin):
@@ -179,7 +179,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
         return
 
-    def get(self, uuid: Union[UUID, str]) -> Union[Task, None]:
+    def get(self, uuid: Union[UUID, str]) -> Union["Task", None]:
         """Получение информации о задаче.
 
         Args:
@@ -199,14 +199,14 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             result = new_result
         return result
 
-    def get_all(self) -> List[Task]:
+    def get_all(self) -> List["Task"]:
         """Получить все задачи.
 
         Returns:
             List[Task]: Массив задач.
         """
         pattern = f"{self.name}:*"
-        results: List[Task] = []
+        results: List["Task"] = []
         for key in self.client.scan_iter(pattern):
             try:
                 _, uuid = key.split(":")
@@ -381,7 +381,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         self._plugin_trigger("storage_delete_finished_tasks", storage=self)
         pattern = f"{self.name}:"
         try:
-            tasks: List[Task] = list(
+            tasks: List["Task"] = list(
                 filter(
                     lambda task: task.status != TaskStatusEnum.NEW.value, self.get_all()
                 )
