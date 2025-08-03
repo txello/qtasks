@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union, get_args, get_origin
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union, get_args, get_origin
 from typing_extensions import Annotated, Doc
 from qtasks.logs import Logger
 from qtasks.schemas.argmeta import ArgMeta
@@ -170,6 +170,33 @@ class BaseTaskExecutor(ABC):
             else:
                 self.plugins[name].append(plugin)
         return
+
+    def _extract_args_kwargs_from_func(self, func: Any) -> Tuple[list, dict]:
+        """
+        Извлекает значения аргументов из функции, если они заданы как значения по умолчанию.
+
+        Args:
+            func (Callable): Функция, из которой извлекаются args и kwargs.
+
+        Returns:
+            Tuple[list, dict]: args и kwargs, готовые для передачи в `_build_args_info`.
+        """
+        sig = inspect.signature(func)
+        args = []
+        kwargs = {}
+
+        for name, param in sig.parameters.items():
+            if param.default is not inspect.Parameter.empty:
+                # Именованный аргумент (имеет значение по умолчанию)
+                kwargs[name] = param.default
+            elif param.kind in (
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            ):
+                # Позиционный аргумент без значения по умолчанию (просто None)
+                args.append(None)
+
+        return args, kwargs
 
     def _build_args_info(self, args: list, kwargs: dict) -> List[ArgMeta]:
         """Строит список ArgMeta из args и kwargs на основе аннотаций функции.

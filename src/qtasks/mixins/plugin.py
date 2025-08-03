@@ -1,5 +1,6 @@
 """Миксин для работы с плагинами."""
 
+import traceback
 from typing import Any, List
 
 
@@ -35,7 +36,8 @@ class SyncPluginMixin:
                 result = plugin.trigger(name=name, *args, **kwargs)
             except Exception as e:
                 if safe:
-                    msg = f"Плагин {plugin.name} завершился с ошибкой: {e}"
+                    tb = ''.join(traceback.TracebackException.from_exception(e).format())
+                    msg = f"Плагин {plugin.name} завершился с ошибкой:\n {tb}"
                     if hasattr(self, "log"):
                         self.log.error(msg)
                     print(msg)
@@ -84,7 +86,8 @@ class AsyncPluginMixin:
                 result = await plugin.trigger(name=name, *args, **kwargs)
             except Exception as e:
                 if safe:
-                    msg = f"Плагин {plugin.name} завершился с ошибкой: {e}"
+                    tb = ''.join(traceback.TracebackException.from_exception(e).format())
+                    msg = f"Плагин {plugin.name} завершился с ошибкой:\n {tb}"
                     if hasattr(self, "log"):
                         self.log.error(msg)
                     print(msg)

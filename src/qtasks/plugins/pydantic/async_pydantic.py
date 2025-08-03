@@ -1,10 +1,15 @@
 """Async Pydantic Wrapper."""
 
-from typing import Any, List, Tuple, Union
-from pydantic import BaseModel
+from collections import deque
+from typing import TYPE_CHECKING, Annotated, Any, ForwardRef, List, Tuple, Union, get_args, get_origin, get_type_hints
+from pydantic import BaseModel, ValidationError
 
 from qtasks.plugins.base import BasePlugin
+from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.schemas.argmeta import ArgMeta
+
+if TYPE_CHECKING:
+    from qtasks.executors.base import BaseTaskExecutor
 
 
 class AsyncPydanticWrapperPlugin(BasePlugin):
@@ -30,79 +35,79 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
     async def trigger(self, name, task_executor, **kwargs):
         """Триггер плагина."""
         if name in self.handlers:
-            return self.handlers[name](**kwargs)
+            return self.handlers[name](task_executor, **kwargs)
         return None
 
-    def replace_args(self, args: list, kwargs: dict, args_info: List[ArgMeta]) -> Union[Tuple[list, dict], None]:
-        """Заменяет аргументы на Pydantic-модели.
-
-        Args:
-            args (list): Позиционные аргументы.
-            kwargs (dict): Именованные аргументы.
-            args_info (List[ArgMeta]): Информация об аргументах.
-        """
-        echo = args[0] if args_info and not args_info[0].is_kwarg and args_info[0].name == "self" else None
+    def replace_args(self, task_executor: "BaseTaskExecutor", args: list, kwargs: dict, args_info: List[ArgMeta]) -> Union[Tuple[list, dict], None]:
+        """Заменяет аргументы на Pydantic-модели."""
+        new_args, new_kwargs = args.copy(), kwargs.copy()
+        echo = new_args[0] if args_info and not args_info[0].is_kwarg and args_info[0].raw_type == AsyncTask else None
         start_index = 1 if echo else 0
-        model_meta = next(
-            (meta for meta in args_info[start_index:] if meta.annotation and isinstance(meta.annotation, type) and issubclass(meta.annotation, BaseModel)),
-            None
-        )
 
-        if model_meta:
-            model_cls = model_meta.annotation
-            model_fields = list(model_cls.model_fields.keys())
-            model_data = {}
-
-            for field_name, meta in zip(model_fields, args_info[start_index:]):
-                if meta.index is None or meta.index >= len(args):
-                    break
-                model_data[field_name] = args[meta.index]
-
-            if model_data:
-                DynamicModel = type(model_cls.__name__, (BaseModel,), {
-                    '__annotations__': {
-                        k: type(v) for k, v in model_data.items()
-                    },
-                    **model_data
-                })
-
-                model_instance = DynamicModel()
-
-                new_args = [model_instance]
-                if echo:
-                    new_args.insert(0, echo)
-                return new_args, {}
-
-        for meta in args_info:
-            if not meta.is_kwarg or meta.name not in kwargs:
+        for meta in args_info[start_index:]:
+            model_cls = self._model_class_from_meta(meta)
+            if not model_cls:
                 continue
 
-            value = kwargs[meta.name]
-            if (
-                meta.annotation
-                and isinstance(meta.annotation, type)
-                and issubclass(meta.annotation, BaseModel)
-                and not isinstance(value, BaseModel)
-                and isinstance(value, dict)
-            ):
+            try:
+                fields = self._fields_order(model_cls)
+                data_kw = {k: new_kwargs[k] for k in fields if k in new_kwargs}
+
                 try:
-                    DynamicModel = type(meta.annotation.__name__, (BaseModel,), {
-                        '__annotations__': {k: type(v) for k, v in value.items()},
-                        **value
-                    })
-                    model_instance = DynamicModel()
-                    new_kwargs = kwargs.copy()
-                    new_kwargs[meta.name] = model_instance
+                    model_instance = model_cls(**data_kw)
+                    for k in data_kw:
+                        new_kwargs.pop(k, None)
+                except ValidationError:
+                    new_args_trimmed, data_kw = self._add_missing_from_args(model_cls, data_kw, new_args[start_index:])
+                    model_instance = model_cls(**data_kw)
+                    for k in data_kw:
+                        new_kwargs.pop(k, None)
                     if echo:
-                        return [echo], new_kwargs
-                    return [], new_kwargs
-                except Exception as e:
-                    raise ValueError(f"Ошибка при сборке DynamicModel из kwargs['{meta.name}']: {e}") from e
+                        new_args_trimmed.insert(0, echo)
+                    return new_args_trimmed, {**new_kwargs, meta.name: model_instance}
+
+                return new_args, {**new_kwargs, meta.name: model_instance}
+
+            except Exception as e:
+                raise ValueError(f"Ошибка при сборке модели для '{meta.name}': {e}") from e
 
         return None
 
-    def replace_result(self, result: Any) -> Any:
+    def replace_result(self, task_executor, result: Any) -> Any:
         """Оборачивает результат в словарь, если это Pydantic-модель."""
         if isinstance(result, BaseModel):
             return result.model_dump()
         return None
+
+    def _model_class_from_meta(self, meta_or_ann, *, globalns=None, localns=None):
+        """Возвращает класс Pydantic-модели из аннотации ArgMeta или самой аннотации."""
+        ann = getattr(meta_or_ann, 'annotation', meta_or_ann)
+        if ann in (None, Any):
+            return None
+
+        if isinstance(ann, (str, ForwardRef)):
+            ann = get_type_hints(type("Tmp", (), {'__annotations__': {'x': ann}}), globalns or {}, localns or {}).get('x', ann)
+
+        if get_origin(ann) is Annotated:
+            ann = get_args(ann)[0]
+
+        if get_origin(ann) is Union:
+            args = [a for a in get_args(ann) if a is not type(None)]
+            if len(args) == 1:
+                ann = args[0]
+
+        if isinstance(ann, type) and issubclass(ann, BaseModel):
+            return ann
+
+        return None
+
+    def _fields_order(self, model_cls):
+        return list(getattr(model_cls, 'model_fields', getattr(model_cls, '__fields__')).keys())
+
+    def _add_missing_from_args(self, model_cls, data_kw, args: list):
+        """Добавляет недостающие значения из args по порядку."""
+        q = deque(args)
+        for f in self._fields_order(model_cls):
+            if f not in data_kw and q:
+                data_kw[f] = q.popleft()
+        return list(q), data_kw
