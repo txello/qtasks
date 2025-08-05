@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Dict, Optional, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
     from qtasks.workers.base import BaseWorker
     from qtasks.plugins.base import BasePlugin
+    from qtasks.events.base import BaseEvents
 
 
 class AsyncStarter(BaseStarter, AsyncPluginMixin):
@@ -90,6 +92,16 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация асинхронного стартера.
 
@@ -99,10 +111,12 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
             worker (BaseWorker, optional): Воркер. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
         super().__init__(
-            name=name, broker=broker, worker=worker, log=log, config=config
+            name=name, broker=broker, worker=worker, log=log, config=config, events=events
         )
+        self.events = self.events or AsyncEvents()
 
         self._global_loop: Union[asyncio.AbstractEventLoop, None] = None
         self._started_plugins: set[int] = set()
@@ -192,12 +206,7 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
                 self._started_plugins.add(plugin)
                 await plugin.start()
 
-        for model in self._inits["init_starting"]:
-            (
-                await model.func(worker=self.worker, broker=self.broker)
-                if model.awaiting
-                else model.func(worker=self.worker, broker=self.broker)
-            )
+        await self.events.fire("starting", starter=self, worker=self.worker, broker=self.broker)
 
         worker_task = asyncio.create_task(self.worker.start(num_workers))
         broker_task = asyncio.create_task(self.broker.start(self.worker))
@@ -224,12 +233,7 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
         if self._global_loop and self._global_loop.is_running():
             self._global_loop.stop()
 
-        for model_init in self._inits["init_stoping"]:
-            (
-                await model_init.func(worker=self.worker, broker=self.broker)
-                if model_init.awaiting
-                else model_init.func(worker=self.worker, broker=self.broker)
-            )
+        await self.events.fire("stopping", starter=self, worker=self.worker, broker=self.broker)
 
         for model_plugin in [i for y in self.plugins.values() for i in y]:
             await model_plugin.stop()

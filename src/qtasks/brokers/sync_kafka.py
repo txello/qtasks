@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.storages.sync_redis import SyncRedisStorage
@@ -23,6 +24,7 @@ from qtasks.schemas.task_exec import TaskPrioritySchema
 if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
+    from qtasks.events.base import BaseEvents
 
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
@@ -111,6 +113,16 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.SyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация SyncKafkaBroker.
 
@@ -121,10 +133,12 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             topic (str, optional): Топик Kafka. По умолчанию: "task_queue".
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
+        self.events = self.events or SyncEvents()
 
         self.consumer = KafkaConsumer(
             self.topic,

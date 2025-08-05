@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
     from qtasks.plugins.base import BasePlugin
+    from qtasks.events.base import BaseEvents
 
 
 class BaseBroker(ABC):
@@ -77,6 +78,16 @@ class BaseBroker(ABC):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация BaseBroker.
 
@@ -85,10 +96,10 @@ class BaseBroker(ABC):
             storage (BaseStorage, optional): Хранилище. По умолчанию: `None`.
             log (Logger, optional): Логгер. По умолчанию: `None`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
+            events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
         self.config = config or QueueConfig()
-        self.storage = storage
         self.log = (
             log.with_subname("Broker")
             if log
@@ -99,6 +110,10 @@ class BaseBroker(ABC):
                 format=self.config.logs_format,
             )
         )
+        self.events = events
+
+        self.storage = storage
+
         self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()

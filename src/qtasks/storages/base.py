@@ -23,6 +23,7 @@ from qtasks.schemas.task_status import (
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.plugins.base import BasePlugin
+    from qtasks.events.base import BaseEvents
 
 
 class BaseStorage(ABC):
@@ -83,6 +84,16 @@ class BaseStorage(ABC):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация базового хранилища.
 
@@ -91,9 +102,9 @@ class BaseStorage(ABC):
             global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: `None`.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
-        self.client = None
         self.global_config: Union["BaseGlobalConfig", None] = global_config
 
         self.config = config or QueueConfig()
@@ -107,6 +118,9 @@ class BaseStorage(ABC):
                 format=self.config.logs_format,
             )
         )
+        self.events = events
+
+        self.client = None
         self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()

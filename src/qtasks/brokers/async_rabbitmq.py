@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -29,6 +30,7 @@ from qtasks.storages import AsyncRedisStorage
 if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
+    from qtasks.events.base import BaseEvents
 
 
 class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
@@ -109,6 +111,16 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация AsyncRabbitMQBroker.
 
@@ -119,10 +131,13 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             queue_name (str, optional): Имя очереди RabbitMQ. По умолчанию: "task_queue".
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url or "amqp://guest:guest@localhost/"
         self.queue_name = f"{self.name}:{queue_name}"
+        self.events = self.events or AsyncEvents()
+
         self.storage = storage or AsyncRedisStorage(
             name=self.name, log=self.log, config=self.config
         )

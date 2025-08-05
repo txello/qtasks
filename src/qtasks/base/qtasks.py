@@ -21,7 +21,6 @@ from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.routers.router import Router
-from qtasks.schemas.inits import InitsExecSchema
 from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
@@ -30,6 +29,7 @@ if TYPE_CHECKING:
     from qtasks.starters.base import BaseStarter
     from qtasks.plugins.base import BasePlugin
     from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.events.base import BaseEvents
     from qtasks.middlewares.base import BaseMiddleware
     from qtasks.middlewares.task import TaskMiddleware
 
@@ -99,6 +99,16 @@ class BaseQueueTasks:
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация базового класса для QueueTasks.
 
@@ -109,6 +119,7 @@ class BaseQueueTasks:
             worker (BaseWorker, optional): Воркер. По умолчанию: `qtasks.workers.AsyncWorker`.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
 
@@ -176,23 +187,7 @@ class BaseQueueTasks:
             ),
         ] = {}
 
-        self._inits: Annotated[
-            Dict[str, List[InitsExecSchema]],
-            Doc(
-                """
-                функции инициализаций.
-
-                По умолчанию установлены: `init_starting, init_worker_running, init_task_running, init_task_stoping, init_task_stoping, init_worker_stoping` и `init_stoping`.
-                """
-            ),
-        ] = {
-            "init_starting": [],
-            "init_worker_running": [],
-            "init_task_running": [],
-            "init_task_stoping": [],
-            "init_worker_stoping": [],
-            "init_stoping": [],
-        }
+        self.events = events
 
         self._method: Annotated[
             Optional[str],

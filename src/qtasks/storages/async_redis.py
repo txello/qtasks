@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 from qtasks.configs.config import QueueConfig
 from qtasks.contrib.redis.async_queue_client import AsyncRedisCommandQueue
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.workers.base import BaseWorker
     from qtasks.schemas.task import Task
+    from qtasks.events.base import BaseEvents
 
 
 class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
@@ -122,6 +124,16 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация асинхронного Redis хранилища.
 
@@ -133,11 +145,14 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name, log=log, config=config)
+        super().__init__(name, log=log, config=config, events=events)
         self.url = url
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"
+        self.events = self.events or AsyncEvents()
+
         self.client = redis_connect or aioredis.from_url(
             self.url, decode_responses=True, encoding="utf-8"
         )

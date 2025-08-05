@@ -1,16 +1,20 @@
 """Async Redis Global Config."""
 
 import asyncio
-from typing import Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from typing_extensions import Annotated, Doc
 import redis.asyncio as aioredis
 
 from qtasks.configs.config import QueueConfig
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 
 from .base import BaseGlobalConfig
 from qtasks.schemas.global_config import GlobalConfigSchema
+
+if TYPE_CHECKING:
+    from qtasks.events.base import BaseEvents
 
 
 class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
@@ -97,6 +101,16 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация асинхронного Redis глобального конфига.
 
@@ -107,11 +121,13 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             config_name (str, optional): Имя Папки с Hash. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфигурация. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.name = name
         self.url = url
         self.config_name = f"{self.name}:{config_name or 'GlobalConfig'}"
+        self.events = self.events or AsyncEvents()
 
         self.client = redis_connect or aioredis.from_url(
             self.url, decode_responses=True, encoding="utf-8"

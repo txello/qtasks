@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
+from qtasks.events.sync_events import SyncEvents
 from qtasks.plugins.pydantic import SyncPydanticWrapperPlugin
 
 from .base import BaseWorker
@@ -32,6 +33,7 @@ from qtasks.brokers import SyncRedisBroker
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
+    from qtasks.events.base import BaseEvents
 
 
 class SyncThreadWorker(BaseWorker, SyncPluginMixin):
@@ -91,17 +93,28 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.SyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация синхронного воркера.
 
         Args:
             name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
-            broker (BaseBroker, optional): Брокер. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: None.
-            config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            broker (BaseBroker, optional): Брокер. По умолчанию: `None`.
+            log (Logger, optional): Логгер. По умолчанию: `None`.
+            config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
-        super().__init__(name=name, broker=broker, log=log, config=config)
-        self.name = name
+        super().__init__(name=name, broker=broker, log=log, config=config, events=events)
+        self.events = self.events or SyncEvents()
         self.broker = broker or SyncRedisBroker(
             name=self.name, log=self.log, config=self.config
         )
@@ -130,8 +143,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         Args:
             number (int): Номер Воркера.
         """
-        for model_init in self.init_worker_running:
-            model_init.func(worker=self)
+        self.events.fire("worker_running", worker=self, number=number)
 
         try:
             while not self._stop_event.is_set():
@@ -148,12 +160,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 ).start()
 
         finally:
-            for model_init in self.init_worker_stoping:
-                (
-                    model_init.func(worker=self)
-                    if model_init.awaiting
-                    else model_init.func(worker=self)
-                )
+            self.events.fire("worker_stopping", worker=self, number=number)
 
     def _execute_task(
         self,
@@ -201,13 +208,9 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 name=f"{self.name}:{task_broker.uuid}", mapping=asdict(model)
             )
 
-            self._init_task_running(task_func=task_func, task_broker=task_broker)
-
+            self.events.fire("task_running", worker=self, task_func=task_func, task_broker=task_broker)
             model = self._run_task(task_func=task_func, task_broker=task_broker)
-
-            self._init_task_stoping(
-                task_func=task_func, task_broker=task_broker, model=model
-            )
+            self.events.fire("task_stopping", worker=self, task_func=task_func, task_broker=task_broker, model=model)
 
             self.remove_finished_task(task_func=task_func, task_broker=task_broker, model=model)
 
@@ -496,44 +499,6 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             self.remove_finished_task(task_func=None, task_broker=task_broker, model=model)
             self.log.warning(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
             return None
-
-    def _init_task_running(
-        self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
-    ) -> None:
-        """Вызов задач `init_task_running`.
-
-        Args:
-            task_func (TaskExecSchema): Схема `TaskExecSchema`.
-            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-        """
-        for model_init in self.init_task_running:
-            try:
-                model_init.func(task_func=task_func, task_broker=task_broker)
-            except BaseException:
-                pass
-        return
-
-    def _init_task_stoping(
-        self,
-        task_func: TaskExecSchema,
-        task_broker: TaskPrioritySchema,
-        model: Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
-    ) -> None:
-        """Вызов задач `init_task_stoping`.
-
-        Args:
-            task_func (TaskExecSchema): Схема `TaskExecSchema`.
-            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель `TaskStatusSuccessSchema` или `TaskStatusSuccessSchema`.
-        """
-        for model_init in self.init_task_stoping:
-            try:
-                model_init.func(
-                    task_func=task_func, task_broker=task_broker, returning=model
-                )
-            except BaseException:
-                pass
-        return
 
     def remove_finished_task(
         self,

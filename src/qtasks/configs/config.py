@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 import logging
 from typing import Any, Callable, Dict, List
 
+from qtasks.enums.task_status import TaskStatusEnum
+
 
 @dataclass
 class QueueConfig:
@@ -34,6 +36,14 @@ class QueueConfig:
     logs_default_level_server: int = logging.INFO
     logs_default_level_client: int = logging.INFO
     logs_format: str = "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s"
+
+    result_statuses_end: List[str] = field(
+        default_factory=lambda: [
+            TaskStatusEnum.SUCCESS.value,
+            TaskStatusEnum.ERROR.value,
+            TaskStatusEnum.CANCEL.value
+        ]
+    )
 
     _callbacks: List[Callable[["QueueConfig", str, Any], None]] = field(
         default_factory=list, init=False, repr=False

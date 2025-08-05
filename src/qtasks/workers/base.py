@@ -8,13 +8,13 @@ from typing_extensions import Annotated, Doc
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.middlewares.task import TaskMiddleware
-from qtasks.schemas.inits import InitsExecSchema
 from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
     from qtasks.plugins.base import BasePlugin
     from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.events.base import BaseEvents
 
 
 class BaseWorker(ABC):
@@ -76,6 +76,16 @@ class BaseWorker(ABC):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация базового воркера.
 
@@ -101,10 +111,7 @@ class BaseWorker(ABC):
         )
 
         self._tasks: Dict[str, TaskExecSchema] = {}
-        self.init_worker_running: List[InitsExecSchema] = []
-        self.init_task_running: List[InitsExecSchema] = []
-        self.init_task_stoping: List[InitsExecSchema] = []
-        self.init_worker_stoping: List[InitsExecSchema] = []
+        self.events: "BaseEvents" = events
         self.task_middlewares_before: List[TaskMiddleware] = []
         self.task_middlewares_after: List[TaskMiddleware] = []
 

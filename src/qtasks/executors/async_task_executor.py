@@ -112,7 +112,6 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
 
         args_from_func = self._extract_args_kwargs_from_func(self.task_func.func)
         args_info = self._build_args_info(args_from_func[0], args_from_func[1])
-        print(args_info)
         new_args: Tuple[list, dict] = await self._plugin_trigger(
             "task_executor_args_replace",
             task_executor=self,
@@ -124,9 +123,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             }
         )
         if new_args:
-            print(self._args, self._kwargs)
             self._args, self._kwargs = new_args
-            print(self._args, self._kwargs)
 
         await self._plugin_trigger("task_executor_before_execute", task_executor=self)
 

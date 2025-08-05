@@ -9,6 +9,8 @@ from time import time
 from typing import TYPE_CHECKING
 import redis.asyncio as aioredis
 
+from qtasks.events.async_events import AsyncEvents
+
 from .base import BaseBroker
 from qtasks.storages.async_redis import AsyncRedisStorage
 from qtasks.configs.config import QueueConfig
@@ -27,6 +29,7 @@ from qtasks.schemas.task_status import (
 if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
     from qtasks.storages.base import BaseStorage
+    from qtasks.events.base import BaseEvents
 
 
 class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
@@ -106,7 +109,17 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
                     По умолчанию: `qtasks.configs.config.QueueConfig`.
                     """
             ),
-        ] = None
+        ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация AsyncRedisBroker.
 
@@ -117,10 +130,12 @@ class AsyncRedisBroker(BaseBroker, AsyncPluginMixin):
             queue_name (str, optional): Имя массива очереди задач для Redis. По умолчанию: "task_queue".
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url or "redis://localhost:6379/0"
         self.queue_name = f"{self.name}:{queue_name}"
+        self.events = self.events or AsyncEvents()
 
         self.client = aioredis.ConnectionPool.from_url(
             self.url, decode_responses=True, encoding="utf-8"

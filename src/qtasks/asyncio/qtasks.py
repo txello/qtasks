@@ -1,12 +1,12 @@
-"""Async QTasks."""
+"""qtasks.py - Main asyncio module for the QueueTasks framework."""
 
 import asyncio
 import asyncio_atexit
-import inspect
 from typing import TYPE_CHECKING, Callable, List, Optional, Type, Union, overload
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
+from qtasks.events.async_events import AsyncEvents
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.types.annotations import P, R
 from qtasks.base.qtasks import BaseQueueTasks
@@ -19,13 +19,13 @@ from qtasks.starters.async_starter import AsyncStarter
 from qtasks.results.async_result import AsyncResult
 
 from qtasks.configs import QueueConfig
-from qtasks.schemas.inits import InitsExecSchema
 
 if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
     from qtasks.brokers.base import BaseBroker
     from qtasks.starters.base import BaseStarter
     from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.events.base import BaseEvents
     from qtasks.middlewares.task import TaskMiddleware
     from qtasks.schemas.task import Task
 
@@ -108,6 +108,16 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """
         Инициализация QueueTasks.
@@ -119,17 +129,19 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             worker (Type[BaseWorker], optional): Воркер. Хранит в себе обработку задач. По умолчанию: `qtasks.workers.AsyncWorker`.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
         super().__init__(
-            name=name, broker=broker, worker=worker, log=log, config=config
+            name=name, broker=broker, worker=worker, log=log, config=config, events=events
         )
         self._method = "async"
+        self.events = self.events or AsyncEvents()
 
         self.broker: "BaseBroker" = self.broker or AsyncRedisBroker(
-            name=name, url=broker_url, log=self.log, config=self.config
+            name=name, url=broker_url, log=self.log, config=self.config, events=self.events
         )
         self.worker: "BaseWorker" = self.worker or AsyncWorker(
-            name=name, broker=self.broker, log=self.log, config=self.config
+            name=name, broker=self.broker, log=self.log, config=self.config, events=self.events
         )
         self.starter: Union["BaseStarter", None] = None
 
@@ -345,13 +357,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             broker=self.broker,
             log=self.log,
             config=self.config,
-        )
-
-        self.starter._inits.update(
-            {
-                "init_starting": self._inits["init_starting"],
-                "init_stoping": self._inits["init_stoping"],
-            }
+            events=self.events
         )
 
         plugins_hash = {}
@@ -376,184 +382,6 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         """Останавливает все компоненты."""
         await self._plugin_trigger("qtasks_stop", qtasks=self, starter=self.starter)
         await self.starter.stop()
-
-    @property
-    def init_starting(self):
-        """
-        `init_starting` - Инициализация при запуске `QueueTasks`.
-
-        ## Примеры
-
-        ```python
-        from qtasks import QueueTasks
-
-        app = QueueTasks()
-
-        @app.init_starting
-        async def test(worker, broker):
-            pass
-        ```
-        """
-
-        def wrap(func):
-            model = InitsExecSchema(
-                typing="init_starting",
-                func=func,
-                awaiting=inspect.iscoroutinefunction(func),
-            )
-            self._inits["init_starting"].append(model)
-            return func
-
-        return wrap
-
-    @property
-    def init_stoping(self):
-        """
-        `init_stoping` - Инициализация при остановке `QueueTasks`.
-
-        ## Примеры
-
-        ```python
-        from qtasks import QueueTasks
-
-        app = QueueTasks()
-
-        @app.init_stoping
-        async def test(worker, broker):
-            pass
-        ```
-        """
-
-        def wrap(func):
-            model = InitsExecSchema(
-                typing="init_stoping",
-                func=func,
-                awaiting=inspect.iscoroutinefunction(func),
-            )
-            self._inits["init_stoping"].append(model)
-            return func
-
-        return wrap
-
-    @property
-    def init_worker_running(self):
-        """
-        `init_worker_running` - Инициализация при запуске `QueueTasks.worker.worker()`.
-
-        ## Примеры
-
-        ```python
-        from qtasks import QueueTasks
-
-        app = QueueTasks()
-
-        @app.init_worker_running
-        async def test(worker):
-            pass
-        ```
-        """
-
-        def wrap(func):
-            model = InitsExecSchema(
-                typing="init_worker_running",
-                func=func,
-                awaiting=inspect.iscoroutinefunction(func),
-            )
-            self._inits["init_worker_running"].append(model)
-            self.worker.init_worker_running.append(model)
-            return func
-
-        return wrap
-
-    @property
-    def init_worker_stoping(self):
-        """
-        `init_worker_stoping` - Инициализация при остановке `QueueTasks.worker.worker()`.
-
-        ## Примеры
-
-        ```python
-        from qtasks import QueueTasks
-
-        app = QueueTasks()
-
-        @app.init_worker_stoping
-        async def test(worker):
-            pass
-        ```
-        """
-
-        def wrap(func):
-            model = InitsExecSchema(
-                typing="init_worker_stoping",
-                func=func,
-                awaiting=inspect.iscoroutinefunction(func),
-            )
-            self._inits["init_worker_stoping"].append(model)
-            self.worker.init_worker_stoping.append(model)
-            return func
-
-        return wrap
-
-    @property
-    def init_task_running(self):
-        """
-        `init_task_running` - Инициализация при запуске задачи функцией `QueueTasks.worker.listen()`.
-
-        ## Примеры
-
-        ```python
-        from qtasks import QueueTasks
-
-        app = QueueTasks()
-
-        @app.init_task_running
-        async def test(task_func: TaskExecSchema, task_broker: TaskPrioritySchema):
-            pass
-        ```
-        """
-
-        def wrap(func):
-            model = InitsExecSchema(
-                typing="init_task_running",
-                func=func,
-                awaiting=inspect.iscoroutinefunction(func),
-            )
-            self._inits["init_task_running"].append(model)
-            self.worker.init_task_running.append(model)
-            return func
-
-        return wrap
-
-    @property
-    def init_task_stoping(self):
-        """
-        `init_task_stoping` - Инициализация при завершении задачи функцией `QueueTasks.worker.listen()`.
-
-        ## Примеры
-
-        ```python
-        from qtasks import QueueTasks
-
-        app = QueueTasks()
-
-        @app.init_task_stoping
-        async def test(task_func: TaskExecSchema, task_broker: TaskPrioritySchema, returning: TaskStatusSuccessSchema|TaskStatusErrorSchema):
-            pass
-        ```
-        """
-
-        def wrap(func):
-            model = InitsExecSchema(
-                typing="init_task_stoping",
-                func=func,
-                awaiting=inspect.iscoroutinefunction(func),
-            )
-            self._inits["init_task_stoping"].append(model)
-            self.worker.init_task_stoping.append(model)
-            return func
-
-        return wrap
 
     async def ping(self, server: bool = True) -> bool:
         """Проверка запуска сервера.

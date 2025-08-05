@@ -7,7 +7,6 @@ from typing_extensions import Annotated, Doc
 from uuid import UUID
 import threading
 
-from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 
 if TYPE_CHECKING:
@@ -127,11 +126,7 @@ class SyncResult:
                 break
 
             task = self._app.get(uuid=uuid)
-            if not task or task.status not in [
-                TaskStatusEnum.SUCCESS.value,
-                TaskStatusEnum.ERROR.value,
-                TaskStatusEnum.CANCEL.value,
-            ]:
+            if not task or task.status not in self._app.config.result_statuses_end:
                 time.sleep(self._sleep_time)
                 continue
             if hasattr(task, "retry") and hasattr(task, "retry_child_uuid"):

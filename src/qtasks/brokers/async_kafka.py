@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.storages.sync_redis import SyncRedisStorage
@@ -24,6 +25,7 @@ from qtasks.schemas.task_exec import TaskPrioritySchema
 if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
+    from qtasks.events.base import BaseEvents
 
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
@@ -112,6 +114,16 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация AsyncKafkaBroker.
 
@@ -122,10 +134,12 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             topic (str, optional): Топик Kafka. По умолчанию: "task_queue".
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
+        self.events = self.events or AsyncEvents()
 
         self.consumer = AIOKafkaConsumer(
             self.topic,

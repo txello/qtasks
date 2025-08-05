@@ -5,7 +5,6 @@ from typing_extensions import Annotated, Doc
 from uuid import UUID
 import asyncio
 
-from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
 
 if TYPE_CHECKING:
@@ -131,11 +130,7 @@ class AsyncResult:
                 if hasattr(task, "retry_child_uuid"):
                     uuid = task.retry_child_uuid
                     continue
-            if not task or task.status not in [
-                TaskStatusEnum.SUCCESS.value,
-                TaskStatusEnum.ERROR.value,
-                TaskStatusEnum.CANCEL.value,
-            ]:
+            if not task or task.status not in self._app.config.result_statuses_end:
                 await asyncio.sleep(self._sleep_time)
                 continue
             return task

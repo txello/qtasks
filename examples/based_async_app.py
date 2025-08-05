@@ -12,7 +12,7 @@ import shared_tasks
 import router_tasks
 
 app = QueueTasks()
-app.config.logs_default_level = logging.INFO
+app.config.logs_default_level_server = logging.INFO
 app.config.running_older_tasks = True
 
 app.include_router(router_tasks.router)
@@ -141,7 +141,8 @@ async def test_echo_ctx(self: AsyncTask):
             Декордирование через параметр: {self.decode}
 
             TaskExecutor через параметр: {self.executor}
-            Миддлвари: {self.middlewares}
+            Миддлвари до: {self.middlewares_before}
+            Миддлвари после: {self.middlewares_after}
             """
     )
     self.ctx.cancel("Тестовая задача отменена")

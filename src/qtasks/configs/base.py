@@ -9,6 +9,7 @@ from qtasks.logs import Logger
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
+    from qtasks.events.base import BaseEvents
 
 
 class BaseGlobalConfig(ABC):
@@ -60,6 +61,16 @@ class BaseGlobalConfig(ABC):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация контекста.
 
@@ -67,11 +78,10 @@ class BaseGlobalConfig(ABC):
             name (str, optional): Имя проекта. По умолчанию: `None`.
             log (Logger, optional): Логгер. По умолчанию: `None`.
             config (QueueConfig, optional): Конфигурация. По умолчанию: `None`.
+            events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
-        self.client = None
         self.config = config or QueueConfig()
-
         self.log = (
             log.with_subname("GlobalConfig")
             if log
@@ -82,6 +92,8 @@ class BaseGlobalConfig(ABC):
                 format=self.config.logs_format,
             )
         )
+        self.events = events
+        self.client = None
         self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()

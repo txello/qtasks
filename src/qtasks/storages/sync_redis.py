@@ -12,6 +12,7 @@ from qtasks.configs.config import QueueConfig
 from qtasks.contrib.redis.sync_queue_client import SyncRedisCommandQueue
 from qtasks.configs.sync_redisglobalconfig import SyncRedisGlobalConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
 
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.workers.base import BaseWorker
     from qtasks.schemas.task import Task
+    from qtasks.events.base import BaseEvents
 
 
 class SyncRedisStorage(BaseStorage, SyncPluginMixin):
@@ -119,6 +121,16 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.SyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация хранилища.
 
@@ -130,11 +142,13 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"
+        self.events = self.events or SyncEvents()
         self.client = redis_connect or redis.Redis.from_url(
             self.url, decode_responses=True, encoding="utf-8"
         )

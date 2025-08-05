@@ -5,14 +5,13 @@ from qtasks.logs import Logger
 from typing import TYPE_CHECKING, Dict, List, Optional
 from typing_extensions import Annotated, Doc
 
-
-from qtasks.schemas.inits import InitsExecSchema
 from qtasks.configs.config import QueueConfig
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
     from qtasks.workers.base import BaseWorker
     from qtasks.plugins.base import BasePlugin
+    from qtasks.events.base import BaseEvents
 
 
 class BaseStarter(ABC):
@@ -84,6 +83,16 @@ class BaseStarter(ABC):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация базового стартера.
 
@@ -93,6 +102,7 @@ class BaseStarter(ABC):
             worker (BaseWorker, optional): Воркер. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
         self.config = config or QueueConfig()
@@ -106,14 +116,10 @@ class BaseStarter(ABC):
                 format=self.config.logs_format,
             )
         )
+        self.events = events
 
         self.broker = broker
         self.worker = worker
-
-        self._inits: Dict[str, List[InitsExecSchema]] = {
-            "init_starting": [],
-            "init_stoping": [],
-        }
 
         self.plugins: Dict[str, List["BasePlugin"]] = {}
 

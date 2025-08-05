@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -17,6 +18,7 @@ from qtasks.storages import SyncRedisStorage
 if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
     from qtasks.storages.base import BaseStorage
+    from qtasks.events.base import BaseEvents
 
 from .base import BaseBroker
 from qtasks.schemas.task import Task
@@ -106,6 +108,16 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.SyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация SyncRedisBroker.
 
@@ -116,10 +128,12 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             queue_name (str, optional): Имя массива очереди задач для Redis. По умолчанию: "task_queue".
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url or "redis://localhost:6379/0"
         self.queue_name = f"{self.name}:{queue_name}"
+        self.events = self.events or SyncEvents()
 
         self.client = redis.Redis.from_url(
             self.url, decode_responses=True, encoding="utf-8"
