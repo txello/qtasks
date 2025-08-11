@@ -228,14 +228,6 @@ class SyncTask(Generic[P, R]):
                     """
             ),
         ],
-        task_name: Annotated[
-            str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
-        ],
         priority: Annotated[
             Optional[int],
             Doc(
@@ -253,6 +245,16 @@ class SyncTask(Generic[P, R]):
                     Таймаут задачи.
 
                     Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+
+                    По умолчанию: Значение имени у задачи.
                     """
             ),
         ] = None,

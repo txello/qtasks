@@ -35,7 +35,7 @@ class SyncPydanticWrapperPlugin(BasePlugin):
     def trigger(self, name, task_executor, **kwargs):
         """Триггер плагина."""
         if name in self.handlers:
-            return self.handlers[name](**kwargs)
+            return self.handlers[name](task_executor, **kwargs)
         return None
 
     def replace_args(self, task_executor: "BaseTaskExecutor", args: list, kwargs: dict, args_info: List[ArgMeta]) -> Union[Tuple[list, dict], None]:
@@ -73,7 +73,7 @@ class SyncPydanticWrapperPlugin(BasePlugin):
 
         return None
 
-    def replace_result(self, result: Any) -> Any:
+    def replace_result(self, task_executor, result: Any) -> Any:
         """Оборачивает результат в словарь, если это Pydantic-модель."""
         if isinstance(result, BaseModel):
             return result.model_dump()

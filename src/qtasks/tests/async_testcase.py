@@ -189,6 +189,14 @@ class AsyncTestCase(BaseTestCase):
 
     async def add_task(
         self,
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
         *args: Annotated[
             Optional[tuple],
             Doc(
@@ -196,14 +204,6 @@ class AsyncTestCase(BaseTestCase):
                     args задачи.
 
                     По умолчанию: `()`.
-                    """
-            ),
-        ],
-        task_name: Annotated[
-            str,
-            Doc(
-                """
-                    Имя задачи.
                     """
             ),
         ],

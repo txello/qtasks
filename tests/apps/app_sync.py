@@ -1,10 +1,10 @@
 """Sync App."""
 
 from qtasks import QueueTasks
-from qtasks.brokers import SyncRedisBroker
+from qtasks.brokers import SyncSocketBroker
 from qtasks.workers import SyncThreadWorker
 
-broker = SyncRedisBroker(name="QueueTasks")
+broker = SyncSocketBroker(name="QueueTasks")
 worker = SyncThreadWorker(name="QueueTasks", broker=broker)
 
 app = QueueTasks(name="QueueTasks", broker=broker, worker=worker)

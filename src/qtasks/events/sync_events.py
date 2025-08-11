@@ -12,7 +12,7 @@ class SyncEvents(BaseEvents):
         super().__init__(on=OnEvents())
         pass
 
-    async def fire(self, event_name: str, *args, **kwargs):
+    def fire(self, event_name: str, *args, **kwargs):
         """Запустить все колбэки для события."""
         callbacks = self.on._events.get(event_name, [])
         for callback in callbacks:

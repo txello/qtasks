@@ -59,7 +59,7 @@ async def test_task_get_result(test_case):
 @pytest.mark.asyncio
 async def test_task_get_wait(test_case):
     """Ожидание завершения задачи."""
-    result = await test_case.add_task("test", args=(5,), timeout=500)
+    result = await test_case.add_task("test", 5, timeout=500)
     assert result.status == TaskStatusEnum.SUCCESS.value
 
 
@@ -73,7 +73,7 @@ async def test_task_error_get_wait(test_case):
 @pytest.mark.asyncio
 async def test_task_returns_expected_result(test_case):
     """Проверка ожидаемого результата задачи."""
-    result = await test_case.add_task("test", args=(5,), timeout=500)
+    result = await test_case.add_task("test", 5, timeout=500)
     assert result.returning == "Пользователь 5 записан"
 
 
@@ -88,5 +88,5 @@ async def test_task_not_found():
 @pytest.mark.asyncio
 async def test_task_timeout(test_case):
     """Проверка истечения времени ожидания задачи."""
-    result = await test_case.add_task("test", args=(5,), timeout=0.1)
+    result = await test_case.add_task("test", 5, timeout=0.1)
     assert result is None

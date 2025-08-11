@@ -362,7 +362,6 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         if new_data:
             task_data = new_data.get("task_data", task_data)
             priority = new_data.get("priority", priority)
-
         await self.client.zadd(self.queue_process, {task_data: priority})
         return
 

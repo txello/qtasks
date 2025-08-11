@@ -1,10 +1,10 @@
 """Async App."""
 
 from qtasks.asyncio import QueueTasks
-from qtasks.brokers import AsyncRedisBroker
+from qtasks.brokers import AsyncSocketBroker
 from qtasks.workers import AsyncWorker
 
-broker = AsyncRedisBroker(name="QueueTasks")
+broker = AsyncSocketBroker(name="QueueTasks")
 worker = AsyncWorker(name="QueueTasks", broker=broker)
 
 app = QueueTasks(name="QueueTasks", broker=broker, worker=worker)

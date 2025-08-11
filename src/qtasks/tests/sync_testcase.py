@@ -168,6 +168,14 @@ class SyncTestCase(BaseTestCase):
 
     def add_task(
         self,
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
         *args: Annotated[
             Optional[tuple],
             Doc(
@@ -175,14 +183,6 @@ class SyncTestCase(BaseTestCase):
                     args задачи.
 
                     По умолчанию: `()`.
-                    """
-            ),
-        ],
-        task_name: Annotated[
-            str,
-            Doc(
-                """
-                    Имя задачи.
                     """
             ),
         ],
