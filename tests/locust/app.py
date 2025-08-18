@@ -1,8 +1,9 @@
 """App for load testing."""
 
 import time
-
 from qtasks.asyncio import QueueTasks
+
+from http_plugin import AsyncWebAppPlugin
 
 
 app = QueueTasks()
@@ -17,7 +18,7 @@ def load_test_job(num: int):
     print(f"Job {num} finished at {end_time}")
     return num
 
-from http_plugin import AsyncWebAppPlugin
+
 app.add_plugin(AsyncWebAppPlugin(app=app), trigger_names=["-"])
 
 if __name__ == "__main__":

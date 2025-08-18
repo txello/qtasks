@@ -10,6 +10,7 @@ class QTasksUser(HttpUser):
 
     @task
     def call_qtasks_task(self):
+        """Call QTasks task."""
         self.client.post("/run-task", json={
             "name": "load_test_job",
             "args": [5],

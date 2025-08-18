@@ -13,16 +13,19 @@ if TYPE_CHECKING:
 
 
 class TaskRequest(BaseModel):
+    """Запрос на выполнение задачи."""
+
     name: str
     args: Optional[list[Any]] = []
     kwargs: Optional[dict[str, Any]] = {}
-    timeout: Optional[int] = 10
+    timeout: Optional[int] = None
 
 
 class AsyncWebAppPlugin(BasePlugin):
     """Плагин для запуска веб-приложения поверх QTasks."""
 
     def __init__(self, app: "QueueTasks", host: str = "127.0.0.1", port: int = 8080):
+        """Инициализация плагина."""
         super().__init__(name="AsyncWebAppPlugin")
         self.app: "QueueTasks" = app
         self.host = host
@@ -37,9 +40,9 @@ class AsyncWebAppPlugin(BasePlugin):
         async def run_task(req: TaskRequest):
             """Запуск задачи через HTTP."""
             result = await self.app.add_task(
-                req.name,
-                args=req.args or [],
-                kwargs=req.kwargs or {},
+                task_name=req.name,
+                *req.args or (),
+                **req.kwargs or {},
                 timeout=req.timeout
             )
             return {
