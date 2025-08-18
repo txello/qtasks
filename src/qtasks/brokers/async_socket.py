@@ -126,7 +126,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
 
         Args:
             name (str, optional): Имя проекта. По умолчанию: `QueueTasks`.
-            url (str, optional): URL для подключения к сокету. По умолчанию: `AsyncRedisStorage`.
+            url (str, optional): URL для подключения к сокету. По умолчанию: `127.0.0.1`.
             port (int, optional): Порт для подключения к сокету. По умолчанию: `8765`.
             storage (BaseStorage, optional): Хранилище. По умолчанию: `None`.
             log (Logger, optional): Логгер. По умолчанию: `None`.

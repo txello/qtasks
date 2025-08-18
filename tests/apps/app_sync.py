@@ -4,7 +4,7 @@ from qtasks import QueueTasks
 from qtasks.brokers import SyncSocketBroker
 from qtasks.workers import SyncThreadWorker
 
-broker = SyncSocketBroker(name="QueueTasks")
+broker = SyncSocketBroker(name="QueueTasks", port=8766)
 worker = SyncThreadWorker(name="QueueTasks", broker=broker)
 
 app = QueueTasks(name="QueueTasks", broker=broker, worker=worker)

@@ -45,6 +45,9 @@ class SyncDependsPlugin(BasePlugin):
 
     def replace_args(self, task_executor: "BaseTaskExecutor", args: List[Any], kw: Dict[str, Any], args_info: List[ArgMeta]):
         """Заменяет аргументы задачи."""
+        if not kw:
+            return
+
         for args_meta in args_info:
             if not args_meta.is_kwarg:
                 continue
