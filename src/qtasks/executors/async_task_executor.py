@@ -2,7 +2,7 @@
 
 import asyncio
 import json
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.exc.plugins import TaskPluginTriggerError
@@ -112,18 +112,18 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
 
         args_from_func = self._extract_args_kwargs_from_func(self.task_func.func)
         args_info = self._build_args_info(args_from_func[0], args_from_func[1])
-        new_args: Tuple[list, dict] = await self._plugin_trigger(
+        new_args = await self._plugin_trigger(
             "task_executor_args_replace",
             task_executor=self,
-            return_last=True,
             **{
                 "args": self._args,
-                "kwargs": self._kwargs,
+                "kw": self._kwargs,
                 "args_info": args_info,
-            }
+            },
+            return_last=True
         )
         if new_args:
-            self._args, self._kwargs = new_args
+            self._args, self._kwargs = new_args.get("args", self._args), new_args.get("kw", self._kwargs)
 
         await self._plugin_trigger("task_executor_before_execute", task_executor=self)
 
@@ -131,10 +131,10 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         """Вызов после запуска задач."""
         await self._plugin_trigger("task_executor_after_execute", task_executor=self)
         result: Any = await self._plugin_trigger(
-            "task_executor_after_execute_result_replace", task_executor=self, result=self._result
+            "task_executor_after_execute_result_replace", task_executor=self, result=self._result, return_last=True
         )
         if result:
-            self._result = result[-1]
+            self._result = result.get("result", self._result)
         return
 
     async def execute_middlewares_before(self):
@@ -201,7 +201,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
 
         new_result = await self._plugin_trigger("task_executor_run_task", task_executor=self, result=result)
         if new_result:
-            result = new_result[-1]
+            result = new_result.get("result", result)
 
         return result
 
@@ -239,7 +239,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 pass
         new_results = await self._plugin_trigger("task_executor_run_task_gen", task_executor=self, results=results)
         if new_results:
-            results = new_results[-1]
+            results = new_results.get("results", results)
         return results
 
     async def _maybe_await(self, value):
@@ -271,7 +271,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 return_last=True
             )
             if new_result:
-                self._result = new_result
+                self._result = new_result.get("result", self._result)
             else:
                 raise e
 
@@ -293,5 +293,5 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             result = json.dumps(self._result, ensure_ascii=False)
         new_result = await self._plugin_trigger("task_executor_decode", task_executor=self, result=result)
         if new_result:
-            result = new_result[-1]
+            result = new_result.get("result", result)
         return result

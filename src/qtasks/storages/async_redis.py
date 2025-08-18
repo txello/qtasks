@@ -217,7 +217,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         result = self._build_task(uuid=uuid, result=result)
         new_result = await self._plugin_trigger("storage_get", storage=self, result=result, return_last=True)
         if new_result:
-            result = new_result
+            result = new_result.get("result", result)
         return result
 
     async def get_all(self) -> List["Task"]:
@@ -241,7 +241,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
 
         new_results = await self._plugin_trigger("storage_get_all", storage=self, results=results, return_last=True)
         if new_results:
-            results = new_results
+            results = new_results.get("results", results)
 
         return results
 
@@ -263,7 +263,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """
         new_kw = await self._plugin_trigger("storage_update", storage=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw
+            kwargs = new_kw.get("kw", kwargs)
         return await self.redis_contrib.execute(
             "hset", kwargs["name"], mapping=kwargs["mapping"]
         )
@@ -387,7 +387,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                 priority = new_data.get("priority", priority)
                 created_at = new_data.get("created_at", created_at)
                 args = new_data.get("args", args)
-                kwargs = new_data.get("kwargs", kwargs)
+                kwargs = new_data.get("kw", kwargs)
 
             await worker.add(
                 name=task_name,

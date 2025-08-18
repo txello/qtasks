@@ -6,6 +6,7 @@ from pydantic import BaseModel, ValidationError
 
 from qtasks.plugins.base import BasePlugin
 from qtasks.registries.async_task_decorator import AsyncTask
+from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.argmeta import ArgMeta
 
 if TYPE_CHECKING:
@@ -38,10 +39,10 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
             return self.handlers[name](task_executor, **kwargs)
         return None
 
-    def replace_args(self, task_executor: "BaseTaskExecutor", args: list, kwargs: dict, args_info: List[ArgMeta]) -> Union[Tuple[list, dict], None]:
+    def replace_args(self, task_executor: "BaseTaskExecutor", args: list, kw: dict, args_info: List[ArgMeta]) -> Union[Tuple[list, dict], None]:
         """Заменяет аргументы на Pydantic-модели."""
-        new_args, new_kwargs = args.copy(), kwargs.copy()
-        echo = new_args[0] if args_info and not args_info[0].is_kwarg and args_info[0].raw_type == AsyncTask else None
+        new_args, new_kwargs = args.copy(), kw.copy()
+        echo = new_args[0] if args_info and not args_info[0].is_kwarg and args_info[0].raw_type in [SyncTask, AsyncTask] else None
         start_index = 1 if echo else 0
 
         for meta in args_info[start_index:]:
@@ -64,9 +65,9 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
                         new_kwargs.pop(k, None)
                     if echo:
                         new_args_trimmed.insert(0, echo)
-                    return new_args_trimmed, {**new_kwargs, meta.name: model_instance}
+                    return {"args": new_args_trimmed, "kw": {**new_kwargs, meta.name: model_instance}}
 
-                return new_args, {**new_kwargs, meta.name: model_instance}
+                return {"kw": {**new_kwargs, meta.name: model_instance}}
 
             except Exception as e:
                 raise ValueError(f"Ошибка при сборке модели для '{meta.name}': {e}") from e
@@ -76,7 +77,7 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
     def replace_result(self, task_executor, result: Any) -> Any:
         """Оборачивает результат в словарь, если это Pydantic-модель."""
         if isinstance(result, BaseModel):
-            return result.model_dump()
+            return {"result": result.model_dump()}
         return None
 
     def _model_class_from_meta(self, meta_or_ann, *, globalns=None, localns=None):

@@ -148,8 +148,8 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self.running = False
 
         self.queue = asyncio.Queue()
-        self._serve_task: asyncio.Task | None = None
-        self._listen_task: asyncio.Task | None = None
+        self._serve_task: Union[asyncio.Task, None] = None
+        self._listen_task: Union[asyncio.Task, None] = None
 
     async def handle_connection(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """Обрабатывает входящее соединение.
@@ -239,7 +239,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                 uuid=uuid,
                 priority=int(priority),
                 args=args,
-                kwargs=kwargs,
+                kw=kwargs,
                 created_at=created_at,
                 return_last=True
             )
@@ -248,7 +248,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                 uuid = new_args.get("uuid", uuid)
                 priority = new_args.get("priority", priority)
                 args = new_args.get("args", args)
-                kwargs = new_args.get("kwargs", kwargs)
+                kwargs = new_args.get("kw", kwargs)
                 created_at = new_args.get("created_at", created_at)
             await worker.add(
                 name=task_name,
@@ -335,7 +335,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             model=model
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         await self.storage.add(uuid=uuid, task_status=model)
         reader, writer = await asyncio.open_connection(self.url, self.port)
@@ -389,7 +389,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         task = await self.storage.get(uuid=uuid)
         new_task = await self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
         if new_task:
-            task = new_task
+            task = new_task.get("task", task)
         return task
 
     async def update(
@@ -410,7 +410,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         """
         new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw
+            kwargs = new_kw.get("kw", kwargs)
         return await self.storage.update(**kwargs)
 
     async def start(
@@ -510,7 +510,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         await self.storage.remove_finished_task(task_broker, model)
         return

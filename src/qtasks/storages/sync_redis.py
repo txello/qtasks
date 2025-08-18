@@ -210,7 +210,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         result = self._build_task(uuid=uuid, result=result)
         new_result = self._plugin_trigger("storage_get", storage=self, result=result, return_last=True)
         if new_result:
-            result = new_result
+            result = new_result.get("result", result)
         return result
 
     def get_all(self) -> List["Task"]:
@@ -234,7 +234,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
 
         new_results = self._plugin_trigger("storage_get_all", storage=self, results=results, return_last=True)
         if new_results:
-            results = new_results
+            results = new_results.get("results", results)
 
         return results
 
@@ -256,7 +256,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         """
         new_kw = self._plugin_trigger("storage_update", storage=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw
+            kwargs = new_kw.get("kw", kwargs)
 
         return self.redis_contrib.execute(
             "hset", kwargs["name"], mapping=kwargs["mapping"]
@@ -380,7 +380,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
                 priority = new_data.get("priority", priority)
                 created_at = new_data.get("created_at", created_at)
                 args = new_data.get("args", args)
-                kwargs = new_data.get("kwargs", kwargs)
+                kwargs = new_data.get("kw", kwargs)
 
             worker.add(
                 name=task_name,

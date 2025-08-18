@@ -177,7 +177,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
     def get_all(self, key: str) -> Dict[str, Any]:
@@ -197,7 +197,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
     def get_match(self, match: str) -> Union[Any, dict]:
@@ -217,7 +217,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
     def start(self) -> None:

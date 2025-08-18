@@ -227,11 +227,12 @@ class BaseTaskExecutor(ABC):
             raw_type = get_args(annotation)[0] if get_args(annotation) else annotation
             args_info.append(ArgMeta(
                 name=param_name,
+                value=value,
                 origin=origin,
                 raw_type=raw_type,
                 annotation=annotation,
                 is_kwarg=False,
-                index=idx,
+                index=idx
             ))
 
         # Обработка именованных аргументов
@@ -241,11 +242,12 @@ class BaseTaskExecutor(ABC):
             raw_type = get_args(annotation)[0] if get_args(annotation) else annotation
             args_info.append(ArgMeta(
                 name=key,
+                value=value,
                 origin=origin,
                 raw_type=raw_type,
                 annotation=annotation,
                 is_kwarg=True,
-                key=key,
+                key=key
             ))
 
         return args_info

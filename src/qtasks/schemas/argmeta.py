@@ -19,6 +19,7 @@ class ArgMeta:
     """
 
     name: str
+    value: Any
     origin: Optional[Type]
     raw_type: Optional[Type]
     annotation: Any

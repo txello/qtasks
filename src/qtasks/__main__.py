@@ -28,6 +28,8 @@ def get_app(app_arg: str) -> Union["QueueTasks", "aioQueueTasks", None]:
         QueueTasks: Экземпляр приложения.
     """
     try:
+        if not app_arg:
+            raise ValueError("Не указан аргумент приложения.")
         file_path, app_var = app_arg.split(":")[0], app_arg.split(":")[-1]
         file = import_module(file_path)
         app = getattr(file, app_var)

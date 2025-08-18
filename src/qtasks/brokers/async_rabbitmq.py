@@ -197,7 +197,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
                         uuid=uuid,
                         priority=int(priority),
                         args=args,
-                        kwargs=kwargs,
+                        kw=kwargs,
                         created_at=created_at,
                         return_last=True
                     )
@@ -206,7 +206,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
                         uuid = new_args.get("uuid", uuid)
                         priority = new_args.get("priority", priority)
                         args = new_args.get("args", args)
-                        kwargs = new_args.get("kwargs", kwargs)
+                        kwargs = new_args.get("kw", kwargs)
                         created_at = new_args.get("created_at", created_at)
 
                     await worker.add(
@@ -304,7 +304,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         await self.storage.add(uuid=uuid, task_status=model)
 
@@ -367,7 +367,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
         task = await self.storage.get(uuid=uuid)
         new_task = await self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
         if new_task:
-            task = new_task
+            task = new_task.get("task", task)
         return task
 
     async def update(
@@ -388,7 +388,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
         """
         new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw
+            kwargs = new_kw.get("kw", kwargs)
         return await self.storage.update(**kwargs)
 
     async def start(
@@ -460,7 +460,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         return await self.storage.remove_finished_task(task_broker, model)
 

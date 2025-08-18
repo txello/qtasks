@@ -229,7 +229,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             task_name=task_name,
             priority=priority,
             args=args,
-            kwargs=kwargs,
+            kw=kwargs,
             return_last=True
         )
         if new_args:
@@ -237,7 +237,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             priority = new_args.get("priority", priority)
             extra = new_args.get("extra", extra)
             args = new_args.get("args", args)
-            kwargs = new_args.get("kwargs", kwargs)
+            kwargs = new_args.get("kw", kwargs)
 
         task = self.broker.add(
             task_name=task_name, priority=priority, extra=extra, args=args, kwargs=kwargs
@@ -283,7 +283,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         result = self.broker.get(uuid=uuid)
         new_result = self._plugin_trigger("qtasks_get", qtasks=self, broker=self.broker, task=result, return_last=True)
         if new_result:
-            result = new_result
+            result = new_result.get("task", result)
         return result
 
     def run_forever(

@@ -44,7 +44,7 @@ class UtilsInspectStats:
             "Количество задач": len(app.tasks),
             "Количество роутеров": len(app.routers),
             "Количество плагинов": plugins_sum,
-            "Количество инициализаций": sum(len(inits) for inits in app._inits.values()),
+            "Количество инициализаций": sum(len(inits) for inits in app.events.on._events.values()),
             "Брокер": app.broker.__class__.__name__,
             "Воркер": app.worker.__class__.__name__,
             "Стартер": app.starter.__class__.__name__ if app.starter else "—",

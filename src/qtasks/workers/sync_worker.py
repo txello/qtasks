@@ -10,6 +10,7 @@ from uuid import UUID
 from typing_extensions import Annotated, Doc
 
 from qtasks.events.sync_events import SyncEvents
+from qtasks.plugins.depends.sync_depends import SyncDependsPlugin
 from qtasks.plugins.pydantic import SyncPydanticWrapperPlugin
 
 from .base import BaseWorker
@@ -202,7 +203,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 return_last=True
             )
             if new_model:
-                model = new_model
+                model = new_model.get("model", model)
 
             self.broker.update(
                 name=f"{self.name}:{task_broker.uuid}", mapping=asdict(model)
@@ -286,7 +287,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             uuid=uuid,
             priority=priority,
             args=args,
-            kwargs=kwargs,
+            kw=kwargs,
             created_at=created_at,
             return_last=True
         )
@@ -295,7 +296,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             uuid = new_data.get("uuid", uuid)
             priority = new_data.get("priority", priority)
             args = new_data.get("args", args)
-            kwargs = new_data.get("kwargs", kwargs)
+            kwargs = new_data.get("kw", kwargs)
             created_at = new_data.get("created_at", created_at)
 
         model = TaskPrioritySchema(
@@ -457,7 +458,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 kwargs=task_broker.kwargs,
             )
         else:
-            model: TaskStatusErrorSchema = plugin_result
+            model: TaskStatusErrorSchema = plugin_result.get("model", model)
         #
 
         self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
@@ -546,10 +547,11 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             return_last=True
         )
         if new_data:
-            task_broker, model = new_data
+            task_broker, model = new_data.get("task_broker", task_broker), new_data.get("model", model)
         self.broker.remove_finished_task(task_broker, model)
 
     def init_plugins(self):
         """Инициализация плагинов."""
         self.add_plugin(SyncRetryPlugin(), trigger_names=["worker_task_error_retry"])
         self.add_plugin(SyncPydanticWrapperPlugin(), trigger_names=["task_executor_args_replace", "task_executor_after_execute_result_replace"])
+        self.add_plugin(SyncDependsPlugin(), trigger_names=["task_executor_args_replace"])

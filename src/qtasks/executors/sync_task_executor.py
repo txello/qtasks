@@ -1,7 +1,7 @@
 """Sync Task Executor."""
 
 import json
-from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.exc.plugins import TaskPluginTriggerError
@@ -108,29 +108,29 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
 
         args_from_func = self._extract_args_kwargs_from_func(self.task_func.func)
         args_info = self._build_args_info(args_from_func[0], args_from_func[1])
-        new_args: Tuple[list, dict] = self._plugin_trigger(
+        new_args = self._plugin_trigger(
             "task_executor_args_replace",
             task_executor=self,
-            return_last=True,
             **{
                 "args": self._args,
-                "kwargs": self._kwargs,
+                "kw": self._kwargs,
                 "args_info": args_info,
-            }
+            },
+            return_last=True
         )
         if new_args:
-            self._args, self._kwargs = new_args
+            self._args, self._kwargs = new_args.get("args", self._args), new_args.get("kw", self._kwargs)
 
         self._plugin_trigger("task_executor_before_execute", task_executor=self)
 
     def after_execute(self):
         """Вызывается после выполнения задачи."""
         self._plugin_trigger("task_executor_after_execute", task_executor=self)
-        result: Any = self._plugin_trigger(
-            "task_executor_after_execute_result_replace", task_executor=self, result=self._result
+        result = self._plugin_trigger(
+            "task_executor_after_execute_result_replace", task_executor=self, result=self._result, return_last=True
         )
         if result:
-            self._result = result[-1]
+            self._result = result.get("result", self._result)
         return
 
     def execute_middlewares_before(self):
@@ -181,7 +181,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
 
         new_result = self._plugin_trigger("task_executor_run_task", task_executor=self, result=result)
         if new_result:
-            result = new_result[-1]
+            result = new_result.get("result", result)
 
         return result
 
@@ -218,7 +218,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
 
         new_results = self._plugin_trigger("task_executor_run_task_gen", task_executor=self, results=results)
         if new_results:
-            results = new_results[-1]
+            results = new_results.get("results", results)
         return results
 
     def execute(self, decode: bool = True) -> Union[Any, str]:
@@ -245,7 +245,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 return_last=True
             )
             if new_result:
-                self._result = new_result
+                self._result = new_result.get("result", self._result)
             else:
                 raise e
 
@@ -267,5 +267,5 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             result = json.dumps(self._result, ensure_ascii=False)
         new_result = self._plugin_trigger("task_executor_decode", task_executor=self, result=result)
         if new_result:
-            result = new_result[-1]
+            result = new_result.get("result", result)
         return result

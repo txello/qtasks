@@ -194,7 +194,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
                 uuid=uuid,
                 priority=int(priority),
                 args=args,
-                kwargs=kwargs,
+                kw=kwargs,
                 created_at=created_at,
                 return_last=True
             )
@@ -203,7 +203,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
                 uuid = new_args.get("uuid", uuid)
                 priority = new_args.get("priority", priority)
                 args = new_args.get("args", args)
-                kwargs = new_args.get("kwargs", kwargs)
+                kwargs = new_args.get("kw", kwargs)
                 created_at = new_args.get("created_at", created_at)
 
             worker.add(
@@ -305,7 +305,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         self.storage.add(uuid=uuid, task_status=model)
 
@@ -369,7 +369,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         task = self.storage.get(uuid=uuid)
         new_task = self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
         if new_task:
-            task = new_task
+            task = new_task.get("task", task)
         return task
 
     def update(
@@ -390,7 +390,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         """
         new_kw = self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw
+            kwargs = new_kw.get("kw", kwargs)
         return self.storage.update(**kwargs)
 
     def start(
@@ -463,7 +463,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         self.storage.remove_finished_task(task_broker, model)
 

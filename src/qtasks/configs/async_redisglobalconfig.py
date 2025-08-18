@@ -178,7 +178,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
     async def get_all(self, key: str) -> Dict[str, Any]:
@@ -198,7 +198,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
     async def get_match(self, match: str) -> Union[Any, dict]:
@@ -218,7 +218,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
     async def start(self) -> None:
