@@ -8,6 +8,7 @@ from uuid import UUID
 
 from qtasks.events.async_events import AsyncEvents
 from qtasks.mixins.plugin import AsyncPluginMixin
+from qtasks.schemas.task_exec import TaskExecSchema
 from qtasks.types.annotations import P, R
 from qtasks.base.qtasks import BaseQueueTasks
 from qtasks.logs import Logger
@@ -226,11 +227,9 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         Returns:
             Task|None: `schemas.task.Task` или `None`.
         """
-        if task_name not in self.tasks:
-            raise KeyError(f"Задача с именем {task_name} не зарегистрирована!")
-
         if priority is None:
-            priority = self.tasks.get(task_name).priority
+            priority = self.tasks.get(task_name, 0)
+            priority = priority.priority if isinstance(priority, TaskExecSchema) else 0
 
         args, kwargs = args or (), kwargs or {}
         extra = None
