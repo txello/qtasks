@@ -64,6 +64,16 @@ class SyncTask(Generic[P, R]):
                     """
             ),
         ] = False,
+        max_time: Annotated[
+            Union[float, None],
+            Doc(
+                """
+                    Максимальное время выполнения задачи в секундах.
+
+                    По умолчанию: `None`.
+                """
+            ),
+        ] = None,
         retry: Annotated[
             int,
             Doc(
@@ -179,6 +189,7 @@ class SyncTask(Generic[P, R]):
             task_name (str, optional): Имя задачи. По умолчанию: `None`.
             priority (int, optional): Приоритет задачи. По умолчанию: `None`.
             echo (bool, optional): Добавить SyncTask первым параметром. По умолчанию: `False`.
+            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
@@ -194,6 +205,9 @@ class SyncTask(Generic[P, R]):
         self.priority = priority
 
         self.echo = echo
+
+        self.max_time = max_time
+
         self.retry = retry
         self.retry_on_exc = retry_on_exc
 

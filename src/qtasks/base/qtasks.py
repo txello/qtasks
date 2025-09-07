@@ -206,6 +206,7 @@ class BaseQueueTasks:
         *,
         priority: Union[int, None] = None,
         echo: bool = False,
+        max_time: Union[float, None] = None,
         retry: Union[int, None] = None,
         retry_on_exc: Union[List[Type[Exception]], None] = None,
         decode: Union[Callable, None] = None,
@@ -252,6 +253,16 @@ class BaseQueueTasks:
                     """
             ),
         ] = False,
+        max_time: Annotated[
+            Union[float, None],
+            Doc(
+                """
+                    Максимальное время выполнения задачи в секундах.
+
+                    По умолчанию: `None`.
+                    """
+            )
+        ] = None,
         retry: Annotated[
             Union[int, None],
             Doc(
@@ -396,6 +407,7 @@ class BaseQueueTasks:
                 awaiting=inspect.iscoroutinefunction(func),
                 generating=generating,
                 echo=echo,
+                max_time=max_time,
                 retry=retry,
                 retry_on_exc=retry_on_exc,
                 decode=decode,
@@ -419,6 +431,7 @@ class BaseQueueTasks:
                 task_name=model.name,
                 priority=model.priority,
                 echo=model.echo,
+                max_time=model.max_time,
                 retry=model.retry,
                 retry_on_exc=model.retry_on_exc,
                 decode=model.decode,

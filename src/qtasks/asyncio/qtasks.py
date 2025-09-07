@@ -414,6 +414,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         *,
         priority: Union[int, None] = None,
         echo: bool = False,
+        max_time: Union[float, None] = None,
         retry: Union[int, None] = None,
         retry_on_exc: Union[List[Type[Exception]], None] = None,
         decode: Union[Callable, None] = None,
@@ -441,6 +442,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
             echo (bool, optional): Добавить AsyncTask первым параметром. По умолчанию: `False`.
+            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.

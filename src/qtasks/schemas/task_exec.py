@@ -47,18 +47,21 @@ class TaskExecSchema:
         name (str): Название.
 
         func (FunctionType): Функция задачи.
-        awaiting (bool): Асинхронность задачи. По умолчанию: False
-        generating (str|Literal[False]): Генерация задачи. По умолчанию: False
+        awaiting (bool): Асинхронность задачи. По умолчанию: `False`
+        generating (str|Literal[False]): Генерация задачи. По умолчанию: `False`
 
-        echo (bool): Включить параметр self в задачу. По умолчанию: False
-        retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: None
-        retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: None
+        echo (bool): Включить параметр self в задачу. По умолчанию: `False`
 
-        decode (Callable, optional): Декодер результата задачи. По умолчанию: None
-        tags (List[str], optional): Теги задачи. По умолчанию: None
+        max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`
+
+        retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`
+        retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`
+
+        decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`
+        tags (List[str], optional): Теги задачи. По умолчанию: `None`
         description (str, optional): Описание задачи. По умолчанию: `None`.
 
-        generate_handler (Callable, optional): Генератор обработчика. По умолчанию: None
+        generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`
 
         executor (Type[BaseTaskExecutor], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`|`AsyncTaskExecutor`.
         middlewares_before (List[Type[TaskMiddleware]]): Мидлвари до выполнения задачи. По умолчанию: `Пустой массив`.
@@ -76,6 +79,9 @@ class TaskExecSchema:
     generating: Union[str, Literal[False]] = False
 
     echo: bool = False
+
+    max_time: Union[float, None] = None
+
     retry: Union[int, None] = None
     retry_on_exc: Union[List[Type[Exception]], None] = None
 

@@ -383,6 +383,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         *,
         priority: Union[int, None] = None,
         echo: bool = False,
+        max_time: Union[float, None] = None,
         retry: Union[int, None] = None,
         retry_on_exc: Union[List[Type[Exception]], None] = None,
         decode: Union[Callable, None] = None,
@@ -409,6 +410,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
             echo (bool, optional): Добавить SyncTask первым параметром. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.

@@ -155,6 +155,13 @@ async def test_echo_ctx(self: AsyncTask):
 async def example_stats():
     print(stats.inspect().tasks())
 
+
+@app.task(echo=True, max_time=2)
+async def example_error_timeout(self: AsyncTask):
+    await self.ctx.sleep(5)
+    return "This task took too long to complete."
+
+
 stats = AsyncStats(app=app)
 
 if __name__ == "__main__":

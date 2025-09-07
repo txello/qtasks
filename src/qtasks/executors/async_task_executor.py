@@ -106,6 +106,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 executor=self.task_func.executor,
                 middlewares_before=self.task_func.middlewares_before,
                 middlewares_after=self.task_func.middlewares_after,
+                extra=self.task_func.extra
             )
             self.echo.ctx._update(task_uuid=self.task_broker.uuid)
             self._args.insert(0, self.echo)
@@ -260,7 +261,10 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         await self.execute_middlewares_before()
         await self.before_execute()
         try:
-            self._result = await self.run_task()
+            if self.task_func.max_time:
+                self._result = await asyncio.wait_for(self.run_task(), timeout=self.task_func.max_time)
+            else:
+                self._result = await self.run_task()
         except TaskPluginTriggerError as e:
             new_result = await self._plugin_trigger(
                 "task_executor_run_task_trigger_error",
@@ -274,6 +278,10 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 self._result = new_result.get("result", self._result)
             else:
                 raise e
+        except asyncio.TimeoutError:
+            msg = f"Время выполнения задачи {self.task_func.name} превысило лимит {self.task_func.max_time} секунд"
+            self.log.error(msg)
+            raise asyncio.TimeoutError(msg)
 
         await self.after_execute()
         await self.execute_middlewares_after()

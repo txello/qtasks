@@ -102,6 +102,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 executor=self.task_func.executor,
                 middlewares_before=self.task_func.middlewares_before,
                 middlewares_after=self.task_func.middlewares_after,
+                extra=self.task_func.extra
             )
             self.echo.ctx._update(task_uuid=self.task_broker.uuid)
             self._args.insert(0, self.echo)

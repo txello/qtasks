@@ -110,6 +110,16 @@ class Router(SyncPluginMixin):
                     """
             ),
         ] = False,
+        max_time: Annotated[
+            Union[float, None],
+            Doc(
+                """
+                    Максимальное время выполнения задачи в секундах.
+
+                    По умолчанию: `None`.
+                    """
+            )
+        ] = None,
         retry: Annotated[
             Union[int, None],
             Doc(
@@ -208,6 +218,7 @@ class Router(SyncPluginMixin):
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
             echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
+            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
@@ -252,6 +263,7 @@ class Router(SyncPluginMixin):
                 awaiting=inspect.iscoroutinefunction(func),
                 generating=generating,
                 echo=echo,
+                max_time=max_time,
                 retry=retry,
                 retry_on_exc=retry_on_exc,
                 decode=decode,
@@ -274,6 +286,7 @@ class Router(SyncPluginMixin):
                 task_name=model.name,
                 priority=model.priority,
                 echo=model.echo,
+                max_time=model.max_time,
                 retry=model.retry,
                 retry_on_exc=model.retry_on_exc,
                 decode=model.decode,

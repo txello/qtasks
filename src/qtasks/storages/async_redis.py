@@ -45,7 +45,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     from qtasks.brokers import AsyncRedisBroker
     from qtasks.storages import AsyncRedisStorage
 
-    storage = AsyncRedisBroker(name="QueueTasks")
+    storage = AsyncRedisStorage(name="QueueTasks")
     broker = AsyncRedisBroker(name="QueueTasks", storage=storage)
 
     app = QueueTasks(broker=broker)

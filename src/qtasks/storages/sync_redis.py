@@ -42,7 +42,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
     from qtasks.brokers import SyncRedisBroker
     from qtasks.storages import SyncRedisStorage
 
-    storage = SyncRedisBroker(name="QueueTasks")
+    storage = SyncRedisStorage(name="QueueTasks")
     broker = SyncRedisBroker(name="QueueTasks", storage=storage)
 
     app = QueueTasks(broker=broker)
