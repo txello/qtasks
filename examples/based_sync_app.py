@@ -62,5 +62,11 @@ def example_pydantic(self: SyncTask, item: Item):
     return f"Hello, {item.name}!"
 
 
+@app.task(echo=True, max_time=2)
+def example_error_timeout(self: SyncTask):
+    self.ctx.sleep(5)
+    return "This task took too long to complete."
+
+
 if __name__ == "__main__":
     app.run_forever()

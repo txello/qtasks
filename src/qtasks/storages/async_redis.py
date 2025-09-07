@@ -306,7 +306,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                 created_at=task_broker.created_at,
                 updated_at=time.time(),
             )
-            self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+            self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
 
         await self.redis_contrib.execute(
             "hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__

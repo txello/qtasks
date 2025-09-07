@@ -1,5 +1,6 @@
 """Sync Task Executor."""
 
+from concurrent.futures import ThreadPoolExecutor
 import json
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
@@ -235,7 +236,12 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         self.before_execute()
         self.execute_middlewares_before()
         try:
-            self._result = self.run_task()
+            if self.task_func.max_time:
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(self.run_task)
+                    self._result = future.result(timeout=self.task_func.max_time)
+            else:
+                self._result = self.run_task()
         except TaskPluginTriggerError as e:
             new_result = self._plugin_trigger(
                 "task_executor_run_task_trigger_error",
@@ -249,6 +255,10 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 self._result = new_result.get("result", self._result)
             else:
                 raise e
+        except TimeoutError:
+            msg = f"Время выполнения задачи {self.task_func.name} превысило лимит {self.task_func.max_time} секунд"
+            self.log.error(msg)
+            raise TimeoutError(msg)
 
         self.after_execute()
         self.execute_middlewares_after()

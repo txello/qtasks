@@ -41,7 +41,9 @@ class SyncTestPlugin(BasePlugin):
 
     def worker_execute_before(self, *args, **kwargs):
         """Обработчик перед выполнением задачи."""
-        return self._execute(*args, **kwargs).get("model")
+        result = self._execute(*args, **kwargs)
+        if result:
+            return result.get("model")
 
     def worker_remove_finished_task(self, *args, **kwargs):
         """Обработчик завершения задачи."""

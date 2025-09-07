@@ -482,9 +482,9 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             model: TaskStatusErrorSchema = plugin_result.get("model", model)
 
         if plugin_result and model.retry != 0:
-            self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой и будет повторена.")
+            self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой и будет повторена.")
         else:
-            self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+            self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
         return model
 
     async def _task_cancel(self, e, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> None:
@@ -523,7 +523,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
                 updated_at=time(),
             )
             await self.remove_finished_task(task_func=None, task_broker=task_broker, model=model)
-            self.log.warning(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
+            self.log.error(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
             return None
 
     async def remove_finished_task(
