@@ -366,9 +366,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         self._plugin_trigger("qtasks_ping", qtasks=self, global_config=self.broker.storage.global_config)
         if server:
             status = self.broker.storage.global_config.get("main", "status")
-            if status is None:
-                return False
-            return True
+            return status is not None
         return True
 
     def flush_all(self) -> None:

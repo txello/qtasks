@@ -13,6 +13,7 @@ from anyio import Semaphore
 from qtasks.events.async_events import AsyncEvents
 from qtasks.plugins.depends.async_depends import AsyncDependsPlugin
 from qtasks.plugins.pydantic import AsyncPydanticWrapperPlugin
+from qtasks.plugins.states.async_state import AsyncStatePlugin
 
 
 from .base import BaseWorker
@@ -458,8 +459,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
                 not task_func.retry_on_exc or type(e) in task_func.retry_on_exc
             )
         )
-        if should_retry:
-            if task_func.retry:
+        if should_retry and task_func.retry:
                 plugin_result = await self._plugin_trigger(
                     "worker_task_error_retry",
                     broker=self.broker,
@@ -580,3 +580,4 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         self.add_plugin(AsyncRetryPlugin(), trigger_names=["worker_task_error_retry"])
         self.add_plugin(AsyncPydanticWrapperPlugin(), trigger_names=["task_executor_args_replace", "task_executor_after_execute_result_replace"])
         self.add_plugin(AsyncDependsPlugin(), trigger_names=["task_executor_args_replace"])
+        self.add_plugin(AsyncStatePlugin(), trigger_names=["task_executor_args_replace"])

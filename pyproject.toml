@@ -58,6 +58,9 @@ qtasks = "qtasks.__main__:main"
 line-length = 88
 ignore = ["E501"]
 
+[tool.ruff.lint]
+select = ["SIM"]
+
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "examples/*" = ["D100", "D101", "D102", "D103", "D107", "E226", "E402", "F401"]

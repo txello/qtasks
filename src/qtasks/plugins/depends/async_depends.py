@@ -82,10 +82,7 @@ class AsyncDependsPlugin(BasePlugin):
         if self._is_async_cm_function(func):
             cm = func()  # создаём CM
             # cm должен быть _AGCM или хотя бы иметь __aenter__/__aexit__
-            if _AGCM and isinstance(cm, _AGCM):
-                async with cm as v:
-                    return v
-            elif hasattr(cm, "__aenter__") and hasattr(cm, "__aexit__"):
+            if (_AGCM and isinstance(cm, _AGCM)) or (hasattr(cm, "__aenter__") and hasattr(cm, "__aexit__")):
                 async with cm as v:
                     return v
             else:
