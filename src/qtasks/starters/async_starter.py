@@ -1,6 +1,7 @@
 """Async Starter."""
 
 import asyncio
+import contextlib
 from typing import TYPE_CHECKING, Dict, Optional, Union
 from typing_extensions import Annotated, Doc
 
@@ -211,10 +212,8 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
         worker_task = asyncio.create_task(self.worker.start(num_workers))
         broker_task = asyncio.create_task(self.broker.start(self.worker))
 
-        try:
+        with contextlib.suppress(asyncio.CancelledError):
             await asyncio.gather(broker_task, worker_task)
-        except asyncio.CancelledError:
-            pass
 
     async def stop(self):
         """Останавливает все компоненты."""

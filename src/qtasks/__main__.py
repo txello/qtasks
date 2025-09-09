@@ -107,10 +107,8 @@ def main():
     elif args.command == "stats":
         if not app:
             parser.error("Не удалось получить экземпляр приложения!")
-        if args.stats_app:
-            stats = get_app(args.stats_app)
-        else:
-            stats = SyncStats(app=app)
+
+        stats = get_app(args.stats_app) if args.stats_app else SyncStats(app=app)
 
         if args.stats_command:
             handler = getattr(stats, args.stats_command, None)

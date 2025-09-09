@@ -125,10 +125,9 @@ class AsyncResult:
                 break
 
             task = await self._app.get(uuid=uuid)
-            if hasattr(task, "retry") and task.retry > 0:
-                if hasattr(task, "retry_child_uuid"):
-                    uuid = task.retry_child_uuid
-                    continue
+            if hasattr(task, "retry") and task.retry > 0 and hasattr(task, "retry_child_uuid"):
+                uuid = task.retry_child_uuid
+                continue
             if not task or task.status not in self._app.config.result_statuses_end:
                 await asyncio.sleep(self._app.config.result_time_interval)
                 continue

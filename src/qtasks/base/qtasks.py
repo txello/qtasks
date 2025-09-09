@@ -501,7 +501,7 @@ class BaseQueueTasks:
                     self.plugins[name].append(plugin)
             return
 
-        component_data = data.get(component, None)
+        component_data = data.get(component)
         if not component_data:
             raise KeyError(f"Невозможно получить компонент {component}!")
         component_data.add_plugin(plugin, trigger_names)

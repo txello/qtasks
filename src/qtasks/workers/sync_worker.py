@@ -436,8 +436,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 not task_func.retry_on_exc or type(e) in task_func.retry_on_exc
             )
         )
-        if should_retry:
-            if task_func.retry:
+        if should_retry and task_func.retry:
                 plugin_result = self._plugin_trigger(
                     "worker_task_error_retry",
                     broker=self.broker,

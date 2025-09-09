@@ -1,5 +1,6 @@
 """Sync Socket Broker."""
 
+import contextlib
 import socket
 import threading
 import json
@@ -188,14 +189,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             self.queue.put((task_name, uuid, priority))
             conn.sendall(b"OK")
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 conn.shutdown(socket.SHUT_RDWR)
-            except Exception:
-                pass
-            try:
                 conn.close()
-            except Exception:
-                pass
 
     def listen(
         self,
@@ -463,10 +459,8 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
                 try:
                     self.handle_connection(conn, conn)
                 except Exception:
-                    try:
+                    with contextlib.suppress(Exception):
                         conn.close()
-                    except Exception:
-                        pass
 
         self._serve_task = threading.Thread(target=_serve, name="broker-serve", daemon=True)
         self._serve_task.start()
@@ -482,33 +476,23 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         self._plugin_trigger("broker_stop", broker=self)
         self.running = False
 
-        try:
+        with contextlib.suppress(Exception):
             self.queue.put_nowait(None)
-        except Exception:
-            pass
 
         if self.client:
-            try:
+            with contextlib.suppress(Exception):
                 self.client.shutdown(socket.SHUT_RDWR)
-            except Exception:
-                pass
-            try:
                 self.client.close()
-            except Exception:
-                pass
+
             self.client = None
 
         if self._serve_task and self._serve_task.is_alive():
-            try:
+            with contextlib.suppress(Exception):
                 self._serve_task.join(timeout=2.0)
-            except Exception:
-                pass
 
         if self._listen_task and self._listen_task.is_alive():
-            try:
+            with contextlib.suppress(Exception):
                 self._listen_task.join(timeout=2.0)
-            except Exception:
-                pass
 
     def remove_finished_task(
         self,

@@ -1,6 +1,7 @@
 """Base storage class."""
 
 from abc import ABC, abstractmethod
+import contextlib
 from dataclasses import field, fields, make_dataclass
 import datetime
 import json
@@ -353,10 +354,8 @@ class BaseStorage(ABC):
         # Объединяем все аргументы
         task = NewTask(**base_kwargs, **extra_values)
         if hasattr(task, "returning"):
-            try:
+            with contextlib.suppress(BaseException):
                 task.returning = json.loads(task.returning)
-            except BaseException:
-                pass
         return task
 
     def _infer_type(self, value: str):

@@ -1,6 +1,7 @@
 """Async Socket Broker."""
 
 import asyncio
+import contextlib
 from dataclasses import asdict
 import json
 import asyncio_atexit
@@ -185,10 +186,8 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             await writer.drain()
         finally:
             writer.close()
-            try:
+            with contextlib.suppress(Exception):
                 await writer.wait_closed()
-            except Exception:
-                pass
 
     async def listen(
         self,
@@ -343,10 +342,8 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         payload.update({"uuid": uuid})
         writer.write(json.dumps(payload).encode())
         await writer.drain()
-        try:
+        with contextlib.suppress(Exception):
             writer.close()
-        except Exception:
-            pass
 
         await self._plugin_trigger(
             "broker_add_after",
@@ -442,10 +439,8 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
 
         self._listen_task = asyncio.create_task(self.listen(worker), name="broker-listen")
         self._serve_task = asyncio.create_task(self.client.serve_forever(), name="broker-serve")
-        try:
+        with contextlib.suppress(asyncio.CancelledError):
             await self._serve_task
-        except asyncio.CancelledError:
-            pass
 
     async def stop(self):
         """Останавливает брокер."""
@@ -457,23 +452,17 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
 
         if self.client:
             self.client.close()
-            try:
+            with contextlib.suppress(Exception):
                 await self.client.wait_closed()
-            except Exception:
-                pass
 
         if self._serve_task and not self._serve_task.done():
             self._serve_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._serve_task
-            except asyncio.CancelledError:
-                pass
 
         if self._listen_task and not self._listen_task.done():
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._listen_task
-            except asyncio.CancelledError:
-                pass
 
     async def remove_finished_task(
         self,

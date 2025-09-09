@@ -138,10 +138,10 @@ class Logger:
         Returns:
             Logger: Новый `Logger`.
         """
-        name = kwargs.get("name", None) or self.name
-        subname = kwargs.get("subname", None) or self.subname
-        default_level = kwargs.get("default_level", None) or self.default_level
-        format = kwargs.get("format", None) or self.format
+        name = kwargs.get("name") or self.name
+        subname = kwargs.get("subname") or self.subname
+        default_level = kwargs.get("default_level") or self.default_level
+        format = kwargs.get("format") or self.format
         return Logger(
             name=name, subname=subname, default_level=default_level, format=format
         )

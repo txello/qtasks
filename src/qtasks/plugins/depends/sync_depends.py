@@ -62,10 +62,7 @@ class SyncDependsPlugin(BasePlugin):
         """Универсально "разворачивает" зависимость до значения. Никаких аргументов не прокидываем — если нужно, добавьте их где вызываете."""
         func = callable_obj
 
-        if inspect.isfunction(func):
-            res = func()
-        else:
-            res = func
+        res = func() if inspect.isfunction(func) else func
 
         if _GCM and isinstance(res, _GCM):
             with res as v:

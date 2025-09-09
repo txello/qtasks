@@ -397,9 +397,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             asyncio_atexit.register(self.broker.storage.global_config.stop, loop=loop)
 
             status = await self.broker.storage.global_config.get("main", "status")
-            if status is None:
-                return False
-            return True
+            return status is not None
         return True
 
     async def flush_all(self) -> None:
