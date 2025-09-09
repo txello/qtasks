@@ -51,7 +51,7 @@ def test_case():
 @pytest.mark.asyncio
 async def test_task_get_result(test_case):
     """Получение результата задачи."""
-    task = await test_case.add_task("test", args=(5,))
+    task = await test_case.add_task("test", 5)
     result = await app.get(uuid=task.uuid)
     assert result is not None
 

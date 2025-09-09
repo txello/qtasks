@@ -84,7 +84,6 @@ class SyncResult:
         self._stop_event = threading.Event()
 
         self.uuid = uuid
-        self._sleep_time: float = 1
 
     def result(
         self,
@@ -126,11 +125,11 @@ class SyncResult:
                 break
 
             task = self._app.get(uuid=uuid)
-            if not task or task.status not in self._app.config.result_statuses_end:
-                time.sleep(self._sleep_time)
-                continue
             if hasattr(task, "retry") and hasattr(task, "retry_child_uuid"):
                 uuid = task.retry_child_uuid
+                continue
+            if not task or task.status not in self._app.config.result_statuses_end:
+                time.sleep(self._app.config.result_time_interval)
                 continue
 
             return task

@@ -53,3 +53,14 @@ Issues = "https://github.com/txello/qtasks/issues"
 
 [project.scripts]
 qtasks = "qtasks.__main__:main"
+
+[tool.ruff]
+line-length = 88
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"examples/*" = ["D100", "D101", "D102", "D103", "D107", "E226", "E402", "F401"]
+"src/qtasks/tests/async_classes.py" = ["D101", "D102", "D107"]
+"src/qtasks/tests/sync_classes.py" = ["D101", "D102", "D107"]
+"tests/apps/*" = ["D103", "E226"]

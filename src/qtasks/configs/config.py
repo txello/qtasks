@@ -37,6 +37,7 @@ class QueueConfig:
     logs_default_level_client: int = logging.INFO
     logs_format: str = "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s"
 
+    result_time_interval: float = 1.0
     result_statuses_end: List[str] = field(
         default_factory=lambda: [
             TaskStatusEnum.SUCCESS.value,

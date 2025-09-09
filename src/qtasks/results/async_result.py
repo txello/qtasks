@@ -86,7 +86,6 @@ class AsyncResult:
         self._stop_event = asyncio.Event()
 
         self.uuid = uuid
-        self._sleep_time: float = 1
 
     async def result(
         self,
@@ -131,7 +130,7 @@ class AsyncResult:
                     uuid = task.retry_child_uuid
                     continue
             if not task or task.status not in self._app.config.result_statuses_end:
-                await asyncio.sleep(self._sleep_time)
+                await asyncio.sleep(self._app.config.result_time_interval)
                 continue
             return task
 

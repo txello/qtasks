@@ -426,6 +426,30 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         middlewares_after: Union[List["TaskMiddleware"], None] = None,
         **kwargs
     ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
+        """Декоратор для регистрации задач.
+
+        Args:
+            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            echo (bool, optional): Добавить AsyncTask первым параметром. По умолчанию: `False`.
+            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
+            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
+            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
+            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
+            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+
+        Raises:
+            ValueError: Если задача с таким именем уже зарегистрирована.
+            ValueError: Неизвестный метод {self._method}.
+
+        Returns:
+            AsyncTask: Декоратор для регистрации задачи.
+        """
         ...
 
     @overload

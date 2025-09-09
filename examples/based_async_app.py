@@ -14,6 +14,7 @@ import router_tasks
 app = QueueTasks()
 app.config.logs_default_level_server = logging.INFO
 app.config.running_older_tasks = True
+app.config.result_time_interval = 0.1
 
 app.include_router(router_tasks.router)
 
