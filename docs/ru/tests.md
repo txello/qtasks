@@ -1,6 +1,8 @@
 # Тестирование
 
-QueueTasks поддерживает тестирование задач как в синхронном, так и в асинхронном режиме. Вы можете использовать стандартные инструменты Python, такие как `unittest`, а также асинхронные библиотеки — например, `aiounittest` и `pytest-asyncio`.
+`QTasks` поддерживает тестирование задач как в синхронном, так и в асинхронном режиме.
+Вы можете использовать стандартные инструменты Python, такие как `unittest`, а
+также асинхронные библиотеки — например, `aiounittest` и `pytest-asyncio`.
 
 ## Быстрый запуск тестов из консоли
 
@@ -13,7 +15,8 @@ py tests/main.py
 * ✅ `unittest` — для синхронных задач и базовой структуры.
 * ✅ `aiounittest` — для асинхронных задач и компонентов.
 * ✅ `pytest` + `pytest-asyncio` — для гибкого и мощного асинхронного тестирования.
-* ✅ `SyncTestCase`/`AsyncTestCase` — внутренние кейсы QTasks для точного управления задачами.
+* ✅ `SyncTestCase`/`AsyncTestCase` — внутренние кейсы QTasks для точного управления
+задачами.
 
 ---
 
@@ -95,7 +98,7 @@ class TestAsyncQTasks(unittest.IsolatedAsyncioTestCase):
 
 ### `pytest`
 
-#### Установка:
+#### Установка
 
 ```bash
 pip install pytest pytest-asyncio
@@ -141,7 +144,7 @@ async def test_task_not_found():
     assert result is None
 ```
 
-#### Запуск:
+#### Запуск
 
 ```bash
 pytest tests/test_async_task.py -v

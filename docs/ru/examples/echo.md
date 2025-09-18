@@ -1,6 +1,8 @@
 # Пример использования self и self.ctx (echo=True)
 
-При указании `echo=True`, задача получает первым аргументом объект `self` типа `AsyncTask` или `SyncTask`. Это открывает доступ к контексту выполнения `self.ctx`, внутренним данным задачи и управляющим методам.
+При указании `echo=True`, задача получает первым аргументом объект `self` типа
+`AsyncTask` или `SyncTask`. Это открывает доступ к контексту выполнения `self.ctx`,
+внутренним данным задачи и управляющим методам.
 
 Ниже представлен пример задачи с демонстрацией всех возможностей `self` и `self.ctx`.
 
@@ -67,7 +69,8 @@ async def test_echo_ctx(self: AsyncTask):
 * `self.ctx.get_logger()` — логгер с именем задачи или кастомным именем
 * `self.ctx.sleep(seconds)` — задержка выполнения
 * `self.ctx.cancel(reason)` — отмена задачи с установкой `status=CANCEL`
-* `self.ctx.get_config()`, `get_component(name)`, `get_task(uuid)`, `get_metadata()` — доступ к инфраструктуре и состоянию
+* `self.ctx.get_config()`, `get_component(name)`, `get_task(uuid)`, `get_metadata()`
+— доступ к инфраструктуре и состоянию
 
 ---
 
@@ -75,13 +78,14 @@ async def test_echo_ctx(self: AsyncTask):
 
 **Клиент:**
 
-```
-Task(status='cancel', uuid=..., task_name='test_echo_ctx', ..., cancel_reason='Тестовая задача отменена')
+```bash
+Task(status='cancel', uuid=..., task_name='test_echo_ctx', ...,
+cancel_reason='Тестовая задача отменена')
 ```
 
 **Сервер:**
 
-```
+```bash
 2025-07-16 ... (test_echo_ctx) Это тестовая задача!
 ...
 UUID: ...
@@ -93,4 +97,5 @@ UUID: ...
 
 ---
 
-Использование `self` и `self.ctx` делает задачу не просто функцией, а полноценным объектом, способным взаимодействовать с системой QTasks на всех уровнях.
+Использование `self` и `self.ctx` делает задачу не просто функцией, а полноценным
+объектом, способным взаимодействовать с системой QTasks на всех уровнях.

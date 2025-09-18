@@ -2,6 +2,7 @@
 
 import importlib
 import logging
+from typing import List
 
 try:
     from django.conf import settings
@@ -13,8 +14,13 @@ from importlib.util import find_spec
 logger = logging.getLogger(__name__)
 
 
-def autodiscover_tasks(app):
-    """Автоматически импортирует tasks.py из всех INSTALLED_APPS, чтобы зарегистрировать задачи в QTasks."""
+def autodiscover_tasks(app, modules: List[str] = ["tasks"]):
+    """Автоматически импортирует указанные модули из всех INSTALLED_APPS, чтобы зарегистрировать задачи в QTasks.
+
+    Args:
+        app (QueueTasks): приложение.
+        modules (List[str]): Модули для автодискавери. По умолчанию: `["tasks"]`.
+    """
     for app_name in settings.INSTALLED_APPS:
         try:
             module = importlib.import_module(app_name)
@@ -23,9 +29,10 @@ def autodiscover_tasks(app):
             continue
 
         try:
-            # Явно проверяем, есть ли модуль tasks
-            if module_has_submodule(module, "tasks") or find_spec(f"{app_name}.tasks"):
-                importlib.import_module(f"{app_name}.tasks")
-                logger.debug(f"[QTasks] Найден tasks.py в {app_name}")
+            # Явно проверяем, есть ли модули
+            for module_name in modules:
+                if module_has_submodule(module, module_name) or find_spec(f"{app_name}.{module_name}"):
+                    importlib.import_module(f"{app_name}.{module_name}")
+                    logger.debug(f"[QTasks] Найден {module_name}.py в {app_name}")
         except Exception as e:
-            logger.exception(f"[QTasks] Ошибка при импорте {app_name}.tasks: {e}")
+            logger.exception(f"[QTasks] Ошибка при импорте {app_name}.{module_name}: {e}")

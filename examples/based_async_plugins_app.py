@@ -29,7 +29,7 @@ class TestPlugin(BasePlugin):
 
     def task_trigger_error(self, **kwargs):
         print(kwargs)
-        return 123
+        return None
 
 
 app.add_plugin(TestPlugin(), trigger_names=["task_executor_run_task_trigger_error"], component="worker")

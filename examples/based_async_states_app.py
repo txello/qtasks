@@ -24,6 +24,8 @@ async def step2(self: AsyncTask, state: MyState):
     if cur != "await_phone":
         return "error"
     await state.update(step=2)
+    await state.delete("state")
+    await state.clear()
     return "ok"
 
 
