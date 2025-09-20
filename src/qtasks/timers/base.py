@@ -1,7 +1,7 @@
 """Base timer class."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 from typing_extensions import Annotated, Doc
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -77,7 +77,7 @@ class BaseTimer(ABC):
             else Logger(
                 name=self.app.name,
                 subname="Timer",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )
@@ -86,33 +86,7 @@ class BaseTimer(ABC):
     @abstractmethod
     def add_task(
         self,
-        task_name: Annotated[
-            str,
-            Doc(
-                """
-                    Название задачи.
-                    """
-            ),
-        ],
-        trigger: Annotated[
-            Any,
-            Doc(
-                """
-                    Триггер задачи.
-                    """
-            ),
-        ],
-        priority: Annotated[
-            int,
-            Doc(
-                """
-                    Приоритет задачи.
-
-                    По умолчанию: `0`.
-                    """
-            ),
-        ] = 0,
-        args: Annotated[
+        *args: Annotated[
             Optional[tuple],
             Doc(
                 """
@@ -121,8 +95,44 @@ class BaseTimer(ABC):
                     По умолчанию: `()`.
                     """
             ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
         ] = None,
-        kwargs: Annotated[
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        trigger: Annotated[
+            Any,
+            Doc(
+                """
+                    Триггер задачи.
+                    """
+            ),
+        ],
+        **kwargs: Annotated[
             Optional[dict],
             Doc(
                 """
@@ -131,8 +141,8 @@ class BaseTimer(ABC):
                     По умолчанию: `{}`.
                     """
             ),
-        ] = None,
-    ) -> Any | None:
+        ],
+    ) -> Union[Any, None]:
         """Добавление задачи.
 
         Args:

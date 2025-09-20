@@ -22,7 +22,7 @@ def _convert_value(field_type, value):
             return float(value)
         elif field_type == bool:
             return str(value).lower() == "true"
-        elif field_type == list or field_type == dict:
+        elif field_type in (list, dict):
             return json.loads(value)
         elif field_type == datetime.datetime:
             return datetime.datetime.fromtimestamp(float(value))

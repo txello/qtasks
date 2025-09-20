@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 import logging
 from typing import Any, Callable, Dict, List
 
+from qtasks.enums.task_status import TaskStatusEnum
+
 
 @dataclass
 class QueueConfig:
@@ -17,7 +19,8 @@ class QueueConfig:
 
         default_task_priority (int): Приоритет задач по умолчанию. По умолчанию: 0
 
-        logs_default_level (int): Уровень логирования. По умолчанию: logging.INFO (20)
+        logs_default_level_server (int): Уровень логирования для сервера. По умолчанию: logging.INFO (20)
+        logs_default_level_client (int | None): Уровень логирования для клиента. По умолчанию: logging.INFO (20)
         logs_format (str): Формат логирования. По умолчанию: "%(asctime)s [%(name)s: %(levelname)s] %(message)s"
     """
 
@@ -30,8 +33,18 @@ class QueueConfig:
     global_config_status_ttl = 20
     global_config_status_set_periodic = 17
 
-    logs_default_level: int = logging.INFO
+    logs_default_level_server: int = logging.INFO
+    logs_default_level_client: int = logging.INFO
     logs_format: str = "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s"
+
+    result_time_interval: float = 1.0
+    result_statuses_end: List[str] = field(
+        default_factory=lambda: [
+            TaskStatusEnum.SUCCESS.value,
+            TaskStatusEnum.ERROR.value,
+            TaskStatusEnum.CANCEL.value
+        ]
+    )
 
     _callbacks: List[Callable[["QueueConfig", str, Any], None]] = field(
         default_factory=list, init=False, repr=False

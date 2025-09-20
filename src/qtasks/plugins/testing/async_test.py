@@ -1,8 +1,9 @@
 """Async Test Plugin."""
 
+from typing import Union
 from qtasks.plugins.base import BasePlugin
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
-from qtasks.schemas.task_status import TaskStatusErrorSchema, TaskStatusProcessSchema
+from qtasks.schemas.task_status import TaskStatusProcessSchema
 from qtasks.utils import _build_task
 
 
@@ -38,9 +39,7 @@ class AsyncTestPlugin(BasePlugin):
 
     async def worker_execute_before(self, *args, **kwargs):
         """Обработчик перед выполнением задачи."""
-        result = await self._execute(*args, **kwargs)
-        if result:
-            return result[1]
+        return await self._execute(*args, **kwargs).get("model")
 
     async def worker_remove_finished_task(self, *args, **kwargs):
         """Обработчик завершения задачи."""
@@ -48,12 +47,12 @@ class AsyncTestPlugin(BasePlugin):
 
     async def _execute(
         self,
-        task_func: TaskExecSchema | None,
-        task_broker: TaskPrioritySchema | None,
+        task_func: Union[TaskExecSchema, None],
+        task_broker: Union[TaskPrioritySchema, None],
         model: TaskStatusProcessSchema,
-    ) -> TaskStatusErrorSchema:
+    ):
         if not task_func or "test" not in task_func.extra or not task_func.extra["test"]:
             return
         model = _build_task(model, is_testing=task_func.extra["test"])
         model.is_testing = str(model.is_testing)
-        return task_broker, model
+        return {"model": model}

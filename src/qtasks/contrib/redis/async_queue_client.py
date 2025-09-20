@@ -1,6 +1,7 @@
 """Async Redis command queue."""
 
 import asyncio
+from typing import Union
 import redis.asyncio as aioredis
 
 from qtasks.logs import Logger
@@ -61,7 +62,7 @@ class AsyncRedisCommandQueue:
             if self.worker_task is None or self.worker_task.done():
                 self.worker_task = asyncio.create_task(self._worker())
 
-    def _get_log(self, log: Logger | None):
+    def _get_log(self, log: Union[Logger, None]):
         if log is None:
             import qtasks._state
 

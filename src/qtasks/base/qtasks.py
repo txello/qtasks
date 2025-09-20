@@ -3,15 +3,15 @@
 import inspect
 from typing import (
     TYPE_CHECKING,
-    Annotated,
     Callable,
+    Dict,
     List,
     Optional,
     Type,
     Union,
     overload,
 )
-from typing_extensions import Doc
+from typing_extensions import Annotated, Doc
 
 from qtasks.types.annotations import P, R
 import qtasks._state
@@ -21,7 +21,6 @@ from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.routers.router import Router
-from qtasks.schemas.inits import InitsExecSchema
 from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
@@ -30,6 +29,7 @@ if TYPE_CHECKING:
     from qtasks.starters.base import BaseStarter
     from qtasks.plugins.base import BasePlugin
     from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.events.base import BaseEvents
     from qtasks.middlewares.base import BaseMiddleware
     from qtasks.middlewares.task import TaskMiddleware
 
@@ -99,6 +99,16 @@ class BaseQueueTasks:
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация базового класса для QueueTasks.
 
@@ -109,10 +119,11 @@ class BaseQueueTasks:
             worker (BaseWorker, optional): Воркер. По умолчанию: `qtasks.workers.AsyncWorker`.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
 
-        self.version: Annotated[str, Doc("Версия проекта.")] = "1.5.0"
+        self.version: Annotated[str, Doc("Версия проекта.")] = "1.6.0"
 
         self.config: Annotated[
             QueueConfig,
@@ -134,17 +145,17 @@ class BaseQueueTasks:
             else Logger(
                 name=self.name,
                 subname="QueueTasks",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )
 
         self.broker: "BaseBroker" = broker
         self.worker: "BaseWorker" = worker
-        self.starter: "BaseStarter" | None = None
+        self.starter: Union["BaseStarter", None] = None
 
         self.routers: Annotated[
-            list[Router],
+            List[Router],
             Doc(
                 """
                 Роутеры, тип `qtasks.routers.Router`.
@@ -155,7 +166,7 @@ class BaseQueueTasks:
         ] = []
 
         self.tasks: Annotated[
-            dict[str, TaskExecSchema],
+            Dict[str, TaskExecSchema],
             Doc(
                 """
                 Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
@@ -166,7 +177,7 @@ class BaseQueueTasks:
         ] = {}
 
         self.plugins: Annotated[
-            dict[str, List["BasePlugin"]],
+            Dict[str, List["BasePlugin"]],
             Doc(
                 """
                 Задачи, тип `{trigger_name:[qtasks.plugins.base.BasePlugin]}`.
@@ -176,23 +187,7 @@ class BaseQueueTasks:
             ),
         ] = {}
 
-        self._inits: Annotated[
-            dict[str, list[InitsExecSchema]],
-            Doc(
-                """
-                функции инициализаций.
-
-                По умолчанию установлены: `init_starting, init_worker_running, init_task_running, init_task_stoping, init_task_stoping, init_worker_stoping` и `init_stoping`.
-                """
-            ),
-        ] = {
-            "init_starting": [],
-            "init_worker_running": [],
-            "init_task_running": [],
-            "init_task_stoping": [],
-            "init_worker_stoping": [],
-            "init_stoping": [],
-        }
+        self.events = events
 
         self._method: Annotated[
             Optional[str],
@@ -207,17 +202,20 @@ class BaseQueueTasks:
     @overload
     def task(
         self,
-        name: str | None = None,
+        name: Union[str, None] = None,
         *,
-        priority: int | None = None,
+        priority: Union[int, None] = None,
         echo: bool = False,
-        retry: int | None = None,
-        retry_on_exc: list[Type[Exception]] | None = None,
-        decode: Callable | None = None,
-        tags: list[str] | None = None,
-        generate_handler: Callable | None = None,
-        executor: Type["BaseTaskExecutor"] | None = None,
-        middlewares: List["TaskMiddleware"] | None = None,
+        max_time: Union[float, None] = None,
+        retry: Union[int, None] = None,
+        retry_on_exc: Union[List[Type[Exception]], None] = None,
+        decode: Union[Callable, None] = None,
+        tags: Union[List[str], None] = None,
+        description: Union[str, None] = None,
+        generate_handler: Union[Callable, None] = None,
+        executor: Union[Type["BaseTaskExecutor"], None] = None,
+        middlewares_before: Union[List["TaskMiddleware"], None] = None,
+        middlewares_after: Union[List["TaskMiddleware"], None] = None,
         **kwargs
     ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
         ...
@@ -249,14 +247,24 @@ class BaseQueueTasks:
             bool,
             Doc(
                 """
-                    Включить вывод в консоль.
+                    Добавить (A)syncTask первым параметром.
 
                     По умолчанию: `False`.
                     """
             ),
         ] = False,
+        max_time: Annotated[
+            Union[float, None],
+            Doc(
+                """
+                    Максимальное время выполнения задачи в секундах.
+
+                    По умолчанию: `None`.
+                    """
+            )
+        ] = None,
         retry: Annotated[
-            int | None,
+            Union[int, None],
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -266,7 +274,7 @@ class BaseQueueTasks:
             ),
         ] = None,
         retry_on_exc: Annotated[
-            list[Type[Exception]] | None,
+            Union[List[Type[Exception]], None],
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -276,7 +284,7 @@ class BaseQueueTasks:
             ),
         ] = None,
         decode: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Декодер результата задачи.
@@ -286,7 +294,7 @@ class BaseQueueTasks:
             )
         ] = None,
         tags: Annotated[
-            list[str] | None,
+            Union[List[str], None],
             Doc(
                 """
                     Теги задачи.
@@ -295,8 +303,18 @@ class BaseQueueTasks:
                 """
             )
         ] = None,
+        description: Annotated[
+            Union[str, None],
+            Doc(
+                """
+                    Описание задачи.
+
+                    По умолчанию: `None`.
+                """
+            )
+        ] = None,
         generate_handler: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Генератор обработчика.
@@ -315,11 +333,21 @@ class BaseQueueTasks:
                     """
             ),
         ] = None,
-        middlewares: Annotated[
+        middlewares_before: Annotated[
             List["TaskMiddleware"],
             Doc(
                 """
-                    Мидлвари.
+                    Мидлвари, которые будут выполнены до задачи.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+            ),
+        ] = None,
+        middlewares_after: Annotated[
+            List["TaskMiddleware"],
+            Doc(
+                """
+                    Мидлвари, которые будут выполнены после задачи.
 
                     По умолчанию: `Пустой массив`.
                     """
@@ -332,14 +360,16 @@ class BaseQueueTasks:
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
-            echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
+            echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
+            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
+            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
 
         Raises:
             ValueError: Если задача с таким именем уже зарегистрирована.
@@ -348,9 +378,9 @@ class BaseQueueTasks:
         Returns:
             SyncTask | AsyncTask: Декоратор для регистрации задачи.
         """
-
         def wrapper(func):
-            nonlocal priority, middlewares
+            nonlocal priority, middlewares_before, middlewares_after
+
             task_name = name or func.__name__
             priority = priority or self.config.default_task_priority
 
@@ -367,7 +397,8 @@ class BaseQueueTasks:
             if inspect.isasyncgenfunction(func):
                 generating = "async"
 
-            middlewares = middlewares or []
+            middlewares_before = middlewares_before or []
+            middlewares_after = middlewares_after or []
 
             model = TaskExecSchema(
                 name=task_name,
@@ -376,13 +407,16 @@ class BaseQueueTasks:
                 awaiting=inspect.iscoroutinefunction(func),
                 generating=generating,
                 echo=echo,
+                max_time=max_time,
                 retry=retry,
                 retry_on_exc=retry_on_exc,
                 decode=decode,
                 tags=tags,
+                description=description,
                 generate_handler=generate_handler,
                 executor=executor,
-                middlewares=middlewares,
+                middlewares_before=middlewares_before,
+                middlewares_after=middlewares_after,
                 extra=kwargs
             )
 
@@ -397,16 +431,23 @@ class BaseQueueTasks:
                 task_name=model.name,
                 priority=model.priority,
                 echo=model.echo,
+                max_time=model.max_time,
                 retry=model.retry,
                 retry_on_exc=model.retry_on_exc,
                 decode=model.decode,
                 tags=model.tags,
+                description=model.description,
                 generate_handler=model.generate_handler,
                 executor=model.executor,
-                middlewares=model.middlewares,
+                middlewares_before=model.middlewares_before,
+                middlewares_after=model.middlewares_after,
                 extra=model.extra
             )
 
+        if callable(name):
+            func = name
+            name = func.__name__
+            return wrapper(func)
         return wrapper
 
     def include_router(
@@ -460,13 +501,13 @@ class BaseQueueTasks:
                     self.plugins[name].append(plugin)
             return
 
-        component_data = data.get(component, None)
+        component_data = data.get(component)
         if not component_data:
             raise KeyError(f"Невозможно получить компонент {component}!")
         component_data.add_plugin(plugin, trigger_names)
         return
 
-    def add_middleware(self, middleware: Type["BaseMiddleware"]) -> None:
+    def add_middleware(self, middleware: Type["BaseMiddleware"], **kwargs) -> None:
         """Добавить мидлварь.
 
         Args:
@@ -482,7 +523,11 @@ class BaseQueueTasks:
                 f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!"
             )
         if middleware.__base__.__name__ == "TaskMiddleware":
-            self.worker.task_middlewares.append(middleware)
+            position = kwargs.get("position", "before")
+            if position == "before":
+                self.worker.task_middlewares_before.append(middleware)
+            elif position == "after":
+                self.worker.task_middlewares_after.append(middleware)
         self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
         return
 
@@ -496,10 +541,16 @@ class BaseQueueTasks:
         Зарегистрировать задачи из реестра задач.
 
         Обновляет `self.tasks` и `self.worker._tasks` всеми задачами,
-        зарегистрированными в `TaskRegistry`.
+        зарегистрированными в `TaskRegistry`, устанавливая приоритет по умолчанию.
         """
-        self.tasks.update(TaskRegistry.all_tasks())
-        self.worker._tasks.update(TaskRegistry.all_tasks())
+        all_tasks = TaskRegistry.all_tasks()
+
+        for task in all_tasks.values():
+            if task.priority is None:
+                task.priority = self.config.default_task_priority
+
+        self.tasks.update(all_tasks)
+        self.worker._tasks.update(all_tasks)
 
     def _set_state(self):
         """Установить параметры в `qtasks._state`."""
@@ -515,7 +566,7 @@ class BaseQueueTasks:
             key (str): Ключ конфигурации.
             value (Any): Значение конфигурации.
         """
-        if key == "logs_default_level":
+        if key == "logs_default_level_server":
             self.log.default_level = value
             self.log = self.log.update_logger()
             self._update_logs(default_level=value)

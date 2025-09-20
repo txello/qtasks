@@ -1,7 +1,7 @@
 """Task Registry."""
 
 import inspect
-from typing import Callable, List, Optional, Type, Union
+from typing import Callable, Dict, List, Optional, Type, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.executors.base import BaseTaskExecutor
@@ -18,7 +18,7 @@ class TaskRegistry:
     """
 
     _tasks: Annotated[
-        dict[str, TaskExecSchema],
+        Dict[str, TaskExecSchema],
         Doc(
             """
             Задачи.
@@ -65,14 +65,14 @@ class TaskRegistry:
             bool,
             Doc(
                 """
-                    Включить вывод в консоль.
+                    Добавить (A)syncTask первым параметром.
 
                     По умолчанию: `False`.
                     """
             ),
         ] = False,
         retry: Annotated[
-            int | None,
+            Union[int, None],
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -82,7 +82,7 @@ class TaskRegistry:
             ),
         ] = None,
         retry_on_exc: Annotated[
-            list[Type[Exception]] | None,
+            Union[List[Type[Exception]], None],
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -92,7 +92,7 @@ class TaskRegistry:
             ),
         ] = None,
         decode: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Декодер результата задачи.
@@ -102,7 +102,7 @@ class TaskRegistry:
             )
         ] = None,
         tags: Annotated[
-            list[str] | None,
+            Union[List[str], None],
             Doc(
                 """
                     Теги задачи.
@@ -111,8 +111,18 @@ class TaskRegistry:
                     """
             )
         ] = None,
+        description: Annotated[
+            Union[str, None],
+            Doc(
+                """
+                    Описание задачи.
+
+                    По умолчанию: `None`.
+                    """
+            )
+        ] = None,
         generate_handler: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Генератор обработчика.
@@ -131,11 +141,21 @@ class TaskRegistry:
                     """
             ),
         ] = None,
-        middlewares: Annotated[
+        middlewares_before: Annotated[
             List["TaskMiddleware"],
             Doc(
                 """
-                    Мидлвари.
+                    Мидлвари, которые будут выполнены перед задачей.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+            ),
+        ] = None,
+        middlewares_after: Annotated[
+            List["TaskMiddleware"],
+            Doc(
+                """
+                    Мидлвари, которые будут выполнены после задачи.
 
                     По умолчанию: `Пустой массив`.
                     """
@@ -148,18 +168,20 @@ class TaskRegistry:
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
             priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
-            echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
+            echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
+            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
         """
 
         def wrapper(func: Callable):
-            nonlocal middlewares
+            nonlocal middlewares_before, middlewares_after
 
             task_name = name or func.__name__
 
@@ -169,7 +191,8 @@ class TaskRegistry:
             if inspect.isasyncgenfunction(func):
                 generating = "async"
 
-            middlewares = middlewares or []
+            middlewares_before = middlewares_before or []
+            middlewares_after = middlewares_after or []
 
             model = TaskExecSchema(
                 name=task_name,
@@ -182,9 +205,11 @@ class TaskRegistry:
                 retry_on_exc=retry_on_exc,
                 decode=decode,
                 tags=tags,
+                description=description,
                 generate_handler=generate_handler,
                 executor=executor,
-                middlewares=middlewares,
+                middlewares_before=middlewares_before,
+                middlewares_after=middlewares_after,
                 extra=kwargs
             )
 
@@ -199,9 +224,11 @@ class TaskRegistry:
                 retry_on_exc=model.retry_on_exc,
                 decode=model.decode,
                 tags=model.tags,
+                description=model.description,
                 generate_handler=model.generate_handler,
                 executor=model.executor,
-                middlewares=model.middlewares,
+                middlewares_before=model.middlewares_before,
+                middlewares_after=model.middlewares_after,
             )
 
         return wrapper
@@ -231,10 +258,10 @@ class TaskRegistry:
         return cls._tasks.get(name)
 
     @classmethod
-    def all_tasks(cls) -> dict[str, TaskExecSchema]:
+    def all_tasks(cls) -> Dict[str, TaskExecSchema]:
         """Получение всех задач.
 
         Returns:
-            dict[str, TaskExecSchema]: Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
+            Dict[str, TaskExecSchema]: Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
         """
         return cls._tasks

@@ -1,7 +1,7 @@
 """Base Plugin."""
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, Dict, Optional, Union
 from typing_extensions import Annotated, Doc
 
 
@@ -40,15 +40,16 @@ class BasePlugin(ABC):
         Args:
             name (str, optional): Имя проекта. По умолчанию: `None`.
         """
-        self.name: str | None = name
+        self.name: Union[str, None] = name
         pass
 
     @abstractmethod
-    def trigger(self, name: str, **kwargs):
+    def trigger(self, name: str, *args, **kwargs) -> Union[Dict[str, Any], None]:
         """Триггер плагина.
 
         Args:
             name (str): Имя триггера.
+            args (tuple, optional): Аргументы триггера типа args.
             kwargs (dict, optional): Аргументы триггера типа kwargs.
         """
         pass

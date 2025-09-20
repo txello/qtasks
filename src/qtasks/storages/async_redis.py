@@ -4,7 +4,7 @@ import asyncio
 import time
 import asyncio_atexit
 import json
-from typing import Optional, Union
+from typing import List, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import redis.asyncio as aioredis
@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 from qtasks.configs.config import QueueConfig
 from qtasks.contrib.redis.async_queue_client import AsyncRedisCommandQueue
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 
@@ -25,11 +26,12 @@ from qtasks.schemas.task_status import (
     TaskStatusNewSchema,
     TaskStatusSuccessSchema,
 )
-from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.workers.base import BaseWorker
+    from qtasks.schemas.task import Task
+    from qtasks.events.base import BaseEvents
 
 
 class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
@@ -43,7 +45,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     from qtasks.brokers import AsyncRedisBroker
     from qtasks.storages import AsyncRedisStorage
 
-    storage = AsyncRedisBroker(name="QueueTasks")
+    storage = AsyncRedisStorage(name="QueueTasks")
     broker = AsyncRedisBroker(name="QueueTasks", storage=storage)
 
     app = QueueTasks(broker=broker)
@@ -122,6 +124,16 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация асинхронного Redis хранилища.
 
@@ -133,11 +145,14 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name, log=log, config=config)
+        super().__init__(name, log=log, config=config, events=events)
         self.url = url
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"
+        self.events = self.events or AsyncEvents()
+
         self.client = redis_connect or aioredis.from_url(
             self.url, decode_responses=True, encoding="utf-8"
         )
@@ -150,7 +165,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     async def add(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
@@ -182,7 +197,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
         return
 
-    async def get(self, uuid: UUID | str) -> Task | None:
+    async def get(self, uuid: Union[UUID, str]) -> Union["Task", None]:
         """Получение информации о задаче.
 
         Args:
@@ -202,18 +217,18 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         result = self._build_task(uuid=uuid, result=result)
         new_result = await self._plugin_trigger("storage_get", storage=self, result=result, return_last=True)
         if new_result:
-            result = new_result
+            result = new_result.get("result", result)
         return result
 
-    async def get_all(self) -> list[Task]:
+    async def get_all(self) -> List["Task"]:
         """Получить все задачи.
 
         Returns:
-            list[Task]: Массив задач.
+            List[Task]: Массив задач.
         """
         pattern = f"{self.name}:*"
 
-        results: list[Task] = []
+        results: List["Task"] = []
         async for key in self.client.scan_iter(pattern):
             name, uuid, *_ = key.split(":")
             if uuid in [self._queue_process, "task_queue"]:
@@ -226,7 +241,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
 
         new_results = await self._plugin_trigger("storage_get_all", storage=self, results=results, return_last=True)
         if new_results:
-            results = new_results
+            results = new_results.get("results", results)
 
         return results
 
@@ -248,8 +263,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """
         new_kw = await self._plugin_trigger("storage_update", storage=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw
-        self.log.debug("123, {}".format(kwargs))
+            kwargs = new_kw.get("kw", kwargs)
         return await self.redis_contrib.execute(
             "hset", kwargs["name"], mapping=kwargs["mapping"]
         )
@@ -266,7 +280,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         ],
         model: Annotated[
             Union[
-                TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusSuccessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """
@@ -292,7 +306,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                 created_at=task_broker.created_at,
                 updated_at=time.time(),
             )
-            self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+            self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
 
         await self.redis_contrib.execute(
             "hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__
@@ -317,7 +331,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     async def stop(self):
         """Останавливает хранилище."""
         await self._plugin_trigger("storage_stop", storage=self)
-        return await self.client.close()
+        return await self.client.aclose()
 
     async def add_process(
         self,
@@ -348,7 +362,6 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         if new_data:
             task_data = new_data.get("task_data", task_data)
             priority = new_data.get("priority", priority)
-
         await self.client.zadd(self.queue_process, {task_data: priority})
         return
 
@@ -374,7 +387,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                 priority = new_data.get("priority", priority)
                 created_at = new_data.get("created_at", created_at)
                 args = new_data.get("args", args)
-                kwargs = new_data.get("kwargs", kwargs)
+                kwargs = new_data.get("kw", kwargs)
 
             await worker.add(
                 name=task_name,
@@ -390,7 +403,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await self._plugin_trigger("storage_delete_finished_tasks", storage=self)
         pattern = f"{self.name}:"
         try:
-            tasks: list[Task] = list(
+            tasks: List["Task"] = list(
                 filter(
                     lambda task: task.status != TaskStatusEnum.NEW.value,
                     await self.get_all(),

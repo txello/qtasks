@@ -1,7 +1,7 @@
 """QTasks registry utilities."""
 
-from typing import Annotated, Callable, List, Optional, Type, Union
-from typing_extensions import Doc
+from typing import Callable, List, Optional, Type, Union
+from typing_extensions import Annotated, Doc
 
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
@@ -35,14 +35,14 @@ def shared_task(
         bool,
         Doc(
             """
-                    Включить вывод в консоль.
+                    Добавить (A)syncTask первым параметром.
 
                     По умолчанию: `False`.
                     """
         ),
     ] = False,
     retry: Annotated[
-        int | None,
+        Union[int, None],
         Doc(
             """
                     Количество попыток повторного выполнения задачи.
@@ -52,7 +52,7 @@ def shared_task(
         ),
     ] = None,
     retry_on_exc: Annotated[
-        list[Type[Exception]] | None,
+        Union[List[Type[Exception]], None],
         Doc(
             """
                     Исключения, при которых задача будет повторно выполнена.
@@ -62,7 +62,7 @@ def shared_task(
         ),
     ] = None,
     decode: Annotated[
-        Callable | None,
+        Union[Callable, None],
         Doc(
             """
                 Декодер результата задачи.
@@ -72,7 +72,7 @@ def shared_task(
         )
     ] = None,
     tags: Annotated[
-        list[str] | None,
+        Union[List[str], None],
         Doc(
             """
                 Теги задачи.
@@ -81,8 +81,18 @@ def shared_task(
             """
         )
     ] = None,
+    description: Annotated[
+        Union[str, None],
+        Doc(
+            """
+                Описание задачи.
+
+                По умолчанию: `None`.
+            """
+        )
+    ] = None,
     generate_handler: Annotated[
-        Callable | None,
+        Union[Callable, None],
         Doc(
             """
                     Генератор обработчика.
@@ -101,11 +111,21 @@ def shared_task(
                     """
         ),
     ] = None,
-    middlewares: Annotated[
+    middlewares_before: Annotated[
         List["TaskMiddleware"],
         Doc(
             """
-                    Мидлвари.
+                    Мидлвари, которые будут выполнены перед задачей.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+        ),
+    ] = None,
+    middlewares_after: Annotated[
+        List["TaskMiddleware"],
+        Doc(
+            """
+                    Мидлвари, которые будут выполнены после задачи.
 
                     По умолчанию: `Пустой массив`.
                     """
@@ -128,14 +148,16 @@ def shared_task(
     Args:
         name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
         priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
-        echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
+        echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
         retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-        retry_on_exc (list[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+        retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
         decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-        tags (list[str], optional): Теги задачи. По умолчанию: `None`.
+        tags (List[str], optional): Теги задачи. По умолчанию: `None`.
+        description (str, optional): Описание задачи. По умолчанию: `None`.
         generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
         executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-        middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `Пустой массив`.
+        middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+        middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
         awaiting (bool, optional): Использовать ли AsyncTask вместо SyncTask. По умолчанию: `False`.
 
     Raises:
@@ -145,7 +167,8 @@ def shared_task(
     Returns:
         SyncTask | AsyncTask: Декоратор для регистрации задачи.
     """
-    middlewares = middlewares or []
+    middlewares_before = middlewares_before or []
+    middlewares_after = middlewares_after or []
 
     if callable(name):
         # Декоратор без скобок
@@ -158,9 +181,11 @@ def shared_task(
             retry_on_exc=retry_on_exc,
             decode=decode,
             tags=tags,
+            description=description,
             generate_handler=generate_handler,
             executor=executor,
-            middlewares=middlewares,
+            middlewares_before=middlewares_before,
+            middlewares_after=middlewares_after,
             **kwargs
         )(name)
 
@@ -175,9 +200,11 @@ def shared_task(
             retry_on_exc=retry_on_exc,
             decode=decode,
             tags=tags,
+            description=description,
             generate_handler=generate_handler,
             executor=executor,
-            middlewares=middlewares,
+            middlewares_before=middlewares_before,
+            middlewares_after=middlewares_after,
             **kwargs
         )(func)
 

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.schemas.task_exec import TaskPrioritySchema
@@ -29,6 +30,7 @@ from qtasks.storages import SyncRedisStorage
 if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
+    from qtasks.events.base import BaseEvents
 
 
 class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
@@ -109,6 +111,16 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.SyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация SyncRabbitMQBroker.
 
@@ -119,10 +131,13 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             queue_name (str, optional): Имя очереди RabbitMQ. По умолчанию: "task_queue".
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url or "amqp://guest:guest@localhost/"
         self.queue_name = f"{self.name}:{queue_name}"
+        self.events = self.events or SyncEvents()
+
         self.storage = storage or SyncRedisStorage(
             name=self.name, log=self.log, config=self.config
         )
@@ -179,7 +194,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
                 uuid=uuid,
                 priority=int(priority),
                 args=args,
-                kwargs=kwargs,
+                kw=kwargs,
                 created_at=created_at,
                 return_last=True
             )
@@ -188,7 +203,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
                 uuid = new_args.get("uuid", uuid)
                 priority = new_args.get("priority", priority)
                 args = new_args.get("args", args)
-                kwargs = new_args.get("kwargs", kwargs)
+                kwargs = new_args.get("kw", kwargs)
                 created_at = new_args.get("created_at", created_at)
 
             worker.add(
@@ -275,8 +290,9 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             priority=priority,
             created_at=created_at,
             updated_at=created_at,
+            args=args,
+            kwargs=kwargs
         )
-        model.set_json(args, kwargs)
 
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
@@ -289,7 +305,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         self.storage.add(uuid=uuid, task_status=model)
 
@@ -307,7 +323,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             routing_key=self.queue_name,
             body=json.dumps(task_data).encode(),
             properties=pika.BasicProperties(
-                delivery_mode=2,  # Поставить задачу в очередь как persistent
+                delivery_mode=2,
             ),
         )
 
@@ -332,14 +348,14 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -353,7 +369,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         task = self.storage.get(uuid=uuid)
         new_task = self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
         if new_task:
-            task = new_task
+            task = new_task.get("task", task)
         return task
 
     def update(
@@ -374,7 +390,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         """
         new_kw = self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw
+            kwargs = new_kw.get("kw", kwargs)
         return self.storage.update(**kwargs)
 
     def start(
@@ -425,7 +441,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema | TaskStatusErrorSchema],
+            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
             Doc(
                 """
                     Модель результата задачи.
@@ -447,7 +463,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         self.storage.remove_finished_task(task_broker, model)
 

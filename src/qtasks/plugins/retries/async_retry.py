@@ -2,6 +2,7 @@
 
 from dataclasses import field, make_dataclass
 import time
+from typing import Union
 from qtasks.brokers.base import BaseBroker
 from qtasks.plugins.base import BasePlugin
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
@@ -63,10 +64,10 @@ class AsyncRetryPlugin(BasePlugin):
             updated_at=time.time(),
         )
         fields = [
-            ("retry", int | None, field(default="None")),
+            ("retry", Union[int, None], field(default="None")),
         ]
         if new_task is not None:
-            fields.append(("retry_child_uuid", str | None, field(default="None")))
+            fields.append(("retry_child_uuid", Union[str, None], field(default="None")))
 
         model.__class__ = make_dataclass(
             "TaskStatusErrorSchema", fields=fields, bases=(TaskStatusErrorSchema,)
@@ -75,4 +76,4 @@ class AsyncRetryPlugin(BasePlugin):
         if new_task is not None:
             model.retry_child_uuid = new_task.uuid if task_retry > 0 else "None"
             model.status = "retry"
-        return model
+        return {"model": model}

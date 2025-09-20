@@ -6,13 +6,13 @@ from time import time
 from typing import TYPE_CHECKING, Optional, Union
 from uuid import UUID, uuid4
 from typing_extensions import Annotated, Doc
-from qtasks.schemas.task import Task
 from qtasks.tests.base import BaseTestCase
 
 from qtasks.asyncio import QueueTasks
 
 if TYPE_CHECKING:
     from qtasks.starters.base import BaseStarter
+    from qtasks.schemas.task import Task
 
 
 class AsyncTestCase(BaseTestCase):
@@ -60,7 +60,7 @@ class AsyncTestCase(BaseTestCase):
         """
         super().__init__(app=app, name=name)
 
-        self._global_loop: asyncio.AbstractEventLoop | None = None
+        self._global_loop: Union[asyncio.AbstractEventLoop, None] = None
 
     def start_in_background(
         self,
@@ -189,18 +189,15 @@ class AsyncTestCase(BaseTestCase):
 
     async def add_task(
         self,
-        task_name: Annotated[str, Doc("Имя задачи.")],
-        priority: Annotated[
-            int,
+        task_name: Annotated[
+            str,
             Doc(
                 """
-                    Приоритет задачи.
-
-                    По умолчанию: `0`.
+                    Имя задачи.
                     """
             ),
-        ] = 0,
-        args: Annotated[
+        ],
+        *args: Annotated[
             Optional[tuple],
             Doc(
                 """
@@ -209,8 +206,28 @@ class AsyncTestCase(BaseTestCase):
                     По умолчанию: `()`.
                     """
             ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
         ] = None,
-        kwargs: Annotated[
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        **kwargs: Annotated[
             Optional[dict],
             Doc(
                 """
@@ -219,18 +236,8 @@ class AsyncTestCase(BaseTestCase):
                     По умолчанию: `{}`.
                     """
             ),
-        ] = None,
-        timeout: Annotated[
-            Optional[float],
-            Doc(
-                """
-                Таймаут задачи.
-
-                Если указан, задача вызывается через `qtasks.results.AsyncTask`.
-                """
-            ),
-        ] = None,
-    ) -> Task | None:
+        ],
+    ) -> Union["Task", None]:
         """Добавить задачу.
 
         Args:
@@ -247,11 +254,11 @@ class AsyncTestCase(BaseTestCase):
         if self.test_config.broker:
             args, kwargs = args or (), kwargs or {}
             return await self.app.add_task(
+                *args,
                 task_name=task_name,
                 priority=priority,
-                args=args,
-                kwargs=kwargs,
                 timeout=timeout,
+                **kwargs
             )
         elif self.test_config.worker:
             return await self.app.worker.add(
@@ -278,7 +285,7 @@ class AsyncTestCase(BaseTestCase):
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union["Task", None]:
         """Получить задачу.
 
         Args:

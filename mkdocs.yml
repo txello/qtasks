@@ -48,6 +48,7 @@ theme:
     admonition:
       note: octicons/tag-16
       info: octicons/info-16
+    annotation: material/arrow-right-circle
 
 
 markdown_extensions:
@@ -95,7 +96,11 @@ markdown_extensions:
   pymdownx.blocks.details:
   pymdownx.blocks.tab:
     alternate_style: True
-  
+
+  pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
 
 extra:
   alternate:
@@ -116,7 +121,9 @@ plugins:
         python:
           options:
             docstring_style: google
-            show_source: false
+            show_source: true
+            griffe:
+              warn_missing_types: false
   - i18n:
       #default_language_only: ru
       languages:
@@ -134,15 +141,34 @@ nav:
       - Установка: ru/install.md
       - Первые шаги: ru/getting_started.md
       - Компоненты: ru/components.md
+      - Схемы: ru/schemas.md
       - Работа с консолью: ru/console.md
       - Тестирование: ru/tests.md
+      - Что дальше?: ru/next.md
   - Возможности:
       - Общее: ru/features/features.md
       - Уникальность: ru/features/uniqueness.md
+  - Примеры:
+    - Примеры: ru/examples/examples.md
+    - Возможности: ru/examples/features.md
+    - Генераторы: ru/examples/yield.md
+    - Контексты: ru/examples/echo.md
+    - Переменные: ru/examples/variables.md
+    - Плагины: ru/examples/plugins.md
+    - Интеграция с другими библиотеками:
+      - Общее: ru/examples/integrations/index.md
+      - Django: ru/examples/integrations/django.md
+    - Аналитика: ru/examples/analytics.md
+    - Практика:
+      - Фрилансер: ru/examples/practice/freelancer.md
+      - Малый бизнес: ru/examples/practice/small_business.md
+      - Крупный бизнес: ru/examples/practice/large_business.md
   - API:
       - Триггеры плагинов:
         - Триггеры: ru/api/plugins/triggers.md
         - Ошибки: ru/api/plugins/errors.md
+      - Поддержка библиотек:
+        - Django: ru/api/libraries/django.md
       - QueueTasks: ru/api/queuetasks.md
       - Asyncio:
         - QueueTasks: ru/api/asyncio/queuetasks.md
@@ -155,6 +181,8 @@ nav:
         - AsyncRabbitMQBroker: ru/api/brokers/async_rabbitmqbroker.md
         - SyncKafkaBroker: ru/api/brokers/sync_kafkabroker.md
         - AsyncKafkaBroker: ru/api/brokers/async_kafkabroker.md
+        - SyncSocketBroker: ru/api/brokers/sync_socket.md
+        - AsyncSocketBroker: ru/api/brokers/async_socket.md
       - Воркеры:
         - BaseWorker - Пишем свой воркер: ru/api/workers/baseworker.md
         - SyncThreadWorker: ru/api/workers/sync_threadworker.md
@@ -211,16 +239,15 @@ nav:
         - BaseTimer - Пишем свой Таймер: ru/api/timers/basetimer.md
         - SyncTimer: ru/api/timers/sync_timer.md
         - AsyncTimer: ru/api/timers/async_timer.md
+      - Аналитика:
+        - BaseStats - Пишем свою аналитику: ru/api/stats/base_stats.md
+        - AsyncStats - Пишем свою аналитику: ru/api/stats/async_stats.md
+        - SyncStats - Пишем свою аналитику: ru/api/stats/sync_stats.md
+        - Inspect:
+          - UtilsInspectStats: ru/api/stats/inspect/utils_inspect_stats.md
+          - InspectStats: ru/api/stats/inspect/inspect_stats.md
       - WebView: ru/api/webview.md
       - Исключения: ru/api/exceptions.md
-  - Примеры:
-    - Примеры: ru/examples/examples.md
-    - Генераторы: ru/examples/yield.md
-    - Контексты: ru/examples/echo.md
-    - Практика:
-      - Фрилансер: ru/examples/practice/freelancer.md
-      - Малый бизнес: ru/examples/practice/small_business.md
-      - Крупный бизнес: ru/examples/practice/large_business.md
   - История изменений: ru/changelog.md
   - Блог: ru/blog.md
   #- О проекте: ru/about.md

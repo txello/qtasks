@@ -10,6 +10,8 @@ _brokers = {
     "AsyncRabbitMQBroker": "qtasks.brokers.async_rabbitmq",
     "SyncKafkaBroker": "qtasks.brokers.sync_kafka",
     "AsyncKafkaBroker": "qtasks.brokers.async_kafka",
+    "AsyncSocketBroker": "qtasks.brokers.async_socket",
+    "SyncSocketBroker": "qtasks.brokers.sync_socket"
 }
 
 
@@ -28,3 +30,5 @@ if TYPE_CHECKING:
     from .async_rabbitmq import AsyncRabbitMQBroker
     from .sync_kafka import SyncKafkaBroker
     from .async_kafka import AsyncKafkaBroker
+    from .sync_socket import SyncSocketBroker
+    from .async_socket import AsyncSocketBroker

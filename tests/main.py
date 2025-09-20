@@ -1,15 +1,26 @@
-"""Main tests."""
+"""Init tests."""
 
-import unittest
+import sys
+import pytest
+from pathlib import Path
 
-from test_async_task import TestAsyncQTasks
-from test_sync_task import TestSyncQTasks
 
 if __name__ == "__main__":
-    # Запуск синхронных тестов
-    print("[INFO] Запуск синхронных тестов...")
-    unittest.TextTestRunner().run(unittest.TestLoader().loadTestsFromTestCase(TestSyncQTasks))
+    # Корень проекта
+    ROOT = Path(__file__).resolve().parent
 
-    # Запуск асинхронных тестов
-    print("[INFO] Запуск асинхронных тестов...")
-    unittest.TextTestRunner().run(unittest.TestLoader().loadTestsFromTestCase(TestAsyncQTasks))
+    # Список тестов
+    test_files = [
+        str(ROOT / "test_sync_task.py"),
+        str(ROOT / "test_async_task.py"),
+    ]
+
+    # Аргументы pytest
+    args = [
+        "-v",
+        "--tb=short",
+        *test_files,
+    ]
+
+    # Запуск
+    sys.exit(pytest.main(args))

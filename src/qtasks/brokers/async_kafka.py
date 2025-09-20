@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.storages.sync_redis import SyncRedisStorage
@@ -24,6 +25,7 @@ from qtasks.schemas.task_exec import TaskPrioritySchema
 if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
+    from qtasks.events.base import BaseEvents
 
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
@@ -112,6 +114,16 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация AsyncKafkaBroker.
 
@@ -122,10 +134,12 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             topic (str, optional): Топик Kafka. По умолчанию: "task_queue".
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
+        self.events = self.events or AsyncEvents()
 
         self.consumer = AIOKafkaConsumer(
             self.topic,
@@ -179,7 +193,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                     uuid=uuid,
                     priority=int(priority),
                     args=args,
-                    kwargs=kwargs,
+                    kw=kwargs,
                     created_at=created_at,
                     return_last=True
                 )
@@ -188,7 +202,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                     uuid = new_args.get("uuid", uuid)
                     priority = new_args.get("priority", priority)
                     args = new_args.get("args", args)
-                    kwargs = new_args.get("kwargs", kwargs)
+                    kwargs = new_args.get("kw", kwargs)
                     created_at = new_args.get("created_at", created_at)
 
                 await worker.add(
@@ -268,8 +282,9 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             priority=priority,
             created_at=created_at,
             updated_at=created_at,
+            args=args,
+            kwargs=kwargs
         )
-        model.set_json(args, kwargs)
 
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
@@ -282,7 +297,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         await self.storage.add(uuid=uuid, task_status=model)
 
@@ -311,14 +326,14 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -332,7 +347,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         task = await self.storage.get(uuid=uuid)
         new_task = await self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
         if new_task:
-            task = new_task
+            task = new_task.get("task", task)
         return task
 
     async def update(
@@ -353,7 +368,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         """
         new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw
+            kwargs = new_kw.get("kw", kwargs)
         return await self.storage.update(**kwargs)
 
     async def start(
@@ -402,7 +417,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         ],
         model: Annotated[
             Union[
-                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """
@@ -425,7 +440,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         await self.storage.remove_finished_task(task_broker, model)
 

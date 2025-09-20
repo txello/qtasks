@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.storages.sync_redis import SyncRedisStorage
@@ -23,6 +24,7 @@ from qtasks.schemas.task_exec import TaskPrioritySchema
 if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
+    from qtasks.events.base import BaseEvents
 
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
@@ -111,6 +113,16 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.SyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация SyncKafkaBroker.
 
@@ -121,10 +133,12 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             topic (str, optional): Топик Kafka. По умолчанию: "task_queue".
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url or "localhost:9092"
         self.topic = f"{self.name}_{topic}"
+        self.events = self.events or SyncEvents()
 
         self.consumer = KafkaConsumer(
             self.topic,
@@ -180,7 +194,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
                 uuid=uuid,
                 priority=int(priority),
                 args=args,
-                kwargs=kwargs,
+                kw=kwargs,
                 created_at=created_at,
                 return_last=True
             )
@@ -189,7 +203,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
                 uuid = new_args.get("uuid", uuid)
                 priority = new_args.get("priority", priority)
                 args = new_args.get("args", args)
-                kwargs = new_args.get("kwargs", kwargs)
+                kwargs = new_args.get("kw", kwargs)
                 created_at = new_args.get("created_at", created_at)
 
             worker.add(
@@ -266,8 +280,9 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             priority=priority,
             created_at=created_at,
             updated_at=created_at,
+            args=args,
+            kwargs=kwargs
         )
-        model.set_json(args, kwargs)
 
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
@@ -280,7 +295,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         self.storage.add(uuid=uuid, task_status=model)
 
@@ -309,14 +324,14 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -330,7 +345,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
         task = self.storage.get(uuid=uuid)
         new_task = self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
         if new_task:
-            task = new_task
+            task = new_task.get("task", task)
         return task
 
     def update(
@@ -351,7 +366,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
         """
         new_kw = self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
         if new_kw:
-            kwargs = new_kw
+            kwargs = new_kw.get("kw", kwargs)
         return self.storage.update(**kwargs)
 
     def start(
@@ -400,7 +415,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
         ],
         model: Annotated[
             Union[
-                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """
@@ -423,7 +438,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             return_last=True
         )
         if new_model:
-            model = new_model
+            model = new_model.get("model", model)
 
         self.storage.remove_finished_task(task_broker, model)
 

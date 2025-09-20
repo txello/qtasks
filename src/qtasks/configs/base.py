@@ -1,7 +1,7 @@
 """Base Configurations."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
@@ -9,6 +9,7 @@ from qtasks.logs import Logger
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
+    from qtasks.events.base import BaseEvents
 
 
 class BaseGlobalConfig(ABC):
@@ -60,6 +61,16 @@ class BaseGlobalConfig(ABC):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация контекста.
 
@@ -67,22 +78,23 @@ class BaseGlobalConfig(ABC):
             name (str, optional): Имя проекта. По умолчанию: `None`.
             log (Logger, optional): Логгер. По умолчанию: `None`.
             config (QueueConfig, optional): Конфигурация. По умолчанию: `None`.
+            events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
-        self.client = None
         self.config = config or QueueConfig()
-
         self.log = (
             log.with_subname("GlobalConfig")
             if log
             else Logger(
                 name=self.name,
                 subname="GlobalConfig",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )
-        self.plugins: dict[str, List["BasePlugin"]] = {}
+        self.events = events
+        self.client = None
+        self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
 
@@ -109,26 +121,26 @@ class BaseGlobalConfig(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, key: str) -> dict[Any] | list[Any] | tuple[Any]:
+    def get_all(self, key: str) -> Union[dict, list, tuple]:
         """Получить все значения.
 
         Args:
             key (str): Ключ.
 
         Returns:
-            dict[Any] | list[Any] | tuple[Any]: Значения.
+            Dict[str, Any] | List[Any] | Tuple[Any]: Значения.
         """
         pass
 
     @abstractmethod
-    def get_match(self, match: str) -> Any | dict[Any] | list[Any] | tuple[Any]:
+    def get_match(self, match: str) -> Union[Any, dict, list, tuple]:
         """Получить значения по паттерну.
 
         Args:
             match (str): Паттерн.
 
         Returns:
-            Any | dict[Any] | list[Any] | tuple[Any]: Значение или Значения.
+            Any | Dict[str, Any] | List[Any] | Tuple[Any]: Значение или Значения.
         """
         pass
 

@@ -2,16 +2,20 @@
 
 from threading import Thread
 import time
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from typing_extensions import Annotated, Doc
 import redis
 
 from qtasks.configs.config import QueueConfig
+from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
 
 from .base import BaseGlobalConfig
 from qtasks.schemas.global_config import GlobalConfigSchema
+
+if TYPE_CHECKING:
+    from qtasks.events.base import BaseEvents
 
 
 class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
@@ -98,6 +102,16 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.SyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация асинхронного Redis глобального конфига.
 
@@ -108,11 +122,13 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             config_name (str, optional): Имя Папки с Hash. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфигурация. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.name = name
         self.url = url
         self.config_name = f"{self.name}:{config_name or 'GlobalConfig'}"
+        self.events = self.events or SyncEvents()
 
         self.client = redis_connect or redis.from_url(
             self.url, decode_responses=True, encoding="utf-8"
@@ -161,17 +177,17 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
-    def get_all(self, key: str) -> dict[Any]:
+    def get_all(self, key: str) -> Dict[str, Any]:
         """Получить все значения.
 
         Args:
             key (str): Ключ.
 
         Returns:
-            dict[Any]: Значения.
+            Dict[str, Any]: Значения.
         """
         result = self.client.hgetall(name=f"{self.config_name}:{key}")
         new_result = self._plugin_trigger(
@@ -181,17 +197,17 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
-    def get_match(self, match: str) -> Any | dict[Any]:
+    def get_match(self, match: str) -> Union[Any, dict]:
         """Получить значения по паттерну.
 
         Args:
             match (str): Паттерн.
 
         Returns:
-            Any | dict[Any]: Значение или Значения.
+            Any | Dict[str, Any]: Значение или Значения.
         """
         result = self.client.hscan(key=self.config_name, match=match)
         new_result = self._plugin_trigger(
@@ -201,7 +217,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
     def start(self) -> None:

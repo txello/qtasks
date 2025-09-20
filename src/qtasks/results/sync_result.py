@@ -2,17 +2,16 @@
 
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import time
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import threading
 
-from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.logs import Logger
-from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.qtasks import QueueTasks
+    from qtasks.schemas.task import Task
 
 
 class SyncResult:
@@ -27,7 +26,7 @@ class SyncResult:
 
     app = QueueTasks()
 
-    task = app.add_task("test")
+    task = app.add_task(task_name="test")
     result = SyncResult(uuid=task.uuid).result(timeout=50)
     ```
     """
@@ -35,7 +34,7 @@ class SyncResult:
     def __init__(
         self,
         uuid: Annotated[
-            UUID | str,
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
@@ -71,21 +70,20 @@ class SyncResult:
             log (Logger, optional): Логгер. По умолчанию: None.
         """
         self._app = app
+        self._update_state()
         self.log = (
-            log.with_subname("AsyncResult")
+            log.with_subname("SyncResult", default_level=self._app.config.logs_default_level_client)
             if log
             else Logger(
                 name=self._app.name,
-                subname="AsyncResult",
-                default_level=self._app.config.logs_default_level,
+                subname="SyncResult",
+                default_level=self._app.config.logs_default_level_client,
                 format=self._app.config.logs_format,
             )
         )
-        self._update_state()
         self._stop_event = threading.Event()
 
         self.uuid = uuid
-        self._sleep_time: float = 1
 
     def result(
         self,
@@ -99,7 +97,7 @@ class SyncResult:
                     """
             ),
         ] = 100,
-    ) -> Task | None:
+    ) -> Union["Task", None]:
         """Ожидание результата задачи.
 
         Args:
@@ -120,22 +118,18 @@ class SyncResult:
                 self._stop_event.set()
                 return None
 
-    def _execute_task(self) -> Task | None:
+    def _execute_task(self) -> Union["Task", None]:
         uuid = self.uuid
         while True:
             if self._stop_event.is_set():
                 break
 
             task = self._app.get(uuid=uuid)
-            if not task or task.status not in [
-                TaskStatusEnum.SUCCESS.value,
-                TaskStatusEnum.ERROR.value,
-                TaskStatusEnum.CANCEL.value,
-            ]:
-                time.sleep(self._sleep_time)
-                continue
             if hasattr(task, "retry") and hasattr(task, "retry_child_uuid"):
                 uuid = task.retry_child_uuid
+                continue
+            if not task or task.status not in self._app.config.result_statuses_end:
+                time.sleep(self._app.config.result_time_interval)
                 continue
 
             return task
@@ -146,5 +140,4 @@ class SyncResult:
         if not self._app:
             if qtasks._state.app_main is None:
                 raise ImportError("Невозможно получить app!")
-        if not self.log:
-            self.log = qtasks._state.log_main.with_subname("AsyncResult")
+            self._app = qtasks._state.app_main

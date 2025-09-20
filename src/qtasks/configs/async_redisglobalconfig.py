@@ -1,16 +1,20 @@
 """Async Redis Global Config."""
 
 import asyncio
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from typing_extensions import Annotated, Doc
 import redis.asyncio as aioredis
 
 from qtasks.configs.config import QueueConfig
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 
 from .base import BaseGlobalConfig
 from qtasks.schemas.global_config import GlobalConfigSchema
+
+if TYPE_CHECKING:
+    from qtasks.events.base import BaseEvents
 
 
 class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
@@ -97,6 +101,16 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация асинхронного Redis глобального конфига.
 
@@ -107,11 +121,13 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             config_name (str, optional): Имя Папки с Hash. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: None.
             config (QueueConfig, optional): Конфигурация. По умолчанию: None.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config)
+        super().__init__(name=name, log=log, config=config, events=events)
         self.name = name
         self.url = url
         self.config_name = f"{self.name}:{config_name or 'GlobalConfig'}"
+        self.events = self.events or AsyncEvents()
 
         self.client = redis_connect or aioredis.from_url(
             self.url, decode_responses=True, encoding="utf-8"
@@ -162,17 +178,17 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
-    async def get_all(self, key: str) -> dict[Any]:
+    async def get_all(self, key: str) -> Dict[str, Any]:
         """Получить все значения.
 
         Args:
             key (str): Ключ.
 
         Returns:
-            dict[Any]: Значения.
+            Dict[str, Any]: Значения.
         """
         result = await self.client.hgetall(name=f"{self.config_name}:{key}")
         new_result = await self._plugin_trigger(
@@ -182,17 +198,17 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
-    async def get_match(self, match: str) -> Any | dict[Any]:
+    async def get_match(self, match: str) -> Union[Any, dict]:
         """Получить значения по паттерну.
 
         Args:
             match (str): Паттерн.
 
         Returns:
-            Any | dict[Any]: Значение или Значения.
+            Any | Dict[str, Any]: Значение или Значения.
         """
         result = await self.client.hscan(key=self.config_name, match=match)
         new_result = await self._plugin_trigger(
@@ -202,7 +218,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
             return_last=True
         )
         if new_result:
-            result = new_result
+            result = new_result.get("get", result)
         return result
 
     async def start(self) -> None:
@@ -222,7 +238,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
         self.running = False
         if self.status_event:
             self.status_event.cancel()
-        await self.client.close()
+        await self.client.aclose()
 
     async def _set_status(self):
         """Обновляет статус запуска глобального конфига."""

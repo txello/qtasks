@@ -7,43 +7,60 @@ import pydantic
 from qtasks.asyncio import QueueTasks
 from qtasks.registries import AsyncTask
 
-from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
+from qtasks.stats.async_stats import AsyncStats
 import shared_tasks
 import router_tasks
 
 app = QueueTasks()
-app.config.logs_default_level = logging.INFO
+app.config.logs_default_level_server = logging.INFO
 app.config.running_older_tasks = True
+app.config.result_time_interval = 0.1
 
 app.include_router(router_tasks.router)
 
 
-@app.task()
-async def load_test_job(num):
+@app.task(
+    description="Задача для тестирования нагрузки."
+)
+async def load_test_job(num: int):
     end_time = time.time()
     print(f"Job {num} finished at {end_time}")
     return
 
 
-@app.task(name="test")
+@app.task(
+    name="test",
+    description="Тестовая задача."
+)
 async def test():
     print("Это тестовая задача!")
 
 
-@app.task(name="test_num")
+@app.task(
+    name="test_num",
+    description="Тестовая задача с числом."
+)
 def test_num(number: int):
     print(f"Number: {number}")
     return number
 
 
-@app.task(name="test_echo", echo=True)
+@app.task(
+    name="test_echo",
+    description="Тестовая задача с выводом в консоль.",
+    echo=True
+)
 async def test_echo(self: AsyncTask):
     task = await self.add_task(task_name="test_num", args=(5,), timeout=50)
     print(f"Задача {task.task_name}, результат: {task.returning}")
     return str(task)
 
 
-@app.task(retry=5, retry_on_exc=[ZeroDivisionError])
+@app.task(
+    description="Тестовая задача с обработкой исключения ZeroDivisionError.",
+    retry=5,
+    retry_on_exc=[ZeroDivisionError]
+)
 def error_zero():
     result = 1/0
     print(result)
@@ -54,7 +71,11 @@ async def yield_func(result):
     return result + 2
 
 
-@app.task(generate_handler=yield_func, echo=True)
+@app.task(
+    description="Тестовая задача с генератором.",
+    echo=True,
+    generate_handler=yield_func
+)
 async def test_yield(self: AsyncTask, n: int):
     self.ctx.get_logger().info(self.ctx.task_uuid)
     for _ in range(n):
@@ -62,7 +83,11 @@ async def test_yield(self: AsyncTask, n: int):
         yield n
 
 
-@app.task(echo=True, retry=2)
+@app.task(
+    description="Тестовая задача с повтором.",
+    echo=True,
+    retry=2
+)
 async def test_retry(self: AsyncTask):
     self.ctx.get_logger().info("Повтор...")
     raise KeyError("Test error")
@@ -73,15 +98,22 @@ class Item(pydantic.BaseModel):
     value: int
 
 
-@app.task(echo=True, decode=json.dumps, tags=["example"])
+@app.task(
+    description="Тестовая задача с использованием Pydantic.",
+    tags=["example"],
+    echo=True,
+    decode=json.dumps,
+)
 async def example_pydantic(self: AsyncTask, item: Item):
     return f"Hello, {item.name}!"
 
 
 @app.task(
+    description="Тестовая задача для демонстрации работы с контекстом.",
     echo=True, tags=["test"], priority=1,
     retry=3, retry_on_exc=[KeyError], decode=json.dumps,
-    # generate_handler=yield_func, executor=MyTaskExecutor, middlewares=[MyTaskMiddleware],
+    # generate_handler=yield_func, executor=MyTaskExecutor,
+    # middlewares_before=[MyTaskMiddleware], middlewares_after=[MyTaskMiddleware],
     test="test"
 )
 async def test_echo_ctx(self: AsyncTask):
@@ -110,7 +142,8 @@ async def test_echo_ctx(self: AsyncTask):
             Декордирование через параметр: {self.decode}
 
             TaskExecutor через параметр: {self.executor}
-            Миддлвари: {self.middlewares}
+            Миддлвари до: {self.middlewares_before}
+            Миддлвари после: {self.middlewares_after}
             """
     )
     self.ctx.cancel("Тестовая задача отменена")
@@ -118,6 +151,19 @@ async def test_echo_ctx(self: AsyncTask):
     # retry=3 - повторит ещё 3 раза.
     return "Hello, world!"
 
+
+@app.task()
+async def example_stats():
+    print(stats.inspect().tasks())
+
+
+@app.task(echo=True, max_time=2)
+async def example_error_timeout(self: AsyncTask):
+    await self.ctx.sleep(5)
+    return "This task took too long to complete."
+
+
+stats = AsyncStats(app=app)
 
 if __name__ == "__main__":
     app.run_forever(num_workers=10)

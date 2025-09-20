@@ -1,16 +1,16 @@
 """Async Task."""
 
-from typing import TYPE_CHECKING, Annotated, Any, Callable, Generic, List, Optional, Type
-from typing_extensions import Doc
+from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, List, Optional, Type, Union
+from typing_extensions import Annotated, Doc
 
 from qtasks.types.annotations import P, R
 from qtasks.contexts.async_context import AsyncContext
-from qtasks.schemas.task import Task
 
 if TYPE_CHECKING:
     from qtasks.asyncio import QueueTasks
     from qtasks.executors.base import BaseTaskExecutor
     from qtasks.middlewares.task import TaskMiddleware
+    from qtasks.schemas.task import Task
 
 
 class AsyncTask(Generic[P, R]):
@@ -58,14 +58,24 @@ class AsyncTask(Generic[P, R]):
             bool,
             Doc(
                 """
-                    Включить вывод в консоль.
+                    Добавить AsyncTask первым параметром.
 
                     По умолчанию: `False`.
                     """
             ),
         ] = False,
+        max_time: Annotated[
+            Union[float, None],
+            Doc(
+                """
+                    Максимальное время выполнения задачи в секундах.
+
+                    По умолчанию: `None`.
+                """
+            ),
+        ] = None,
         retry: Annotated[
-            int | None,
+            Union[int, None],
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -75,7 +85,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         retry_on_exc: Annotated[
-            list[Type[Exception]] | None,
+            Union[List[Type[Exception]], None],
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -85,7 +95,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         decode: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Декодер результата задачи.
@@ -95,7 +105,7 @@ class AsyncTask(Generic[P, R]):
             )
         ] = None,
         tags: Annotated[
-            list[str] | None,
+            Union[List[str], None],
             Doc(
                 """
                     Теги задачи.
@@ -104,8 +114,18 @@ class AsyncTask(Generic[P, R]):
                 """
             )
         ] = None,
+        description: Annotated[
+            Union[str, None],
+            Doc(
+                """
+                    Описание задачи.
+
+                    По умолчанию: `None`.
+                """
+            )
+        ] = None,
         generate_handler: Annotated[
-            Callable | None,
+            Union[Callable, None],
             Doc(
                 """
                     Генератор обработчика.
@@ -124,18 +144,28 @@ class AsyncTask(Generic[P, R]):
                     """
             ),
         ] = None,
-        middlewares: Annotated[
+        middlewares_before: Annotated[
             List["TaskMiddleware"],
             Doc(
                 """
-                    Мидлвари.
+                    Мидлвари, которые будут выполнены перед задачей.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+            ),
+        ] = None,
+        middlewares_after: Annotated[
+            List["TaskMiddleware"],
+            Doc(
+                """
+                    Мидлвари, которые будут выполнены после задачи.
 
                     По умолчанию: `Пустой массив`.
                     """
             ),
         ] = None,
         extra: Annotated[
-            dict[str, Any],
+            Dict[str, Any],
             Doc(
                 """
                     Дополнительные параметры.
@@ -160,28 +190,36 @@ class AsyncTask(Generic[P, R]):
         Args:
             task_name (str, optional): Имя задачи. По умолчанию: `None`.
             priority (int, optional): Приоритет задачи. По умолчанию: `None`.
-            echo (bool, optional): Включить вывод в консоль. По умолчанию: `False`.
-            retry (int | None, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (list[Type[Exception]] | None, optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            echo (bool, optional): Добавить AsyncTask первым параметром. По умолчанию: `False`.
+            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
+            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
             decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (list[str] | None, optional): Теги задачи. По умолчанию: `None`.
-            generate_handler (Callable | None, optional): Генератор обработчика. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
+            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `None`.
-            middlewares (List["TaskMiddleware"], optional): Мидлвари. По умолчанию: `None`.
+            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
             app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: `None`.
         """
         self.task_name = task_name
         self.priority = priority
 
         self.echo = echo
+
+        self.max_time = max_time
+
         self.retry = retry
         self.retry_on_exc = retry_on_exc
 
         self.decode = decode
         self.tags = tags
+        self.description = description
 
         self.executor = executor
-        self.middlewares = middlewares
+        self.middlewares_before = middlewares_before or []
+        self.middlewares_after = middlewares_after or []
 
         self.extra = extra or {}
 
@@ -191,23 +229,12 @@ class AsyncTask(Generic[P, R]):
             task_name=task_name,
             generate_handler=generate_handler,
             executor=executor,
-            middlewares=middlewares,
             app=app,
         )
 
     async def add_task(
         self,
-        priority: Annotated[
-            int,
-            Doc(
-                """
-                    Приоритет задачи.
-
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
-        ] = None,
-        args: Annotated[
+        *args: Annotated[
             Optional[tuple],
             Doc(
                 """
@@ -216,14 +243,14 @@ class AsyncTask(Generic[P, R]):
                     По умолчанию: `()`.
                     """
             ),
-        ] = None,
-        kwargs: Annotated[
-            Optional[dict],
+        ],
+        priority: Annotated[
+            int,
             Doc(
                 """
-                    kwargs задачи.
+                    Приоритет задачи.
 
-                    По умолчанию: `{}`.
+                    По умолчанию: Значение приоритета у задачи.
                     """
             ),
         ] = None,
@@ -247,7 +274,17 @@ class AsyncTask(Generic[P, R]):
                     """
             ),
         ] = None,
-    ) -> Task | None:
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ]
+    ) -> Union["Task", None]:
         """Добавить задачу.
 
         Args:
@@ -265,13 +302,12 @@ class AsyncTask(Generic[P, R]):
 
         if priority is None:
             priority = self.priority
-
         return await self._app.add_task(
+            *args,
             task_name=task_name or self.task_name,
             priority=priority,
-            args=args,
-            kwargs=kwargs,
             timeout=timeout,
+            **kwargs
         )
 
     def _update_app(self) -> "QueueTasks":

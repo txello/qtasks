@@ -1,20 +1,20 @@
 """Base worker class."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Optional, Type
+from typing import TYPE_CHECKING, Dict, List, Optional, Type
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.middlewares.task import TaskMiddleware
-from qtasks.schemas.inits import InitsExecSchema
 from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
     from qtasks.plugins.base import BasePlugin
     from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.events.base import BaseEvents
 
 
 class BaseWorker(ABC):
@@ -76,6 +76,16 @@ class BaseWorker(ABC):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация базового воркера.
 
@@ -95,21 +105,19 @@ class BaseWorker(ABC):
             else Logger(
                 name=self.name,
                 subname="Worker",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )
 
-        self._tasks: dict[str, TaskExecSchema] = {}
-        self.init_worker_running: list[InitsExecSchema] = []
-        self.init_task_running: list[InitsExecSchema] = []
-        self.init_task_stoping: list[InitsExecSchema] = []
-        self.init_worker_stoping: list[InitsExecSchema] = []
-        self.task_middlewares: list[TaskMiddleware] = []
+        self._tasks: Dict[str, TaskExecSchema] = {}
+        self.events: "BaseEvents" = events
+        self.task_middlewares_before: List[TaskMiddleware] = []
+        self.task_middlewares_after: List[TaskMiddleware] = []
 
         self.task_executor: Type["BaseTaskExecutor"] = None
 
-        self.plugins: dict[str, List["BasePlugin"]] = {}
+        self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.num_workers = 0
 

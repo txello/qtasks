@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import asdict, field, fields, make_dataclass
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 from typing import TYPE_CHECKING
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
     from qtasks.plugins.base import BasePlugin
+    from qtasks.events.base import BaseEvents
 
 
 class BaseBroker(ABC):
@@ -77,6 +78,16 @@ class BaseBroker(ABC):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация BaseBroker.
 
@@ -85,21 +96,25 @@ class BaseBroker(ABC):
             storage (BaseStorage, optional): Хранилище. По умолчанию: `None`.
             log (Logger, optional): Логгер. По умолчанию: `None`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
+            events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
         self.config = config or QueueConfig()
-        self.storage = storage
         self.log = (
             log.with_subname("Broker")
             if log
             else Logger(
                 name=self.name,
                 subname="Broker",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )
-        self.plugins: dict[str, List["BasePlugin"]] = {}
+        self.events = events
+
+        self.storage = storage
+
+        self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
 
@@ -167,14 +182,14 @@ class BaseBroker(ABC):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:

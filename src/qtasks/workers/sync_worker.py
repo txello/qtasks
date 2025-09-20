@@ -5,10 +5,12 @@ from threading import Event, Lock, Semaphore, Thread
 from time import time, sleep
 import traceback
 from queue import PriorityQueue
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
+from qtasks.events.sync_events import SyncEvents
+from qtasks.plugins.depends.sync_depends import SyncDependsPlugin
 from qtasks.plugins.pydantic import SyncPydanticWrapperPlugin
 
 from .base import BaseWorker
@@ -32,6 +34,7 @@ from qtasks.brokers import SyncRedisBroker
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
+    from qtasks.events.base import BaseEvents
 
 
 class SyncThreadWorker(BaseWorker, SyncPluginMixin):
@@ -91,25 +94,36 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `qtasks.events.SyncEvents`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация синхронного воркера.
 
         Args:
             name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
-            broker (BaseBroker, optional): Брокер. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: None.
-            config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            broker (BaseBroker, optional): Брокер. По умолчанию: `None`.
+            log (Logger, optional): Логгер. По умолчанию: `None`.
+            config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
+            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
-        super().__init__(name=name, broker=broker, log=log, config=config)
-        self.name = name
+        super().__init__(name=name, broker=broker, log=log, config=config, events=events)
+        self.events = self.events or SyncEvents()
         self.broker = broker or SyncRedisBroker(
             name=self.name, log=self.log, config=self.config
         )
         self.queue = PriorityQueue()
-        self._tasks: dict[str, TaskExecSchema] = {}
+        self._tasks: Dict[str, TaskExecSchema] = {}
         self._stop_event = Event()
         self.lock = Lock()
-        self.threads: list[Thread] = []
+        self.threads: List[Thread] = []
         self.semaphore = Semaphore(self.config.max_tasks_process)
 
         self.task_executor = SyncTaskExecutor
@@ -130,8 +144,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         Args:
             number (int): Номер Воркера.
         """
-        for model_init in self.init_worker_running:
-            model_init.func(worker=self)
+        self.events.fire("worker_running", worker=self, number=number)
 
         try:
             while not self._stop_event.is_set():
@@ -148,12 +161,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 ).start()
 
         finally:
-            for model_init in self.init_worker_stoping:
-                (
-                    model_init.func(worker=self)
-                    if model_init.awaiting
-                    else model_init.func(worker=self)
-                )
+            self.events.fire("worker_stopping", worker=self, number=number)
 
     def _execute_task(
         self,
@@ -177,8 +185,9 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 priority=task_broker.priority,
                 created_at=task_broker.created_at,
                 updated_at=time(),
+                args=task_broker.args,
+                kwargs=task_broker.kwargs,
             )
-            model.set_json(task_broker.args, task_broker.kwargs)
 
             task_func = self._task_exists(task_broker=task_broker)
             if not task_func:
@@ -194,19 +203,15 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 return_last=True
             )
             if new_model:
-                model = new_model
+                model = new_model.get("model", model)
 
             self.broker.update(
                 name=f"{self.name}:{task_broker.uuid}", mapping=asdict(model)
             )
 
-            self._init_task_running(task_func=task_func, task_broker=task_broker)
-
+            self.events.fire("task_running", worker=self, task_func=task_func, task_broker=task_broker)
             model = self._run_task(task_func=task_func, task_broker=task_broker)
-
-            self._init_task_stoping(
-                task_func=task_func, task_broker=task_broker, model=model
-            )
+            self.events.fire("task_stopping", worker=self, task_func=task_func, task_broker=task_broker, model=model)
 
             self.remove_finished_task(task_func=task_func, task_broker=task_broker, model=model)
 
@@ -282,7 +287,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             uuid=uuid,
             priority=priority,
             args=args,
-            kwargs=kwargs,
+            kw=kwargs,
             created_at=created_at,
             return_last=True
         )
@@ -291,7 +296,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             uuid = new_data.get("uuid", uuid)
             priority = new_data.get("priority", priority)
             args = new_data.get("args", args)
-            kwargs = new_data.get("kwargs", kwargs)
+            kwargs = new_data.get("kw", kwargs)
             created_at = new_data.get("created_at", created_at)
 
         model = TaskPrioritySchema(
@@ -357,7 +362,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
 
     def _run_task(
         self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
-    ) -> TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema:
+    ) -> Union[TaskStatusSuccessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema]:
         """Запуск функции задачи.
 
         Args:
@@ -382,15 +387,15 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             task_func = new_data.get("task_func", task_func)
             task_broker = new_data.get("task_broker", task_broker)
 
-        middlewares = self.task_middlewares[:]
-        if task_func.middlewares:
-            middlewares.extend(task_func.middlewares)
+        if self.task_middlewares_before:
+            task_func.add_middlewares_before(self.task_middlewares_before)
+        if self.task_middlewares_after:
+            task_func.add_middlewares_after(self.task_middlewares_after)
 
         executor = task_func.executor if task_func.executor is not None else self.task_executor
         executor = executor(
             task_func=task_func,
             task_broker=task_broker,
-            middlewares=middlewares,
             log=self.log,
             plugins=self.plugins,
         )
@@ -411,8 +416,9 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             returning=result,
             created_at=task_broker.created_at,
             updated_at=time(),
+            args=task_broker.args,
+            kwargs=task_broker.kwargs,
         )
-        model.set_json(task_broker.args, task_broker.kwargs)
         self.log.info(
             f"Задача {task_broker.uuid} успешно завершена, результат: {result}"
         )
@@ -430,8 +436,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 not task_func.retry_on_exc or type(e) in task_func.retry_on_exc
             )
         )
-        if should_retry:
-            if task_func.retry:
+        if should_retry and task_func.retry:
                 plugin_result = self._plugin_trigger(
                     "worker_task_error_retry",
                     broker=self.broker,
@@ -448,13 +453,14 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 traceback=trace,
                 created_at=task_broker.created_at,
                 updated_at=time(),
+                args=task_broker.args,
+                kwargs=task_broker.kwargs,
             )
-            model.set_json(args=task_broker.args, kwargs=task_broker.kwargs)
         else:
-            model: TaskStatusErrorSchema = plugin_result
+            model: TaskStatusErrorSchema = plugin_result.get("model", model)
         #
 
-        self.log.warning(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+        self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
         return model
 
     def _task_cancel(self, e, task_func: TaskExecSchema, task_broker: TaskPrioritySchema) -> None:
@@ -469,7 +475,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self.log.info(f"Задача {task_broker.uuid} была отменена по причине: {e}")
         return model
 
-    def _task_exists(self, task_broker: TaskPrioritySchema) -> TaskExecSchema | None:
+    def _task_exists(self, task_broker: TaskPrioritySchema) -> Union[TaskExecSchema, None]:
         """Проверка существования задачи.
 
         Args:
@@ -491,46 +497,8 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 updated_at=time(),
             )
             self.remove_finished_task(task_func=None, task_broker=task_broker, model=model)
-            self.log.warning(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
+            self.log.error(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
             return None
-
-    def _init_task_running(
-        self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
-    ) -> None:
-        """Вызов задач `init_task_running`.
-
-        Args:
-            task_func (TaskExecSchema): Схема `TaskExecSchema`.
-            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-        """
-        for model_init in self.init_task_running:
-            try:
-                model_init.func(task_func=task_func, task_broker=task_broker)
-            except BaseException:
-                pass
-        return
-
-    def _init_task_stoping(
-        self,
-        task_func: TaskExecSchema,
-        task_broker: TaskPrioritySchema,
-        model: TaskStatusSuccessSchema | TaskStatusErrorSchema,
-    ) -> None:
-        """Вызов задач `init_task_stoping`.
-
-        Args:
-            task_func (TaskExecSchema): Схема `TaskExecSchema`.
-            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель `TaskStatusSuccessSchema` или `TaskStatusSuccessSchema`.
-        """
-        for model_init in self.init_task_stoping:
-            try:
-                model_init.func(
-                    task_func=task_func, task_broker=task_broker, returning=model
-                )
-            except BaseException:
-                pass
-        return
 
     def remove_finished_task(
         self,
@@ -552,7 +520,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         ],
         model: Annotated[
             Union[
-                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """
@@ -578,10 +546,11 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             return_last=True
         )
         if new_data:
-            task_broker, model = new_data
+            task_broker, model = new_data.get("task_broker", task_broker), new_data.get("model", model)
         self.broker.remove_finished_task(task_broker, model)
 
     def init_plugins(self):
         """Инициализация плагинов."""
         self.add_plugin(SyncRetryPlugin(), trigger_names=["worker_task_error_retry"])
         self.add_plugin(SyncPydanticWrapperPlugin(), trigger_names=["task_executor_args_replace", "task_executor_after_execute_result_replace"])
+        self.add_plugin(SyncDependsPlugin(), trigger_names=["task_executor_args_replace"])

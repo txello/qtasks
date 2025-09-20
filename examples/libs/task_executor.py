@@ -1,10 +1,10 @@
-from typing import Any
+from typing import Any, Union
 from qtasks.executors.base import BaseTaskExecutor
 
 
 class MySyncTaskExecutor(BaseTaskExecutor):
-    def __init__(self, task_func, task_broker, middlewares=None, log=None):
-        super().__init__(task_func, task_broker, middlewares, log)
+    def __init__(self, task_func, task_broker, log=None):
+        super().__init__(task_func, task_broker, log)
 
     def before_execute(self):
         pass
@@ -21,7 +21,7 @@ class MySyncTaskExecutor(BaseTaskExecutor):
     def execute(
         self,
         decode: bool = True
-    ) -> Any | str:
+    ) -> Union[Any, str]:
         pass
 
     def decode(self) -> str:
@@ -29,8 +29,8 @@ class MySyncTaskExecutor(BaseTaskExecutor):
 
 
 class MyAsyncTaskExecutor(BaseTaskExecutor):
-    def __init__(self, task_func, task_broker, middlewares=None, log=None):
-        super().__init__(task_func, task_broker, middlewares, log)
+    def __init__(self, task_func, task_broker, log=None):
+        super().__init__(task_func, task_broker, log)
 
     def before_execute(self):
         pass
@@ -47,7 +47,7 @@ class MyAsyncTaskExecutor(BaseTaskExecutor):
     async def execute(
         self,
         decode: bool = True
-    ) -> Any | str:
+    ) -> Union[Any, str]:
         pass
 
     def decode(self) -> str:

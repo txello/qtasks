@@ -1,1 +1,3 @@
+# QueueConfig
+
 ::: qtasks.configs.config

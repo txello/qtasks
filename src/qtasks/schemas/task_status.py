@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from time import time
 import json
+from typing import Dict, Tuple
 
 from qtasks.enums.task_status import TaskStatusEnum
 
@@ -13,10 +14,10 @@ class BaseTaskStatusSchema:
 
     Args:
         status (str): Статус.
-        priority (int): Приоритет.
         task_name (str): Название.
-        args (tuple[str]): Аргументы типа args.
-        kwargs (dict[str, str]): Аргументы типа kwargs.
+        priority (int): Приоритет.
+        args (Tuple[str]): Аргументы типа args.
+        kwargs (Dict[str, str]): Аргументы типа kwargs.
 
         created_at (float): Дата создания в формате `timestamp`.
         updated_at (float): Дата обновления в формате `timestamp`.
@@ -27,18 +28,18 @@ class BaseTaskStatusSchema:
     task_name: str = ""
     priority: int = 0
 
-    args: tuple[str] = field(default_factory=lambda: json.dumps(()))
-    kwargs: dict[str, str] = field(default_factory=lambda: json.dumps({}))
+    args: Tuple[str] = field(default="[]")
+    kwargs: Dict[str, str] = field(default="{}")
 
     created_at: float = 0.0
     updated_at: float = field(default_factory=time)
 
-    def set_json(self, args, kwargs):
-        """Установить значения аргументов в формате JSON."""
-        if args:
-            setattr(self, "args", json.dumps(args))
-        if kwargs:
-            setattr(self, "kwargs", json.dumps(kwargs))
+    def __post_init__(self):
+        """Преобразовать аргументы в формат JSON."""
+        if not isinstance(self.args, str):
+            self.args = json.dumps(self.args)
+        if not isinstance(self.kwargs, str):
+            self.kwargs = json.dumps(self.kwargs)
 
 
 @dataclass

@@ -2,6 +2,7 @@
 
 import threading
 from queue import Queue, Empty
+from typing import Union
 import redis
 
 from qtasks.logs import Logger
@@ -65,7 +66,7 @@ class SyncRedisCommandQueue:
                 self.worker_thread = threading.Thread(target=self._worker, daemon=True)
                 self.worker_thread.start()
 
-    def _get_log(self, log: Logger | None):
+    def _get_log(self, log: Union[Logger, None]):
         if log is None:
             import qtasks._state
 

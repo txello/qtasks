@@ -2,14 +2,13 @@
 
 from abc import ABC, abstractmethod
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, get_args, get_origin
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union, get_args, get_origin
 from typing_extensions import Annotated, Doc
 from qtasks.logs import Logger
 from qtasks.schemas.argmeta import ArgMeta
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 if TYPE_CHECKING:
-    from qtasks.middlewares.task import TaskMiddleware
     from qtasks.plugins.base import BasePlugin
 
 
@@ -47,16 +46,6 @@ class BaseTaskExecutor(ABC):
                     """
             ),
         ],
-        middlewares: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
-            Doc(
-                """
-                    Массив Миддлварей.
-
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
-        ] = None,
         log: Annotated[
             Optional[Logger],
             Doc(
@@ -83,13 +72,15 @@ class BaseTaskExecutor(ABC):
         Args:
             task_func (TaskExecSchema): Схема `TaskExecSchema`.
             task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-            middlewares (List[Type[TaskMiddleware]], optional): _description_. По умолчанию `None`.
             log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
+            plugins (Dict[str, List[Type[BasePlugin]]], optional): Словарь плагинов. По умолчанию: `Пустой словарь`.
         """
         self.task_func = task_func
         self.task_broker = task_broker
-
-        self.middlewares: list["TaskMiddleware"] = middlewares or []
+        self._args = self.task_broker.args.copy()
+        self._kwargs = self.task_broker.kwargs.copy()
+        self._result: Any = None
+        self.echo = None
 
         self.log = log
         if self.log is None:
@@ -108,8 +99,12 @@ class BaseTaskExecutor(ABC):
         """Вызывается после выполнения задачи."""
         pass
 
-    def execute_middlewares(self):
-        """Вызов мидлварей."""
+    def execute_middlewares_before(self):
+        """Вызов мидлварей до выполнения задачи."""
+        pass
+
+    def execute_middlewares_after(self):
+        """Вызов мидлварей после выполнения задачи."""
         pass
 
     def run_task(self) -> Any:
@@ -121,7 +116,7 @@ class BaseTaskExecutor(ABC):
         pass
 
     @abstractmethod
-    def execute(self, decode: bool = True) -> Any | str:
+    def execute(self, decode: bool = True) -> Union[Any, str]:
         """Обработка задачи.
 
         Args:
@@ -176,7 +171,34 @@ class BaseTaskExecutor(ABC):
                 self.plugins[name].append(plugin)
         return
 
-    def _build_args_info(self, args: list, kwargs: dict) -> list[ArgMeta]:
+    def _extract_args_kwargs_from_func(self, func: Any) -> Tuple[list, dict]:
+        """
+        Извлекает значения аргументов из функции, если они заданы как значения по умолчанию.
+
+        Args:
+            func (Callable): Функция, из которой извлекаются args и kwargs.
+
+        Returns:
+            Tuple[list, dict]: args и kwargs, готовые для передачи в `_build_args_info`.
+        """
+        sig = inspect.signature(func)
+        args = []
+        kwargs = {}
+
+        for name, param in sig.parameters.items():
+            if param.default is not inspect.Parameter.empty:
+                # Именованный аргумент (имеет значение по умолчанию)
+                kwargs[name] = param.default
+            elif param.kind in (
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            ):
+                # Позиционный аргумент без значения по умолчанию (просто None)
+                args.append(None)
+
+        return args, kwargs
+
+    def _build_args_info(self, args: list, kwargs: dict) -> List[ArgMeta]:
         """Строит список ArgMeta из args и kwargs на основе аннотаций функции.
 
         Args:
@@ -184,9 +206,9 @@ class BaseTaskExecutor(ABC):
             kwargs (dict): Именованные аргументы.
 
         Returns:
-            list[ArgMeta]: Список метаданных аргументов.
+            List[ArgMeta]: Список метаданных аргументов.
         """
-        args_info: list[ArgMeta] = []
+        args_info: List[ArgMeta] = []
         func = self.task_func.func
 
         try:
@@ -205,11 +227,12 @@ class BaseTaskExecutor(ABC):
             raw_type = get_args(annotation)[0] if get_args(annotation) else annotation
             args_info.append(ArgMeta(
                 name=param_name,
+                value=value,
                 origin=origin,
                 raw_type=raw_type,
                 annotation=annotation,
                 is_kwarg=False,
-                index=idx,
+                index=idx
             ))
 
         # Обработка именованных аргументов
@@ -219,11 +242,12 @@ class BaseTaskExecutor(ABC):
             raw_type = get_args(annotation)[0] if get_args(annotation) else annotation
             args_info.append(ArgMeta(
                 name=key,
+                value=value,
                 origin=origin,
                 raw_type=raw_type,
                 annotation=annotation,
                 is_kwarg=True,
-                key=key,
+                key=key
             ))
 
         return args_info

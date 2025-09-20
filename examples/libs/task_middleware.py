@@ -1,10 +1,10 @@
 from qtasks.middlewares import TaskMiddleware
+from qtasks.executors.base import BaseTaskExecutor
 
 
 class MyTaskMiddleware(TaskMiddleware):
-    def __init__(self, task_executor):
+    def __init__(self, task_executor: "BaseTaskExecutor"):
         super().__init__(task_executor)
-        print(task_executor.task_broker)
 
-    async def __call__(self, *args, **kwargs):
-        return self
+    async def __call__(self):
+        return self.task_executor

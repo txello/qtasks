@@ -10,7 +10,7 @@
 
 ## 📌 Используемый триггер
 
-**Триггер**: [`task_executor_run_task_trigger_error`](./triggers.md)
+**Триггер**: [`task_executor_run_task_trigger_error`](./triggers.md#taskexecutor)
 
 * **Компонент**: `TaskExecutor`
 * **Вызов**: происходит при возникновении исключения `TaskPluginTriggerError`

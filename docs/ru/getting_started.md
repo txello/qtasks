@@ -1,7 +1,9 @@
-# Начинаем работу с QueueTasks
-Эта страница покажет, как за пару минут настроить и запустить первую задачу с помощью QueueTasks.
+# Начинаем работу с `QTasks`
 
-1. Создание экземпляра приложения
+## Как за пару минут настроить и запустить первую задачу с помощью `QueueTasks`
+
+### 1. Создание экземпляра приложения
+
 ```py
 from qtasks import QueueTasks
 # или для асинхронного варианта:
@@ -10,7 +12,13 @@ from qtasks import QueueTasks
 app = QueueTasks()
 ```
 
-2. Регистрация задач. Задачи регистрируются через декоратор @app.task. Укажите имя задачи, чтобы можно было вызывать её из любого места.
+!!! info
+    По умолчанию в качестве брокера и хранилища используется Redis по адресу `redis://localhost:6379/0`.
+
+### 2. Регистрация задач
+
+Задачи регистрируются через декоратор [`@app.task`](/qtasks/ru/api/registries/sync_task_decorator/).
+
 ```py
 @app.task(name="mytest") # Обычная задача 
 def mytest(text: str):
@@ -22,37 +30,57 @@ def error_zero():
     result = 1/0
     return
 ```
-* Запускаем QueueTasks
+
+!!! info
+    Если имя задачи уже не указано, будет использовано имя функции
+
+!!! tip
+    Имя задачи может быть любым, но должно быть уникальным в пределах приложения.
+    Если задача с таким именем уже существует, будет вызвано исключение
+
+### 3. Запускаем `QueueTasks`
+
 ```py
-app.run_forever()
+if __name__ == "__main__":
+    app.run_forever()
 ```
-4. Полный пример
+
+### 4. Полный пример
+
 ```py
 # file: app.py
 from qtasks import QueueTasks
 
+
 app = QueueTasks()
+
 
 @app.task(name="mytest") # Пример обычной задачи
 def mytest(text: str):
     print(text)
     return text
 
+
 @app.task(name="error_zero") # Пример задачи с ошибкой
 def error_zero():
     result = 1/0
     return
 
-app.run_forever()
+
+if __name__ == "__main__":
+    app.run_forever()
 ```
 
-## Добавление задач в очередь.
-После запуска обработчика задач, можно добавлять задачи из другого файла или интерпретатора Python:
+### 5. Добавление задач в очередь
+
+После запуска обработчика задач, можно добавлять задачи из другого файла или
+интерпретатора Python:
+
 ```py
+# file: add_tasks.py
 from app import app, mytest
 
-app.add_task("mytest", args=("Тест",))
-mytest.add_task(args=("Тест",))
-app.add_task("error_zero")
-
+app.add_task(task_name="mytest", "Тест")
+mytest.add_task("Тест")
+app.add_task(task_name="error_zero")
 ```

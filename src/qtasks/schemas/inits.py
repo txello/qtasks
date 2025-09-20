@@ -9,13 +9,13 @@ class InitsExecSchema:
     """`InitsExecSchema` схема.
 
     Args:
-        typing (str): Тип инициализации.
+        name (str): Имя события.
         func (FunctionType): Функция инициализации.
 
         awaiting (bool): Асинхронность инициализации. По умолчанию: False
     """
 
-    typing: str
+    name: str
     func: FunctionType
 
     awaiting: bool = False

@@ -1,10 +1,11 @@
 """Base storage class."""
 
 from abc import ABC, abstractmethod
+import contextlib
 from dataclasses import field, fields, make_dataclass
 import datetime
 import json
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 from typing import TYPE_CHECKING
@@ -23,6 +24,7 @@ from qtasks.schemas.task_status import (
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.plugins.base import BasePlugin
+    from qtasks.events.base import BaseEvents
 
 
 class BaseStorage(ABC):
@@ -83,6 +85,16 @@ class BaseStorage(ABC):
                     """
             ),
         ] = None,
+        events: Annotated[
+            Optional["BaseEvents"],
+            Doc(
+                """
+                    События.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
     ):
         """Инициализация базового хранилища.
 
@@ -91,10 +103,10 @@ class BaseStorage(ABC):
             global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: `None`.
             log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
-        self.client = None
-        self.global_config: "BaseGlobalConfig" | None = global_config
+        self.global_config: Union["BaseGlobalConfig", None] = global_config
 
         self.config = config or QueueConfig()
         self.log = (
@@ -103,11 +115,14 @@ class BaseStorage(ABC):
             else Logger(
                 name=self.name,
                 subname="Storage",
-                default_level=self.config.logs_default_level,
+                default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )
-        self.plugins: dict[str, List["BasePlugin"]] = {}
+        self.events = events
+
+        self.client = None
+        self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
 
@@ -115,7 +130,7 @@ class BaseStorage(ABC):
     def add(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
@@ -143,14 +158,14 @@ class BaseStorage(ABC):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID | str],
+            Union[UUID, str],
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -162,11 +177,11 @@ class BaseStorage(ABC):
         pass
 
     @abstractmethod
-    def get_all(self) -> list[Task]:
+    def get_all(self) -> List[Task]:
         """Получить все задачи.
 
         Returns:
-            list[Task]: Массив задач.
+            List[Task]: Массив задач.
         """
         pass
 
@@ -247,7 +262,7 @@ class BaseStorage(ABC):
         ],
         model: Annotated[
             Union[
-                TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema
+                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
             ],
             Doc(
                 """
@@ -339,10 +354,8 @@ class BaseStorage(ABC):
         # Объединяем все аргументы
         task = NewTask(**base_kwargs, **extra_values)
         if hasattr(task, "returning"):
-            try:
+            with contextlib.suppress(BaseException):
                 task.returning = json.loads(task.returning)
-            except BaseException:
-                pass
         return task
 
     def _infer_type(self, value: str):

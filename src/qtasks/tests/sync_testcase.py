@@ -6,12 +6,12 @@ from typing import TYPE_CHECKING, Optional, Union
 from uuid import UUID, uuid4
 from typing_extensions import Annotated, Doc
 
-from qtasks.schemas.task import Task
 from qtasks.tests.base import BaseTestCase
 
 if TYPE_CHECKING:
     from qtasks import QueueTasks
     from qtasks.starters.base import BaseStarter
+    from qtasks.schemas.task import Task
 
 
 class SyncTestCase(BaseTestCase):
@@ -168,48 +168,55 @@ class SyncTestCase(BaseTestCase):
 
     def add_task(
         self,
-        task_name: Annotated[str, Doc("Имя задачи.")],
-        priority: Annotated[
-            int,
+        task_name: Annotated[
+            str,
             Doc(
                 """
-                Приоритет задачи.
-
-                По умолчанию: `0`.
-                """
+                    Имя задачи.
+                    """
             ),
-        ] = 0,
-        args: Annotated[
+        ],
+        *args: Annotated[
             Optional[tuple],
             Doc(
                 """
-                args задачи.
+                    args задачи.
 
-                По умолчанию: `()`.
-                """
+                    По умолчанию: `()`.
+                    """
             ),
-        ] = None,
-        kwargs: Annotated[
-            Optional[dict],
+        ],
+        priority: Annotated[
+            Optional[int],
             Doc(
                 """
-                kwargs задачи.
+                    Приоритет у задачи.
 
-                По умолчанию: `{}`.
-                """
+                    По умолчанию: Значение приоритета у задачи.
+                    """
             ),
         ] = None,
         timeout: Annotated[
             Optional[float],
             Doc(
                 """
-                Таймаут задачи.
+                    Таймаут задачи.
 
-                Если указан, задача вызывается через `qtasks.results.SyncTask`.
-                """
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
             ),
         ] = None,
-    ) -> Task | None:
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Union["Task", None]:
         """Добавить задачу.
 
         Args:
@@ -226,11 +233,11 @@ class SyncTestCase(BaseTestCase):
         if self.test_config.broker:
             args, kwargs = args or (), kwargs or {}
             return self.app.add_task(
+                *args,
                 task_name=task_name,
                 priority=priority,
-                args=args,
-                kwargs=kwargs,
                 timeout=timeout,
+                **kwargs
             )
         elif self.test_config.worker:
             return self.app.worker.add(
@@ -257,7 +264,7 @@ class SyncTestCase(BaseTestCase):
                     """
             ),
         ],
-    ) -> Task | None:
+    ) -> Union["Task", None]:
         """Получить задачу.
 
         Args:
