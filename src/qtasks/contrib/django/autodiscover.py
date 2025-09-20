@@ -29,7 +29,6 @@ def autodiscover_tasks(app, modules: List[str] = ["tasks"]):
             continue
 
         try:
-            # Явно проверяем, есть ли модули
             for module_name in modules:
                 if module_has_submodule(module, module_name) or find_spec(f"{app_name}.{module_name}"):
                     importlib.import_module(f"{app_name}.{module_name}")

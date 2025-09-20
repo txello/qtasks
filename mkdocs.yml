@@ -155,6 +155,10 @@ nav:
     - Контексты: ru/examples/echo.md
     - Переменные: ru/examples/variables.md
     - Плагины: ru/examples/plugins.md
+    - Интеграция с другими библиотеками:
+      - Общее: ru/examples/integrations/index.md
+      - Django: ru/examples/integrations/django.md
+    - Аналитика: ru/examples/analytics.md
     - Практика:
       - Фрилансер: ru/examples/practice/freelancer.md
       - Малый бизнес: ru/examples/practice/small_business.md
@@ -235,6 +239,13 @@ nav:
         - BaseTimer - Пишем свой Таймер: ru/api/timers/basetimer.md
         - SyncTimer: ru/api/timers/sync_timer.md
         - AsyncTimer: ru/api/timers/async_timer.md
+      - Аналитика:
+        - BaseStats - Пишем свою аналитику: ru/api/stats/base_stats.md
+        - AsyncStats - Пишем свою аналитику: ru/api/stats/async_stats.md
+        - SyncStats - Пишем свою аналитику: ru/api/stats/sync_stats.md
+        - Inspect:
+          - UtilsInspectStats: ru/api/stats/inspect/utils_inspect_stats.md
+          - InspectStats: ru/api/stats/inspect/inspect_stats.md
       - WebView: ru/api/webview.md
       - Исключения: ru/api/exceptions.md
   - История изменений: ru/changelog.md

@@ -25,7 +25,7 @@
 
     Несколькими строками кода интегрируем QTasks в свой проект.
 
-    [:octicons-arrow-right-24: Интеграция](/qtasks/ru/examples/integration/)
+    [:octicons-arrow-right-24: Интеграция](/qtasks/ru/examples/integrations/)
 
 - :octicons-eye-16:{ .lg .middle } __Анализируем__
 
