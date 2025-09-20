@@ -1,5 +1,31 @@
 # История обновлений
 
+## v1.6.0 2025-09-20
+
+- Добавлен `(A)syncSocketBroker`.
+- Добавлены `(A)syncStats`, `InspectStats` и `UtilsInspectStats`.
+- Добавлен плагин `(A)StatePlugin`.
+- Добавлены параметры `description` и `max_time` для задач.
+- Добавлена функция `autodiscover_tasks()` для интеграции с Django.
+- Добавлена настройка `result_time_interval` для задания времени выполнения для `(A)syncResult`.
+- В тестах добавлена аналитика запросов `HTTP+QTasks` через `Locust+FastAPI плагин`.
+- Добавлено тестирование через `tox` на версиях `py310`, `py311`, `py312` и `py313`
+в синхронном и асинхронном режимах.
+- Изменен способ работы с плагинами.
+- Изменен способ запроса `add_task` с `args=()` и `kwargs={}` на `*args` и `**kwargs`.
+- Изменен параметр `middlewares` на `middlewares_before` и `middlewares_after`.
+- Изменен параметр `logs_default_level` на `logs_default_level_server` и `logs_default_level_client`.
+- Изменены функции `app.init_*` на `app.events.on.*`.
+- Изменен уровень логирования ошибки задачи с `warning` на `error`.
+- Изменено тестирование с `unittest` на `pytest`.
+- Изменен брокер в тестировании с Redis на Socket.
+- Изменены функции тестирования.
+- Исправлены передачи данных для плагинов.
+- Исправлены ошибки передачи данных между компонентами.
+- Исправлены объявления схем.
+- Исправлен `(A)syncDependsPlugin`.
+- Рефакторинг кода.
+
 ## v1.5.1 2025-07-17
 
 - Исправлена зависимость `pydantic`.
