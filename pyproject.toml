@@ -32,7 +32,23 @@ dependencies = [
 
 license = { text = "Apache-2.0" }
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: System :: Networking",
+    "Topic :: Utilities",
+
+    "Framework :: AsyncIO",
+
     "Operating System :: OS Independent",
 ]
 
@@ -48,18 +64,20 @@ test = [
 ]
 
 [project.urls]
+Documentation = "https://txello.github.io/qtasks"
 Homepage = "https://github.com/txello/qtasks"
 Issues = "https://github.com/txello/qtasks/issues"
+
 
 [project.scripts]
 qtasks = "qtasks.__main__:main"
 
 [tool.ruff]
 line-length = 88
-ignore = ["E501"]
 
 [tool.ruff.lint]
 select = ["SIM"]
+ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
