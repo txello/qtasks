@@ -378,24 +378,19 @@ class BaseQueueTasks:
         Returns:
             SyncTask | AsyncTask: Декоратор для регистрации задачи.
         """
+
         def wrapper(func):
-            nonlocal priority, middlewares_before, middlewares_after
-
-            task_name = name or func.__name__
-            priority = priority or self.config.default_task_priority
-
             task_name = name or func.__name__
             if task_name in self.tasks:
                 raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
 
-            if priority is None:
-                priority = self.config.default_task_priority
+            priority = priority if priority is not None else self.config.default_task_priority
 
-            generating = False
-            if inspect.isgeneratorfunction(func):
-                generating = "sync"
-            if inspect.isasyncgenfunction(func):
-                generating = "async"
+            generating = (
+                "async" if inspect.isasyncgenfunction(func)
+                else "sync" if inspect.isgeneratorfunction(func)
+                else False
+            )
 
             middlewares_before = middlewares_before or []
             middlewares_after = middlewares_after or []
@@ -420,12 +415,15 @@ class BaseQueueTasks:
                 extra=kwargs
             )
 
-            self.tasks[task_name] = model
-            self.worker._tasks[task_name] = model
-            if self._method not in ["async", "sync"]:
-                raise ValueError(f"Неизвестный метод {self._method}")
+            for registry in (self.tasks, self.worker._tasks):
+                registry[task_name] = model
 
-            method = AsyncTask if self._method == "async" else SyncTask
+            method_map = {"async": AsyncTask, "sync": SyncTask}
+            try:
+                method = method_map[self._method]
+            except KeyError as exc:
+                raise ValueError(f"Unsupported task execution method: {self._method}") from exc
+
             return method(
                 app=self,
                 task_name=model.name,
