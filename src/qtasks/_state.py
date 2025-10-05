@@ -1,12 +1,13 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from qtasks.logs import Logger
 
 if TYPE_CHECKING:
     from qtasks.qtasks import QueueTasks
+    from qtasks.asyncio.qtasks import QueueTasks as aioQueueTasks
 
 
-app_main: "QueueTasks" = None
+app_main: Union["QueueTasks", "aioQueueTasks", None] = None
 """
 `app_main` - Хранит в себе основное приложение [`QueueTasks`](/qtasks/ru/api/queuetasks/).
 

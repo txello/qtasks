@@ -34,7 +34,7 @@ class SyncResult:
     def __init__(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            Optional[Union[UUID, str]],
             Doc(
                 """
                     UUID задачи.
@@ -69,10 +69,12 @@ class SyncResult:
             app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: None.
         """
-        self._app = app
-        self._update_state()
+        self._app = self._update_state()
+
         self.log = (
-            log.with_subname("SyncResult", default_level=self._app.config.logs_default_level_client)
+            log.with_subname(
+                "SyncResult", default_level=self._app.config.logs_default_level_client
+            )
             if log
             else Logger(
                 name=self._app.name,
@@ -111,7 +113,7 @@ class SyncResult:
             future = executor.submit(self._execute_task)
             try:
                 result = future.result(timeout=timeout)
-                self.log.debug(f"Задача {result.uuid} выполнена!")
+                self.log.debug(f"Задача {result.uuid if result else None} выполнена!")
                 return result
             except TimeoutError:
                 self.log.warning(f"Функция выполнялась {timeout} секунд!")
@@ -119,15 +121,24 @@ class SyncResult:
                 return None
 
     def _execute_task(self) -> Union["Task", None]:
+        if not self.uuid:
+            raise ValueError("UUID задачи не задан.")
+
         uuid = self.uuid
         while True:
             if self._stop_event.is_set():
                 break
 
             task = self._app.get(uuid=uuid)
-            if hasattr(task, "retry") and hasattr(task, "retry_child_uuid"):
+
+            if not task:
+                self.log.warning(f"Задача {uuid} не найдена!")
+                return None
+
+            if task.retry and task.retry > 0 and task.retry_child_uuid:
                 uuid = task.retry_child_uuid
                 continue
+
             if not task or task.status not in self._app.config.result_statuses_end:
                 time.sleep(self._app.config.result_time_interval)
                 continue
@@ -137,7 +148,7 @@ class SyncResult:
     def _update_state(self) -> "QueueTasks":
         import qtasks._state
 
-        if not self._app:
-            if qtasks._state.app_main is None:
-                raise ImportError("Невозможно получить app!")
-            self._app = qtasks._state.app_main
+        if qtasks._state.app_main is None:
+            raise ImportError("Невозможно получить app!")
+        app = qtasks._state.app_main
+        return app  # type: ignore

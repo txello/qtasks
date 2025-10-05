@@ -9,7 +9,9 @@ from .registry import SyncStateRegistry, AsyncStateRegistry
 class SyncState:
     """Базовый синхронный State."""
 
-    def __init__(self, registry: SyncStateRegistry, state_cls: Type["SyncState"]) -> None:
+    def __init__(
+        self, registry: SyncStateRegistry, state_cls: Type["SyncState"]
+    ) -> None:
         """Инициализация состояния."""
         self._registry = registry
         self._cls = state_cls
@@ -66,11 +68,12 @@ class SyncState:
         self._registry.clear(self._cls)
 
 
-
 class AsyncState:
     """Базовый асинхронный State."""
 
-    def __init__(self, registry: AsyncStateRegistry, state_cls: Type["AsyncState"]) -> None:
+    def __init__(
+        self, registry: AsyncStateRegistry, state_cls: Type["AsyncState"]
+    ) -> None:
         """Инициализация состояния."""
         self._registry = registry
         self._cls = state_cls

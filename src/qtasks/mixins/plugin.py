@@ -1,79 +1,52 @@
 """Миксин для работы с плагинами."""
 
 import traceback
-from typing import TYPE_CHECKING, Any, Dict, List, Union, overload
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union, overload
 from copy import deepcopy
+
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
+    from qtasks.logs import Logger
 
 
 class SyncPluginMixin:
     """Миксин для синхронной работы с плагинами."""
 
     plugins: Dict[str, List["BasePlugin"]]
+    log: Optional["Logger"] = None
 
     @overload
     def _plugin_trigger(
         self,
         name: str,
         *args,
-
         return_last: bool = True,
         safe: bool = True,
         continue_on_fail: bool = False,
-
-        **kwargs
-    ) -> Dict[str, Any]:
-        """Триггер для запуска обработчика плагина.
-
-        Args:
-            name (str): Имя обработчика.
-            return_last (bool): Если True — вернуть только последний результат, если есть.
-            safe (bool): Если True — не игнорировать ошибки плагинов.
-            continue_on_fail (bool): Если True — продолжить выполнение других плагинов при ошибке.
-
-        Returns:
-            Dict[str, Any]: Последний результат выполнения обработчиков или пустой словарь.
-        """
-        ...
+        **kwargs,
+    ) -> Dict[str, Any]: ...
 
     @overload
     def _plugin_trigger(
-            self,
-            name: str,
-            *args,
-
-            return_last: bool = False,
-            safe: bool = True,
-            continue_on_fail: bool = False,
-
-            **kwargs
-    ) -> List[Dict[str, Any]]:
-        """Триггер для запуска обработчика плагина.
-
-        Args:
-            name (str): Имя обработчика.
-            return_last (bool): Если True — вернуть только последний результат, если есть.
-            safe (bool): Если True — не игнорировать ошибки плагинов.
-            continue_on_fail (bool): Если True — продолжить выполнение других плагинов при ошибке.
-
-        Returns:
-            List[Dict[str, Any]]: Результаты выполнения обработчиков.
-        """
-        ...
+        self,
+        name: str,
+        *args,
+        return_last: bool = False,
+        safe: bool = True,
+        continue_on_fail: bool = False,
+        **kwargs,
+    ) -> List[Dict[str, Any]]: ...
 
     def _plugin_trigger(
-            self,
-            name: str,
-            *args,
-
-            return_last: bool = None,
-            safe: bool = True,
-            continue_on_fail: bool = False,
-
-            **kwargs
-    ) -> List[Dict[str, Any]]:
+        self,
+        name: str,
+        *args,
+        return_last: Optional[bool] = None,
+        safe: bool = True,
+        continue_on_fail: bool = False,
+        **kwargs,
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """Триггер для запуска обработчика плагина.
 
         Args:
@@ -91,12 +64,16 @@ class SyncPluginMixin:
         plugins = self.plugins.get(name, []) + self.plugins.get("Globals", [])
         for plugin in plugins:
             try:
-                result: Union[Dict[str, Any], None] = plugin.trigger(name, *args_copy, **kwargs_copy)
+                result: Union[Dict[str, Any], None] = plugin.trigger(
+                    name, *args_copy, **kwargs_copy
+                )
             except Exception as e:
                 if safe:
-                    tb = ''.join(traceback.TracebackException.from_exception(e).format())
+                    tb = "".join(
+                        traceback.TracebackException.from_exception(e).format()
+                    )
                     msg = f"Плагин {plugin.name} завершился с ошибкой:\n {tb}"
-                    if hasattr(self, "log"):
+                    if hasattr(self, "log") and self.log:
                         self.log.error(msg)
                     print(msg)
                     if not continue_on_fail:
@@ -111,9 +88,14 @@ class SyncPluginMixin:
 
         if return_last and results:
             return {
-                **{k: v for r in results for k, v in r.items() if k not in ("args", "kw")},
+                **{
+                    k: v
+                    for r in results
+                    for k, v in r.items()
+                    if k not in ("args", "kw")
+                },
                 "args": next((r["args"] for r in results[::-1] if "args" in r), None),
-                "kw": next((r["kw"] for r in results[::-1] if "kw" in r), {})
+                "kw": next((r["kw"] for r in results[::-1] if "kw" in r), {}),
             }
         return results
 
@@ -122,18 +104,17 @@ class AsyncPluginMixin:
     """Миксин для асинхронной работы с плагинами."""
 
     plugins: Dict[str, List["BasePlugin"]]
+    log: Optional["Logger"] = None
 
     @overload
     async def _plugin_trigger(
         self,
         name: str,
         *args,
-
         return_last: bool = True,
         safe: bool = True,
         continue_on_fail: bool = False,
-
-        **kwargs
+        **kwargs,
     ) -> Dict[str, Any]:
         """Триггер для запуска обработчика плагина.
 
@@ -153,12 +134,10 @@ class AsyncPluginMixin:
         self,
         name: str,
         *args,
-
         return_last: bool = False,
         safe: bool = True,
         continue_on_fail: bool = False,
-
-        **kwargs
+        **kwargs,
     ) -> List[Dict[str, Any]]:
         """Триггер для запуска обработчика плагина.
 
@@ -177,13 +156,11 @@ class AsyncPluginMixin:
         self,
         name: str,
         *args,
-
-        return_last: bool = None,
+        return_last: Optional[bool] = None,
         safe: bool = True,
         continue_on_fail: bool = False,
-
-        **kwargs
-    ) -> List[Dict[str, Any]]:
+        **kwargs,
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """Триггер для запуска обработчика плагина.
 
         Args:
@@ -200,13 +177,18 @@ class AsyncPluginMixin:
         kwargs_copy = kwargs.copy()
         plugins = self.plugins.get(name, []) + self.plugins.get("Globals", [])
         for plugin in plugins:
+            plugin: "BasePlugin[Literal[True]]"
             try:
-                result: Union[Dict[str, Any], None] = await plugin.trigger(name, *args_copy, **kwargs_copy)
+                result: Union[Dict[str, Any], None] = await plugin.trigger(
+                    name, *args_copy, **kwargs_copy
+                )
             except Exception as e:
                 if safe:
-                    tb = ''.join(traceback.TracebackException.from_exception(e).format())
+                    tb = "".join(
+                        traceback.TracebackException.from_exception(e).format()
+                    )
                     msg = f"Плагин {plugin.name} завершился с ошибкой:\n {tb}"
-                    if hasattr(self, "log"):
+                    if hasattr(self, "log") and self.log:
                         self.log.error(msg)
                     print(msg)
                     if not continue_on_fail:
@@ -221,8 +203,13 @@ class AsyncPluginMixin:
 
         if return_last and results:
             return {
-                **{k: v for r in results for k, v in r.items() if k not in ("args", "kw")},
+                **{
+                    k: v
+                    for r in results
+                    for k, v in r.items()
+                    if k not in ("args", "kw")
+                },
                 "args": next((r["args"] for r in results[::-1] if "args" in r), None),
-                "kw": next((r["kw"] for r in results[::-1] if "kw" in r), {})
+                "kw": next((r["kw"] for r in results[::-1] if "kw" in r), {}),
             }
         return results

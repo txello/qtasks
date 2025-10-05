@@ -2,7 +2,7 @@
 
 import threading
 from queue import Queue, Empty
-from typing import Union
+from typing import Optional, Union
 import redis
 
 from qtasks.logs import Logger
@@ -23,7 +23,7 @@ class SyncRedisCommandQueue:
     ```
     """
 
-    def __init__(self, redis: redis.Redis, log: Logger = None):
+    def __init__(self, redis: redis.Redis, log: Optional[Logger] = None):
         """Экземпляр класса.
 
         Args:
@@ -44,7 +44,9 @@ class SyncRedisCommandQueue:
                 try:
                     getattr(self.redis, cmd)(*args, **kwargs)
                 except Exception as e:
-                    self.log.error(f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}")
+                    self.log.error(
+                        f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}"
+                    )
                 self.queue.task_done()
             except Empty:
                 break

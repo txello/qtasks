@@ -2,7 +2,7 @@
 
 from threading import Thread
 import time
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union, cast
 from typing_extensions import Annotated, Doc
 import redis
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
 
 
-class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
+class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
     """
     Глобальный Конфиг, работающий через Redis и работает с глобальными значениями.
 
@@ -146,10 +146,10 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         new_data = self._plugin_trigger(
             "global_config_set",
             global_config=self,
-            name=name,
+            name_=name,
             key=key,
             value=value,
-            return_last=True
+            return_last=True,
         )
         if new_data:
             name = new_data.get("name", name)
@@ -171,10 +171,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         """
         result = self.client.hget(name=f"{self.config_name}:{key}", key=name)
         new_result = self._plugin_trigger(
-            "global_config_get",
-            global_config=self,
-            get=result,
-            return_last=True
+            "global_config_get", global_config=self, get=result, return_last=True
         )
         if new_result:
             result = new_result.get("get", result)
@@ -189,12 +186,10 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Returns:
             Dict[str, Any]: Значения.
         """
-        result = self.client.hgetall(name=f"{self.config_name}:{key}")
+        raw = self.client.hgetall(name=f"{self.config_name}:{key}")
+        result = cast(Dict, raw)
         new_result = self._plugin_trigger(
-            "global_config_get_all",
-            global_config=self,
-            get=result,
-            return_last=True
+            "global_config_get_all", global_config=self, get=result, return_last=True
         )
         if new_result:
             result = new_result.get("get", result)
@@ -209,12 +204,10 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Returns:
             Any | Dict[str, Any]: Значение или Значения.
         """
-        result = self.client.hscan(key=self.config_name, match=match)
+        self.config_name: str
+        result = self.client.hscan(self.config_name, match=match)
         new_result = self._plugin_trigger(
-            "global_config_get_match",
-            global_config=self,
-            get=result,
-            return_last=True
+            "global_config_get_match", global_config=self, get=result, return_last=True
         )
         if new_result:
             result = new_result.get("get", result)

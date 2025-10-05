@@ -1,13 +1,14 @@
 """Sync Socket Broker."""
 
 import contextlib
+from datetime import datetime
 import socket
 import threading
 import json
 import atexit
 from queue import Queue, Empty
 from dataclasses import asdict
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID, uuid4
 from time import time
@@ -24,10 +25,9 @@ from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import (
-    TaskStatusCancelSchema,
     TaskStatusErrorSchema,
     TaskStatusNewSchema,
-    TaskStatusProcessSchema,
+    TaskStatusSuccessSchema,
 )
 
 if TYPE_CHECKING:
@@ -73,7 +73,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
                     По умолчанию: `127.0.0.1`.
                     """
             ),
-        ] = None,
+        ] = "127.0.0.1",
         port: Annotated[
             int,
             Doc(
@@ -136,17 +136,20 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
             events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config, events=events)
-        self.url = url or "127.0.0.1"
+        self.url = url
         self.port = port
+        storage = storage or SyncRedisStorage(
+            name=name, log=log, config=config, events=events
+        )
+        super().__init__(
+            name=name, log=log, config=config, events=events, storage=storage
+        )
+
+        self.storage: "BaseStorage[Literal[False]]"
+
         self.events = self.events or SyncEvents()
 
         self.client = None
-        self.storage = storage or SyncRedisStorage(
-            name=name,
-            log=self.log,
-            config=self.config,
-        )
         self.default_sleep = 0.01
         self.running = False
 
@@ -196,7 +199,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     def listen(
         self,
         worker: Annotated[
-            "BaseWorker",
+            "BaseWorker[Literal[False]]",
             Doc(
                 """
                     Класс воркера.
@@ -208,6 +211,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
 
         Args:
             worker (BaseWorker): Класс воркера.
+
+        Raises:
+            KeyError: Задача не найдена.
         """
         self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
@@ -221,30 +227,31 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
                 break
 
             task_name, uuid, priority = item
-            task_data = self.get(uuid)
-            args, kwargs, created_at = task_data.args, task_data.kwargs, task_data.created_at
-
-            self.storage.add_process(f"{task_name}:{uuid}:{priority}", priority)
-
             model_get = self.get(uuid=uuid)
+            if not model_get:
+                raise KeyError(f"Задача не найдена: {uuid}")
+
             args, kwargs, created_at = (
                 model_get.args or (),
                 model_get.kwargs or {},
                 model_get.created_at.timestamp(),
             )
-            self.log.info(f"Получена новая задача: {uuid}")
+
+            self.storage.add_process(f"{task_name}:{uuid}:{priority}", priority)
+
+            if self.log:
+                self.log.info(f"Получена новая задача: {uuid}")
             new_args = self._plugin_trigger(
                 "broker_add_worker",
                 broker=self,
                 worker=worker,
-
                 task_name=task_name,
                 uuid=uuid,
                 priority=int(priority),
                 args=args,
                 kw=kwargs,
                 created_at=created_at,
-                return_last=True
+                return_last=True,
             )
             if new_args:
                 task_name = new_args.get("task_name", task_name)
@@ -282,20 +289,33 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
                     """
             ),
         ] = 0,
-        extra: dict = None,
+        extra: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    Дополнительные параметры задачи.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
         args: Annotated[
-            tuple,
+            Optional[tuple],
             Doc(
                 """
                     Аргументы задачи типа args.
+
+                    По умолчанию: `()`.
                     """
             ),
         ] = None,
         kwargs: Annotated[
-            dict,
+            Optional[dict],
             Doc(
                 """
                     Аргументы задачи типа kwargs.
+
+                    По умолчанию: `{}`.
                     """
             ),
         ] = None,
@@ -305,43 +325,44 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи.
-            args (tuple, optional): Аргументы задачи типа args.
-            kwargs (dict, optional): Аргументы задачи типа kwargs.
+            extra (dict, optional): Дополнительные параметры задачи. По умолчанию: `None`.
+            args (tuple, optional): Аргументы задачи типа args. По умолчанию: `()`.
+            kwargs (dict, optional): Аргументы задачи типа kwargs. По умолчанию: `{}`.
 
         Returns:
             Task: `schemas.task.Task`
+
+        Raises:
+            ValueError: Некорректный статус задачи.
         """
         atexit.register(self.stop)
         atexit.register(self.storage.stop)
 
         args, kwargs = args or (), kwargs or {}
-        uuid = str(uuid4())
+        uuid = uuid4()
+        uuid_str = str(uuid)
         created_at = time()
         model = TaskStatusNewSchema(
             task_name=task_name,
             priority=priority,
             created_at=created_at,
             updated_at=created_at,
-            args=args,
-            kwargs=kwargs
+            args=json.dumps(args),
+            kwargs=json.dumps(kwargs),
         )
 
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
 
         new_model = self._plugin_trigger(
-            "broker_add_before",
-            broker=self,
-            storage=self.storage,
-            model=model
+            "broker_add_before", broker=self, storage=self.storage, model=model
         )
         if new_model:
             model = new_model.get("model", model)
 
         with socket.create_connection((self.url, self.port)) as s:
             payload = asdict(model)
-            payload.update({"uuid": uuid})
+            payload.update({"uuid": uuid_str})
             s.sendall(json.dumps(payload).encode())
             try:
                 s.settimeout(2.0)
@@ -350,10 +371,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
                 pass
 
         self._plugin_trigger(
-            "broker_add_after",
-            broker=self,
-            storage=self.storage,
-            model=model
+            "broker_add_after", broker=self, storage=self.storage, model=model
         )
         return Task(
             status=TaskStatusEnum.NEW.value,
@@ -362,8 +380,8 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             priority=priority,
             args=args,
             kwargs=kwargs,
-            created_at=created_at,
-            updated_at=created_at,
+            created_at=datetime.fromtimestamp(created_at),
+            updated_at=datetime.fromtimestamp(created_at),
         )
 
     def get(
@@ -388,7 +406,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         task = self.storage.get(uuid=uuid)
-        new_task = self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
+        new_task = self._plugin_trigger(
+            "broker_get", broker=self, task=task, return_last=True
+        )
         if new_task:
             task = new_task.get("task", task)
         return task
@@ -409,7 +429,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        new_kw = self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
+        new_kw = self._plugin_trigger(
+            "broker_update", broker=self, kw=kwargs, return_last=True
+        )
         if new_kw:
             kwargs = new_kw.get("kw", kwargs)
         return self.storage.update(**kwargs)
@@ -429,6 +451,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
 
         Args:
             worker (BaseWorker): Класс Воркера.
+
+        Raises:
+            RuntimeError: self.client не инициализирован.
         """
         self._plugin_trigger("broker_start", broker=self, worker=worker)
         self.storage.start()
@@ -451,6 +476,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         self._listen_task.start()
 
         def _serve():
+            if not self.client:
+                raise RuntimeError("self.client не инициализирован.")
+
             while self.running:
                 try:
                     conn, _addr = self.client.accept()
@@ -462,7 +490,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
                     with contextlib.suppress(Exception):
                         conn.close()
 
-        self._serve_task = threading.Thread(target=_serve, name="broker-serve", daemon=True)
+        self._serve_task = threading.Thread(
+            target=_serve, name="broker-serve", daemon=True
+        )
         self._serve_task.start()
 
         try:
@@ -505,9 +535,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
-            ],
+            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
             Doc(
                 """
                     Модель результата задачи.
@@ -519,14 +547,14 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
 
         Args:
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
         new_model = self._plugin_trigger(
             "broker_remove_finished_task",
             broker=self,
             storage=self.storage,
             model=model,
-            return_last=True
+            return_last=True,
         )
         if new_model:
             model = new_model.get("model", model)

@@ -4,13 +4,14 @@ from dataclasses import asdict, is_dataclass
 from inspect import signature, _empty
 import json
 from pprint import pformat
-from typing import TYPE_CHECKING, Any, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Tuple, Union
 from collections.abc import ValuesView
 
 from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
     from qtasks.qtasks import QueueTasks
+    from qtasks.asyncio import QueueTasks as aioQueueTasks
 
 
 class UtilsInspectStats:
@@ -18,7 +19,9 @@ class UtilsInspectStats:
 
     label_width = 26
 
-    def _app_parser(self, app: "QueueTasks", json: bool = False):
+    def _app_parser(
+        self, app: Union["QueueTasks", "aioQueueTasks"], json: bool = False
+    ):
         """Парсер для информации о приложении.
 
         Args:
@@ -34,7 +37,11 @@ class UtilsInspectStats:
             + len(app.worker.plugins)
             + (len(app.starter.plugins) if app.starter else 0)
             + (len(app.broker.storage.plugins) if app.broker.storage else 0)
-            + (len(app.broker.storage.global_config.plugins) if app.broker.storage.global_config else 0)
+            + (
+                len(app.broker.storage.global_config.plugins)
+                if app.broker.storage.global_config
+                else 0
+            )
         )
         task_info = {
             "Имя": app.name,
@@ -44,21 +51,33 @@ class UtilsInspectStats:
             "Количество задач": len(app.tasks),
             "Количество роутеров": len(app.routers),
             "Количество плагинов": plugins_sum,
-            "Количество инициализаций": sum(len(inits) for inits in app.events.on._events.values()),
             "Брокер": app.broker.__class__.__name__,
             "Воркер": app.worker.__class__.__name__,
             "Стартер": app.starter.__class__.__name__ if app.starter else "—",
             "Хранилище": app.broker.storage.__class__.__name__,
-            "GlobalConfig": app.broker.storage.global_config.__class__.__name__ if app.broker.storage.global_config else "—",
+            "GlobalConfig": (
+                app.broker.storage.global_config.__class__.__name__
+                if app.broker.storage.global_config
+                else "—"
+            ),
             "Лог": app.log.__class__.__name__,
         }
+        if app.events:
+            task_info.update(
+                {
+                    "Количество инициализаций": sum(
+                        len(inits) for inits in app.events.on._events.values()
+                    ),
+                }
+            )
 
         if json:
             return self._parser_json(task_info)
 
         # Форматируем словарь
         task_block = "\n".join(
-            f"{label:<{self.label_width}}: {value}" for label, value in task_info.items()
+            f"{label:<{self.label_width}}: {value}"
+            for label, value in task_info.items()
         )
         lines.append(task_block)
         lines.append("-" * 50)
@@ -66,13 +85,23 @@ class UtilsInspectStats:
 
     def _parser_json(self, data: Union[Any, Tuple[Any]]) -> str:
         def formatter(d):
-            if is_dataclass(d):
+            if is_dataclass(d) and not isinstance(d, type):
                 return asdict(d)
             return d
-        data = [formatter(d) for d in data] if isinstance(data, (tuple, list, ValuesView)) else formatter(data)
+
+        data = (
+            [formatter(d) for d in data]
+            if isinstance(data, (tuple, list, ValuesView))
+            else formatter(data)
+        )
         return json.dumps(data, ensure_ascii=False, indent=2, default=str)
 
-    def _tasks_parser(self, tasks: Tuple[TaskExecSchema]) -> str:
+    def _tasks_parser(
+        self,
+        tasks: Union[
+            Tuple[TaskExecSchema], List[TaskExecSchema], ValuesView[TaskExecSchema]
+        ],
+    ) -> str:
         """Форматированный вывод всех зарегистрированных задач."""
         lines = []
 
@@ -83,12 +112,14 @@ class UtilsInspectStats:
                 "Имя задачи": task.name,
                 "Приоритет": task.priority,
                 "Описание": task.description or "—",
-                "Теги": ', '.join(task.tags) if task.tags else "—",
+                "Теги": ", ".join(task.tags) if task.tags else "—",
                 "Асинхронность": task.awaiting,
                 "Генерация": task.generating,
                 "Self перед задачей": task.echo,
-                "Args": ', '.join(args) if args else "—",
-                "Kwargs": ', '.join(f"{k}={v}" for k, v in kwargs.items()) if kwargs else "—",
+                "Args": ", ".join(args) if args else "—",
+                "Kwargs": (
+                    ", ".join(f"{k}={v}" for k, v in kwargs.items()) if kwargs else "—"
+                ),
             }
 
             if task.retry is not None:
@@ -107,12 +138,15 @@ class UtilsInspectStats:
                 task_info["Мидлвари после"] = pformat(task.middlewares_after)
             if task.extra:
                 # Вставляем многострочное значение с отступом
-                extra_lines = "\n" + "\n".join(f" * {k}: {v}" for k, v in task.extra.items())
+                extra_lines = "\n" + "\n".join(
+                    f" * {k}: {v}" for k, v in task.extra.items()
+                )
                 task_info["Дополнительно"] = extra_lines
 
             # Форматируем словарь
             task_block = "\n".join(
-                f"{label:<{self.label_width}}: {value}" for label, value in task_info.items()
+                f"{label:<{self.label_width}}: {value}"
+                for label, value in task_info.items()
             )
 
             lines.append(task_block)
@@ -136,7 +170,11 @@ class UtilsInspectStats:
         for name, param in sig.parameters.items():
             annotation = param.annotation if param.annotation is not _empty else None
 
-            type_str = f": {annotation.__name__}" if isinstance(annotation, type) else f": {annotation}" if annotation else ""
+            type_str = (
+                f": {annotation.__name__}"
+                if isinstance(annotation, type)
+                else f": {annotation}" if annotation else ""
+            )
 
             if param.kind in (param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD):
                 if param.default is param.empty:
@@ -145,7 +183,9 @@ class UtilsInspectStats:
                     keyword_args[f"{name}{type_str}"] = param.default
             elif param.kind == param.KEYWORD_ONLY:
                 type_str = type_str or ""
-                keyword_args[f"{name}{type_str}"] = param.default if param.default is not param.empty else "required"
+                keyword_args[f"{name}{type_str}"] = (
+                    param.default if param.default is not param.empty else "required"
+                )
             elif param.kind == param.VAR_POSITIONAL:
                 positional_args.append(f"*{name}")
             elif param.kind == param.VAR_KEYWORD:

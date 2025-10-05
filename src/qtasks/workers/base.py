@@ -1,7 +1,18 @@
 """Base worker class."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Dict, List, Optional, Type
+from typing import (
+    TYPE_CHECKING,
+    Awaitable,
+    Dict,
+    Generic,
+    List,
+    Literal,
+    Optional,
+    Type,
+    Union,
+    overload,
+)
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 
@@ -9,6 +20,7 @@ from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.schemas.task_exec import TaskExecSchema
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
@@ -17,7 +29,7 @@ if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
 
 
-class BaseWorker(ABC):
+class BaseWorker(Generic[TAsyncFlag], ABC):
     """
     `BaseWorker` - Абстрактный класс, который является фундаментом для Воркеров.
 
@@ -37,15 +49,15 @@ class BaseWorker(ABC):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
+            str,
             Doc(
                 """
                     Имя проекта. Это имя может быть использовано Воркером.
 
-                    По умолчанию: `None`.
+                    По умолчанию: `QueueTasks`.
                     """
             ),
-        ] = None,
+        ] = "QueueTasks",
         broker: Annotated[
             Optional["BaseBroker"],
             Doc(
@@ -103,7 +115,7 @@ class BaseWorker(ABC):
             log.with_subname("Worker")
             if log
             else Logger(
-                name=self.name,
+                name=self.name or "QueueTasks",
                 subname="Worker",
                 default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
@@ -111,17 +123,123 @@ class BaseWorker(ABC):
         )
 
         self._tasks: Dict[str, TaskExecSchema] = {}
-        self.events: "BaseEvents" = events
-        self.task_middlewares_before: List[TaskMiddleware] = []
-        self.task_middlewares_after: List[TaskMiddleware] = []
+        self.events: Optional["BaseEvents"] = events
+        self.task_middlewares_before: List[Type[TaskMiddleware]] = []
+        self.task_middlewares_after: List[Type[TaskMiddleware]] = []
 
-        self.task_executor: Type["BaseTaskExecutor"] = None
+        self.task_executor: Optional[Type["BaseTaskExecutor"]] = None
 
         self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.num_workers = 0
 
         self.init_plugins()
+
+    @overload
+    def add(
+        self: "BaseWorker[Literal[False]]",
+        name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        uuid: Annotated[
+            UUID,
+            Doc(
+                """
+                    UUID задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            int,
+            Doc(
+                """
+                    Приоритет задачи.
+                    """
+            ),
+        ],
+        created_at: Annotated[
+            float,
+            Doc(
+                """
+                    Создание задачи в формате timestamp.
+                    """
+            ),
+        ],
+        args: Annotated[
+            tuple,
+            Doc(
+                """
+                    Аргументы задачи типа args.
+                    """
+            ),
+        ],
+        kwargs: Annotated[
+            dict,
+            Doc(
+                """
+                    Аргументы задачи типа kwargs.
+                    """
+            ),
+        ],
+    ) -> None: ...
+
+    @overload
+    async def add(
+        self: "BaseWorker[Literal[True]]",
+        name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        uuid: Annotated[
+            UUID,
+            Doc(
+                """
+                    UUID задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            int,
+            Doc(
+                """
+                    Приоритет задачи.
+                    """
+            ),
+        ],
+        created_at: Annotated[
+            float,
+            Doc(
+                """
+                    Создание задачи в формате timestamp.
+                    """
+            ),
+        ],
+        args: Annotated[
+            tuple,
+            Doc(
+                """
+                    Аргументы задачи типа args.
+                    """
+            ),
+        ],
+        kwargs: Annotated[
+            dict,
+            Doc(
+                """
+                    Аргументы задачи типа kwargs.
+                    """
+            ),
+        ],
+    ) -> None: ...
 
     @abstractmethod
     def add(
@@ -174,7 +292,7 @@ class BaseWorker(ABC):
                     """
             ),
         ],
-    ) -> None:
+    ) -> Union[None, Awaitable[None]]:
         """Добавление задачи в очередь.
 
         Args:
@@ -186,6 +304,36 @@ class BaseWorker(ABC):
             kwargs (dict): Аргументы задачи типа kwargs.
         """
         pass
+
+    @overload
+    def start(
+        self: "BaseWorker[Literal[False]]",
+        num_workers: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Количество воркеров.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
+    ) -> None: ...
+
+    @overload
+    async def start(
+        self: "BaseWorker[Literal[True]]",
+        num_workers: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Количество воркеров.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
+    ) -> None: ...
 
     @abstractmethod
     def start(
@@ -200,7 +348,7 @@ class BaseWorker(ABC):
                     """
             ),
         ] = None,
-    ):
+    ) -> Union[None, Awaitable[None]]:
         """Запускает несколько обработчиков задач. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
 
         Args:
@@ -208,8 +356,14 @@ class BaseWorker(ABC):
         """
         pass
 
+    @overload
+    def stop(self: "BaseWorker[Literal[False]]") -> None: ...
+
+    @overload
+    async def stop(self: "BaseWorker[Literal[True]]") -> None: ...
+
     @abstractmethod
-    def stop(self):
+    def stop(self) -> Union[None, Awaitable[None]]:
         """Останавливает воркеры. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
 

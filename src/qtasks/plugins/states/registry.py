@@ -1,4 +1,5 @@
 """State Registry."""
+
 from __future__ import annotations
 import asyncio
 import threading
@@ -98,7 +99,6 @@ class SyncStateRegistry:
         with self._lock:
             self._ensure(state_cls)
             self._buckets[state_cls].clear()
-
 
 
 class AsyncStateRegistry:

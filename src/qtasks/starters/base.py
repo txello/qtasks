@@ -2,10 +2,21 @@
 
 from abc import ABC, abstractmethod
 from qtasks.logs import Logger
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import (
+    TYPE_CHECKING,
+    Awaitable,
+    Dict,
+    Generic,
+    List,
+    Literal,
+    Optional,
+    Union,
+    overload,
+)
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
@@ -14,7 +25,7 @@ if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
 
 
-class BaseStarter(ABC):
+class BaseStarter(Generic[TAsyncFlag], ABC):
     """
     `BaseStarter` - Абстрактный класс, который является фундаментом для Стартеров.
 
@@ -110,7 +121,7 @@ class BaseStarter(ABC):
             log.with_subname("Starter")
             if log
             else Logger(
-                name=self.name,
+                name=self.name or "QueueTasks",
                 subname="Starter",
                 default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
@@ -125,12 +136,25 @@ class BaseStarter(ABC):
 
         self.init_plugins()
 
-    @abstractmethod
-    def start(self) -> None:
-        """Запуск Стартера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`."""
+    @overload
+    def start(self: "BaseStarter[Literal[False]]", *args, **kwargs) -> None: ...
+
+    @overload
+    def start(self: "BaseStarter[Literal[True]]", *args, **kwargs) -> None: ...
 
     @abstractmethod
-    def stop(self):
+    def start(self, *args, **kwargs) -> None:
+        """Запуск Стартера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`."""
+        pass
+
+    @overload
+    def stop(self: "BaseStarter[Literal[False]]") -> None: ...
+
+    @overload
+    async def stop(self: "BaseStarter[Literal[True]]") -> None: ...
+
+    @abstractmethod
+    def stop(self) -> Union[None, Awaitable[None]]:
         """Останавливает Стартер. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
 

@@ -1,7 +1,7 @@
 """Async State."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Type, get_args, get_origin
+from typing import TYPE_CHECKING, Any, Dict, List, Type, get_args, get_origin
 
 from qtasks.plugins.base import BasePlugin
 from qtasks.plugins.states.registry import SyncStateRegistry
@@ -21,9 +21,7 @@ class SyncStatePlugin(BasePlugin):
         self.accept_annotated = accept_annotated
         self._registry = SyncStateRegistry()
 
-        self.handlers = {
-            "task_executor_args_replace": self.task_executor_args_replace
-        }
+        self.handlers = {"task_executor_args_replace": self.task_executor_args_replace}
 
     async def start(self, *args, **kwargs):
         """Запуск плагина."""
@@ -36,6 +34,8 @@ class SyncStatePlugin(BasePlugin):
     async def trigger(self, name, **kwargs):
         """Триггер для запуска обработчика."""
         handler = self.handlers.get(name)
+        if not handler:
+            return
         return await handler(**kwargs)
 
     async def task_executor_args_replace(
@@ -44,7 +44,7 @@ class SyncStatePlugin(BasePlugin):
         args: List[Any],
         kw: Dict[str, Any],
         args_info: List[ArgMeta],
-    ) -> Tuple[List[Any], Dict[str, Any]]:
+    ):
         """Заменяет аргументы и ключевые слова в задаче.
 
         Args:
@@ -73,7 +73,9 @@ class SyncStatePlugin(BasePlugin):
             if isinstance(existing, SyncState):
                 continue
 
-            bound = state_cls(self._registry, state_cls)  # сигнатура: (registry, state_cls)
+            bound = state_cls(
+                self._registry, state_cls
+            )  # сигнатура: (registry, state_cls)
 
             if meta.is_kwarg and meta.key is not None:
                 new_kw[meta.key] = bound
@@ -103,7 +105,11 @@ class SyncStatePlugin(BasePlugin):
             origin = get_origin(ann)
             if origin and getattr(origin, "__name__", "") == "Annotated":
                 args = get_args(ann)
-                if args and isinstance(args[0], type) and issubclass(args[0], SyncState):
+                if (
+                    args
+                    and isinstance(args[0], type)
+                    and issubclass(args[0], SyncState)
+                ):
                     return args[0]
 
         return None

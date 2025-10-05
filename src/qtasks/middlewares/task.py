@@ -1,6 +1,6 @@
 """Base Task Middleware."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .base import BaseMiddleware
 
@@ -33,3 +33,11 @@ class TaskMiddleware(BaseMiddleware):
         """
         super().__init__(name="TaskMiddleware")
         self.task_executor = task_executor
+
+    def __call__(self, *args, **kwargs) -> Any:
+        """Обработка вызова мидлвары задач.
+
+        Returns:
+            Any: Результат обработки.
+        """
+        pass

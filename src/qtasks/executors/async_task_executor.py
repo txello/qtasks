@@ -2,7 +2,16 @@
 
 import asyncio
 import json
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Union,
+)
 from typing_extensions import Annotated, Doc
 
 from qtasks.exc.plugins import TaskPluginTriggerError
@@ -15,7 +24,6 @@ from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 if TYPE_CHECKING:
-    from qtasks.middlewares.task import TaskMiddleware
     from qtasks.plugins.base import BasePlugin
 
 
@@ -65,7 +73,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             ),
         ] = None,
         plugins: Annotated[
-            Optional[Dict[str, List[Type["BasePlugin"]]]],
+            Optional[Dict[str, List["BasePlugin"]]],
             Doc(
                 """
                     Массив Плагинов.
@@ -81,7 +89,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             task_func (TaskExecSchema): Схема `TaskExecSchema`.
             task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
             log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
-            plugins (Dict[str, List[Type[BasePlugin]]], optional): Массив плагинов. По умолчанию: `Пустой массив`.
+            plugins (Dict[str, List[BasePlugin]], optional): Массив плагинов. По умолчанию: `Пустой массив`.
         """
         super().__init__(
             task_func=task_func,
@@ -93,7 +101,11 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     async def before_execute(self):
         """Вызывается перед выполнением задачи."""
         if self.task_func.echo:
-            task_cls = SyncTask if not self.task_func.awaiting or self.task_func.generating == "sync" else AsyncTask
+            task_cls = (
+                SyncTask
+                if not self.task_func.awaiting or self.task_func.generating == "sync"
+                else AsyncTask
+            )
             self.echo = task_cls(
                 task_name=self.task_broker.name,
                 priority=self.task_broker.priority,
@@ -106,7 +118,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 executor=self.task_func.executor,
                 middlewares_before=self.task_func.middlewares_before,
                 middlewares_after=self.task_func.middlewares_after,
-                extra=self.task_func.extra
+                extra=self.task_func.extra,
             )
             self.echo.ctx._update(task_uuid=self.task_broker.uuid)
             self._args.insert(0, self.echo)
@@ -121,10 +133,13 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 "kw": self._kwargs,
                 "args_info": args_info,
             },
-            return_last=True
+            return_last=True,
         )
         if new_args:
-            self._args, self._kwargs = new_args.get("args", self._args), new_args.get("kw", self._kwargs)
+            kw: dict = new_args.get("kw")  # type: ignore
+            if not kw:
+                self._args = kw.get("args", self._args)
+                self._kwargs = kw.get("kw", self._kwargs)
 
         await self._plugin_trigger("task_executor_before_execute", task_executor=self)
 
@@ -132,7 +147,10 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         """Вызов после запуска задач."""
         await self._plugin_trigger("task_executor_after_execute", task_executor=self)
         result: Any = await self._plugin_trigger(
-            "task_executor_after_execute_result_replace", task_executor=self, result=self._result, return_last=True
+            "task_executor_after_execute_result_replace",
+            task_executor=self,
+            result=self._result,
+            return_last=True,
         )
         if result:
             self._result = result.get("result", self._result)
@@ -143,10 +161,10 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         await self._plugin_trigger(
             "task_executor_middlewares_execute",
             task_executor=self,
-            middlewares_before=self.task_func.middlewares_before
+            middlewares_before=self.task_func.middlewares_before,
         )
         for m in self.task_func.middlewares_before:
-            m: "TaskMiddleware" = m(self)
+            m = m(self)
             new_task_executor: BaseTaskExecutor = await m()
             if new_task_executor:
                 self = new_task_executor
@@ -157,10 +175,10 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         await self._plugin_trigger(
             "task_executor_middlewares_execute",
             task_executor=self,
-            middlewares_after=self.task_func.middlewares_after
+            middlewares_after=self.task_func.middlewares_after,
         )
         for m in self.task_func.middlewares_after:
-            m: "TaskMiddleware" = m(self)
+            m = m(self)
             new_task_executor: BaseTaskExecutor = await m()
             if new_task_executor:
                 self = new_task_executor
@@ -200,17 +218,19 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         if self.task_func.generating:
             return await self.run_task_gen(result)
 
-        new_result = await self._plugin_trigger("task_executor_run_task", task_executor=self, result=result)
+        new_result = await self._plugin_trigger(
+            "task_executor_run_task", task_executor=self, result=result
+        )
         if new_result:
             result = new_result.get("result", result)
 
         return result
 
-    async def run_task_gen(self, func: AsyncGenerator) -> List[Any]:
+    async def run_task_gen(self, func: Union[AsyncGenerator, Generator]) -> List[Any]:
         """Вызов генератора задачи.
 
         Args:
-            func (FunctionType): Функция.
+            func (AsyncGenerator, Generator): Функция.
 
         Returns:
             Any: Результат задачи.
@@ -220,25 +240,29 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
 
         results = []
         if self.task_func.generating == "async":
-            async for result in func:
-                if self.task_func.generate_handler:
-                    result = await self._maybe_await(
-                        self.task_func.generate_handler(result)
-                    )
-                results.append(result)
-
-        elif self.task_func.generating == "sync":
-            try:
-                while True:
-                    result = next(func)
+            if isinstance(func, AsyncGenerator):
+                async for result in func:
                     if self.task_func.generate_handler:
                         result = await self._maybe_await(
                             self.task_func.generate_handler(result)
                         )
                     results.append(result)
-            except StopIteration:
-                pass
-        new_results = await self._plugin_trigger("task_executor_run_task_gen", task_executor=self, results=results)
+
+        elif self.task_func.generating == "sync":
+            if isinstance(func, Generator):
+                try:
+                    while True:
+                        result = next(func)
+                        if self.task_func.generate_handler:
+                            result = await self._maybe_await(
+                                self.task_func.generate_handler(result)
+                            )
+                        results.append(result)
+                except StopIteration:
+                    pass
+        new_results = await self._plugin_trigger(
+            "task_executor_run_task_gen", task_executor=self, results=results
+        )
         if new_results:
             results = new_results.get("results", results)
         return results
@@ -257,12 +281,16 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         Returns:
             Any|str: Результат задачи.
         """
-        self.log.debug(f"Вызван execute для {self.task_func.name}")
+        if self.log:
+            self.log.debug(f"Вызван execute для {self.task_func.name}")
+
         await self.execute_middlewares_before()
         await self.before_execute()
         try:
             if self.task_func.max_time:
-                self._result = await asyncio.wait_for(self.run_task(), timeout=self.task_func.max_time)
+                self._result = await asyncio.wait_for(
+                    self.run_task(), timeout=self.task_func.max_time
+                )
             else:
                 self._result = await self.run_task()
         except TaskPluginTriggerError as e:
@@ -272,7 +300,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 task_func=self.task_func,
                 task_broker=self.task_broker,
                 e=e,
-                return_last=True
+                return_last=True,
             )
             if new_result:
                 self._result = new_result.get("result", self._result)
@@ -280,7 +308,8 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 raise e
         except asyncio.TimeoutError:
             msg = f"Время выполнения задачи {self.task_func.name} превысило лимит {self.task_func.max_time} секунд"
-            self.log.error(msg)
+            if self.log:
+                self.log.error(msg)
             raise asyncio.TimeoutError(msg)
 
         await self.after_execute()
@@ -299,7 +328,9 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             result = await self._maybe_await(self.task_func.decode(self._result))
         else:
             result = json.dumps(self._result, ensure_ascii=False)
-        new_result = await self._plugin_trigger("task_executor_decode", task_executor=self, result=result)
+        new_result = await self._plugin_trigger(
+            "task_executor_decode", task_executor=self, result=result
+        )
         if new_result:
             result = new_result.get("result", result)
         return result

@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from time import time
 import json
-from typing import Dict, Tuple
+from typing import ClassVar, Optional
 
 from qtasks.enums.task_status import TaskStatusEnum
 
@@ -28,8 +28,8 @@ class BaseTaskStatusSchema:
     task_name: str = ""
     priority: int = 0
 
-    args: Tuple[str] = field(default="[]")
-    kwargs: Dict[str, str] = field(default="{}")
+    args: str = field(default="[]")
+    kwargs: str = field(default="{}")
 
     created_at: float = 0.0
     updated_at: float = field(default_factory=time)
@@ -88,6 +88,11 @@ class TaskStatusErrorSchema(BaseTaskStatusSchema):
 
     status: str = TaskStatusEnum.ERROR.value
     traceback: str = ""
+
+    # plugins
+    retry: ClassVar[Optional[int]] = None
+    retry_child_uuid: ClassVar[Optional[str]] = None
+    retry_parent_uuid: ClassVar[Optional[str]] = None
 
 
 @dataclass

@@ -1,7 +1,7 @@
 """Sync timer for scheduling tasks."""
 
 from time import sleep
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional
 from typing_extensions import Annotated, Doc
 from apscheduler.job import Job
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from qtasks import QueueTasks
 
 
-class SyncTimer(BaseTimer):
+class SyncTimer(BaseTimer[Literal[False]]):
     """
     Таймер, работающий через apscheduler, запускающий задачи.
 
@@ -135,7 +135,7 @@ class SyncTimer(BaseTimer):
                     По умолчанию: `{}`.
                     """
             ),
-        ]
+        ],
     ) -> Job:
         """Добавление задачи.
 
@@ -206,8 +206,9 @@ class SyncTimer(BaseTimer):
             args (tuple, optional): args задачи. По умолчанию `()`.
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
         """
+        args, kwargs = args or (), kwargs or {}
         task = self.app.add_task(
-            *args, task_name=task_name, priority=priority, **kwargs
+            task_name=task_name, priority=priority, timeout=None, *args, **kwargs
         )
         self.log.info(f"Отправлена задача {task_name}: {task.uuid}...")
 

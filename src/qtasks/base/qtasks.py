@@ -3,9 +3,12 @@
 import inspect
 from typing import (
     TYPE_CHECKING,
+    Awaitable,
     Callable,
     Dict,
+    Generic,
     List,
+    Literal,
     Optional,
     Type,
     Union,
@@ -13,6 +16,7 @@ from typing import (
 )
 from typing_extensions import Annotated, Doc
 
+from qtasks.schemas.task import Task
 from qtasks.types.annotations import P, R
 import qtasks._state
 from qtasks.configs.config import QueueConfig
@@ -22,6 +26,7 @@ from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.routers.router import Router
 from qtasks.schemas.task_exec import TaskExecSchema
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
@@ -34,11 +39,27 @@ if TYPE_CHECKING:
     from qtasks.middlewares.task import TaskMiddleware
 
 
-class BaseQueueTasks:
+class BaseQueueTasks(Generic[TAsyncFlag]):
     """Base класс для QueueTasks. Хранит в себе общую логику для работы с задачами в очереди."""
 
     def __init__(
         self,
+        broker: Annotated[
+            "BaseBroker",
+            Doc(
+                """
+                    Брокер. Хранит в себе обработку из очередей задач и хранилище данных.
+                    """
+            ),
+        ],
+        worker: Annotated[
+            "BaseWorker",
+            Doc(
+                """
+                    Воркер. Хранит в себе обработку задач.
+                    """
+            ),
+        ],
         name: Annotated[
             str,
             Doc(
@@ -56,26 +77,6 @@ class BaseQueueTasks:
                     URL для Брокера. Используется Брокером по умолчанию через параметр url.
 
                     По умолчанию: `None`.
-                    """
-            ),
-        ] = None,
-        broker: Annotated[
-            Optional["BaseBroker"],
-            Doc(
-                """
-                    Брокер. Хранит в себе обработку из очередей задач и хранилище данных.
-
-                    По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
-                    """
-            ),
-        ] = None,
-        worker: Annotated[
-            Optional["BaseWorker"],
-            Doc(
-                """
-                    Воркер. Хранит в себе обработку задач.
-
-                    По умолчанию: `qtasks.workers.AsyncWorker`.
                     """
             ),
         ] = None,
@@ -150,8 +151,8 @@ class BaseQueueTasks:
             )
         )
 
-        self.broker: "BaseBroker" = broker
-        self.worker: "BaseWorker" = worker
+        self.broker = broker
+        self.worker = worker
         self.starter: Union["BaseStarter", None] = None
 
         self.routers: Annotated[
@@ -201,7 +202,7 @@ class BaseQueueTasks:
 
     @overload
     def task(
-        self,
+        self: "BaseQueueTasks[Literal[False]]",
         name: Union[str, None] = None,
         *,
         priority: Union[int, None] = None,
@@ -214,19 +215,98 @@ class BaseQueueTasks:
         description: Union[str, None] = None,
         generate_handler: Union[Callable, None] = None,
         executor: Union[Type["BaseTaskExecutor"], None] = None,
-        middlewares_before: Union[List["TaskMiddleware"], None] = None,
-        middlewares_after: Union[List["TaskMiddleware"], None] = None,
-        **kwargs
-    ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
+        middlewares_before: Optional[List[Type["TaskMiddleware"]]] = None,
+        middlewares_after: Optional[List[Type["TaskMiddleware"]]] = None,
+        **kwargs,
+    ) -> Callable[[Callable[P, R]], SyncTask[P, R]]:
+        """Декоратор для регистрации задач.
+
+        Args:
+            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            echo (bool, optional): Добавить SyncTask первым параметром. По умолчанию: `False`.
+            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
+            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
+            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+
+        Raises:
+            ValueError: Если задача с таким именем уже зарегистрирована.
+            ValueError: Неизвестный метод {self._method}.
+
+        Returns:
+            SyncTask: Декоратор для регистрации задачи.
+        """
         ...
+
+    @overload
+    def task(
+        self: "BaseQueueTasks[Literal[True]]",
+        name: Union[str, None] = None,
+        *,
+        priority: Union[int, None] = None,
+        echo: bool = False,
+        max_time: Union[float, None] = None,
+        retry: Union[int, None] = None,
+        retry_on_exc: Union[List[Type[Exception]], None] = None,
+        decode: Union[Callable, None] = None,
+        tags: Union[List[str], None] = None,
+        description: Union[str, None] = None,
+        generate_handler: Union[Callable, None] = None,
+        executor: Union[Type["BaseTaskExecutor"], None] = None,
+        middlewares_before: Optional[List[Type["TaskMiddleware"]]] = None,
+        middlewares_after: Optional[List[Type["TaskMiddleware"]]] = None,
+        **kwargs,
+    ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
+        """Декоратор для регистрации задач.
+
+        Args:
+            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            echo (bool, optional): Добавить AsyncTask первым параметром. По умолчанию: `False`.
+            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
+            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
+            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
+            description (str, optional): Описание задачи. По умолчанию: `None`.
+            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `AsyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]],, optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
+            middlewares_after (List[Type["TaskMiddleware"]],, optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+
+        Raises:
+            ValueError: Если задача с таким именем уже зарегистрирована.
+            ValueError: Неизвестный метод {self._method}.
+
+        Returns:
+            AsyncTask: Декоратор для регистрации задачи.
+        """
+        ...
+
+    @overload
+    def task(
+        self: "BaseQueueTasks[Literal[False]]", name: Callable[P, R]
+    ) -> SyncTask[P, R]: ...
+
+    @overload
+    def task(
+        self: "BaseQueueTasks[Literal[True]]", name: Callable[P, R]
+    ) -> AsyncTask[P, R]: ...
 
     def task(
         self,
         name: Annotated[
-            Optional[str],
+            Optional[Union[Callable[P, R], str]],
             Doc(
                 """
-                    Имя задачи.
+                    Имя задачи или функция.
 
                     По умолчанию: `func.__name__`.
                     """
@@ -261,7 +341,7 @@ class BaseQueueTasks:
 
                     По умолчанию: `None`.
                     """
-            )
+            ),
         ] = None,
         retry: Annotated[
             Union[int, None],
@@ -291,7 +371,7 @@ class BaseQueueTasks:
 
                     По умолчанию: `None`.
                 """
-            )
+            ),
         ] = None,
         tags: Annotated[
             Union[List[str], None],
@@ -301,7 +381,7 @@ class BaseQueueTasks:
 
                     По умолчанию: `None`.
                 """
-            )
+            ),
         ] = None,
         description: Annotated[
             Union[str, None],
@@ -311,7 +391,7 @@ class BaseQueueTasks:
 
                     По умолчанию: `None`.
                 """
-            )
+            ),
         ] = None,
         generate_handler: Annotated[
             Union[Callable, None],
@@ -324,7 +404,7 @@ class BaseQueueTasks:
             ),
         ] = None,
         executor: Annotated[
-            Type["BaseTaskExecutor"],
+            Optional[Type["BaseTaskExecutor"]],
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -334,7 +414,7 @@ class BaseQueueTasks:
             ),
         ] = None,
         middlewares_before: Annotated[
-            List["TaskMiddleware"],
+            Optional[List[Type["TaskMiddleware"]]],
             Doc(
                 """
                     Мидлвари, которые будут выполнены до задачи.
@@ -344,7 +424,7 @@ class BaseQueueTasks:
             ),
         ] = None,
         middlewares_after: Annotated[
-            List["TaskMiddleware"],
+            Optional[List[Type["TaskMiddleware"]]],
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -353,8 +433,11 @@ class BaseQueueTasks:
                     """
             ),
         ] = None,
-        **kwargs
-    ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
+        **kwargs,
+    ) -> Union[
+        Union[SyncTask[P, R], AsyncTask[P, R]],
+        Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]],
+    ]:
         """Декоратор для регистрации задач.
 
         Args:
@@ -368,28 +451,35 @@ class BaseQueueTasks:
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
-            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
 
         Raises:
             ValueError: Если задача с таким именем уже зарегистрирована.
             ValueError: Неизвестный метод {self._method}.
+            ValueError: Неподдерживаемый метод {self._method}.
 
         Returns:
             SyncTask | AsyncTask: Декоратор для регистрации задачи.
         """
 
-        def wrapper(func):
-            task_name = name or func.__name__
+        def wrapper(func: Callable[P, R]):
+            if not self._method:
+                raise ValueError(f"Неизвестный метод {self._method}.")
+            nonlocal priority, middlewares_after, middlewares_before
+            task_name = name or func.__name__ if not callable(name) else name.__name__
+
             if task_name in self.tasks:
                 raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
 
-            priority = priority if priority is not None else self.config.default_task_priority
+            priority = (
+                priority if priority is not None else self.config.default_task_priority
+            )
 
             generating = (
-                "async" if inspect.isasyncgenfunction(func)
-                else "sync" if inspect.isgeneratorfunction(func)
-                else False
+                "async"
+                if inspect.isasyncgenfunction(func)
+                else "sync" if inspect.isgeneratorfunction(func) else False
             )
 
             middlewares_before = middlewares_before or []
@@ -412,7 +502,7 @@ class BaseQueueTasks:
                 executor=executor,
                 middlewares_before=middlewares_before,
                 middlewares_after=middlewares_after,
-                extra=kwargs
+                extra=kwargs,
             )
 
             for registry in (self.tasks, self.worker._tasks):
@@ -422,7 +512,7 @@ class BaseQueueTasks:
             try:
                 method = method_map[self._method]
             except KeyError as exc:
-                raise ValueError(f"Unsupported task execution method: {self._method}") from exc
+                raise ValueError(f"Неподдерживаемый метод: {self._method}") from exc
 
             return method(
                 app=self,
@@ -439,7 +529,7 @@ class BaseQueueTasks:
                 executor=model.executor,
                 middlewares_before=model.middlewares_before,
                 middlewares_after=model.middlewares_after,
-                extra=model.extra
+                extra=model.extra,
             )
 
         if callable(name):
@@ -515,12 +605,15 @@ class BaseQueueTasks:
             ImportError: Невозможно подключить Middleware: Он не относится к классу BaseMiddleware!
         """
         if (
-            not middleware.__base__ or middleware.__base__.__base__.__name__ != "BaseMiddleware"
+            not middleware.__base__
+            or (middleware.__base__.__base__ and middleware.__base__.__base__.__name__)
+            != "BaseMiddleware"
         ):
             raise ImportError(
                 f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!"
             )
-        if middleware.__base__.__name__ == "TaskMiddleware":
+        if issubclass(middleware, "TaskMiddleware"):
+
             position = kwargs.get("position", "before")
             if position == "before":
                 self.worker.task_middlewares_before.append(middleware)
@@ -528,11 +621,6 @@ class BaseQueueTasks:
                 self.worker.task_middlewares_after.append(middleware)
         self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
         return
-
-    def init_plugins(self):
-        """Инициализация плагинов."""
-        for plugin in self.plugins.values():
-            plugin.init(self)
 
     def _registry_tasks(self):
         """
@@ -583,3 +671,283 @@ class BaseQueueTasks:
                     self.broker.storage.global_config.log = (
                         self.broker.storage.global_config.log.update_logger(**kwargs)
                     )
+
+    @overload
+    def add_task(
+        self,
+        *args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Optional["Task"]: ...
+
+    @overload
+    async def add_task(
+        self,
+        *args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Optional["Task"]: ...
+
+    @overload
+    def add_task(
+        self,
+        *args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            None,
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> "Task": ...
+
+    @overload
+    async def add_task(
+        self,
+        *args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            None,
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> "Task": ...
+
+    def add_task(
+        self,
+        *args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Union[
+        Optional["Task"], Awaitable[Optional["Task"]], "Task", Awaitable["Task"]
+    ]:
+        """Добавить задачу.
+
+        Args:
+            task_name (str): Имя задачи.
+            priority (int, optional): Приоритет задачи. По умолчанию: Значение приоритета у задачи.
+            args (tuple, optional): args задачи. По умолчанию `()`.
+            kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
+
+            timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.SyncResult` или `qtasks.results.AsyncResult`.
+
+        Returns:
+            Task|None: `schemas.task.Task` или `None`.
+        """
+        pass

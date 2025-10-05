@@ -3,19 +3,19 @@
 import asyncio
 import threading
 from time import time
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 from uuid import UUID, uuid4
 from typing_extensions import Annotated, Doc
 from qtasks.tests.base import BaseTestCase
 
-from qtasks.asyncio import QueueTasks
 
 if TYPE_CHECKING:
+    from qtasks.asyncio import QueueTasks
     from qtasks.starters.base import BaseStarter
     from qtasks.schemas.task import Task
 
 
-class AsyncTestCase(BaseTestCase):
+class AsyncTestCase(BaseTestCase[Literal[True]]):
     """
     Асинхронный кейс тестирования.
 
@@ -59,6 +59,7 @@ class AsyncTestCase(BaseTestCase):
             name (str, optional): Имя проекта. Это имя может быть использовано для тестовых компонентов. По умолчанию: `None`.
         """
         super().__init__(app=app, name=name)
+        self.app: "QueueTasks"
 
         self._global_loop: Union[asyncio.AbstractEventLoop, None] = None
 
@@ -114,7 +115,7 @@ class AsyncTestCase(BaseTestCase):
         thread = threading.Thread(target=run_loop, daemon=True)
         thread.start()
 
-    def start(
+    async def start(
         self,
         loop: Annotated[
             Optional[asyncio.AbstractEventLoop],
@@ -174,14 +175,14 @@ class AsyncTestCase(BaseTestCase):
 
     async def stop(self):
         """Останавливает кейс тестирования."""
-        if self.test_config.global_config:
-            self.app.broker.storage.global_config.stop()
+        if self.test_config.global_config and self.app.broker.storage.global_config:
+            await self.app.broker.storage.global_config.stop()
 
         if self.test_config.storage:
-            self.app.broker.storage.stop()
+            await self.app.broker.storage.stop()
 
         if self.test_config.broker:
-            self.app.broker.stop()
+            await self.app.broker.stop()
 
         if self.test_config.worker:
             await self.app.worker.stop()
@@ -198,7 +199,7 @@ class AsyncTestCase(BaseTestCase):
             ),
         ],
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -208,15 +209,15 @@ class AsyncTestCase(BaseTestCase):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int,
             Doc(
                 """
                     Приоритет у задачи.
 
-                    По умолчанию: Значение приоритета у задачи.
+                    По умолчанию: `0`.
                     """
             ),
-        ] = None,
+        ] = 0,
         timeout: Annotated[
             Optional[float],
             Doc(
@@ -252,13 +253,8 @@ class AsyncTestCase(BaseTestCase):
             Task|None: Данные задачи или None.
         """
         if self.test_config.broker:
-            args, kwargs = args or (), kwargs or {}
             return await self.app.add_task(
-                *args,
-                task_name=task_name,
-                priority=priority,
-                timeout=timeout,
-                **kwargs
+                task_name, *args, priority=priority, timeout=timeout, **kwargs
             )
         elif self.test_config.worker:
             return await self.app.worker.add(

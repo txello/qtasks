@@ -24,9 +24,7 @@ class SyncDependsPlugin(BasePlugin):
         """Инициализация плагина Pydantic."""
         super().__init__(*args, **kwargs)
 
-        self.handlers = {
-            "task_executor_args_replace": self.replace_args
-        }
+        self.handlers = {"task_executor_args_replace": self.replace_args}
 
     def start(self, *args, **kwargs):
         """Запуск плагина Pydantic."""
@@ -39,13 +37,17 @@ class SyncDependsPlugin(BasePlugin):
     def trigger(self, name, *args, **kwargs):
         """Триггер плагина."""
         if name in self.handlers:
-            task_executor = kwargs.pop("task_executor", None)
-            return self.handlers[name](task_executor, **kwargs)
+            return self.handlers[name](**kwargs)
         return None
 
-    def replace_args(self, task_executor: "BaseTaskExecutor", args: List[Any], kw: Dict[str, Any], args_info: List[ArgMeta]):
+    def replace_args(
+        self,
+        task_executor: "BaseTaskExecutor",
+        args: List[Any],
+        kw: Dict[str, Any],
+        args_info: List[ArgMeta],
+    ):
         """Заменяет аргументы задачи."""
-
         for args_meta in args_info:
             if not args_meta.is_kwarg:
                 continue
@@ -54,6 +56,8 @@ class SyncDependsPlugin(BasePlugin):
             if hasattr(val, "__class__") and val.__class__ == Depends:
                 dep_callable = val.func
                 kw[args_meta.name] = self._eval_dep_callable(dep_callable)
+                print(1)
+        print(kw)
         return {"kw": kw}
 
     def _eval_dep_callable(self, callable_obj):

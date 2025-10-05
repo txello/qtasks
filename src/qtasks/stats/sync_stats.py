@@ -1,17 +1,17 @@
 """Sync Stats."""
 
-from qtasks.qtasks import QueueTasks
+from typing import TYPE_CHECKING
 from .inspect.inspect import InspectStats
 from .base import BaseStats
+
+if TYPE_CHECKING:
+    from qtasks.asyncio.qtasks import QueueTasks
 
 
 class SyncStats(BaseStats):
     """Класс для синхронных статистик."""
 
-    def __init__(
-        self,
-        app: "QueueTasks"
-    ):
+    def __init__(self, app: "QueueTasks"):
         """Инициализация асинхронной статистики.
 
         Args:

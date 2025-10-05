@@ -2,7 +2,7 @@
 
 import asyncio
 import contextlib
-from typing import TYPE_CHECKING, Dict, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
 
 
-class AsyncStarter(BaseStarter, AsyncPluginMixin):
+class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
     """
     Стартер, запускающий Компоненты.
 
@@ -115,12 +115,19 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
             events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
         super().__init__(
-            name=name, broker=broker, worker=worker, log=log, config=config, events=events
+            name=name,
+            broker=broker,
+            worker=worker,
+            log=log,
+            config=config,
+            events=events,
         )
-        self.events = self.events or AsyncEvents()
+        self.events: BaseEvents[Literal[True]] = self.events or AsyncEvents()
+        self.worker: "BaseWorker[Literal[True]]"
+        self.broker: "BaseBroker[Literal[True]]"
 
         self._global_loop: Union[asyncio.AbstractEventLoop, None] = None
-        self._started_plugins: set[int] = set()
+        self._started_plugins: set["BasePlugin"] = set()
 
     def start(
         self,
@@ -155,7 +162,7 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
             ),
         ] = True,
         plugins: Annotated[
-            Optional[Dict[str, "BasePlugin"]],
+            Optional[Dict[str, List["BasePlugin"]]],
             Doc(
                 """
                     Плагины для воркера и брокера.
@@ -171,9 +178,10 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
             loop (asyncio.AbstractEventLoop, optional): Асинхронный loop. По умолчанию: None.
             num_workers (int, optional): Количество воркеров. По умолчанию: 4.
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
-            plugins (Dict[str, BasePlugin] | None, optional): Плагины. По умолчанию: None.
+            plugins (Dict[str, List[BasePlugin]] | None, optional): Плагины. По умолчанию: None.
         """
-        self.log.info("Запуск QueueTasks...")
+        if self.log:
+            self.log.info("Запуск QueueTasks...")
 
         if plugins:
             self.plugins.update(plugins)
@@ -204,10 +212,13 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
         await self._plugin_trigger("starter_start", starter=self)
         for plugin in [i for y in self.plugins.values() for i in y]:
             if plugin not in self._started_plugins:
+                plugin: "BasePlugin[Literal[True]]"
                 self._started_plugins.add(plugin)
                 await plugin.start()
 
-        await self.events.fire("starting", starter=self, worker=self.worker, broker=self.broker)
+        await self.events.fire(
+            "starting", starter=self, worker=self.worker, broker=self.broker
+        )
 
         worker_task = asyncio.create_task(self.worker.start(num_workers))
         broker_task = asyncio.create_task(self.broker.start(self.worker))
@@ -217,7 +228,8 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
 
     async def stop(self):
         """Останавливает все компоненты."""
-        self.log.info("Остановка QueueTasks...")
+        if self.log:
+            self.log.info("Остановка QueueTasks...")
         await self._plugin_trigger("starter_stop", starter=self)
 
         if self.broker:
@@ -232,11 +244,15 @@ class AsyncStarter(BaseStarter, AsyncPluginMixin):
         if self._global_loop and self._global_loop.is_running():
             self._global_loop.stop()
 
-        await self.events.fire("stopping", starter=self, worker=self.worker, broker=self.broker)
+        await self.events.fire(
+            "stopping", starter=self, worker=self.worker, broker=self.broker
+        )
 
         for model_plugin in [i for y in self.plugins.values() for i in y]:
+            model_plugin: "BasePlugin[Literal[True]]"
             await model_plugin.stop()
 
         for plugin in self._started_plugins:
+            plugin: "BasePlugin[Literal[True]]"
             await plugin.stop()
         self._started_plugins.clear()

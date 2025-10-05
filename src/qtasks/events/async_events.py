@@ -1,12 +1,13 @@
 """Async events."""
 
 import asyncio
+from typing import Literal
 
 from qtasks.events.base import BaseEvents
 from qtasks.events.events import OnEvents
 
 
-class AsyncEvents(BaseEvents):
+class AsyncEvents(BaseEvents[Literal[True]]):
     """Класс для обработки асинхронных событий."""
 
     def __init__(self):

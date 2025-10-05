@@ -1,17 +1,17 @@
 """InspectStats."""
 
-from typing import Tuple
+from typing import TYPE_CHECKING, Tuple, Union
 from .base import UtilsInspectStats
-from qtasks.asyncio import QueueTasks
+
+if TYPE_CHECKING:
+    from qtasks import QueueTasks
+    from qtasks.asyncio import QueueTasks as aioQueueTasks
 
 
 class InspectStats(UtilsInspectStats):
     """Класс для инспекции статистики."""
 
-    def __init__(
-        self,
-        app: "QueueTasks"
-    ):
+    def __init__(self, app: Union["QueueTasks", "aioQueueTasks"]):
         """Инициализация инспекции статистики.
 
         Args:
@@ -42,7 +42,7 @@ class InspectStats(UtilsInspectStats):
         """
         if json:
             return self._parser_json(self._app.tasks[task_name])
-        return self._tasks_parser((self._app.tasks[task_name], ))
+        return self._tasks_parser((self._app.tasks[task_name],))
 
     def tasks(self, *tasks: Tuple[str], json: bool = False):
         """Получение информации о задачах.
@@ -54,7 +54,9 @@ class InspectStats(UtilsInspectStats):
         if not tasks:
             result = self._app.tasks.values()
         else:
-            result = [self._app.tasks[task] for task in tasks if task in self._app.tasks]
+            result = [
+                self._app.tasks[task] for task in tasks if task in self._app.tasks
+            ]
 
         if json:
             return self._parser_json(result)

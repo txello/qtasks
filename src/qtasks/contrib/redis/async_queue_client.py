@@ -1,7 +1,7 @@
 """Async Redis command queue."""
 
 import asyncio
-from typing import Union
+from typing import Optional, Union
 import redis.asyncio as aioredis
 
 from qtasks.logs import Logger
@@ -23,7 +23,7 @@ class AsyncRedisCommandQueue:
     ```
     """
 
-    def __init__(self, redis: aioredis.Redis, log: Logger = None):
+    def __init__(self, redis: aioredis.Redis, log: Optional[Logger] = None):
         """Экземпляр класса.
 
         Args:
@@ -43,7 +43,9 @@ class AsyncRedisCommandQueue:
             try:
                 await getattr(self.redis, cmd)(*args, **kwargs)
             except Exception as e:
-                self.log.error(f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}")
+                self.log.error(
+                    f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}"
+                )
             self.queue.task_done()
 
         async with self.lock:

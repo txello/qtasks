@@ -1,7 +1,18 @@
 """Async Pydantic Wrapper."""
 
 from collections import deque
-from typing import TYPE_CHECKING, Annotated, Any, ForwardRef, List, Tuple, Union, get_args, get_origin, get_type_hints
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Dict,
+    ForwardRef,
+    List,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 from pydantic import BaseModel, ValidationError
 
 from qtasks.plugins.base import BasePlugin
@@ -39,10 +50,22 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
             return self.handlers[name](task_executor, **kwargs)
         return None
 
-    def replace_args(self, task_executor: "BaseTaskExecutor", args: list, kw: dict, args_info: List[ArgMeta]) -> Union[Tuple[list, dict], None]:
+    def replace_args(
+        self,
+        task_executor: "BaseTaskExecutor",
+        args: list,
+        kw: dict,
+        args_info: List[ArgMeta],
+    ) -> Union[Dict, None]:
         """Заменяет аргументы на Pydantic-модели."""
         new_args, new_kwargs = args.copy(), kw.copy()
-        echo = new_args[0] if args_info and not args_info[0].is_kwarg and args_info[0].raw_type in [SyncTask, AsyncTask] else None
+        echo = (
+            new_args[0]
+            if args_info
+            and not args_info[0].is_kwarg
+            and args_info[0].raw_type in [SyncTask, AsyncTask]
+            else None
+        )
         start_index = 1 if echo else 0
 
         for meta in args_info[start_index:]:
@@ -59,18 +82,25 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
                     for k in data_kw:
                         new_kwargs.pop(k, None)
                 except ValidationError:
-                    new_args_trimmed, data_kw = self._add_missing_from_args(model_cls, data_kw, new_args[start_index:])
+                    new_args_trimmed, data_kw = self._add_missing_from_args(
+                        model_cls, data_kw, new_args[start_index:]
+                    )
                     model_instance = model_cls(**data_kw)
                     for k in data_kw:
                         new_kwargs.pop(k, None)
                     if echo:
                         new_args_trimmed.insert(0, echo)
-                    return {"args": new_args_trimmed, "kw": {**new_kwargs, meta.name: model_instance}}
+                    return {
+                        "args": new_args_trimmed,
+                        "kw": {**new_kwargs, meta.name: model_instance},
+                    }
 
                 return {"kw": {**new_kwargs, meta.name: model_instance}}
 
             except Exception as e:
-                raise ValueError(f"Ошибка при сборке модели для '{meta.name}': {e}") from e
+                raise ValueError(
+                    f"Ошибка при сборке модели для '{meta.name}': {e}"
+                ) from e
 
         return None
 
@@ -82,12 +112,16 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
 
     def _model_class_from_meta(self, meta_or_ann, *, globalns=None, localns=None):
         """Возвращает класс Pydantic-модели из аннотации ArgMeta или самой аннотации."""
-        ann = getattr(meta_or_ann, 'annotation', meta_or_ann)
+        ann = getattr(meta_or_ann, "annotation", meta_or_ann)
         if ann in (None, Any):
             return None
 
         if isinstance(ann, (str, ForwardRef)):
-            ann = get_type_hints(type("Tmp", (), {'__annotations__': {'x': ann}}), globalns or {}, localns or {}).get('x', ann)
+            ann = get_type_hints(
+                type("Tmp", (), {"__annotations__": {"x": ann}}),
+                globalns or {},
+                localns or {},
+            ).get("x", ann)
 
         if get_origin(ann) is Annotated:
             ann = get_args(ann)[0]
@@ -103,7 +137,9 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
         return None
 
     def _fields_order(self, model_cls):
-        return list(getattr(model_cls, 'model_fields', getattr(model_cls, '__fields__')).keys())
+        return list(
+            getattr(model_cls, "model_fields", getattr(model_cls, "__fields__")).keys()
+        )
 
     def _add_missing_from_args(self, model_cls, data_kw, args: list):
         """Добавляет недостающие значения из args по порядку."""

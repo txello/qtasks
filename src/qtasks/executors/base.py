@@ -2,17 +2,32 @@
 
 from abc import ABC, abstractmethod
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union, get_args, get_origin
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Dict,
+    Generic,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Union,
+    get_args,
+    get_origin,
+    overload,
+)
 from typing_extensions import Annotated, Doc
 from qtasks.logs import Logger
 from qtasks.schemas.argmeta import ArgMeta
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
 
 
-class BaseTaskExecutor(ABC):
+class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     """
     `BaseTaskExecutor` - Абстрактный класс, который является фундаментом для классов исполнителей задач.
 
@@ -57,7 +72,7 @@ class BaseTaskExecutor(ABC):
             ),
         ] = None,
         plugins: Annotated[
-            Optional[Dict[str, List[Type["BasePlugin"]]]],
+            Optional[Dict[str, List["BasePlugin"]]],
             Doc(
                 """
                     Массив Плагинов.
@@ -73,7 +88,7 @@ class BaseTaskExecutor(ABC):
             task_func (TaskExecSchema): Схема `TaskExecSchema`.
             task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
             log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
-            plugins (Dict[str, List[Type[BasePlugin]]], optional): Словарь плагинов. По умолчанию: `Пустой словарь`.
+            plugins (Dict[str, List[BasePlugin]], optional): Словарь плагинов. По умолчанию: `Пустой словарь`.
         """
         self.task_func = task_func
         self.task_broker = task_broker
@@ -91,23 +106,59 @@ class BaseTaskExecutor(ABC):
 
         self.plugins = plugins or {}
 
-    def before_execute(self):
+    @overload
+    def before_execute(self: "BaseTaskExecutor[Literal[False]]") -> None: ...
+
+    @overload
+    async def before_execute(self: "BaseTaskExecutor[Literal[True]]") -> None: ...
+
+    def before_execute(self) -> Union[None, Awaitable[None]]:
         """Вызывается перед выполнением задачи."""
         pass
 
-    def after_execute(self):
+    @overload
+    def after_execute(self: "BaseTaskExecutor[Literal[False]]") -> None: ...
+
+    @overload
+    async def after_execute(self: "BaseTaskExecutor[Literal[True]]") -> None: ...
+
+    def after_execute(self) -> Union[None, Awaitable[None]]:
         """Вызывается после выполнения задачи."""
         pass
 
-    def execute_middlewares_before(self):
+    @overload
+    def execute_middlewares_before(
+        self: "BaseTaskExecutor[Literal[False]]",
+    ) -> None: ...
+
+    @overload
+    async def execute_middlewares_before(
+        self: "BaseTaskExecutor[Literal[True]]",
+    ) -> None: ...
+
+    def execute_middlewares_before(self) -> Union[None, Awaitable[None]]:
         """Вызов мидлварей до выполнения задачи."""
         pass
 
-    def execute_middlewares_after(self):
+    @overload
+    def execute_middlewares_after(self: "BaseTaskExecutor[Literal[False]]") -> None: ...
+
+    @overload
+    async def execute_middlewares_after(
+        self: "BaseTaskExecutor[Literal[True]]",
+    ) -> None: ...
+
+    def execute_middlewares_after(self) -> Union[None, Awaitable[None]]:
         """Вызов мидлварей после выполнения задачи."""
         pass
 
-    def run_task(self) -> Any:
+    @overload
+    def run_task(self: "BaseTaskExecutor[Literal[False]]") -> Any: ...
+
+    @overload
+    async def run_task(self: "BaseTaskExecutor[Literal[True]]") -> Any: ...
+
+    def run_task(self) -> Union[Any, Awaitable[Any]]:
         """Вызов задачи.
 
         Returns:
@@ -115,8 +166,62 @@ class BaseTaskExecutor(ABC):
         """
         pass
 
+    @overload
+    def execute(self: "BaseTaskExecutor[Literal[False]]", decode: bool = True) -> str:
+        """Обработка задачи.
+
+        Args:
+            decode (bool, optional): Декодирование. По умолчанию: `True`.
+
+        Returns:
+            str: Результат задачи.
+        """
+        ...
+
+    @overload
+    def execute(self: "BaseTaskExecutor[Literal[False]]", decode: bool = False) -> Any:
+        """Обработка задачи.
+
+        Args:
+            decode (bool, optional): Декодирование. По умолчанию: `True`.
+
+        Returns:
+            Any: Результат задачи.
+        """
+        ...
+
+    @overload
+    async def execute(
+        self: "BaseTaskExecutor[Literal[True]]", decode: bool = True
+    ) -> str:
+        """Обработка задачи.
+
+        Args:
+            decode (bool, optional): Декодирование. По умолчанию: `True`.
+
+        Returns:
+            str: Результат задачи.
+        """
+        ...
+
+    @overload
+    async def execute(
+        self: "BaseTaskExecutor[Literal[True]]", decode: bool = False
+    ) -> Any:
+        """Обработка задачи.
+
+        Args:
+            decode (bool, optional): Декодирование. По умолчанию: `True`.
+
+        Returns:
+            Any: Результат задачи.
+        """
+        ...
+
     @abstractmethod
-    def execute(self, decode: bool = True) -> Union[Any, str]:
+    def execute(
+        self, decode=None
+    ) -> Union[Union[Any, str], Awaitable[Union[Any, str]]]:
         """Обработка задачи.
 
         Args:
@@ -127,13 +232,19 @@ class BaseTaskExecutor(ABC):
         """
         pass
 
-    def decode(self) -> str:
+    @overload
+    def decode(self: "BaseTaskExecutor[Literal[False]]") -> str: ...
+
+    @overload
+    async def decode(self: "BaseTaskExecutor[Literal[True]]") -> str: ...
+
+    def decode(self) -> Union[str, Awaitable[str]]:
         """Декодирование задачи.
 
         Returns:
             str: Результат задачи.
         """
-        pass
+        return ""
 
     def add_plugin(
         self,
@@ -225,29 +336,33 @@ class BaseTaskExecutor(ABC):
             annotation = annotations.get(param_name)
             origin = get_origin(annotation)
             raw_type = get_args(annotation)[0] if get_args(annotation) else annotation
-            args_info.append(ArgMeta(
-                name=param_name,
-                value=value,
-                origin=origin,
-                raw_type=raw_type,
-                annotation=annotation,
-                is_kwarg=False,
-                index=idx
-            ))
+            args_info.append(
+                ArgMeta(
+                    name=param_name,
+                    value=value,
+                    origin=origin,
+                    raw_type=raw_type,
+                    annotation=annotation,
+                    is_kwarg=False,
+                    index=idx,
+                )
+            )
 
         # Обработка именованных аргументов
         for key, value in kwargs.items():
             annotation = annotations.get(key)
             origin = get_origin(annotation)
             raw_type = get_args(annotation)[0] if get_args(annotation) else annotation
-            args_info.append(ArgMeta(
-                name=key,
-                value=value,
-                origin=origin,
-                raw_type=raw_type,
-                annotation=annotation,
-                is_kwarg=True,
-                key=key
-            ))
+            args_info.append(
+                ArgMeta(
+                    name=key,
+                    value=value,
+                    origin=origin,
+                    raw_type=raw_type,
+                    annotation=annotation,
+                    is_kwarg=True,
+                    key=key,
+                )
+            )
 
         return args_info

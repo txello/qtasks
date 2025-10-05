@@ -152,7 +152,7 @@ async def test_echo_ctx(self: AsyncTask):
     return "Hello, world!"
 
 
-@app.task()
+@app.task
 async def example_stats():
     print(stats.inspect().tasks())
 

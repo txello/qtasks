@@ -6,7 +6,8 @@ except ImportError:
     raise ImportError("Install with `pip install qtasks[kafka]` to use this broker.")
 
 import asyncio
-from typing import Optional, Union
+from datetime import datetime
+from typing import Literal, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID, uuid4
 from time import time
@@ -29,10 +30,9 @@ if TYPE_CHECKING:
 
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
-    TaskStatusCancelSchema,
     TaskStatusErrorSchema,
     TaskStatusNewSchema,
-    TaskStatusProcessSchema,
+    TaskStatusSuccessSchema,
 )
 
 
@@ -73,7 +73,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                     По умолчанию: `localhost:9092`.
                     """
             ),
-        ] = None,
+        ] = "localhost:9092",
         storage: Annotated[
             Optional["BaseStorage"],
             Doc(
@@ -136,8 +136,17 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
             events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config, events=events)
-        self.url = url or "localhost:9092"
+        self.url = url
+
+        storage = storage or SyncRedisStorage(
+            name=name, log=log, config=config, events=events
+        )
+        super().__init__(
+            name=name, log=log, config=config, events=events, storage=storage
+        )
+
+        self.storage: "BaseStorage[Literal[True]]"
+
         self.topic = f"{self.name}_{topic}"
         self.events = self.events or AsyncEvents()
 
@@ -158,13 +167,19 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             value_deserializer=lambda m: m.decode("utf-8"),
         )
 
-        self.storage = storage or SyncRedisStorage(
-            name=self.name, log=self.log, config=config
-        )
-
         self.running = False
 
-    async def listen(self, worker: "BaseWorker"):
+    async def listen(
+        self,
+        worker: Annotated[
+            "BaseWorker[Literal[True]]",
+            Doc(
+                """
+                    Класс воркера.
+                    """
+            ),
+        ],
+    ):
         """Слушает Kafka и передаёт задачи воркеру.
 
         Args:
@@ -178,24 +193,26 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                 task_data = msg.value
                 task_name, uuid, priority = task_data.split(":")
                 model_get = await self.get(uuid=uuid)
+                if not model_get:
+                    raise KeyError(f"Задача не найдена: {uuid}")
                 args, kwargs, created_at = (
                     model_get.args or (),
                     model_get.kwargs or {},
                     model_get.created_at.timestamp(),
                 )
-                self.log.info(f"Получена новая задача: {uuid}")
+                if self.log:
+                    self.log.info(f"Получена новая задача: {uuid}")
                 new_args = await self._plugin_trigger(
                     "broker_add_worker",
                     broker=self,
                     worker=worker,
-
                     task_name=task_name,
                     uuid=uuid,
                     priority=int(priority),
                     args=args,
                     kw=kwargs,
                     created_at=created_at,
-                    return_last=True
+                    return_last=True,
                 )
                 if new_args:
                     task_name = new_args.get("task_name", task_name)
@@ -237,26 +254,32 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = 0,
         extra: Annotated[
-            dict,
+            Optional[dict],
             Doc(
                 """
                     Дополнительные параметры задачи.
+
+                    По умолчанию: `None`.
                     """
             ),
         ] = None,
         args: Annotated[
-            tuple,
+            Optional[tuple],
             Doc(
                 """
                     Аргументы задачи типа args.
+
+                    По умолчанию: `None`.
                     """
             ),
         ] = None,
         kwargs: Annotated[
-            dict,
+            Optional[dict],
             Doc(
                 """
                     Аргументы задачи типа kwargs.
+
+                    По умолчанию: `None`.
                     """
             ),
         ] = None,
@@ -266,24 +289,26 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи.
-            args (tuple, optional): Аргументы задачи типа args.
-            kwargs (dict, optional): Аргументы задачи типа kwargs.
+            extra (dict, optional): Дополнительные параметры задачи. По умолчанию: `None`.
+            args (tuple, optional): Аргументы задачи типа args. По умолчанию: `None`.
+            kwargs (dict, optional): Аргументы задачи типа kwargs. По умолчанию: `None`.
 
         Returns:
             Task: `schemas.task.Task`
         """
         args, kwargs = args or (), kwargs or {}
 
-        uuid = str(uuid4())
+        uuid = uuid4()
+        uuid_str = str(uuid)
         created_at = time()
+
         model = TaskStatusNewSchema(
             task_name=task_name,
             priority=priority,
             created_at=created_at,
             updated_at=created_at,
-            args=args,
-            kwargs=kwargs
+            args=str(args),
+            kwargs=str(kwargs),
         )
 
         if extra:
@@ -294,23 +319,20 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             broker=self,
             storage=self.storage,
             model=model,
-            return_last=True
+            return_last=True,
         )
         if new_model:
             model = new_model.get("model", model)
 
         await self.storage.add(uuid=uuid, task_status=model)
 
-        task_data = f"{task_name}:{uuid}:{priority}"
+        task_data = f"{task_name}:{uuid_str}:{priority}"
         await self._producer_start()
         await self.producer.send_and_wait(self.topic, task_data)
         await self.producer.stop()
 
         await self._plugin_trigger(
-            "broker_add_after",
-            broker=self,
-            storage=self.storage,
-            model=model
+            "broker_add_after", broker=self, storage=self.storage, model=model
         )
         return Task(
             status=TaskStatusEnum.NEW.value,
@@ -319,8 +341,8 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             priority=priority,
             args=args,
             kwargs=kwargs,
-            created_at=created_at,
-            updated_at=created_at,
+            created_at=datetime.fromtimestamp(created_at),
+            updated_at=datetime.fromtimestamp(created_at),
         )
 
     async def get(
@@ -345,7 +367,9 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         task = await self.storage.get(uuid=uuid)
-        new_task = await self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
+        new_task = await self._plugin_trigger(
+            "broker_get", broker=self, task=task, return_last=True
+        )
         if new_task:
             task = new_task.get("task", task)
         return task
@@ -366,7 +390,9 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
+        new_kw = await self._plugin_trigger(
+            "broker_update", broker=self, kw=kwargs, return_last=True
+        )
         if new_kw:
             kwargs = new_kw.get("kw", kwargs)
         return await self.storage.update(**kwargs)
@@ -416,9 +442,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
-            ],
+            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
             Doc(
                 """
                     Модель результата задачи.
@@ -430,14 +454,14 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
 
         Args:
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
         new_model = await self._plugin_trigger(
             "broker_remove_finished_task",
             broker=self,
             storage=self.storage,
             model=model,
-            return_last=True
+            return_last=True,
         )
         if new_model:
             model = new_model.get("model", model)
@@ -445,7 +469,9 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
         await self.storage.remove_finished_task(task_broker, model)
 
     async def _running_older_tasks(self, worker):
-        await self._plugin_trigger("broker_running_older_tasks", broker=self, worker=worker)
+        await self._plugin_trigger(
+            "broker_running_older_tasks", broker=self, worker=worker
+        )
         return await self.storage._running_older_tasks(worker)
 
     async def _consumer_start(self):

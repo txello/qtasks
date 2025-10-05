@@ -2,7 +2,7 @@
 
 import threading
 from time import time
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 from uuid import UUID, uuid4
 from typing_extensions import Annotated, Doc
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from qtasks.schemas.task import Task
 
 
-class SyncTestCase(BaseTestCase):
+class SyncTestCase(BaseTestCase[Literal[False]]):
     """
     Синхронный кейс тестирования.
 
@@ -58,6 +58,7 @@ class SyncTestCase(BaseTestCase):
             name (str, optional): Имя проекта. Это имя может быть использовано для тестовых компонентов. По умолчанию: `None`.
         """
         super().__init__(app=app, name=name)
+        self.app: "QueueTasks"
 
     def start_in_background(
         self,
@@ -154,7 +155,7 @@ class SyncTestCase(BaseTestCase):
 
     def stop(self):
         """Останавливает кейс тестирования."""
-        if self.test_config.global_config:
+        if self.test_config.global_config and self.app.broker.storage.global_config:
             self.app.broker.storage.global_config.stop()
 
         if self.test_config.storage:
@@ -177,7 +178,7 @@ class SyncTestCase(BaseTestCase):
             ),
         ],
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -187,15 +188,15 @@ class SyncTestCase(BaseTestCase):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int,
             Doc(
                 """
                     Приоритет у задачи.
 
-                    По умолчанию: Значение приоритета у задачи.
+                    По умолчанию: `0`.
                     """
             ),
-        ] = None,
+        ] = 0,
         timeout: Annotated[
             Optional[float],
             Doc(
@@ -224,20 +225,14 @@ class SyncTestCase(BaseTestCase):
             priority (int, optional): Приоритет задачи. По умолчанию: `0`.
             args (tuple, optional): args задачи. По умолчанию: `()`.
             kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`
-
             timeout (float, optional): Таймаут задачи. Если указан, задача вызывается через `qtasks.results.SyncResult`.
 
         Returns:
             Task|None: Данные задачи или None.
         """
         if self.test_config.broker:
-            args, kwargs = args or (), kwargs or {}
             return self.app.add_task(
-                *args,
-                task_name=task_name,
-                priority=priority,
-                timeout=timeout,
-                **kwargs
+                task_name, *args, priority=priority, timeout=timeout, **kwargs
             )
         elif self.test_config.worker:
             return self.app.worker.add(
@@ -245,8 +240,8 @@ class SyncTestCase(BaseTestCase):
                 uuid=uuid4(),
                 priority=priority,
                 created_at=time(),
-                args=args or (),
-                kwargs=kwargs or {},
+                args=args,
+                kwargs=kwargs,
             )
         else:
             print(

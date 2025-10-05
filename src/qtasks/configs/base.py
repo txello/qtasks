@@ -1,18 +1,30 @@
 """Base Configurations."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Dict,
+    Generic,
+    List,
+    Literal,
+    Optional,
+    Union,
+    overload,
+)
 from typing_extensions import Annotated, Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
     from qtasks.events.base import BaseEvents
 
 
-class BaseGlobalConfig(ABC):
+class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     """
     `BaseGlobalConfig` - Абстрактный класс, который является фундаментом для Глобального Конфига.
 
@@ -81,12 +93,14 @@ class BaseGlobalConfig(ABC):
             events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
+        self.config_name: Optional[str] = None
+
         self.config = config or QueueConfig()
         self.log = (
             log.with_subname("GlobalConfig")
             if log
             else Logger(
-                name=self.name,
+                name=self.name or "QueueTasks",
                 subname="GlobalConfig",
                 default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
@@ -98,8 +112,14 @@ class BaseGlobalConfig(ABC):
 
         self.init_plugins()
 
+    @overload
+    def set(self: "BaseGlobalConfig[Literal[False]]", **kwargs) -> None: ...
+
+    @overload
+    async def set(self: "BaseGlobalConfig[Literal[True]]", **kwargs) -> None: ...
+
     @abstractmethod
-    def set(self, **kwargs) -> None:
+    def set(self, **kwargs) -> Union[None, Awaitable[None]]:
         """Добавить новое значение.
 
         Args:
@@ -107,8 +127,16 @@ class BaseGlobalConfig(ABC):
         """
         pass
 
+    @overload
+    def get(self: "BaseGlobalConfig[Literal[False]]", key: str, name: str) -> Any: ...
+
+    @overload
+    async def get(
+        self: "BaseGlobalConfig[Literal[True]]", key: str, name: str
+    ) -> Any: ...
+
     @abstractmethod
-    def get(self, key: str, name: str) -> Any:
+    def get(self, key: str, name: str) -> Union[Any, Awaitable[Any]]:
         """Получить значение.
 
         Args:
@@ -120,8 +148,20 @@ class BaseGlobalConfig(ABC):
         """
         pass
 
+    @overload
+    def get_all(
+        self: "BaseGlobalConfig[Literal[False]]", key: str
+    ) -> Union[dict, list, tuple]: ...
+
+    @overload
+    async def get_all(
+        self: "BaseGlobalConfig[Literal[True]]", key: str
+    ) -> Union[dict, list, tuple]: ...
+
     @abstractmethod
-    def get_all(self, key: str) -> Union[dict, list, tuple]:
+    def get_all(
+        self, key: str
+    ) -> Union[Union[dict, list, tuple], Awaitable[Union[dict, list, tuple]]]:
         """Получить все значения.
 
         Args:
@@ -132,8 +172,16 @@ class BaseGlobalConfig(ABC):
         """
         pass
 
+    @overload
+    def get_match(self: "BaseGlobalConfig[Literal[False]]", match: str) -> Any: ...
+
+    @overload
+    async def get_match(self: "BaseGlobalConfig[Literal[True]]", match: str) -> Any: ...
+
     @abstractmethod
-    def get_match(self, match: str) -> Union[Any, dict, list, tuple]:
+    def get_match(
+        self, match: str
+    ) -> Union[Union[dict, list, tuple], Awaitable[Union[dict, list, tuple]]]:
         """Получить значения по паттерну.
 
         Args:
@@ -144,13 +192,25 @@ class BaseGlobalConfig(ABC):
         """
         pass
 
+    @overload
+    def start(self: "BaseGlobalConfig[Literal[False]]") -> None: ...
+
+    @overload
+    async def start(self: "BaseGlobalConfig[Literal[True]]") -> None: ...
+
     @abstractmethod
-    def start(self) -> None:
+    def start(self) -> Union[None, Awaitable[None]]:
         """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
         pass
 
+    @overload
+    def stop(self: "BaseGlobalConfig[Literal[False]]") -> None: ...
+
+    @overload
+    async def stop(self: "BaseGlobalConfig[Literal[True]]") -> None: ...
+
     @abstractmethod
-    def stop(self) -> None:
+    def stop(self) -> Union[None, Awaitable[None]]:
         """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever."""
         pass
 

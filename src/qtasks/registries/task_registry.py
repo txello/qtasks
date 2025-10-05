@@ -99,7 +99,7 @@ class TaskRegistry:
 
                     По умолчанию: `None`.
                     """
-            )
+            ),
         ] = None,
         tags: Annotated[
             Union[List[str], None],
@@ -109,7 +109,7 @@ class TaskRegistry:
 
                     По умолчанию: `None`.
                     """
-            )
+            ),
         ] = None,
         description: Annotated[
             Union[str, None],
@@ -119,7 +119,7 @@ class TaskRegistry:
 
                     По умолчанию: `None`.
                     """
-            )
+            ),
         ] = None,
         generate_handler: Annotated[
             Union[Callable, None],
@@ -132,7 +132,7 @@ class TaskRegistry:
             ),
         ] = None,
         executor: Annotated[
-            Type["BaseTaskExecutor"],
+            Optional[Type["BaseTaskExecutor"]],
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -142,7 +142,7 @@ class TaskRegistry:
             ),
         ] = None,
         middlewares_before: Annotated[
-            List["TaskMiddleware"],
+            Optional[List[Type["TaskMiddleware"]]],
             Doc(
                 """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -152,7 +152,7 @@ class TaskRegistry:
             ),
         ] = None,
         middlewares_after: Annotated[
-            List["TaskMiddleware"],
+            Optional[List[Type["TaskMiddleware"]]],
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -161,7 +161,7 @@ class TaskRegistry:
                     """
             ),
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> Callable[[Callable], Union[SyncTask, AsyncTask]]:
         """Регистрация задачи.
 
@@ -176,8 +176,8 @@ class TaskRegistry:
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
-            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
         """
 
         def wrapper(func: Callable):
@@ -210,7 +210,7 @@ class TaskRegistry:
                 executor=executor,
                 middlewares_before=middlewares_before,
                 middlewares_after=middlewares_after,
-                extra=kwargs
+                extra=kwargs,
             )
 
             cls._tasks[task_name] = model
@@ -246,7 +246,7 @@ class TaskRegistry:
                     """
             ),
         ],
-    ) -> TaskExecSchema:
+    ) -> Optional[TaskExecSchema]:
         """Получение задачи.
 
         Args:

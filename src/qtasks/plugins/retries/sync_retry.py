@@ -2,7 +2,7 @@
 
 from dataclasses import field, make_dataclass
 import time
-from typing import Union
+from typing import Literal, Optional
 from qtasks.brokers.base import BaseBroker
 from qtasks.plugins.base import BasePlugin
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
@@ -12,9 +12,7 @@ from qtasks.schemas.task_status import TaskStatusErrorSchema
 class SyncRetryPlugin(BasePlugin):
     """Плагин для синхронной обработки повторных попыток."""
 
-    def __init__(self,
-                 name: str = "AsyncRetryPlugin"
-                 ):
+    def __init__(self, name: str = "AsyncRetryPlugin"):
         """Инициализация плагина.
 
         Args:
@@ -38,14 +36,20 @@ class SyncRetryPlugin(BasePlugin):
 
     def _execute(
         self,
-        broker: BaseBroker,
+        broker: BaseBroker[Literal[False]],
         task_func: TaskExecSchema,
         task_broker: TaskPrioritySchema,
         trace: str,
-    ) -> TaskStatusErrorSchema:
+    ):
         task = broker.get(uuid=task_broker.uuid)
-        task_retry = int(task.retry) if hasattr(task, "retry") else task_func.retry
+        if not task:
+            raise ValueError("Задача не найдена")
+
+        task_retry = task.retry or task_func.retry
         new_task = None
+
+        if not isinstance(task_retry, int):
+            return
 
         if task_retry > 0:
             new_task = broker.add(
@@ -55,7 +59,7 @@ class SyncRetryPlugin(BasePlugin):
                     "retry": task_retry - 1,
                     "retry_parent_uuid": task_broker.uuid,
                 },
-                args=task_broker.args,
+                args=tuple(task_broker.args),
                 kwargs=task_broker.kwargs,
             )
 
@@ -67,16 +71,16 @@ class SyncRetryPlugin(BasePlugin):
             updated_at=time.time(),
         )
         fields = [
-            ("retry", [Union[int, None]], field(default="None")),
+            ("retry", Optional[int], field(default="None")),
         ]
         if new_task is not None:
-            fields.append(("retry_child_uuid", [Union[str, None]], field(default="None")))
+            fields.append(("retry_child_uuid", Optional[int], field(default="None")))
 
         model.__class__ = make_dataclass(
             "TaskStatusErrorSchema", fields=fields, bases=(TaskStatusErrorSchema,)
         )
-        model.retry = task_retry
+        model.retry = task_retry  # type: ignore
         if new_task is not None:
-            model.retry_child_uuid = new_task.uuid if task_retry > 0 else "None"
+            model.retry_child_uuid = str(new_task.uuid) if task_retry > 0 else "None"  # type: ignore
             model.status = "retry"
         return {"model": model}

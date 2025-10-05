@@ -15,13 +15,13 @@ class BaseOnEvents(ABC):
 
     def _make_decorator(self, event_name: str):
         """Создание декоратора для события."""
+
         def decorator(func: Callable):
             self._events.setdefault(event_name, []).append(func)
             return InitsExecSchema(
-                name=event_name,
-                func=func,
-                awaiting=inspect.iscoroutinefunction(func)
+                name=event_name, func=func, awaiting=inspect.iscoroutinefunction(func)
             )
+
         return decorator
 
 

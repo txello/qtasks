@@ -3,7 +3,7 @@
 from qtasks.configs.config import QueueConfig
 from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional
 from typing_extensions import Annotated, Doc
 
 from qtasks.mixins.plugin import SyncPluginMixin
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
 
 
-class SyncStarter(BaseStarter, SyncPluginMixin):
+class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
     """
     Стартер, запускающий Компоненты.
 
@@ -113,11 +113,18 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
             events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
         super().__init__(
-            name=name, broker=broker, worker=worker, log=log, config=config, events=events
+            name=name,
+            broker=broker,
+            worker=worker,
+            log=log,
+            config=config,
+            events=events,
         )
-        self.events = self.events or SyncEvents()
+        self.events: BaseEvents[Literal[False]] = self.events or SyncEvents()
+        self.worker: "BaseWorker[Literal[False]]"
+        self.broker: "BaseBroker[Literal[False]]"
 
-        self._started_plugins: set[int] = set()
+        self._started_plugins: set["BasePlugin"] = set()
 
     def start(
         self,
@@ -142,7 +149,7 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
             ),
         ] = True,
         plugins: Annotated[
-            Optional[Dict[str, "BasePlugin"]],
+            Optional[Dict[str, List["BasePlugin"]]],
             Doc(
                 """
                     Плагины для воркера и брокера.
@@ -159,7 +166,8 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
             reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
             plugins (Dict[str, BasePlugin] | None, optional): Плагины. По умолчанию: None.
         """
-        self.log.info("Запуск QueueTasks...")
+        if self.log:
+            self.log.info("Запуск QueueTasks...")
 
         if plugins:
             self.plugins.update(plugins)
@@ -184,7 +192,9 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
                 self._started_plugins.add(plugin)
                 plugin.start()
 
-        self.events.fire("starting", starter=self, worker=self.worker, broker=self.broker)
+        self.events.fire(
+            "starting", starter=self, worker=self.worker, broker=self.broker
+        )
 
         self.worker.start(num_workers)
         self.broker.start(self.worker)
@@ -197,7 +207,8 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
 
     def stop(self):
         """Останавливает все компоненты."""
-        self.log.info("Остановка QueueTasks...")
+        if self.log:
+            self.log.info("Остановка QueueTasks...")
         self._plugin_trigger("starter_stop", starter=self)
 
         if self.broker:
@@ -209,7 +220,9 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
         if self.broker.storage.global_config:
             self.broker.storage.global_config.stop()
 
-        self.events.fire("stopping", starter=self, worker=self.worker, broker=self.broker)
+        self.events.fire(
+            "stopping", starter=self, worker=self.worker, broker=self.broker
+        )
 
         for model_plugin in [i for y in self.plugins.values() for i in y]:
             model_plugin.stop()

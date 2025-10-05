@@ -1,7 +1,7 @@
 """Async timer for scheduling tasks."""
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional
 from typing_extensions import Annotated, Doc
 from apscheduler.job import Job
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from qtasks.asyncio import QueueTasks
 
 
-class AsyncTimer(BaseTimer):
+class AsyncTimer(BaseTimer[Literal[True]]):
     """
     Таймер, работающий через apscheduler, запускающий задачи.
 
@@ -207,8 +207,9 @@ class AsyncTimer(BaseTimer):
             args (tuple, optional): args задачи. По умолчанию `()`.
             kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
         """
+        args, kwargs = args or (), kwargs or {}
         task = await self.app.add_task(
-            *args, task_name=task_name, priority=priority, **kwargs
+            task_name=task_name, priority=priority, timeout=None, *args, **kwargs
         )
         self.log.info(f"Отправлена задача {task_name}: {task.uuid}...")
 

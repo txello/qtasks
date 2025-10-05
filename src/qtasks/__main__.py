@@ -80,12 +80,16 @@ def main():
 
     # subcommand: stats
     stats_parser = subparsers.add_parser("stats", help="Инспекция статистики")
-    stats_parser.add_argument("--stats-app", help="Объявленное приложение для статистики")
+    stats_parser.add_argument(
+        "--stats-app", help="Объявленное приложение для статистики"
+    )
     stats_subparsers = stats_parser.add_subparsers(dest="stats_command")
 
     # stats inspect <target> [*extra]
     inspect_parser = stats_subparsers.add_parser("inspect", help="Инспектировать")
-    inspect_parser.add_argument("target", help="Метод инспекции (например: tasks, task, result)")
+    inspect_parser.add_argument(
+        "target", help="Метод инспекции (например: tasks, task, result)"
+    )
     inspect_parser.add_argument("extra", nargs="*", help="Дополнительные аргументы")
 
     args = parser.parse_args()
@@ -108,7 +112,7 @@ def main():
         if not app:
             parser.error("Не удалось получить экземпляр приложения!")
 
-        stats = get_app(args.stats_app) if args.stats_app else SyncStats(app=app)
+        stats = get_app(args.stats_app) if args.stats_app else SyncStats(app=app)  # type: ignore
 
         if args.stats_command:
             handler = getattr(stats, args.stats_command, None)
@@ -118,7 +122,9 @@ def main():
             handler_obj = handler()
             target_func = getattr(handler_obj, args.target, None)
             if target_func is None or not callable(target_func):
-                raise ValueError(f"Неизвестная подкоманда {args.stats_command}.{args.target}")
+                raise ValueError(
+                    f"Неизвестная подкоманда {args.stats_command}.{args.target}"
+                )
 
             positional_args, keyword_args = positional(args)
 

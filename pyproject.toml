@@ -76,7 +76,15 @@ qtasks = "qtasks.__main__:main"
 line-length = 88
 
 [tool.ruff.lint]
-select = ["SIM"]
+select = [
+    "E",   # базовые ошибки pycodestyle
+    "W",   # предупреждения pycodestyle
+    # "F",   # ошибки pyflakes (важно!)
+    # "B",   # flake8-bugbear
+    # "I",   # isort (импорты)
+    # "UP",  # pyupgrade
+]
+
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]

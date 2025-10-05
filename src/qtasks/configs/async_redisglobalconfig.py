@@ -1,7 +1,7 @@
 """Async Redis Global Config."""
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Dict, Literal, Optional, Union, cast
 from typing_extensions import Annotated, Doc
 import redis.asyncio as aioredis
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
 
 
-class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
+class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
     """
     Глобальный Конфиг, работающий через Redis и работает с глобальными значениями.
 
@@ -147,17 +147,18 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
         new_data = await self._plugin_trigger(
             "global_config_set",
             global_config=self,
-            name=name,
+            name_=name,
             key=key,
             value=value,
-            return_last=True
+            return_last=True,
         )
         if new_data:
             name = new_data.get("name", name)
             key = new_data.get("key", key)
             value = new_data.get("value", value)
 
-        await self.client.hset(name=f"{self.config_name}:{name}", key=key, value=value)
+        raw = self.client.hset(name=f"{self.config_name}:{name}", key=key, value=value)
+        await cast(Awaitable[int], raw)
         return
 
     async def get(self, key: str, name: str) -> Any:
@@ -170,12 +171,11 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
         Returns:
             Any: Значение.
         """
-        result = await self.client.hget(name=f"{self.config_name}:{key}", key=name)
+        raw = self.client.hget(name=f"{self.config_name}:{key}", key=name)
+        result = await cast(Awaitable[Optional[str]], raw)
+
         new_result = await self._plugin_trigger(
-            "global_config_get",
-            global_config=self,
-            get=result,
-            return_last=True
+            "global_config_get", global_config=self, get=result, return_last=True
         )
         if new_result:
             result = new_result.get("get", result)
@@ -190,12 +190,10 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
         Returns:
             Dict[str, Any]: Значения.
         """
-        result = await self.client.hgetall(name=f"{self.config_name}:{key}")
+        raw = self.client.hgetall(name=f"{self.config_name}:{key}")
+        result = await cast(Awaitable[Dict], raw)
         new_result = await self._plugin_trigger(
-            "global_config_get_all",
-            global_config=self,
-            get=result,
-            return_last=True
+            "global_config_get_all", global_config=self, get=result, return_last=True
         )
         if new_result:
             result = new_result.get("get", result)
@@ -210,12 +208,11 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
         Returns:
             Any | Dict[str, Any]: Значение или Значения.
         """
-        result = await self.client.hscan(key=self.config_name, match=match)
+        self.config_name: str
+        raw = self.client.hscan(self.config_name, match=match)
+        result = await cast(Awaitable[Any], raw)
         new_result = await self._plugin_trigger(
-            "global_config_get_match",
-            global_config=self,
-            get=result,
-            return_last=True
+            "global_config_get_match", global_config=self, get=result, return_last=True
         )
         if new_result:
             result = new_result.get("get", result)
@@ -228,9 +225,10 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig, AsyncPluginMixin):
         loop = asyncio.get_running_loop()
         self.status_event = loop.create_task(self._set_status())
         global_config = GlobalConfigSchema(name=self.name, status="running")
-        await self.client.hset(
+        raw = self.client.hset(
             name=f"{self.config_name}:main", mapping=global_config.__dict__
         )
+        await cast(Awaitable[int], raw)
 
     async def stop(self) -> None:
         """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""

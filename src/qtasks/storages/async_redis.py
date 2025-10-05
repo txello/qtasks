@@ -4,7 +4,7 @@ import asyncio
 import time
 import asyncio_atexit
 import json
-from typing import List, Optional, Union
+from typing import Awaitable, List, Literal, Optional, Union, cast
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import redis.asyncio as aioredis
@@ -147,8 +147,8 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
             events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name, log=log, config=config, events=events)
         self.url = url
+        super().__init__(name, log=log, config=config, events=events)
         self._queue_process = queue_process
         self.queue_process = f"{self.name}:{queue_process}"
         self.events = self.events or AsyncEvents()
@@ -158,8 +158,14 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         )
         self.redis_contrib = AsyncRedisCommandQueue(redis=self.client, log=self.log)
 
-        self.global_config = global_config or AsyncRedisGlobalConfig(
-            name=self.name, redis_connect=self.client, log=self.log, config=self.config
+        self.global_config: "BaseGlobalConfig[Literal[True]]" = (
+            global_config
+            or AsyncRedisGlobalConfig(
+                name=self.name,
+                redis_connect=self.client,
+                log=self.log,
+                config=self.config,
+            )
         )
 
     async def add(
@@ -189,12 +195,19 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """
         uuid = str(uuid)
 
-        new_data = await self._plugin_trigger("storage_add", storage=self, uuid=uuid, task_status=task_status, return_last=True)
+        new_data = await self._plugin_trigger(
+            "storage_add",
+            storage=self,
+            uuid=uuid,
+            task_status=task_status,
+            return_last=True,
+        )
         if new_data:
             uuid = new_data.get("uuid", uuid)
             task_status = new_data.get("task_status", task_status)
 
-        await self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
+        raw = self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
+        await cast(Awaitable[int], raw)
         return
 
     async def get(self, uuid: Union[UUID, str]) -> Union["Task", None]:
@@ -210,12 +223,15 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         asyncio_atexit.register(self.stop, loop=loop)
 
         key = f"{self.name}:{uuid}"
-        result = await self.client.hgetall(key)
+        raw = self.client.hgetall(key)
+        result = await cast(Awaitable[dict], raw)
         if not result:
             return None
 
         result = self._build_task(uuid=uuid, result=result)
-        new_result = await self._plugin_trigger("storage_get", storage=self, result=result, return_last=True)
+        new_result = await self._plugin_trigger(
+            "storage_get", storage=self, result=result, return_last=True
+        )
         if new_result:
             result = new_result.get("result", result)
         return result
@@ -233,13 +249,22 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             name, uuid, *_ = key.split(":")
             if uuid in [self._queue_process, "task_queue"]:
                 continue
-            if f"{name}:{uuid}".find(self.global_config.config_name) != -1:
+            if (
+                self.global_config
+                and self.global_config.config_name is not None
+                and f"{name}:{uuid}".find(self.global_config.config_name) != -1
+            ):
                 continue
 
             task = await self.get(uuid=uuid)
+            if not task:
+                continue
+
             results.append(task)
 
-        new_results = await self._plugin_trigger("storage_get_all", storage=self, results=results, return_last=True)
+        new_results = await self._plugin_trigger(
+            "storage_get_all", storage=self, results=results, return_last=True
+        )
         if new_results:
             results = new_results.get("results", results)
 
@@ -261,7 +286,9 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        new_kw = await self._plugin_trigger("storage_update", storage=self, kw=kwargs, return_last=True)
+        new_kw = await self._plugin_trigger(
+            "storage_update", storage=self, kw=kwargs, return_last=True
+        )
         if new_kw:
             kwargs = new_kw.get("kw", kwargs)
         return await self.redis_contrib.execute(
@@ -295,7 +322,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
             model (TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Модель результата задачи.
         """
-        if model.status == TaskStatusEnum.SUCCESS.value and not isinstance(
+        if isinstance(model, TaskStatusSuccessSchema) and not isinstance(
             model.returning, (bytes, str, int, float)
         ):
             trace = "Invalid input of type: 'NoneType'. Convert to a bytes, string, int or float first."
@@ -306,8 +333,10 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                 created_at=task_broker.created_at,
                 updated_at=time.time(),
             )
-            self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
-
+            if self.log:
+                self.log.error(
+                    f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}"
+                )
         await self.redis_contrib.execute(
             "hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__
         )
@@ -318,7 +347,10 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         )
 
         await self._plugin_trigger(
-            "storage_remove_finished_task", storage=self, task_broker=task_broker, model=model
+            "storage_remove_finished_task",
+            storage=self,
+            task_broker=task_broker,
+            model=model,
         )
         return
 
@@ -358,29 +390,33 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             task_data (str): Данные задачи из брокера.
             priority (int): Приоритет задачи.
         """
-        new_data = await self._plugin_trigger("storage_add_process", storage=self, return_last=True)
+        new_data = await self._plugin_trigger(
+            "storage_add_process", storage=self, return_last=True
+        )
         if new_data:
             task_data = new_data.get("task_data", task_data)
             priority = new_data.get("priority", priority)
         await self.client.zadd(self.queue_process, {task_data: priority})
         return
 
-    async def _running_older_tasks(self, worker: "BaseWorker"):
+    async def _running_older_tasks(self, worker: "BaseWorker[Literal[True]]"):
         tasks = await self.client.zrange(self.queue_process, 0, -1)
         for task_data in tasks:
             task_name, uuid, priority = task_data.split(":")
             name_ = f"{self.name}:{uuid}"
-            args, kwargs, created_at = (
-                await self.client.hget(name_, "args"),
-                await self.client.hget(name_, "kwargs"),
-                await self.client.hget(name_, "created_at"),
-            )
+            raw = self.client.hmget(name_, ["args", "kwargs", "created_at"])
+            args, kwargs, created_at = await cast(Awaitable[list], raw)
             args, kwargs, created_at = (
                 json.loads(args) or (),
                 json.loads(kwargs) or {},
                 float(created_at),
             )
-            new_data = await self._plugin_trigger("storage_running_older_tasks", storage=self, worker=worker, return_last=True)
+            new_data = await self._plugin_trigger(
+                "storage_running_older_tasks",
+                storage=self,
+                worker=worker,
+                return_last=True,
+            )
             if new_data:
                 task_name = new_data.get("task_name", task_name)
                 uuid = new_data.get("uuid", uuid)
@@ -388,7 +424,6 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
                 created_at = new_data.get("created_at", created_at)
                 args = new_data.get("args", args)
                 kwargs = new_data.get("kw", kwargs)
-
             await worker.add(
                 name=task_name,
                 uuid=uuid,

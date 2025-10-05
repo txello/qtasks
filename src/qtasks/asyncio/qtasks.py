@@ -2,19 +2,17 @@
 
 import asyncio
 import asyncio_atexit
-from typing import TYPE_CHECKING, Callable, List, Optional, Type, Union, overload
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union, overload
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 
 from qtasks.events.async_events import AsyncEvents
 from qtasks.mixins.plugin import AsyncPluginMixin
-from qtasks.schemas.task_exec import TaskExecSchema
-from qtasks.types.annotations import P, R
 from qtasks.base.qtasks import BaseQueueTasks
 from qtasks.logs import Logger
 
 from qtasks.brokers.async_redis import AsyncRedisBroker
-from qtasks.registries.async_task_decorator import AsyncTask
+from qtasks.schemas.task_exec import TaskExecSchema
 from qtasks.workers.async_worker import AsyncWorker
 from qtasks.starters.async_starter import AsyncStarter
 from qtasks.results.async_result import AsyncResult
@@ -25,13 +23,11 @@ if TYPE_CHECKING:
     from qtasks.workers.base import BaseWorker
     from qtasks.brokers.base import BaseBroker
     from qtasks.starters.base import BaseStarter
-    from qtasks.executors.base import BaseTaskExecutor
     from qtasks.events.base import BaseEvents
-    from qtasks.middlewares.task import TaskMiddleware
     from qtasks.schemas.task import Task
 
 
-class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
+class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
     """
     `QueueTasks` - Фреймворк для очередей задач.
 
@@ -132,19 +128,30 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.QueueConfig`.
             events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(
-            name=name, broker=broker, worker=worker, log=log, config=config, events=events
+        broker = broker or AsyncRedisBroker(
+            name=name, url=broker_url, log=log, config=config, events=events
         )
-        self._method = "async"
-        self.events = self.events or AsyncEvents()
+        worker = worker or AsyncWorker(
+            name=name, broker=broker, log=log, config=config, events=events
+        )
 
-        self.broker: "BaseBroker" = self.broker or AsyncRedisBroker(
-            name=name, url=broker_url, log=self.log, config=self.config, events=self.events
+        events = events or AsyncEvents()
+
+        super().__init__(
+            name=name,
+            broker=broker,
+            worker=worker,
+            log=log,
+            config=config,
+            events=events,
         )
-        self.worker: "BaseWorker" = self.worker or AsyncWorker(
-            name=name, broker=self.broker, log=self.log, config=self.config, events=self.events
-        )
-        self.starter: Union["BaseStarter", None] = None
+
+        self._method = "async"
+
+        self.broker: "BaseBroker[Literal[True]]"
+        self.worker: "BaseWorker[Literal[True]]"
+
+        self.starter: Union["BaseStarter[Literal[True]]", None] = None
 
         self._global_loop: Annotated[
             Optional[asyncio.AbstractEventLoop],
@@ -161,12 +168,19 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
 
         self._set_state()
 
-        self.init_plugins()
-
+    @overload
     async def add_task(
         self,
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -175,11 +189,109 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
                     """
             ),
         ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            float,
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = 0.0,
+        **kwargs: Annotated[
+            dict,
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Optional["Task"]: ...
+
+    @overload
+    async def add_task(
+        self,
         task_name: Annotated[
             str,
             Doc(
                 """
                     Имя задачи.
+                    """
+            ),
+        ],
+        *args: Annotated[
+            Any,
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            None,
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> "Task": ...
+
+    @overload
+    async def add_task(
+        self,
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        *args: Annotated[
+            Any,
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
                     """
             ),
         ],
@@ -213,7 +325,59 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
                     """
             ),
         ],
-    ) -> Union["Task", None]:
+    ) -> Optional["Task"]: ...
+
+    async def add_task(
+        self,
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        *args: Annotated[
+            Any,
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Union["Task", Optional["Task"]]:
         """Добавить задачу.
 
         Args:
@@ -228,8 +392,12 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             Task|None: `schemas.task.Task` или `None`.
         """
         if priority is None:
-            priority = self.tasks.get(task_name, 0)
-            priority = priority.priority if isinstance(priority, TaskExecSchema) else 0
+            task_registry = self.tasks.get(task_name, 0)
+            priority = (
+                task_registry.priority
+                if isinstance(task_registry, TaskExecSchema)
+                else 0
+            )
 
         args, kwargs = args or (), kwargs or {}
         extra = None
@@ -242,17 +410,24 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             priority=priority,
             args=args,
             kw=kwargs,
-            return_last=True
+            return_last=True,
         )
+
+        task_priority: int = priority
+
         if new_args:
             task_name = new_args.get("task_name", task_name)
-            priority = new_args.get("priority", priority)
+            task_priority = new_args.get("priority", task_priority)
             extra = new_args.get("extra", extra)
             args = new_args.get("args", args)
             kwargs = new_args.get("kw", kwargs)
 
         task = await self.broker.add(
-            task_name=task_name, priority=priority, extra=extra, args=args, kwargs=kwargs
+            task_name=task_name,
+            priority=task_priority,
+            extra=extra,
+            args=args,
+            kwargs=kwargs,
         )
 
         await self._plugin_trigger(
@@ -260,9 +435,9 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             qtasks=self,
             broker=self.broker,
             task_name=task_name,
-            priority=priority,
+            priority=task_priority,
             args=args,
-            kwargs=kwargs
+            kwargs=kwargs,
         )
 
         if timeout is not None:
@@ -294,7 +469,9 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             uuid = UUID(uuid)
 
         result = await self.broker.get(uuid=uuid)
-        new_result = await self._plugin_trigger("qtasks_get", qtasks=self, broker=self.broker, task=result, return_last=True)
+        new_result = await self._plugin_trigger(
+            "qtasks_get", qtasks=self, broker=self.broker, task=result, return_last=True
+        )
         if new_result:
             result = new_result.get("task", result)
         return result
@@ -356,7 +533,7 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
             broker=self.broker,
             log=self.log,
             config=self.config,
-            events=self.events
+            events=self.events,
         )
 
         plugins_hash = {}
@@ -380,7 +557,8 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
     async def stop(self):
         """Останавливает все компоненты."""
         await self._plugin_trigger("qtasks_stop", qtasks=self, starter=self.starter)
-        await self.starter.stop()
+        if self.starter:
+            await self.starter.stop()
 
     async def ping(self, server: bool = True) -> bool:
         """Проверка запуска сервера.
@@ -391,11 +569,12 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         Returns:
             bool: True - Работает, False - Не работает.
         """
-        await self._plugin_trigger("qtasks_ping", qtasks=self, global_config=self.broker.storage.global_config)
-        if server:
+        await self._plugin_trigger(
+            "qtasks_ping", qtasks=self, global_config=self.broker.storage.global_config
+        )
+        if server and self.broker.storage.global_config:
             loop = asyncio.get_running_loop()
             asyncio_atexit.register(self.broker.storage.global_config.stop, loop=loop)
-
             status = await self.broker.storage.global_config.get("main", "status")
             return status is not None
         return True
@@ -404,82 +583,3 @@ class QueueTasks(BaseQueueTasks, AsyncPluginMixin):
         """Удалить все данные."""
         await self._plugin_trigger("qtasks_flush_all", qtasks=self, broker=self.broker)
         await self.broker.flush_all()
-
-    @overload
-    def task(
-        self,
-        name: Union[str, None] = None,
-        *,
-        priority: Union[int, None] = None,
-        echo: bool = False,
-        max_time: Union[float, None] = None,
-        retry: Union[int, None] = None,
-        retry_on_exc: Union[List[Type[Exception]], None] = None,
-        decode: Union[Callable, None] = None,
-        tags: Union[List[str], None] = None,
-        description: Union[str, None] = None,
-        generate_handler: Union[Callable, None] = None,
-        executor: Union[Type["BaseTaskExecutor"], None] = None,
-        middlewares_before: Union[List["TaskMiddleware"], None] = None,
-        middlewares_after: Union[List["TaskMiddleware"], None] = None,
-        **kwargs
-    ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
-        """Декоратор для регистрации задач.
-
-        Args:
-            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
-            echo (bool, optional): Добавить AsyncTask первым параметром. По умолчанию: `False`.
-            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
-            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
-            description (str, optional): Описание задачи. По умолчанию: `None`.
-            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
-            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
-            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
-
-        Raises:
-            ValueError: Если задача с таким именем уже зарегистрирована.
-            ValueError: Неизвестный метод {self._method}.
-
-        Returns:
-            AsyncTask: Декоратор для регистрации задачи.
-        """
-        ...
-
-    @overload
-    def task(
-        self,
-        func: Callable[P, R],
-    ) -> AsyncTask[P, R]:
-        ...
-
-    def task(self, *args, **kwargs):
-        """Декоратор для регистрации задач.
-
-        Args:
-            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
-            echo (bool, optional): Добавить AsyncTask первым параметром. По умолчанию: `False`.
-            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
-            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
-            description (str, optional): Описание задачи. По умолчанию: `None`.
-            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
-            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
-            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
-
-        Raises:
-            ValueError: Если задача с таким именем уже зарегистрирована.
-            ValueError: Неизвестный метод {self._method}.
-
-        Returns:
-            AsyncTask: Декоратор для регистрации задачи.
-        """
-        return super().task(*args, **kwargs)

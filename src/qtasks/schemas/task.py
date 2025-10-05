@@ -1,6 +1,6 @@
 """Task Schema."""
 
-from dataclasses import InitVar, dataclass
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any, Dict, Optional, Tuple, Union
 from typing_extensions import Doc
@@ -41,45 +41,46 @@ class Task:
     created_at: datetime
     updated_at: datetime
 
-    returning: InitVar[Union[str, None]] = None
-    traceback: InitVar[Union[str, None]] = None
+    returning: Optional[Any] = None
+    traceback: Optional[Any] = None
+
+    # retry
+    retry: Optional[int] = None
+    retry_child_uuid: Optional[UUID] = None
+    retry_parent_uuid: Optional[UUID] = None
 
     def wait_result(
         self,
         timeout: Annotated[
-            Optional[float],
+            float,
             Doc(
                 """
                     Таймаут задачи.
-
-                    Если указан, задача возвращается через `qtasks.results.SyncTask`.
                     """
             ),
-        ] = None
+        ] = 100.0,
     ) -> Union["Task", None]:
         """Ожидание результата задачи Синхронно.
 
         Args:
-            timeout (Annotated[Optional[float], Doc], optional): Таймаут ожидания результата. По умолчанию: `None`.
+            timeout (Annotated[Optional[float], Doc], optional): Таймаут ожидания результата. По умолчанию: `100.0`.
         """
         return SyncResult(uuid=self.uuid).result(timeout=timeout)
 
     async def wait_result_async(
         self,
         timeout: Annotated[
-            Optional[float],
+            float,
             Doc(
                 """
                     Таймаут задачи.
-
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
                     """
             ),
-        ] = None
+        ] = 100.0,
     ) -> Union["Task", None]:
         """Ожидание результата задачи Асинхронно.
 
         Args:
-            timeout (Annotated[Optional[float], Doc], optional): Таймаут ожидания результата. По умолчанию: `None`.
+            timeout (Annotated[Optional[float], Doc], optional): Таймаут ожидания результата. По умолчанию: `100.0`.
         """
         return await AsyncResult(uuid=self.uuid).result(timeout=timeout)

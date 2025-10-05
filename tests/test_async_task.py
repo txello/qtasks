@@ -1,5 +1,6 @@
 """Async Task Tests."""
 
+import threading
 import time
 import pytest
 import sys
@@ -20,24 +21,39 @@ def run_server():
     script_path = Path(__file__).parent / "apps" / "app_async.py"
     assert script_path.exists(), f"Script not found: {script_path}"
 
+    # Запускаем сервер в отдельном процессе
     process = subprocess.Popen(
         [sys.executable, str(script_path)],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        bufsize=1,  # построчный вывод
     )
-    time.sleep(5)
 
-    # Выводим stdout (если вдруг сразу завершилось)
+    # Поток, который дренирует stdout и печатает логи сразу
+    def _stream_output(pipe):
+        for line in iter(pipe.readline, ""):
+            sys.stdout.write(f"[SERVER] {line}")
+        pipe.close()
+
+    thread = threading.Thread(target=_stream_output, args=(process.stdout,), daemon=True)
+    thread.start()
+
+    # Подождём немного, чтобы сервер успел подняться
+    time.sleep(3)
+
     if process.poll() is not None:
-        output = process.stdout.read()
-        raise RuntimeError(f"Server exited early with output:\n{output}")
+        raise RuntimeError("Server exited too early — проверьте логи выше.")
 
-    yield
+    yield  # выполнение тестов
 
-    time.sleep(2)
+    # Завершаем сервер
     process.terminate()
-    process.wait()
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        process.kill()
+    thread.join(timeout=2)
 
 
 @pytest.fixture()

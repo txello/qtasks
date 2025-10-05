@@ -1,7 +1,9 @@
 """Sync Redis Broker."""
 
+from datetime import datetime
+import json
 import redis
-from typing import Optional, Union
+from typing import Any, List, Literal, Optional, Union, cast
 from typing_extensions import Annotated, Doc
 from uuid import UUID, uuid4
 from time import time, sleep
@@ -23,10 +25,9 @@ if TYPE_CHECKING:
 from .base import BaseBroker
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
-    TaskStatusCancelSchema,
     TaskStatusErrorSchema,
     TaskStatusNewSchema,
-    TaskStatusProcessSchema,
+    TaskStatusSuccessSchema,
 )
 
 
@@ -59,7 +60,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = "QueueTasks",
         url: Annotated[
-            str,
+            Optional[str],
             Doc(
                 """
                     URL для подключения к Redis.
@@ -130,21 +131,26 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             config (QueueConfig, optional): Конфиг. По умолчанию: None.
             events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config, events=events)
         self.url = url or "redis://localhost:6379/0"
-        self.queue_name = f"{self.name}:{queue_name}"
-        self.events = self.events or SyncEvents()
-
         self.client = redis.Redis.from_url(
             self.url, decode_responses=True, encoding="utf-8"
         )
-        self.storage = storage or SyncRedisStorage(
+        storage = storage or SyncRedisStorage(
             name=name,
             url=self.url,
             redis_connect=self.client,
-            log=self.log,
-            config=self.config,
+            log=log,
+            config=config,
         )
+        events = events or SyncEvents()
+
+        super().__init__(
+            name=name, log=log, config=config, events=events, storage=storage
+        )
+
+        self.storage: "BaseStorage[Literal[False]]"
+
+        self.queue_name = f"{self.name}:{queue_name}"
 
         self.running = False
         self.default_sleep = 0.01
@@ -152,7 +158,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
     def listen(
         self,
         worker: Annotated[
-            "BaseWorker",
+            "BaseWorker[Literal[False]]",
             Doc(
                 """
                     Класс воркера.
@@ -164,39 +170,53 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
 
         Args:
             worker (BaseWorker): Класс воркера.
+
+        Raises:
+            ValueError: Неизвестный формат данных задачи.
+            KeyError: Задача не найдена.
         """
         self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
 
         while self.running:
-            task_data = self.client.lpop(self.queue_name)
+            raw = self.client.lpop(self.queue_name)
+            task_data = cast(Optional[Union[str, List[Any]]], raw)
             if not task_data:
                 sleep(self.default_sleep)
                 continue
 
+            if isinstance(task_data, list):
+                raise ValueError("Неизвестный формат данных задачи.")
+
             task_name, uuid, priority = task_data.split(":")
+            uuid = UUID(uuid, version=4)
+            priority = int(priority)
 
             self.storage.add_process(task_data, priority)
 
             model_get = self.get(uuid=uuid)
+            if not model_get:
+                raise KeyError(f"Задача не найдена: {uuid}")
+
             args, kwargs, created_at = (
                 model_get.args or (),
                 model_get.kwargs or {},
                 model_get.created_at.timestamp(),
             )
-            self.log.info(f"Получена новая задача: {uuid}")
+            if self.log:
+                self.log.info(f"Получена новая задача: {uuid}")
+
             new_args = self._plugin_trigger(
                 "broker_add_worker",
                 broker=self,
                 worker=worker,
-
                 task_name=task_name,
                 uuid=uuid,
                 priority=int(priority),
                 args=args,
                 kw=kwargs,
                 created_at=created_at,
-                return_last=True
+                return_last=True,
             )
             if new_args:
                 task_name = new_args.get("task_name", task_name)
@@ -214,6 +234,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
                 kwargs=kwargs,
                 created_at=created_at,
             )
+        return
 
     def add(
         self,
@@ -235,9 +256,18 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
                     """
             ),
         ] = 0,
-        extra: dict = None,
+        extra: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    Дополнительные параметры задачи.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
         args: Annotated[
-            tuple,
+            Optional[tuple],
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -245,7 +275,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         kwargs: Annotated[
-            dict,
+            Optional[dict],
             Doc(
                 """
                     Аргументы задачи типа kwargs.
@@ -258,24 +288,27 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи.
+            extra (dict, optional): Дополнительные параметры задачи. По умолчанию: `None`.
             args (tuple, optional): Аргументы задачи типа args.
             kwargs (dict, optional): Аргументы задачи типа kwargs.
 
         Returns:
             Task: `schemas.task.Task`
+
+        Raises:
+            ValueError: Некорректный статус задачи.
         """
         args, kwargs = args or (), kwargs or {}
-        uuid = str(uuid4())
+        uuid = uuid4()
+        uuid_str = str(uuid)
         created_at = time()
-
         model = TaskStatusNewSchema(
             task_name=task_name,
             priority=priority,
             created_at=created_at,
             updated_at=created_at,
-            args=args,
-            kwargs=kwargs
+            args=json.dumps(args),
+            kwargs=json.dumps(kwargs),
         )
 
         if extra:
@@ -286,32 +319,28 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             broker=self,
             storage=self.storage,
             model=model,
-            return_last=True
+            return_last=True,
         )
         if new_model:
             model = new_model.get("model", model)
 
         self.storage.add(uuid=uuid, task_status=model)
-        self.client.rpush(self.queue_name, f"{task_name}:{uuid}:{priority}")
+        self.client.rpush(self.queue_name, f"{task_name}:{uuid_str}:{priority}")
 
         self._plugin_trigger(
-            "broker_add_after",
-            broker=self,
-            storage=self.storage,
-            model=model
+            "broker_add_after", broker=self, storage=self.storage, model=model
         )
 
-        model = Task(
+        return Task(
             status=TaskStatusEnum.NEW.value,
             task_name=task_name,
             uuid=uuid,
             priority=priority,
             args=args,
             kwargs=kwargs,
-            created_at=created_at,
-            updated_at=created_at,
+            created_at=datetime.fromtimestamp(created_at),
+            updated_at=datetime.fromtimestamp(created_at),
         )
-        return model
 
     def get(
         self,
@@ -335,7 +364,9 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         task = self.storage.get(uuid=uuid)
-        new_task = self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
+        new_task = self._plugin_trigger(
+            "broker_get", broker=self, task=task, return_last=True
+        )
         if new_task:
             task = new_task.get("task", task)
         return task
@@ -356,7 +387,9 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        new_kw = self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
+        new_kw = self._plugin_trigger(
+            "broker_update", broker=self, kw=kwargs, return_last=True
+        )
         if new_kw:
             kwargs = new_kw.get("kw", kwargs)
         return self.storage.update(**kwargs)
@@ -405,9 +438,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
-            ],
+            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
             Doc(
                 """
                     Модель результата задачи.
@@ -419,14 +450,14 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
 
         Args:
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
         new_model = self._plugin_trigger(
             "broker_remove_finished_task",
             broker=self,
             storage=self.storage,
             model=model,
-            return_last=True
+            return_last=True,
         )
         if new_model:
             model = new_model.get("model", model)

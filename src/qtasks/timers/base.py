@@ -1,18 +1,28 @@
 """Base timer class."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Generic,
+    Literal,
+    Optional,
+    Union,
+    overload,
+)
 from typing_extensions import Annotated, Doc
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
-    from qtasks import QueueTasks
+    from qtasks.qtasks import QueueTasks
+    from qtasks.asyncio.qtasks import QueueTasks as aioQueueTasks
 
 
-class BaseTimer(ABC):
+class BaseTimer(Generic[TAsyncFlag], ABC):
     """
     `BaseTimer` - Абстрактный класс, который является фундаментом для Таймеров.
 
@@ -32,7 +42,7 @@ class BaseTimer(ABC):
     def __init__(
         self,
         app: Annotated[
-            "QueueTasks",
+            Union["QueueTasks", "aioQueueTasks"],
             Doc(
                 """
                     Задача.
@@ -81,7 +91,128 @@ class BaseTimer(ABC):
                 format=self.config.logs_format,
             )
         )
-        self.scheduler = AsyncIOScheduler()
+
+    @overload
+    def add_task(
+        self: "BaseTimer[Literal[False]]",
+        *args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        trigger: Annotated[
+            Any,
+            Doc(
+                """
+                    Триггер задачи.
+                    """
+            ),
+        ],
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Optional[Any]: ...
+
+    @overload
+    async def add_task(
+        self: "BaseTimer[Literal[True]]",
+        *args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    args задачи.
+
+                    По умолчанию: `()`.
+                    """
+            ),
+        ],
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            Optional[int],
+            Doc(
+                """
+                    Приоритет у задачи.
+
+                    По умолчанию: Значение приоритета у задачи.
+                    """
+            ),
+        ] = None,
+        timeout: Annotated[
+            Optional[float],
+            Doc(
+                """
+                    Таймаут задачи.
+
+                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    """
+            ),
+        ] = None,
+        trigger: Annotated[
+            Any,
+            Doc(
+                """
+                    Триггер задачи.
+                    """
+            ),
+        ],
+        **kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    kwargs задачи.
+
+                    По умолчанию: `{}`.
+                    """
+            ),
+        ],
+    ) -> Optional[Any]: ...
 
     @abstractmethod
     def add_task(
@@ -142,7 +273,7 @@ class BaseTimer(ABC):
                     """
             ),
         ],
-    ) -> Union[Any, None]:
+    ) -> Union[Optional[Any], Awaitable[Optional[Any]]]:
         """Добавление задачи.
 
         Args:

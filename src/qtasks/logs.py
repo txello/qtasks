@@ -1,7 +1,7 @@
 """Логирование."""
 
 import logging
-from typing import Union
+from typing import Optional, Union
 from typing_extensions import Annotated, Doc
 
 
@@ -33,7 +33,7 @@ class Logger:
             ),
         ],
         subname: Annotated[
-            str,
+            Optional[str],
             Doc(
                 """
                     Имя компонента.
@@ -43,7 +43,7 @@ class Logger:
             ),
         ] = None,
         default_level: Annotated[
-            str,
+            int,
             Doc(
                 """
                     Level по умолчанию.
@@ -53,7 +53,7 @@ class Logger:
             ),
         ] = logging.INFO,
         format: Annotated[
-            str,
+            Optional[str],
             Doc(
                 """
                     Формат логирования.
@@ -79,7 +79,8 @@ class Logger:
         self.logger = logging.getLogger(name)
 
         formatter = logging.Formatter(
-            self.format or "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s"
+            self.format
+            or "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s"
         )
 
         if not self.logger.handlers:
@@ -126,7 +127,10 @@ class Logger:
             Logger: Новый `Logger`.
         """
         return Logger(
-            self.name, new_subname, default_level=default_level or self.default_level, format=format or self.format
+            self.name,
+            new_subname,
+            default_level=default_level or self.default_level,
+            format=format or self.format,
         )
 
     def update_logger(self, **kwargs) -> "Logger":

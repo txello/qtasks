@@ -3,9 +3,10 @@
 import asyncio
 import contextlib
 from dataclasses import asdict
+from datetime import datetime
 import json
 import asyncio_atexit
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID, uuid4
 from time import time
@@ -22,10 +23,9 @@ from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import (
-    TaskStatusCancelSchema,
     TaskStatusErrorSchema,
     TaskStatusNewSchema,
-    TaskStatusProcessSchema,
+    TaskStatusSuccessSchema,
 )
 
 if TYPE_CHECKING:
@@ -71,7 +71,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                     По умолчанию: `127.0.0.1`.
                     """
             ),
-        ] = None,
+        ] = "127.0.0.1",
         port: Annotated[
             int,
             Doc(
@@ -134,17 +134,21 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
             events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config, events=events)
-        self.url = url or "127.0.0.1"
+        self.url = url
         self.port = port
+        storage = storage or AsyncRedisStorage(
+            name=name, log=log, config=config, events=events
+        )
+
+        super().__init__(
+            name=name, log=log, config=config, events=events, storage=storage
+        )
+
+        self.storage: "BaseStorage[Literal[True]]"
+
         self.events = self.events or AsyncEvents()
 
         self.client = None
-        self.storage = storage or AsyncRedisStorage(
-            name=name,
-            log=self.log,
-            config=self.config,
-        )
         self.default_sleep = 0.01
         self.running = False
 
@@ -152,7 +156,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self._serve_task: Union[asyncio.Task, None] = None
         self._listen_task: Union[asyncio.Task, None] = None
 
-    async def handle_connection(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+    async def handle_connection(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ):
         """Обрабатывает входящее соединение.
 
         Args:
@@ -192,7 +198,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     async def listen(
         self,
         worker: Annotated[
-            "BaseWorker",
+            "BaseWorker[Literal[True]]",
             Doc(
                 """
                     Класс воркера.
@@ -204,6 +210,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
 
         Args:
             worker (BaseWorker): Класс воркера.
+
+        Raises:
+            KeyError: Задача не найдена.
         """
         await self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
@@ -217,30 +226,31 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                 break
 
             task_name, uuid, priority = item
-            task_data = await self.get(uuid)
-            args, kwargs, created_at = task_data.args, task_data.kwargs, task_data.created_at
-
-            await self.storage.add_process(f"{task_name}:{uuid}:{priority}", priority)
-
             model_get = await self.get(uuid=uuid)
+            if not model_get:
+                raise KeyError(f"Задача не найдена: {uuid}")
+
             args, kwargs, created_at = (
                 model_get.args or (),
                 model_get.kwargs or {},
                 model_get.created_at.timestamp(),
             )
-            self.log.info(f"Получена новая задача: {uuid}")
+
+            await self.storage.add_process(f"{task_name}:{uuid}:{priority}", priority)
+
+            if self.log:
+                self.log.info(f"Получена новая задача: {uuid}")
             new_args = await self._plugin_trigger(
                 "broker_add_worker",
                 broker=self,
                 worker=worker,
-
                 task_name=task_name,
                 uuid=uuid,
                 priority=int(priority),
                 args=args,
                 kw=kwargs,
                 created_at=created_at,
-                return_last=True
+                return_last=True,
             )
             if new_args:
                 task_name = new_args.get("task_name", task_name)
@@ -249,6 +259,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                 args = new_args.get("args", args)
                 kwargs = new_args.get("kw", kwargs)
                 created_at = new_args.get("created_at", created_at)
+
             await worker.add(
                 name=task_name,
                 uuid=uuid,
@@ -257,6 +268,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                 kwargs=kwargs,
                 created_at=created_at,
             )
+            return
 
     async def add(
         self,
@@ -278,20 +290,33 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                     """
             ),
         ] = 0,
-        extra: dict = None,
+        extra: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    Дополнительные параметры задачи.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
         args: Annotated[
-            tuple,
+            Optional[tuple],
             Doc(
                 """
                     Аргументы задачи типа args.
+
+                    По умолчанию: `()`.
                     """
             ),
         ] = None,
         kwargs: Annotated[
-            dict,
+            Optional[dict],
             Doc(
                 """
                     Аргументы задачи типа kwargs.
+
+                    По умолчанию: `{}`.
                     """
             ),
         ] = None,
@@ -301,55 +326,56 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         Args:
             task_name (str): Имя задачи.
             priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи.
-            args (tuple, optional): Аргументы задачи типа args.
-            kwargs (dict, optional): Аргументы задачи типа kwargs.
+            extra (dict, optional): Дополнительные параметры задачи. По умолчанию: `None`.
+            args (tuple, optional): Аргументы задачи типа args. По умолчанию: `()`.
+            kwargs (dict, optional): Аргументы задачи типа kwargs. По умолчанию: `{}`.
 
         Returns:
             Task: `schemas.task.Task`
+
+        Raises:
+            ValueError: Некорректный статус задачи.
         """
         loop = asyncio.get_running_loop()
         asyncio_atexit.register(self.stop, loop=loop)
         asyncio_atexit.register(self.storage.stop, loop=loop)
 
         args, kwargs = args or (), kwargs or {}
-        uuid = str(uuid4())
+        uuid = uuid4()
+        uuid_str = str(uuid)
         created_at = time()
         model = TaskStatusNewSchema(
             task_name=task_name,
             priority=priority,
             created_at=created_at,
             updated_at=created_at,
-            args=args,
-            kwargs=kwargs
+            args=str(args),
+            kwargs=str(kwargs),
         )
 
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
 
         new_model = await self._plugin_trigger(
-            "broker_add_before",
-            broker=self,
-            storage=self.storage,
-            model=model
+            "broker_add_before", broker=self, storage=self.storage, model=model
         )
         if new_model:
             model = new_model.get("model", model)
 
+        if not isinstance(model, TaskStatusNewSchema):
+            raise ValueError("Некорректный статус задачи.")
+
         await self.storage.add(uuid=uuid, task_status=model)
         reader, writer = await asyncio.open_connection(self.url, self.port)
         payload = asdict(model)
-        payload.update({"uuid": uuid})
+        payload.update({"uuid": uuid_str})
         writer.write(json.dumps(payload).encode())
         await writer.drain()
         with contextlib.suppress(Exception):
             writer.close()
 
         await self._plugin_trigger(
-            "broker_add_after",
-            broker=self,
-            storage=self.storage,
-            model=model
+            "broker_add_after", broker=self, storage=self.storage, model=model
         )
         return Task(
             status=TaskStatusEnum.NEW.value,
@@ -358,8 +384,8 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             priority=priority,
             args=args,
             kwargs=kwargs,
-            created_at=created_at,
-            updated_at=created_at,
+            created_at=datetime.fromtimestamp(created_at),
+            updated_at=datetime.fromtimestamp(created_at),
         )
 
     async def get(
@@ -384,7 +410,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         task = await self.storage.get(uuid=uuid)
-        new_task = await self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
+        new_task = await self._plugin_trigger(
+            "broker_get", broker=self, task=task, return_last=True
+        )
         if new_task:
             task = new_task.get("task", task)
         return task
@@ -405,7 +433,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         Args:
             kwargs (dict, optional): данные задачи типа kwargs.
         """
-        new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
+        new_kw = await self._plugin_trigger(
+            "broker_update", broker=self, kw=kwargs, return_last=True
+        )
         if new_kw:
             kwargs = new_kw.get("kw", kwargs)
         return await self.storage.update(**kwargs)
@@ -435,10 +465,16 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         if self.config.running_older_tasks:
             await self.storage._running_older_tasks(worker)
 
-        self.client = await asyncio.start_server(self.handle_connection, self.url, self.port)
+        self.client = await asyncio.start_server(
+            self.handle_connection, self.url, self.port
+        )
 
-        self._listen_task = asyncio.create_task(self.listen(worker), name="broker-listen")
-        self._serve_task = asyncio.create_task(self.client.serve_forever(), name="broker-serve")
+        self._listen_task = asyncio.create_task(
+            self.listen(worker), name="broker-listen"
+        )
+        self._serve_task = asyncio.create_task(
+            self.client.serve_forever(), name="broker-serve"
+        )
         with contextlib.suppress(asyncio.CancelledError):
             await self._serve_task
 
@@ -475,9 +511,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
-            ],
+            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
             Doc(
                 """
                     Модель результата задачи.
@@ -489,14 +523,14 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
 
         Args:
             task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
         """
         new_model = await self._plugin_trigger(
             "broker_remove_finished_task",
             broker=self,
             storage=self.storage,
             model=model,
-            return_last=True
+            return_last=True,
         )
         if new_model:
             model = new_model.get("model", model)
@@ -505,7 +539,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         return
 
     async def _running_older_tasks(self, worker):
-        await self._plugin_trigger("broker_running_older_tasks", broker=self, worker=worker)
+        await self._plugin_trigger(
+            "broker_running_older_tasks", broker=self, worker=worker
+        )
         return await self.storage._running_older_tasks(worker)
 
     async def flush_all(self) -> None:

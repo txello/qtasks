@@ -2,7 +2,17 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import asdict, field, fields, make_dataclass
-from typing import Dict, List, Optional, Union
+from typing import (
+    Any,
+    Awaitable,
+    Dict,
+    Generic,
+    List,
+    Literal,
+    Optional,
+    Union,
+    overload,
+)
 from uuid import UUID
 from typing_extensions import Annotated, Doc
 from typing import TYPE_CHECKING
@@ -10,7 +20,15 @@ from typing import TYPE_CHECKING
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 from qtasks.configs.config import QueueConfig
-from qtasks.schemas.task_status import TaskStatusNewSchema
+from qtasks.schemas.task_exec import TaskPrioritySchema
+from qtasks.schemas.task_status import (
+    TaskStatusCancelSchema,
+    TaskStatusErrorSchema,
+    TaskStatusNewSchema,
+    TaskStatusProcessSchema,
+    TaskStatusSuccessSchema,
+)
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.storages.base import BaseStorage
@@ -19,7 +37,7 @@ if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
 
 
-class BaseBroker(ABC):
+class BaseBroker(Generic[TAsyncFlag], ABC):
     """
     `BaseBroker` - Абстрактный класс, который является фундаментом для Брокеров.
 
@@ -38,21 +56,21 @@ class BaseBroker(ABC):
 
     def __init__(
         self,
+        storage: Annotated[
+            "BaseStorage[TAsyncFlag]",
+            Doc(
+                """
+                    Хранилище `qtasks.storages.base.BaseStorage`.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ],
         name: Annotated[
             Optional[str],
             Doc(
                 """
                     Имя проекта. Это имя можно использовать для тегов для Брокеров.
-
-                    По умолчанию: `None`.
-                    """
-            ),
-        ] = None,
-        storage: Annotated[
-            Optional["BaseStorage"],
-            Doc(
-                """
-                    Хранилище `qtasks.storages.base.BaseStorage`.
 
                     По умолчанию: `None`.
                     """
@@ -104,7 +122,7 @@ class BaseBroker(ABC):
             log.with_subname("Broker")
             if log
             else Logger(
-                name=self.name,
+                name=self.name or "QueueTasks",
                 subname="Broker",
                 default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
@@ -117,6 +135,100 @@ class BaseBroker(ABC):
         self.plugins: Dict[str, List["BasePlugin"]] = {}
 
         self.init_plugins()
+
+    @overload
+    def add(
+        self: "BaseBroker[Literal[False]]",
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            int,
+            Doc(
+                """
+                    Приоритет задачи.
+
+                    По умолчанию: `0`.
+                    """
+            ),
+        ] = 0,
+        extra: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    Дополнительные параметры задачи.
+                    """
+            ),
+        ] = None,
+        args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    Аргументы задачи типа args.
+                    """
+            ),
+        ] = None,
+        kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    Аргументы задачи типа kwargs.
+                    """
+            ),
+        ] = None,
+    ) -> Task: ...
+
+    @overload
+    async def add(
+        self: "BaseBroker[Literal[True]]",
+        task_name: Annotated[
+            str,
+            Doc(
+                """
+                    Имя задачи.
+                    """
+            ),
+        ],
+        priority: Annotated[
+            int,
+            Doc(
+                """
+                    Приоритет задачи.
+
+                    По умолчанию: `0`.
+                    """
+            ),
+        ] = 0,
+        extra: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    Дополнительные параметры задачи.
+                    """
+            ),
+        ] = None,
+        args: Annotated[
+            Optional[tuple],
+            Doc(
+                """
+                    Аргументы задачи типа args.
+                    """
+            ),
+        ] = None,
+        kwargs: Annotated[
+            Optional[dict],
+            Doc(
+                """
+                    Аргументы задачи типа kwargs.
+                    """
+            ),
+        ] = None,
+    ) -> Task: ...
 
     @abstractmethod
     def add(
@@ -140,7 +252,7 @@ class BaseBroker(ABC):
             ),
         ] = 0,
         extra: Annotated[
-            dict,
+            Optional[dict],
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -148,7 +260,7 @@ class BaseBroker(ABC):
             ),
         ] = None,
         args: Annotated[
-            tuple,
+            Optional[tuple],
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -156,14 +268,14 @@ class BaseBroker(ABC):
             ),
         ] = None,
         kwargs: Annotated[
-            dict,
+            Optional[dict],
             Doc(
                 """
                     Аргументы задачи типа kwargs.
                     """
             ),
         ] = None,
-    ) -> Task:
+    ) -> Union[Task, Awaitable[Task]]:
         """Добавление задачи в брокер.
 
         Args:
@@ -178,6 +290,32 @@ class BaseBroker(ABC):
         """
         pass
 
+    @overload
+    def get(
+        self: "BaseBroker[Literal[False]]",
+        uuid: Annotated[
+            Union[UUID, str],
+            Doc(
+                """
+                    UUID задачи.
+                    """
+            ),
+        ],
+    ) -> Optional[Task]: ...
+
+    @overload
+    async def get(
+        self: "BaseBroker[Literal[True]]",
+        uuid: Annotated[
+            Union[UUID, str],
+            Doc(
+                """
+                    UUID задачи.
+                    """
+            ),
+        ],
+    ) -> Optional[Task]: ...
+
     @abstractmethod
     def get(
         self,
@@ -189,7 +327,7 @@ class BaseBroker(ABC):
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Union[Optional[Task], Awaitable[Optional[Task]]]:
         """Получение информации о задаче.
 
         Args:
@@ -200,18 +338,44 @@ class BaseBroker(ABC):
         """
         pass
 
-    @abstractmethod
+    @overload
     def update(
-        self,
+        self: "BaseBroker[Literal[False]]",
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления для хранилища типа kwargs.
                     """
             ),
         ],
-    ) -> None:
+    ) -> None: ...
+
+    @overload
+    async def update(
+        self: "BaseBroker[Literal[True]]",
+        **kwargs: Annotated[
+            Any,
+            Doc(
+                """
+                    Аргументы обновления для хранилища типа kwargs.
+                    """
+            ),
+        ],
+    ) -> None: ...
+
+    @abstractmethod
+    def update(
+        self,
+        **kwargs: Annotated[
+            Any,
+            Doc(
+                """
+                    Аргументы обновления для хранилища типа kwargs.
+                    """
+            ),
+        ],
+    ) -> Union[None, Awaitable[None]]:
         """Обновляет информацию о задаче.
 
         Args:
@@ -219,11 +383,11 @@ class BaseBroker(ABC):
         """
         pass
 
-    @abstractmethod
+    @overload
     def start(
-        self,
+        self: "BaseBroker[Literal[False]]",
         worker: Annotated[
-            "BaseWorker",
+            Optional["BaseWorker"],
             Doc(
                 """
                     Класс Воркера.
@@ -232,7 +396,37 @@ class BaseBroker(ABC):
                     """
             ),
         ] = None,
-    ) -> None:
+    ) -> None: ...
+
+    @overload
+    async def start(
+        self: "BaseBroker[Literal[True]]",
+        worker: Annotated[
+            Optional["BaseWorker"],
+            Doc(
+                """
+                    Класс Воркера.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
+    ) -> None: ...
+
+    @abstractmethod
+    def start(
+        self,
+        worker: Annotated[
+            Optional["BaseWorker"],
+            Doc(
+                """
+                    Класс Воркера.
+
+                    По умолчанию: `None`.
+                    """
+            ),
+        ] = None,
+    ) -> Union[None, Awaitable[None]]:
         """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
 
         Args:
@@ -240,8 +434,18 @@ class BaseBroker(ABC):
         """
         pass
 
+    @overload
+    def stop(
+        self: "BaseBroker[Literal[False]]",
+    ) -> None: ...
+
+    @overload
+    async def stop(
+        self: "BaseBroker[Literal[True]]",
+    ) -> None: ...
+
     @abstractmethod
-    def stop(self) -> None:
+    def stop(self) -> Union[None, Awaitable[None]]:
         """Останавливает брокер. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
 
@@ -300,12 +504,102 @@ class BaseBroker(ABC):
                 self.plugins[name].append(plugin)
         return
 
-    def flush_all(self) -> None:
+    @overload
+    def flush_all(self: "BaseBroker[Literal[False]]") -> None: ...
+
+    @overload
+    async def flush_all(self: "BaseBroker[Literal[True]]") -> None: ...
+
+    def flush_all(self) -> Union[None, Awaitable[None]]:
         """Удалить все данные."""
         pass
 
     def init_plugins(self):
         """Инициализация плагинов."""
+        pass
+
+    @overload
+    def remove_finished_task(
+        self: "BaseBroker[Literal[False]]",
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
+                    Схема приоритетной задачи.
+                    """
+            ),
+        ],
+        model: Annotated[
+            Union[
+                TaskStatusSuccessSchema,
+                TaskStatusProcessSchema,
+                TaskStatusErrorSchema,
+                TaskStatusCancelSchema,
+            ],
+            Doc(
+                """
+                    Модель результата задачи.
+                    """
+            ),
+        ],
+    ) -> None: ...
+
+    @overload
+    async def remove_finished_task(
+        self: "BaseBroker[Literal[True]]",
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
+                    Схема приоритетной задачи.
+                    """
+            ),
+        ],
+        model: Annotated[
+            Union[
+                TaskStatusSuccessSchema,
+                TaskStatusProcessSchema,
+                TaskStatusErrorSchema,
+                TaskStatusCancelSchema,
+            ],
+            Doc(
+                """
+                    Модель результата задачи.
+                    """
+            ),
+        ],
+    ) -> None: ...
+
+    def remove_finished_task(
+        self,
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc(
+                """
+                    Схема приоритетной задачи.
+                    """
+            ),
+        ],
+        model: Annotated[
+            Union[
+                TaskStatusSuccessSchema,
+                TaskStatusProcessSchema,
+                TaskStatusErrorSchema,
+                TaskStatusCancelSchema,
+            ],
+            Doc(
+                """
+                    Модель результата задачи.
+                    """
+            ),
+        ],
+    ) -> Union[None, Awaitable[None]]:
+        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
+
+        Args:
+            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
+            model (TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Модель результата задачи.
+        """
         pass
 
     def _dynamic_model(

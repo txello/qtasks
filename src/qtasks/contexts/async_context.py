@@ -9,7 +9,7 @@ from qtasks.exc.plugins import TaskPluginTriggerError
 from qtasks.exc.task import TaskCancelError
 
 if TYPE_CHECKING:
-    from qtasks.qtasks import QueueTasks
+    from qtasks.asyncio.qtasks import QueueTasks
     from qtasks.logs import Logger
     from qtasks.schemas.task import Task
 
@@ -37,17 +37,16 @@ class AsyncContext:
         self.task_name = kwargs.get("task_name")
         """Имя задачи."""
 
-        self.task_uuid = kwargs.get("task_uuid")
+        self.task_uuid: Union[UUID, str, None] = kwargs.get("task_uuid")
         """UUID задачи."""
 
         self.generate_handler = kwargs.get("generate_handler")
         """Функция-генератор для создания задач."""
 
-        self._app: "QueueTasks" = kwargs.get("app")
+        self._app: "QueueTasks" = kwargs.get("app", self._update_app())
         """Приложение, к которому принадлежит задача."""
-        self._update_app()
 
-        self._log: "Logger" = kwargs.get("log")
+        self._log: "Logger" = kwargs.get("log", self._update_logger())
         """Логгер."""
 
         self._metadata: Union["Task", None] = None
@@ -57,12 +56,12 @@ class AsyncContext:
         """Возвращает логгер для текущего контекста.
 
         Args:
-            name (str|None): Имя логгера. Если не указано, используется имя задачи.
+            name (str|None): Имя логгера. Если не указано, используется имя задачи или `AsyncContext`.
 
         Returns:
             Logger: Логгер для текущего контекста.
         """
-        self._log = self._app.log.with_subname(name or self.task_name)
+        self._log = self._log.with_subname(name or self.task_name or "AsyncContext")
         return self._log
 
     def get_config(self) -> QueueConfig:
@@ -81,7 +80,13 @@ class AsyncContext:
 
         Returns:
             Task|None: Метаданные задачи или None, если не найдены.
+
+        Raises:
+            ValueError: Если UUID задачи не установлен.
         """
+        if not self.task_uuid:
+            raise ValueError("UUID задачи не установлен.")
+
         if cache:
             if not self._metadata:
                 self._metadata = await self._app.get(self.task_uuid)
@@ -126,17 +131,6 @@ class AsyncContext:
         """
         raise TaskPluginTriggerError(**kwargs)
 
-    def get_plugin(self, name: str):
-        """Возвращает плагин приложения по имени.
-
-        Args:
-            name (str): Имя плагина.
-
-        Returns:
-            Any: Плагин приложения или None, если не найден.
-        """
-        return self._app.get_plugin(name)
-
     def get_component(self, name: str):
         """Возвращает компонент приложения по имени.
 
@@ -150,11 +144,19 @@ class AsyncContext:
 
     def _update_app(self):
         """Обновляет приложение для текущего контекста."""
-        if not self._app:
+        import qtasks._state
+
+        app = qtasks._state.app_main  # type: ignore
+        return app
+
+    def _update_logger(self) -> "Logger":
+        if self._app and self._app.log:
+            log = self._app.log.with_subname(self.task_name or "AsyncContext")
+        else:
             import qtasks._state
 
-            self._app = qtasks._state.app_main
-        return
+            log = qtasks._state.log_main.with_subname(self.task_name or "AsyncContext")
+        return log
 
     def _update(self, **kwargs):
         """Обновляет атрибуты контекста.

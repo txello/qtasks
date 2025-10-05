@@ -10,9 +10,7 @@ from qtasks.utils import _build_task
 class AsyncTestPlugin(BasePlugin):
     """Плагин для асинхронной обработки тестов."""
 
-    def __init__(self,
-                 name: str = "AsyncTestPlugin"
-                 ):
+    def __init__(self, name: str = "AsyncTestPlugin"):
         """Инициализация плагина.
 
         Args:
@@ -21,7 +19,7 @@ class AsyncTestPlugin(BasePlugin):
         super().__init__(name=name)
         self.handlers = {
             "worker_execute_before": self.worker_execute_before,
-            "worker_remove_finished_task": self.worker_remove_finished_task
+            "worker_remove_finished_task": self.worker_remove_finished_task,
         }
 
     async def start(self, *args, **kwargs):
@@ -35,11 +33,20 @@ class AsyncTestPlugin(BasePlugin):
     async def trigger(self, name, **kwargs):
         """Триггер для запуска обработчика."""
         handler = self.handlers.get(name)
-        return await handler(kwargs.get("task_func"), kwargs.get("task_broker"), kwargs.get("model")) if handler else None
+        return (
+            await handler(
+                kwargs.get("task_func"), kwargs.get("task_broker"), kwargs.get("model")
+            )
+            if handler
+            else None
+        )
 
     async def worker_execute_before(self, *args, **kwargs):
         """Обработчик перед выполнением задачи."""
-        return await self._execute(*args, **kwargs).get("model")
+        result = await self._execute(*args, **kwargs)
+        if not result:
+            return
+        return result.get("model")
 
     async def worker_remove_finished_task(self, *args, **kwargs):
         """Обработчик завершения задачи."""
@@ -51,8 +58,12 @@ class AsyncTestPlugin(BasePlugin):
         task_broker: Union[TaskPrioritySchema, None],
         model: TaskStatusProcessSchema,
     ):
-        if not task_func or "test" not in task_func.extra or not task_func.extra["test"]:
+        if (
+            not task_func
+            or "test" not in task_func.extra
+            or not task_func.extra["test"]
+        ):
             return
-        model = _build_task(model, is_testing=task_func.extra["test"])
-        model.is_testing = str(model.is_testing)
+        model = _build_task(model, is_testing=task_func.extra["test"])  # type: ignore
+        model.is_testing = str(model.is_testing)  # type: ignore
         return {"model": model}

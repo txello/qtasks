@@ -30,8 +30,12 @@ def autodiscover_tasks(app, modules: List[str] = ["tasks"]):
 
         try:
             for module_name in modules:
-                if module_has_submodule(module, module_name) or find_spec(f"{app_name}.{module_name}"):
+                if module_has_submodule(module, module_name) or find_spec(
+                    f"{app_name}.{module_name}"
+                ):
                     importlib.import_module(f"{app_name}.{module_name}")
                     logger.debug(f"[QTasks] Найден {module_name}.py в {app_name}")
         except Exception as e:
-            logger.exception(f"[QTasks] Ошибка при импорте {app_name}.{module_name}: {e}")
+            logger.exception(
+                f"[QTasks] Ошибка при импорте {app_name}.{module_name}: {e}"
+            )

@@ -11,7 +11,7 @@ _brokers = {
     "SyncKafkaBroker": "qtasks.brokers.sync_kafka",
     "AsyncKafkaBroker": "qtasks.brokers.async_kafka",
     "AsyncSocketBroker": "qtasks.brokers.async_socket",
-    "SyncSocketBroker": "qtasks.brokers.sync_socket"
+    "SyncSocketBroker": "qtasks.brokers.sync_socket",
 }
 
 

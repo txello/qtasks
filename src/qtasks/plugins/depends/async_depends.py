@@ -30,9 +30,7 @@ class AsyncDependsPlugin(BasePlugin):
         """Инициализация плагина Pydantic."""
         super().__init__(*args, **kwargs)
 
-        self.handlers = {
-            "task_executor_args_replace": self.replace_args
-        }
+        self.handlers = {"task_executor_args_replace": self.replace_args}
 
     async def start(self, *args, **kwargs):
         """Запуск плагина Pydantic."""
@@ -49,9 +47,14 @@ class AsyncDependsPlugin(BasePlugin):
             return await self.handlers[name](task_executor, **kwargs)
         return None
 
-    async def replace_args(self, task_executor: "BaseTaskExecutor", args: List[Any], kw: Dict[str, Any], args_info: List[ArgMeta]):
+    async def replace_args(
+        self,
+        task_executor: "BaseTaskExecutor",
+        args: List[Any],
+        kw: Dict[str, Any],
+        args_info: List[ArgMeta],
+    ):
         """Заменяет аргументы задачи."""
-
         for args_meta in args_info:
             if not args_meta.is_kwarg:
                 continue
@@ -65,12 +68,20 @@ class AsyncDependsPlugin(BasePlugin):
     def _is_async_cm_function(self, func) -> bool:
         """Функция, обёрнутая @asynccontextmanager. asynccontextmanager сохраняет исходную функцию в __wrapped__."""
         wrapped = getattr(func, "__wrapped__", None)
-        return inspect.isfunction(func) and wrapped is not None and inspect.isasyncgenfunction(wrapped)
+        return (
+            inspect.isfunction(func)
+            and wrapped is not None
+            and inspect.isasyncgenfunction(wrapped)
+        )
 
     def _is_sync_cm_function(self, func) -> bool:
         """Функция, обёрнутая @contextmanager (синхронный CM)."""
         wrapped = getattr(func, "__wrapped__", None)
-        return inspect.isfunction(func) and wrapped is not None and inspect.isgeneratorfunction(wrapped)
+        return (
+            inspect.isfunction(func)
+            and wrapped is not None
+            and inspect.isgeneratorfunction(wrapped)
+        )
 
     async def _eval_dep_callable(self, callable_obj):
         """Универсально "разворачивает" зависимость до значения. Никаких аргументов не прокидываем — если нужно, добавьте их где вызываете."""
@@ -80,7 +91,9 @@ class AsyncDependsPlugin(BasePlugin):
         if self._is_async_cm_function(func):
             cm = func()  # создаём CM
             # cm должен быть _AGCM или хотя бы иметь __aenter__/__aexit__
-            if (_AGCM and isinstance(cm, _AGCM)) or (hasattr(cm, "__aenter__") and hasattr(cm, "__aexit__")):
+            if (_AGCM and isinstance(cm, _AGCM)) or (
+                hasattr(cm, "__aenter__") and hasattr(cm, "__aexit__")
+            ):
                 async with cm as v:
                     return v
             else:

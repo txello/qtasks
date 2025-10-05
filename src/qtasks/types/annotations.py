@@ -1,4 +1,5 @@
 """QTasks type annotations."""
+
 try:
     from typing import ParamSpec
 except ImportError:
@@ -6,5 +7,5 @@ except ImportError:
 
 from typing import Callable, TypeVar
 
-P = ParamSpec("P", bound=Callable)
+P = ParamSpec("P", bound=Callable)  # type: ignore
 R = TypeVar("R")

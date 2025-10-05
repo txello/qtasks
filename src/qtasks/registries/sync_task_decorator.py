@@ -1,6 +1,16 @@
 """Sync Task."""
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, List, Optional, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Type,
+    Union,
+)
 from typing_extensions import Annotated, Doc
 
 from qtasks.types.annotations import P, R
@@ -75,7 +85,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         retry: Annotated[
-            int,
+            Optional[int],
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -85,7 +95,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         retry_on_exc: Annotated[
-            List[Type[Exception]],
+            Optional[List[Type[Exception]]],
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -95,35 +105,35 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         decode: Annotated[
-            Callable,
+            Optional[Callable],
             Doc(
                 """
                     Декодер результата задачи.
                 """
-            )
+            ),
         ] = None,
         tags: Annotated[
-            List[str],
+            Optional[List[str]],
             Doc(
                 """
                     Теги задачи.
 
                     По умолчанию: `None`.
                 """
-            )
+            ),
         ] = None,
         description: Annotated[
-            str,
+            Optional[str],
             Doc(
                 """
                     Описание задачи.
 
                     По умолчанию: `None`.
                 """
-            )
+            ),
         ] = None,
         generate_handler: Annotated[
-            Callable,
+            Optional[Callable],
             Doc(
                 """
                     Генератор обработчика.
@@ -133,7 +143,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         executor: Annotated[
-            Type["BaseTaskExecutor"],
+            Optional[Type["BaseTaskExecutor"]],
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -143,7 +153,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         middlewares_before: Annotated[
-            List["TaskMiddleware"],
+            Optional[List[Type["TaskMiddleware"]]],
             Doc(
                 """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -153,7 +163,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         middlewares_after: Annotated[
-            List["TaskMiddleware"],
+            Optional[List[Type["TaskMiddleware"]]],
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -163,7 +173,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         extra: Annotated[
-            Dict[str, Any],
+            Optional[Dict[str, Any]],
             Doc(
                 """
                     Дополнительные параметры.
@@ -173,7 +183,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         app: Annotated[
-            "QueueTasks",
+            Optional["QueueTasks"],
             Doc(
                 """
                     `QueueTasks` экземпляр.
@@ -197,8 +207,8 @@ class SyncTask(Generic[P, R]):
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `None`.
-            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
-            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
             app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: `None`.
         """
         self.task_name = task_name
@@ -263,7 +273,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         task_name: Annotated[
-            str,
+            Optional[str],
             Doc(
                 """
                     Имя задачи.
@@ -294,22 +304,28 @@ class SyncTask(Generic[P, R]):
 
         Returns:
             Task|None: Результат задачи или `None`.
+
+        Raises:
+            ValueError: Не указано имя задачи.
         """
+        if not task_name and not self.task_name:
+            raise ValueError("Не указано имя задачи.")
+
         if not self._app:
             self._update_app()
 
         if priority is None:
             priority = self.priority
 
-        return self._app.add_task(
+        return self._app.add_task(  # type: ignore
             *args,
-            task_name=task_name or self.task_name,
+            task_name=task_name or self.task_name,  # type: ignore
             priority=priority,
             timeout=timeout,
-            **kwargs
+            **kwargs,
         )
 
-    def _update_app(self) -> "QueueTasks":
+    def _update_app(self):
         if not self._app:
             import qtasks._state
 

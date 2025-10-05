@@ -48,16 +48,16 @@ class Router(SyncPluginMixin):
     """
 
     @overload
-    def __init__(self, method: Literal["sync"] = None) -> None:
+    def __init__(self, method: Literal["sync"] = "sync") -> None:
         """Инициализация роутера для синхронных задач."""
         ...
 
     @overload
-    def __init__(self, method: Literal["async"] = None) -> None:
+    def __init__(self, method: Literal["async"] = "async") -> None:
         """Инициализация роутера для асинхронных задач."""
         ...
 
-    def __init__(self, method: Literal["sync", "async"] = None):
+    def __init__(self, method: Optional[Literal["sync", "async"]] = None):
         """Инициализация роутера.
 
         Args:
@@ -118,7 +118,7 @@ class Router(SyncPluginMixin):
 
                     По умолчанию: `None`.
                     """
-            )
+            ),
         ] = None,
         retry: Annotated[
             Union[int, None],
@@ -148,7 +148,7 @@ class Router(SyncPluginMixin):
 
                     По умолчанию: `None`.
                 """
-            )
+            ),
         ] = None,
         tags: Annotated[
             Union[List[str], None],
@@ -158,7 +158,7 @@ class Router(SyncPluginMixin):
 
                     По умолчанию: `None`.
                 """
-            )
+            ),
         ] = None,
         description: Annotated[
             Union[str, None],
@@ -168,7 +168,7 @@ class Router(SyncPluginMixin):
 
                     По умолчанию: `None`.
                 """
-            )
+            ),
         ] = None,
         generate_handler: Annotated[
             Union[Callable, None],
@@ -181,7 +181,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         executor: Annotated[
-            Type["BaseTaskExecutor"],
+            Optional[Type["BaseTaskExecutor"]],
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -191,7 +191,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         middlewares_before: Annotated[
-            List["TaskMiddleware"],
+            Optional[List[Type["TaskMiddleware"]]],
             Doc(
                 """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -201,7 +201,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         middlewares_after: Annotated[
-            List["TaskMiddleware"],
+            Optional[List[Type["TaskMiddleware"]]],
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -210,7 +210,7 @@ class Router(SyncPluginMixin):
                     """
             ),
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
         """Декоратор для регистрации задач.
 
@@ -226,8 +226,8 @@ class Router(SyncPluginMixin):
             description (str, optional): Описание задачи. По умолчанию: `None`.
             generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
-            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
 
         Raises:
             ValueError: Если задача с таким именем уже зарегистрирована.
@@ -273,7 +273,7 @@ class Router(SyncPluginMixin):
                 executor=executor,
                 middlewares_before=middlewares_before,
                 middlewares_after=middlewares_after,
-                extra=kwargs
+                extra=kwargs,
             )
 
             self.tasks[task_name] = model
@@ -282,7 +282,6 @@ class Router(SyncPluginMixin):
 
             method = AsyncTask if self._method == "async" else SyncTask
             return method(
-                app=self,
                 task_name=model.name,
                 priority=model.priority,
                 echo=model.echo,

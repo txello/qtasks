@@ -1,6 +1,7 @@
 import asyncio
 
 from based_async_app import (
+    app,
     example_pydantic,
     test_num,
     error_zero,
@@ -27,7 +28,8 @@ async def main():
     # task = await example_pydantic.add_task(kwargs={"name": "Test", "value": 42}, timeout=50)
     # task = await test_echo_ctx.add_task(timeout=50)
     # task = await example_stats.add_task(timeout=50)
-    task = await example_error_timeout.add_task(timeout=50)
+    # task = await example_error_timeout.add_task(timeout=50)
+    task = await app.add_task("test_num", 5, timeout=50)
     print(task)
 
 asyncio.run(main())

@@ -1,6 +1,7 @@
 """QTasks registry utilities."""
 
-from typing import Callable, List, Optional, Type, Union
+from types import FunctionType
+from typing import Callable, List, Literal, Optional, Type, Union, overload
 from typing_extensions import Annotated, Doc
 
 from qtasks.executors.base import BaseTaskExecutor
@@ -8,11 +9,13 @@ from qtasks.middlewares.task import TaskMiddleware
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.async_task_decorator import AsyncTask
+from qtasks.types.annotations import P, R
 
 
+@overload
 def shared_task(
-    name: Annotated[
-        Optional[str],
+    func_or_name: Annotated[
+        Union[str, Callable[P, R], None],
         Doc(
             """
                     Имя задачи.
@@ -69,7 +72,7 @@ def shared_task(
 
                 По умолчанию: `None`.
             """
-        )
+        ),
     ] = None,
     tags: Annotated[
         Union[List[str], None],
@@ -79,7 +82,7 @@ def shared_task(
 
                 По умолчанию: `None`.
             """
-        )
+        ),
     ] = None,
     description: Annotated[
         Union[str, None],
@@ -89,7 +92,7 @@ def shared_task(
 
                 По умолчанию: `None`.
             """
-        )
+        ),
     ] = None,
     generate_handler: Annotated[
         Union[Callable, None],
@@ -102,7 +105,7 @@ def shared_task(
         ),
     ] = None,
     executor: Annotated[
-        Type["BaseTaskExecutor"],
+        Optional[Type["BaseTaskExecutor"]],
         Doc(
             """
                     Класс `BaseTaskExecutor`.
@@ -112,7 +115,7 @@ def shared_task(
         ),
     ] = None,
     middlewares_before: Annotated[
-        List["TaskMiddleware"],
+        Optional[List[Type["TaskMiddleware"]]],
         Doc(
             """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -122,7 +125,7 @@ def shared_task(
         ),
     ] = None,
     middlewares_after: Annotated[
-        List["TaskMiddleware"],
+        Optional[List[Type["TaskMiddleware"]]],
         Doc(
             """
                     Мидлвари, которые будут выполнены после задачи.
@@ -132,7 +135,143 @@ def shared_task(
         ),
     ] = None,
     awaiting: Annotated[
+        Literal[False],
+        Doc(
+            """
+                    Async версия.
+
+                    По умолчанию: `None`.
+                    """
+        ),
+    ] = False,
+    **kwargs,
+) -> Callable[[Callable[P, R]], SyncTask[P, R]]: ...
+
+
+@overload
+def shared_task(
+    func_or_name: Annotated[
+        Union[str, Callable[P, R], None],
+        Doc(
+            """
+                    Имя задачи.
+
+                    По умолчанию: `func.__name__`.
+                    """
+        ),
+    ] = None,
+    priority: Annotated[
+        Optional[int],
+        Doc(
+            """
+                    Приоритет у задачи по умолчанию.
+
+                    По умолчанию: `config.default_task_priority`.
+                    """
+        ),
+    ] = None,
+    echo: Annotated[
         bool,
+        Doc(
+            """
+                    Добавить (A)syncTask первым параметром.
+
+                    По умолчанию: `False`.
+                    """
+        ),
+    ] = False,
+    retry: Annotated[
+        Union[int, None],
+        Doc(
+            """
+                    Количество попыток повторного выполнения задачи.
+
+                    По умолчанию: `None`.
+                    """
+        ),
+    ] = None,
+    retry_on_exc: Annotated[
+        Union[List[Type[Exception]], None],
+        Doc(
+            """
+                    Исключения, при которых задача будет повторно выполнена.
+
+                    По умолчанию: `None`.
+                    """
+        ),
+    ] = None,
+    decode: Annotated[
+        Union[Callable, None],
+        Doc(
+            """
+                Декодер результата задачи.
+
+                По умолчанию: `None`.
+            """
+        ),
+    ] = None,
+    tags: Annotated[
+        Union[List[str], None],
+        Doc(
+            """
+                Теги задачи.
+
+                По умолчанию: `None`.
+            """
+        ),
+    ] = None,
+    description: Annotated[
+        Union[str, None],
+        Doc(
+            """
+                Описание задачи.
+
+                По умолчанию: `None`.
+            """
+        ),
+    ] = None,
+    generate_handler: Annotated[
+        Union[Callable, None],
+        Doc(
+            """
+                    Генератор обработчика.
+
+                    По умолчанию: `None`.
+                    """
+        ),
+    ] = None,
+    executor: Annotated[
+        Optional[Type["BaseTaskExecutor"]],
+        Doc(
+            """
+                    Класс `BaseTaskExecutor`.
+
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+        ),
+    ] = None,
+    middlewares_before: Annotated[
+        Optional[List[Type["TaskMiddleware"]]],
+        Doc(
+            """
+                    Мидлвари, которые будут выполнены перед задачей.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+        ),
+    ] = None,
+    middlewares_after: Annotated[
+        Optional[List[Type["TaskMiddleware"]]],
+        Doc(
+            """
+                    Мидлвари, которые будут выполнены после задачи.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+        ),
+    ] = None,
+    awaiting: Annotated[
+        Literal[True],
         Doc(
             """
                     Async версия.
@@ -140,9 +279,144 @@ def shared_task(
                     По умолчанию: `False`.
                     """
         ),
+    ] = True,
+    **kwargs,
+) -> Callable[[Callable[P, R]], AsyncTask[P, R]]: ...
+
+
+def shared_task(
+    func_or_name: Annotated[
+        Union[str, Callable[P, R], None],
+        Doc(
+            """
+                    Имя задачи.
+
+                    По умолчанию: `func.__name__`.
+                    """
+        ),
+    ] = None,
+    priority: Annotated[
+        Optional[int],
+        Doc(
+            """
+                    Приоритет у задачи по умолчанию.
+
+                    По умолчанию: `config.default_task_priority`.
+                    """
+        ),
+    ] = None,
+    echo: Annotated[
+        bool,
+        Doc(
+            """
+                    Добавить (A)syncTask первым параметром.
+
+                    По умолчанию: `False`.
+                    """
+        ),
     ] = False,
-    **kwargs
-) -> Union[Type[SyncTask], Type[AsyncTask]]:
+    retry: Annotated[
+        Union[int, None],
+        Doc(
+            """
+                    Количество попыток повторного выполнения задачи.
+
+                    По умолчанию: `None`.
+                    """
+        ),
+    ] = None,
+    retry_on_exc: Annotated[
+        Union[List[Type[Exception]], None],
+        Doc(
+            """
+                    Исключения, при которых задача будет повторно выполнена.
+
+                    По умолчанию: `None`.
+                    """
+        ),
+    ] = None,
+    decode: Annotated[
+        Union[Callable, None],
+        Doc(
+            """
+                Декодер результата задачи.
+
+                По умолчанию: `None`.
+            """
+        ),
+    ] = None,
+    tags: Annotated[
+        Union[List[str], None],
+        Doc(
+            """
+                Теги задачи.
+
+                По умолчанию: `None`.
+            """
+        ),
+    ] = None,
+    description: Annotated[
+        Union[str, None],
+        Doc(
+            """
+                Описание задачи.
+
+                По умолчанию: `None`.
+            """
+        ),
+    ] = None,
+    generate_handler: Annotated[
+        Union[Callable, None],
+        Doc(
+            """
+                    Генератор обработчика.
+
+                    По умолчанию: `None`.
+                    """
+        ),
+    ] = None,
+    executor: Annotated[
+        Optional[Type["BaseTaskExecutor"]],
+        Doc(
+            """
+                    Класс `BaseTaskExecutor`.
+
+                    По умолчанию: `SyncTaskExecutor`.
+                    """
+        ),
+    ] = None,
+    middlewares_before: Annotated[
+        Optional[List[Type["TaskMiddleware"]]],
+        Doc(
+            """
+                    Мидлвари, которые будут выполнены перед задачей.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+        ),
+    ] = None,
+    middlewares_after: Annotated[
+        Optional[List[Type["TaskMiddleware"]]],
+        Doc(
+            """
+                    Мидлвари, которые будут выполнены после задачи.
+
+                    По умолчанию: `Пустой массив`.
+                    """
+        ),
+    ] = None,
+    awaiting: Annotated[
+        Optional[bool],
+        Doc(
+            """
+                    Async версия.
+
+                    По умолчанию: `False`.
+                    """
+        ),
+    ] = None,
+    **kwargs,
+) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
     """Декоратор для регистрации задач.
 
     Args:
@@ -156,8 +430,8 @@ def shared_task(
         description (str, optional): Описание задачи. По умолчанию: `None`.
         generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
         executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-        middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
-        middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+        middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+        middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
         awaiting (bool, optional): Использовать ли AsyncTask вместо SyncTask. По умолчанию: `False`.
 
     Raises:
@@ -170,11 +444,14 @@ def shared_task(
     middlewares_before = middlewares_before or []
     middlewares_after = middlewares_after or []
 
-    if callable(name):
+    if not awaiting:
+        awaiting = False
+
+    if isinstance(func_or_name, FunctionType):
         # Декоратор без скобок
         return TaskRegistry.register(
-            name=name.__name__,
-            priority=priority,
+            name=func_or_name.__name__,
+            priority=priority or 0,
             awaiting=awaiting,
             echo=echo,
             retry=retry,
@@ -186,14 +463,16 @@ def shared_task(
             executor=executor,
             middlewares_before=middlewares_before,
             middlewares_after=middlewares_after,
-            **kwargs
-        )(name)
+            **kwargs,
+        )(
+            func_or_name
+        )  # type: ignore
 
     # Декоратор со скобками
-    def wrapper(func: Callable) -> Union[SyncTask, AsyncTask]:
+    def wrapper(func: Callable):
         return TaskRegistry.register(
-            name=name or func.__name__,
-            priority=priority,
+            name=func_or_name if isinstance(func_or_name, str) else func.__name__,
+            priority=priority or 0,
             awaiting=awaiting,
             echo=echo,
             retry=retry,
@@ -205,7 +484,7 @@ def shared_task(
             executor=executor,
             middlewares_before=middlewares_before,
             middlewares_after=middlewares_after,
-            **kwargs
+            **kwargs,
         )(func)
 
     return wrapper
