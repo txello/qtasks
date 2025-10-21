@@ -1,49 +1,28 @@
 """Sync Task Tests."""
 
-import time
-import pytest
+import os
 import sys
-import subprocess
-from pathlib import Path
+import pytest
 from uuid import uuid4
 
-from qtasks import tests
+from qtasks.tests import SyncTestCase
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.schemas.test import TestConfig
 
+parent_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+sys.path.insert(0, parent_dir)
+
 from apps.app_sync import app
 
-
-@pytest.fixture(scope="session", autouse=True)
-def run_server():
-    """Запуск QTasks-сервера через subprocess и лог ошибок."""
-    script_path = Path(__file__).parent / "apps" / "app_sync.py"
-    assert script_path.exists(), f"Script not found: {script_path}"
-
-    process = subprocess.Popen(
-        [sys.executable, str(script_path)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
-    time.sleep(5)
-
-    # Выводим stdout (если вдруг сразу завершилось)
-    if process.poll() is not None:  # Процесс уже завершился?
-        output = process.stdout.read()
-        raise RuntimeError(f"Server exited early with output:\n{output}")
-
-    yield
-
-    time.sleep(2)
-    process.terminate()
-    process.wait()
+@pytest.fixture(scope="package")
+def app_script() -> str:
+    return "app_sync.py"
 
 
 @pytest.fixture()
 def test_case():
     """Создаёт конфигурацию тестов."""
-    case = tests.SyncTestCase(app=app)
+    case = SyncTestCase(app=app)
     case.settings(TestConfig.full())
     return case
 
@@ -51,7 +30,7 @@ def test_case():
 @pytest.mark.sync
 def test_task_get_result(test_case):
     """Получение результата задачи."""
-    task = test_case.add_task("test", args=(5,))
+    task = test_case.add_task("test", 5)
     result = app.get(uuid=task.uuid)
     assert result is not None
 

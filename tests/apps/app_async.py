@@ -4,6 +4,7 @@ from qtasks.asyncio import QueueTasks
 
 
 app = QueueTasks(name="QueueTasks")
+app.config.delete_finished_tasks = True
 
 
 @app.task(name="test")

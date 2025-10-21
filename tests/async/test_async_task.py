@@ -1,65 +1,29 @@
 """Async Task Tests."""
 
-import threading
-import time
-import pytest
+import os
 import sys
-import subprocess
-from pathlib import Path
+import pytest
 from uuid import uuid4
 
-from qtasks import tests
+from qtasks.tests import AsyncTestCase
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.schemas.test import TestConfig
+
+parent_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+sys.path.insert(0, parent_dir)
 
 from apps.app_async import app
 
 
-@pytest.fixture(scope="session", autouse=True)
-def run_server():
-    """Запуск QTasks-сервера через subprocess и лог ошибок."""
-    script_path = Path(__file__).parent / "apps" / "app_async.py"
-    assert script_path.exists(), f"Script not found: {script_path}"
-
-    # Запускаем сервер в отдельном процессе
-    process = subprocess.Popen(
-        [sys.executable, str(script_path)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,  # построчный вывод
-    )
-
-    # Поток, который дренирует stdout и печатает логи сразу
-    def _stream_output(pipe):
-        for line in iter(pipe.readline, ""):
-            sys.stdout.write(f"[SERVER] {line}")
-        pipe.close()
-
-    thread = threading.Thread(target=_stream_output, args=(process.stdout,), daemon=True)
-    thread.start()
-
-    # Подождём немного, чтобы сервер успел подняться
-    time.sleep(3)
-
-    if process.poll() is not None:
-        raise RuntimeError("Server exited too early — проверьте логи выше.")
-
-    yield  # выполнение тестов
-
-    # Завершаем сервер
-    process.terminate()
-    try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        process.kill()
-    thread.join(timeout=2)
+@pytest.fixture(scope="package")
+def app_script() -> str:
+    return "app_async.py"
 
 
 @pytest.fixture()
 def test_case():
     """Создаёт конфигурацию тестов."""
-    case = tests.AsyncTestCase(app=app)
+    case = AsyncTestCase(app=app)
     case.settings(TestConfig.full())
     return case
 

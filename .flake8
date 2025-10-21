@@ -6,3 +6,4 @@ per-file-ignores =
     src/qtasks/tests/async_classes.py: D101, D102, D107
     src/qtasks/tests/sync_classes.py: D101, D102, D107
     tests/apps/* : D103, E226
+    tests/*: E402
