@@ -56,8 +56,6 @@ class SyncDependsPlugin(BasePlugin):
             if hasattr(val, "__class__") and val.__class__ == Depends:
                 dep_callable = val.func
                 kw[args_meta.name] = self._eval_dep_callable(dep_callable)
-                print(1)
-        print(kw)
         return {"kw": kw}
 
     def _eval_dep_callable(self, callable_obj):

@@ -154,7 +154,8 @@ async def test_echo_ctx(self: AsyncTask):
 
 @app.task
 async def example_stats():
-    print(stats.inspect().tasks())
+    inspect = await stats.inspect()
+    print(inspect.tasks())
 
 
 @app.task(echo=True, max_time=2)

@@ -1,8 +1,9 @@
 """Миксин для работы с плагинами."""
 
 import traceback
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union, overload
+from typing import TYPE_CHECKING, Annotated, Any, Dict, List, Literal, Optional, Union, overload
 from copy import deepcopy
+from typing_extensions import Doc
 
 
 if TYPE_CHECKING:
@@ -98,6 +99,42 @@ class SyncPluginMixin:
                 "kw": next((r["kw"] for r in results[::-1] if "kw" in r), {}),
             }
         return results
+
+    def add_plugin(
+        self,
+        plugin: Annotated[
+            "BasePlugin",
+            Doc(
+                """
+                    Плагин.
+                    """
+            ),
+        ],
+        trigger_names: Annotated[
+            Optional[List[str]],
+            Doc(
+                """
+                    Имя триггеров для плагина.
+
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
+                    """
+            ),
+        ] = None,
+    ) -> None:
+        """Добавить плагин в класс.
+
+        Args:
+            plugin (BasePlugin): Плагин
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return
 
 
 class AsyncPluginMixin:
@@ -213,3 +250,39 @@ class AsyncPluginMixin:
                 "kw": next((r["kw"] for r in results[::-1] if "kw" in r), {}),
             }
         return results
+
+    def add_plugin(
+        self,
+        plugin: Annotated[
+            "BasePlugin",
+            Doc(
+                """
+                    Плагин.
+                    """
+            ),
+        ],
+        trigger_names: Annotated[
+            Optional[List[str]],
+            Doc(
+                """
+                    Имя триггеров для плагина.
+
+                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
+                    """
+            ),
+        ] = None,
+    ) -> None:
+        """Добавить плагин в класс.
+
+        Args:
+            plugin (BasePlugin): Плагин
+            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        trigger_names = trigger_names or ["Globals"]
+
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin]})
+            else:
+                self.plugins[name].append(plugin)
+        return

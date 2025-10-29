@@ -109,7 +109,6 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
 
         args_from_func = self._extract_args_kwargs_from_func(self.task_func.func)
         args_info = self._build_args_info(args_from_func[0], args_from_func[1])
-        print(123, self._args)
         new_args = self._plugin_trigger(
             "task_executor_args_replace",
             task_executor=self,
@@ -253,7 +252,6 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                     future = executor.submit(self.run_task)
                     self._result = future.result(timeout=self.task_func.max_time)
             else:
-                print(self._args)
                 self._result = self.run_task()
         except TaskPluginTriggerError as e:
             new_result = self._plugin_trigger(

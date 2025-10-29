@@ -233,7 +233,7 @@ class AsyncTask(Generic[P, R]):
 
         self.extra = extra or {}
 
-        self._app = app
+        self._app: Optional["QueueTasks"] = app
 
         self.ctx = AsyncContext(
             task_name=task_name,
@@ -320,8 +320,8 @@ class AsyncTask(Generic[P, R]):
             priority = self.priority
 
         return await self._app.add_task(  # type: ignore
+            task_name or self.task_name,  # type: ignore
             *args,
-            task_name=task_name or self.task_name,  # type: ignore
             priority=priority,
             timeout=timeout,
             **kwargs,
@@ -334,5 +334,5 @@ class AsyncTask(Generic[P, R]):
 
             if qtasks._state.app_main is None:
                 raise ImportError("Невозможно получить app!")
-            self._app = qtasks._state.app_main
+            self._app = qtasks._state.app_main  # type: ignore
         return

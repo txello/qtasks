@@ -318,8 +318,8 @@ class SyncTask(Generic[P, R]):
             priority = self.priority
 
         return self._app.add_task(  # type: ignore
+            task_name or self.task_name,  # type: ignore
             *args,
-            task_name=task_name or self.task_name,  # type: ignore
             priority=priority,
             timeout=timeout,
             **kwargs,

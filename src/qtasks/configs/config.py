@@ -29,7 +29,7 @@ class QueueConfig:
 
     max_tasks_process: int = 10
     running_older_tasks: bool = False
-    delete_finished_tasks: bool = True
+    delete_finished_tasks: bool = False
 
     default_task_priority: int = 0
 
