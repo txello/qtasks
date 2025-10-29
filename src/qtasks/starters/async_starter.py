@@ -201,7 +201,8 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
         try:
             self._global_loop.run_until_complete(self._start(num_workers))
         except KeyboardInterrupt:
-            self._global_loop.run_until_complete(self.stop())
+            with contextlib.suppress(RuntimeError):
+                self._global_loop.run_until_complete(self.stop())
 
     async def _start(self, num_workers=4):
         """Запуск Стартера асинхронно.

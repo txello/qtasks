@@ -1,9 +1,12 @@
 """Sync App."""
 
 from qtasks import QueueTasks
+from qtasks.plugins import SyncgRPCPlugin
 
 app = QueueTasks(name="QueueTasks")
 app.config.delete_finished_tasks = True
+
+app.add_plugin(SyncgRPCPlugin(app=app, host="localhost"))
 
 
 @app.task(name="test")
