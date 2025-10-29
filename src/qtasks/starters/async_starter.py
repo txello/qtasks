@@ -2,8 +2,9 @@
 
 import asyncio
 import contextlib
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
-from typing_extensions import Annotated, Doc
+from typing import TYPE_CHECKING, Annotated, Literal, Optional
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.events.async_events import AsyncEvents
@@ -14,9 +15,9 @@ from .base import BaseStarter
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
-    from qtasks.workers.base import BaseWorker
-    from qtasks.plugins.base import BasePlugin
     from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
+    from qtasks.workers.base import BaseWorker
 
 
 class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
@@ -44,7 +45,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя проекта. Это имя можно использовать для тегов для Стартеров.
@@ -74,7 +75,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -84,7 +85,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -123,16 +124,16 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             events=events,
         )
         self.events: BaseEvents[Literal[True]] = self.events or AsyncEvents()
-        self.worker: "BaseWorker[Literal[True]]"
-        self.broker: "BaseBroker[Literal[True]]"
+        self.worker: BaseWorker[Literal[True]]
+        self.broker: BaseBroker[Literal[True]]
 
-        self._global_loop: Union[asyncio.AbstractEventLoop, None] = None
-        self._started_plugins: set["BasePlugin"] = set()
+        self._global_loop: asyncio.AbstractEventLoop | None = None
+        self._started_plugins: set[BasePlugin] = set()
 
     def start(
         self,
         loop: Annotated[
-            Optional[asyncio.AbstractEventLoop],
+            asyncio.AbstractEventLoop | None,
             Doc(
                 """
                     Асинхронный loop.
@@ -162,7 +163,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             ),
         ] = True,
         plugins: Annotated[
-            Optional[Dict[str, List["BasePlugin"]]],
+            dict[str, list["BasePlugin"]] | None,
             Doc(
                 """
                     Плагины для воркера и брокера.
@@ -213,7 +214,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
         await self._plugin_trigger("starter_start", starter=self)
         for plugin in [i for y in self.plugins.values() for i in y]:
             if plugin not in self._started_plugins:
-                plugin: "BasePlugin[Literal[True]]"
+                plugin: BasePlugin[Literal[True]]
                 self._started_plugins.add(plugin)
                 await plugin.start()
 
@@ -250,10 +251,10 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
         )
 
         for model_plugin in [i for y in self.plugins.values() for i in y]:
-            model_plugin: "BasePlugin[Literal[True]]"
+            model_plugin: BasePlugin[Literal[True]]
             await model_plugin.stop()
 
         for plugin in self._started_plugins:
-            plugin: "BasePlugin[Literal[True]]"
+            plugin: BasePlugin[Literal[True]]
             await plugin.stop()
         self._started_plugins.clear()

@@ -2,16 +2,16 @@ import asyncio
 
 from based_async_app import (
     app,
-    example_pydantic,
-    test_num,
     error_zero,
-    test_yield,
-    test_echo,
-    test_retry,
-    test_echo_ctx,
-    example_stats,
     example_error_timeout,
+    example_pydantic,
+    example_stats,
     router_tasks,
+    test_echo,
+    test_echo_ctx,
+    test_num,
+    test_retry,
+    test_yield,
 )
 
 

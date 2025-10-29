@@ -1,21 +1,23 @@
 """QTasks registry utilities."""
 
+from collections.abc import Callable
 from types import FunctionType
-from typing import Callable, List, Literal, Optional, Type, Union, overload
-from typing_extensions import Annotated, Doc
+from typing import Annotated, Literal, overload
+
+from typing_extensions import Doc
 
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
-from qtasks.registries.task_registry import TaskRegistry
-from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.async_task_decorator import AsyncTask
+from qtasks.registries.sync_task_decorator import SyncTask
+from qtasks.registries.task_registry import TaskRegistry
 from qtasks.types.annotations import P, R
 
 
 @overload
 def shared_task(
     func_or_name: Annotated[
-        Union[str, Callable[P, R], None],
+        str | Callable[P, R] | None,
         Doc(
             """
                     Имя задачи.
@@ -25,7 +27,7 @@ def shared_task(
         ),
     ] = None,
     priority: Annotated[
-        Optional[int],
+        int | None,
         Doc(
             """
                     Приоритет у задачи по умолчанию.
@@ -45,7 +47,7 @@ def shared_task(
         ),
     ] = False,
     retry: Annotated[
-        Union[int, None],
+        int | None,
         Doc(
             """
                     Количество попыток повторного выполнения задачи.
@@ -55,7 +57,7 @@ def shared_task(
         ),
     ] = None,
     retry_on_exc: Annotated[
-        Union[List[Type[Exception]], None],
+        list[type[Exception]] | None,
         Doc(
             """
                     Исключения, при которых задача будет повторно выполнена.
@@ -65,7 +67,7 @@ def shared_task(
         ),
     ] = None,
     decode: Annotated[
-        Union[Callable, None],
+        Callable | None,
         Doc(
             """
                 Декодер результата задачи.
@@ -75,7 +77,7 @@ def shared_task(
         ),
     ] = None,
     tags: Annotated[
-        Union[List[str], None],
+        list[str] | None,
         Doc(
             """
                 Теги задачи.
@@ -85,7 +87,7 @@ def shared_task(
         ),
     ] = None,
     description: Annotated[
-        Union[str, None],
+        str | None,
         Doc(
             """
                 Описание задачи.
@@ -95,7 +97,7 @@ def shared_task(
         ),
     ] = None,
     generate_handler: Annotated[
-        Union[Callable, None],
+        Callable | None,
         Doc(
             """
                     Генератор обработчика.
@@ -105,7 +107,7 @@ def shared_task(
         ),
     ] = None,
     executor: Annotated[
-        Optional[Type["BaseTaskExecutor"]],
+        type["BaseTaskExecutor"] | None,
         Doc(
             """
                     Класс `BaseTaskExecutor`.
@@ -115,7 +117,7 @@ def shared_task(
         ),
     ] = None,
     middlewares_before: Annotated[
-        Optional[List[Type["TaskMiddleware"]]],
+        list[type["TaskMiddleware"]] | None,
         Doc(
             """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -125,7 +127,7 @@ def shared_task(
         ),
     ] = None,
     middlewares_after: Annotated[
-        Optional[List[Type["TaskMiddleware"]]],
+        list[type["TaskMiddleware"]] | None,
         Doc(
             """
                     Мидлвари, которые будут выполнены после задачи.
@@ -151,7 +153,7 @@ def shared_task(
 @overload
 def shared_task(
     func_or_name: Annotated[
-        Union[str, Callable[P, R], None],
+        str | Callable[P, R] | None,
         Doc(
             """
                     Имя задачи.
@@ -161,7 +163,7 @@ def shared_task(
         ),
     ] = None,
     priority: Annotated[
-        Optional[int],
+        int | None,
         Doc(
             """
                     Приоритет у задачи по умолчанию.
@@ -181,7 +183,7 @@ def shared_task(
         ),
     ] = False,
     retry: Annotated[
-        Union[int, None],
+        int | None,
         Doc(
             """
                     Количество попыток повторного выполнения задачи.
@@ -191,7 +193,7 @@ def shared_task(
         ),
     ] = None,
     retry_on_exc: Annotated[
-        Union[List[Type[Exception]], None],
+        list[type[Exception]] | None,
         Doc(
             """
                     Исключения, при которых задача будет повторно выполнена.
@@ -201,7 +203,7 @@ def shared_task(
         ),
     ] = None,
     decode: Annotated[
-        Union[Callable, None],
+        Callable | None,
         Doc(
             """
                 Декодер результата задачи.
@@ -211,7 +213,7 @@ def shared_task(
         ),
     ] = None,
     tags: Annotated[
-        Union[List[str], None],
+        list[str] | None,
         Doc(
             """
                 Теги задачи.
@@ -221,7 +223,7 @@ def shared_task(
         ),
     ] = None,
     description: Annotated[
-        Union[str, None],
+        str | None,
         Doc(
             """
                 Описание задачи.
@@ -231,7 +233,7 @@ def shared_task(
         ),
     ] = None,
     generate_handler: Annotated[
-        Union[Callable, None],
+        Callable | None,
         Doc(
             """
                     Генератор обработчика.
@@ -241,7 +243,7 @@ def shared_task(
         ),
     ] = None,
     executor: Annotated[
-        Optional[Type["BaseTaskExecutor"]],
+        type["BaseTaskExecutor"] | None,
         Doc(
             """
                     Класс `BaseTaskExecutor`.
@@ -251,7 +253,7 @@ def shared_task(
         ),
     ] = None,
     middlewares_before: Annotated[
-        Optional[List[Type["TaskMiddleware"]]],
+        list[type["TaskMiddleware"]] | None,
         Doc(
             """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -261,7 +263,7 @@ def shared_task(
         ),
     ] = None,
     middlewares_after: Annotated[
-        Optional[List[Type["TaskMiddleware"]]],
+        list[type["TaskMiddleware"]] | None,
         Doc(
             """
                     Мидлвари, которые будут выполнены после задачи.
@@ -286,7 +288,7 @@ def shared_task(
 
 def shared_task(
     func_or_name: Annotated[
-        Union[str, Callable[P, R], None],
+        str | Callable[P, R] | None,
         Doc(
             """
                     Имя задачи.
@@ -296,7 +298,7 @@ def shared_task(
         ),
     ] = None,
     priority: Annotated[
-        Optional[int],
+        int | None,
         Doc(
             """
                     Приоритет у задачи по умолчанию.
@@ -316,7 +318,7 @@ def shared_task(
         ),
     ] = False,
     retry: Annotated[
-        Union[int, None],
+        int | None,
         Doc(
             """
                     Количество попыток повторного выполнения задачи.
@@ -326,7 +328,7 @@ def shared_task(
         ),
     ] = None,
     retry_on_exc: Annotated[
-        Union[List[Type[Exception]], None],
+        list[type[Exception]] | None,
         Doc(
             """
                     Исключения, при которых задача будет повторно выполнена.
@@ -336,7 +338,7 @@ def shared_task(
         ),
     ] = None,
     decode: Annotated[
-        Union[Callable, None],
+        Callable | None,
         Doc(
             """
                 Декодер результата задачи.
@@ -346,7 +348,7 @@ def shared_task(
         ),
     ] = None,
     tags: Annotated[
-        Union[List[str], None],
+        list[str] | None,
         Doc(
             """
                 Теги задачи.
@@ -356,7 +358,7 @@ def shared_task(
         ),
     ] = None,
     description: Annotated[
-        Union[str, None],
+        str | None,
         Doc(
             """
                 Описание задачи.
@@ -366,7 +368,7 @@ def shared_task(
         ),
     ] = None,
     generate_handler: Annotated[
-        Union[Callable, None],
+        Callable | None,
         Doc(
             """
                     Генератор обработчика.
@@ -376,7 +378,7 @@ def shared_task(
         ),
     ] = None,
     executor: Annotated[
-        Optional[Type["BaseTaskExecutor"]],
+        type["BaseTaskExecutor"] | None,
         Doc(
             """
                     Класс `BaseTaskExecutor`.
@@ -386,7 +388,7 @@ def shared_task(
         ),
     ] = None,
     middlewares_before: Annotated[
-        Optional[List[Type["TaskMiddleware"]]],
+        list[type["TaskMiddleware"]] | None,
         Doc(
             """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -396,7 +398,7 @@ def shared_task(
         ),
     ] = None,
     middlewares_after: Annotated[
-        Optional[List[Type["TaskMiddleware"]]],
+        list[type["TaskMiddleware"]] | None,
         Doc(
             """
                     Мидлвари, которые будут выполнены после задачи.
@@ -406,7 +408,7 @@ def shared_task(
         ),
     ] = None,
     awaiting: Annotated[
-        Optional[bool],
+        bool | None,
         Doc(
             """
                     Async версия.
@@ -416,7 +418,7 @@ def shared_task(
         ),
     ] = None,
     **kwargs,
-) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
+) -> Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
     """Декоратор для регистрации задач.
 
     Args:

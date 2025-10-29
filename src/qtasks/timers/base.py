@@ -1,25 +1,26 @@
 """Base timer class."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable
 from typing import (
     TYPE_CHECKING,
+    Annotated,
     Any,
-    Awaitable,
     Generic,
     Literal,
-    Optional,
     Union,
     overload,
 )
-from typing_extensions import Annotated, Doc
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
-    from qtasks.qtasks import QueueTasks
     from qtasks.asyncio.qtasks import QueueTasks as aioQueueTasks
+    from qtasks.qtasks import QueueTasks
 
 
 class BaseTimer(Generic[TAsyncFlag], ABC):
@@ -52,7 +53,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ],
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -62,7 +63,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -114,7 +115,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -124,7 +125,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -151,7 +152,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
                     """
             ),
         ],
-    ) -> Optional[Any]: ...
+    ) -> Any | None: ...
 
     @overload
     async def add_task(
@@ -175,7 +176,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -185,7 +186,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -212,7 +213,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
                     """
             ),
         ],
-    ) -> Optional[Any]: ...
+    ) -> Any | None: ...
 
     @abstractmethod
     def add_task(
@@ -236,7 +237,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -246,7 +247,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -273,7 +274,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
                     """
             ),
         ],
-    ) -> Union[Optional[Any], Awaitable[Optional[Any]]]:
+    ) -> Any | None | Awaitable[Any | None]:
         """Добавление задачи.
 
         Args:

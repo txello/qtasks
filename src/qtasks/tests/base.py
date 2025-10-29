@@ -1,8 +1,10 @@
 """Base test case."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Awaitable, Generic, Literal, Optional, Union, overload
-from typing_extensions import Annotated, Doc
+from collections.abc import Awaitable
+from typing import TYPE_CHECKING, Annotated, Generic, Literal, Union, overload
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.schemas.test import TestConfig
@@ -21,8 +23,8 @@ from qtasks.tests.sync_classes import (
 from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
-    from qtasks.qtasks import QueueTasks
     from qtasks.asyncio.qtasks import QueueTasks as aioQueueTasks
+    from qtasks.qtasks import QueueTasks
 
 
 class BaseTestCase(Generic[TAsyncFlag], ABC):
@@ -53,7 +55,7 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
             ),
         ],
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя проекта. Это имя может быть использовано для тестовых компонентов.
@@ -81,7 +83,7 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
         pass
 
     @abstractmethod
-    def start(self, **kwargs) -> Union[None, Awaitable[None]]:
+    def start(self, **kwargs) -> None | Awaitable[None]:
         """Запускает кейс тестирования."""
         pass
 
@@ -96,7 +98,7 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
         pass
 
     @abstractmethod
-    def stop(self, **kwargs) -> Union[None, Awaitable[None]]:
+    def stop(self, **kwargs) -> None | Awaitable[None]:
         """Останавливает кейс тестирования."""
         pass
 
@@ -120,7 +122,7 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
         return
 
     def settings(
-        self, test_config: Optional[TestConfig] = None, awaiting: Optional[bool] = False
+        self, test_config: TestConfig | None = None, awaiting: bool | None = False
     ) -> None:
         """Настройки тестирования.
 

@@ -1,8 +1,10 @@
 """Base Plugin."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, Generic, Literal, Optional, Union, overload
-from typing_extensions import Annotated, Doc
+from collections.abc import Awaitable
+from typing import Annotated, Any, Generic, Literal, overload
+
+from typing_extensions import Doc
 
 from qtasks.types.typing import TAsyncFlag
 
@@ -27,7 +29,7 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя проекта. Это имя можно использовать для тегов для Плагинов.
@@ -42,23 +44,23 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
         Args:
             name (str, optional): Имя проекта. По умолчанию: `None`.
         """
-        self.name: Union[str, None] = name
+        self.name: str | None = name
         pass
 
     @overload
     def trigger(
         self: "BasePlugin[Literal[False]]", name: str, *args, **kwargs
-    ) -> Union[Dict[str, Any], None]: ...
+    ) -> dict[str, Any] | None: ...
 
     @overload
     async def trigger(
         self: "BasePlugin[Literal[True]]", name: str, *args, **kwargs
-    ) -> Union[Dict[str, Any], None]: ...
+    ) -> dict[str, Any] | None: ...
 
     @abstractmethod
     def trigger(
         self, name: str, *args, **kwargs
-    ) -> Union[Dict[str, Any], None, Awaitable[Union[Dict[str, Any], None]]]:
+    ) -> dict[str, Any] | None | Awaitable[dict[str, Any] | None]:
         """Триггер плагина.
 
         Args:
@@ -75,7 +77,7 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
     async def start(self: "BasePlugin[Literal[True]]", *args, **kwargs) -> None: ...
 
     @abstractmethod
-    def start(self, *args, **kwargs) -> Union[None, Awaitable[None]]:
+    def start(self, *args, **kwargs) -> None | Awaitable[None]:
         """Запускает Плагин.
 
         Args:
@@ -91,7 +93,7 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
     async def stop(self: "BasePlugin[Literal[True]]", *args, **kwargs) -> None: ...
 
     @abstractmethod
-    def stop(self, *args, **kwargs) -> Union[None, Awaitable[None]]:
+    def stop(self, *args, **kwargs) -> None | Awaitable[None]:
         """Останавливает Плагин.
 
         Args:

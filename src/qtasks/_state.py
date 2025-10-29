@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING, Union
 from qtasks.logs import Logger
 
 if TYPE_CHECKING:
-    from qtasks.qtasks import QueueTasks
     from qtasks.asyncio.qtasks import QueueTasks as aioQueueTasks
+    from qtasks.qtasks import QueueTasks
 
 
 app_main: Union["QueueTasks", "aioQueueTasks", None] = None

@@ -1,27 +1,26 @@
 """Base Configurations."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable
 from typing import (
     TYPE_CHECKING,
+    Annotated,
     Any,
-    Awaitable,
-    Dict,
     Generic,
-    List,
     Literal,
     Optional,
-    Union,
     overload,
 )
-from typing_extensions import Annotated, Doc
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
-    from qtasks.plugins.base import BasePlugin
     from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
 
 
 class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
@@ -44,7 +43,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя проекта. Это имя можно использовать для тегов для GlobalConfig.
@@ -54,7 +53,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -64,7 +63,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -93,7 +92,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
             events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
-        self.config_name: Optional[str] = None
+        self.config_name: str | None = None
 
         self.config = config or QueueConfig()
         self.log = (
@@ -108,7 +107,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         )
         self.events = events
         self.client = None
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
         self.init_plugins()
 
@@ -119,7 +118,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     async def set(self: "BaseGlobalConfig[Literal[True]]", **kwargs) -> None: ...
 
     @abstractmethod
-    def set(self, **kwargs) -> Union[None, Awaitable[None]]:
+    def set(self, **kwargs) -> None | Awaitable[None]:
         """Добавить новое значение.
 
         Args:
@@ -136,7 +135,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     ) -> Any: ...
 
     @abstractmethod
-    def get(self, key: str, name: str) -> Union[Any, Awaitable[Any]]:
+    def get(self, key: str, name: str) -> Any | Awaitable[Any]:
         """Получить значение.
 
         Args:
@@ -151,17 +150,17 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     @overload
     def get_all(
         self: "BaseGlobalConfig[Literal[False]]", key: str
-    ) -> Union[dict, list, tuple]: ...
+    ) -> dict | list | tuple: ...
 
     @overload
     async def get_all(
         self: "BaseGlobalConfig[Literal[True]]", key: str
-    ) -> Union[dict, list, tuple]: ...
+    ) -> dict | list | tuple: ...
 
     @abstractmethod
     def get_all(
         self, key: str
-    ) -> Union[Union[dict, list, tuple], Awaitable[Union[dict, list, tuple]]]:
+    ) -> dict | list | tuple | Awaitable[dict | list | tuple]:
         """Получить все значения.
 
         Args:
@@ -181,7 +180,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     @abstractmethod
     def get_match(
         self, match: str
-    ) -> Union[Union[dict, list, tuple], Awaitable[Union[dict, list, tuple]]]:
+    ) -> dict | list | tuple | Awaitable[dict | list | tuple]:
         """Получить значения по паттерну.
 
         Args:
@@ -199,7 +198,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     async def start(self: "BaseGlobalConfig[Literal[True]]") -> None: ...
 
     @abstractmethod
-    def start(self) -> Union[None, Awaitable[None]]:
+    def start(self) -> None | Awaitable[None]:
         """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
         pass
 
@@ -210,7 +209,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     async def stop(self: "BaseGlobalConfig[Literal[True]]") -> None: ...
 
     @abstractmethod
-    def stop(self) -> Union[None, Awaitable[None]]:
+    def stop(self) -> None | Awaitable[None]:
         """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever."""
         pass
 
@@ -244,7 +243,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
             ),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
+            list[str] | None,
             Doc(
                 """
                     Имя триггеров для плагина.

@@ -1,6 +1,7 @@
+from typing import ClassVar as _ClassVar
+
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Optional as _Optional
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -16,7 +17,7 @@ class AddTaskRequest(_message.Message):
     kwargs_json: str
     timeout: float
     priority: int
-    def __init__(self, name: _Optional[str] = ..., args_json: _Optional[str] = ..., kwargs_json: _Optional[str] = ..., timeout: _Optional[float] = ..., priority: _Optional[int] = ...) -> None: ...
+    def __init__(self, name: str | None = ..., args_json: str | None = ..., kwargs_json: str | None = ..., timeout: float | None = ..., priority: int | None = ...) -> None: ...
 
 class AddTaskResponse(_message.Message):
     __slots__ = ("ok", "uuid", "result_json", "error")
@@ -28,7 +29,7 @@ class AddTaskResponse(_message.Message):
     uuid: str
     result_json: str
     error: str
-    def __init__(self, ok: bool = ..., uuid: _Optional[str] = ..., result_json: _Optional[str] = ..., error: _Optional[str] = ...) -> None: ...
+    def __init__(self, ok: bool = ..., uuid: str | None = ..., result_json: str | None = ..., error: str | None = ...) -> None: ...
 
 class GetTaskRequest(_message.Message):
     __slots__ = ("uuid", "include_result")
@@ -36,7 +37,7 @@ class GetTaskRequest(_message.Message):
     INCLUDE_RESULT_FIELD_NUMBER: _ClassVar[int]
     uuid: str
     include_result: bool
-    def __init__(self, uuid: _Optional[str] = ..., include_result: bool = ...) -> None: ...
+    def __init__(self, uuid: str | None = ..., include_result: bool = ...) -> None: ...
 
 class GetTaskResponse(_message.Message):
     __slots__ = ("ok", "status", "result_json", "traceback", "error")
@@ -50,4 +51,4 @@ class GetTaskResponse(_message.Message):
     result_json: str
     traceback: str
     error: str
-    def __init__(self, ok: bool = ..., status: _Optional[str] = ..., result_json: _Optional[str] = ..., traceback: _Optional[str] = ..., error: _Optional[str] = ...) -> None: ...
+    def __init__(self, ok: bool = ..., status: str | None = ..., result_json: str | None = ..., traceback: str | None = ..., error: str | None = ...) -> None: ...

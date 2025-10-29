@@ -1,9 +1,9 @@
 """Init tests."""
 
 import sys
-import pytest
 from pathlib import Path
 
+import pytest
 
 if __name__ == "__main__":
     # Корень проекта

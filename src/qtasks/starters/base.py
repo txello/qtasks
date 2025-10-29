@@ -1,28 +1,27 @@
 """Base starter."""
 
 from abc import ABC, abstractmethod
-from qtasks.logs import Logger
+from collections.abc import Awaitable
 from typing import (
     TYPE_CHECKING,
-    Awaitable,
-    Dict,
+    Annotated,
     Generic,
-    List,
     Literal,
     Optional,
-    Union,
     overload,
 )
-from typing_extensions import Annotated, Doc
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.logs import Logger
 from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
-    from qtasks.workers.base import BaseWorker
-    from qtasks.plugins.base import BasePlugin
     from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
+    from qtasks.workers.base import BaseWorker
 
 
 class BaseStarter(Generic[TAsyncFlag], ABC):
@@ -45,7 +44,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя проекта. Это имя можно использовать для тегов для Стартеров.
@@ -75,7 +74,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -85,7 +84,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -132,7 +131,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
         self.broker = broker
         self.worker = worker
 
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
         self.init_plugins()
 
@@ -154,7 +153,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
     async def stop(self: "BaseStarter[Literal[True]]") -> None: ...
 
     @abstractmethod
-    def stop(self) -> Union[None, Awaitable[None]]:
+    def stop(self) -> None | Awaitable[None]:
         """Останавливает Стартер. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
 
@@ -169,7 +168,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
             ),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
+            list[str] | None,
             Doc(
                 """
                     Имя триггеров для плагина.

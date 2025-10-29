@@ -1,18 +1,17 @@
 """Входная точка для запуска QTasks."""
 
-from argparse import ArgumentParser
-from importlib import import_module
 import os
 import sys
+from argparse import ArgumentParser
+from importlib import import_module
 from types import FunctionType
 from typing import TYPE_CHECKING, Union
-
 
 from qtasks.stats.sync_stats import SyncStats
 
 if TYPE_CHECKING:
-    from qtasks.qtasks import QueueTasks
     from qtasks.asyncio.qtasks import QueueTasks as aioQueueTasks
+    from qtasks.qtasks import QueueTasks
 
 
 sys.path.append(os.path.abspath(os.getcwd()))

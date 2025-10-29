@@ -1,18 +1,19 @@
 """Sync Redis Global Config."""
 
-from threading import Thread
 import time
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union, cast
-from typing_extensions import Annotated, Doc
+from threading import Thread
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, cast
+
 import redis
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
+from qtasks.schemas.global_config import GlobalConfigSchema
 
 from .base import BaseGlobalConfig
-from qtasks.schemas.global_config import GlobalConfigSchema
 
 if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
@@ -63,7 +64,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
             ),
         ] = "redis://localhost:6379/0",
         redis_connect: Annotated[
-            Optional[redis.Redis],
+            redis.Redis | None,
             Doc(
                 """
                     Внешний класс подключения к Redis.
@@ -73,7 +74,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
         config_name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя Папки с Hash. Название обновляется на: `name:queue_name`.
@@ -83,7 +84,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -93,7 +94,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -177,7 +178,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
             result = new_result.get("get", result)
         return result
 
-    def get_all(self, key: str) -> Dict[str, Any]:
+    def get_all(self, key: str) -> dict[str, Any]:
         """Получить все значения.
 
         Args:
@@ -187,7 +188,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
             Dict[str, Any]: Значения.
         """
         raw = self.client.hgetall(name=f"{self.config_name}:{key}")
-        result = cast(Dict, raw)
+        result = cast(dict, raw)
         new_result = self._plugin_trigger(
             "global_config_get_all", global_config=self, get=result, return_last=True
         )
@@ -195,7 +196,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
             result = new_result.get("get", result)
         return result
 
-    def get_match(self, match: str) -> Union[Any, dict]:
+    def get_match(self, match: str) -> Any | dict:
         """Получить значения по паттерну.
 
         Args:

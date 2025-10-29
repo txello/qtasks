@@ -1,6 +1,7 @@
 """InspectStats."""
 
-from typing import TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING, Union
+
 from .base import UtilsInspectStats
 
 if TYPE_CHECKING:
@@ -44,7 +45,7 @@ class InspectStats(UtilsInspectStats):
             return self._parser_json(self._app.tasks[task_name])
         return self._tasks_parser((self._app.tasks[task_name],))
 
-    def tasks(self, *tasks: Tuple[str], json: bool = False):
+    def tasks(self, *tasks: tuple[str], json: bool = False):
         """Получение информации о задачах.
 
         Returns:

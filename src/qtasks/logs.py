@@ -1,8 +1,9 @@
 """Логирование."""
 
 import logging
-from typing import Optional, Union
-from typing_extensions import Annotated, Doc
+from typing import Annotated
+
+from typing_extensions import Doc
 
 
 class Logger:
@@ -33,7 +34,7 @@ class Logger:
             ),
         ],
         subname: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя компонента.
@@ -53,7 +54,7 @@ class Logger:
             ),
         ] = logging.INFO,
         format: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Формат логирования.
@@ -113,8 +114,8 @@ class Logger:
     def with_subname(
         self,
         new_subname: str,
-        default_level: Union[int, None] = None,
-        format: Union[str, None] = None,
+        default_level: int | None = None,
+        format: str | None = None,
     ) -> "Logger":
         """Обновляем `subname`.
 

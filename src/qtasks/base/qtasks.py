@@ -1,24 +1,20 @@
 """Base QueueTasks."""
 
 import inspect
+from collections.abc import Awaitable, Callable
 from typing import (
     TYPE_CHECKING,
+    Annotated,
     Any,
-    Awaitable,
-    Callable,
-    Dict,
     Generic,
-    List,
     Literal,
     Optional,
-    Type,
     Union,
     overload,
 )
-from typing_extensions import Annotated, Doc
 
-from qtasks.schemas.task import Task
-from qtasks.types.annotations import P, R
+from typing_extensions import Doc
+
 import qtasks._state
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
@@ -26,18 +22,20 @@ from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
 from qtasks.routers.router import Router
+from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskExecSchema
+from qtasks.types.annotations import P, R
 from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
     from qtasks.brokers.base import BaseBroker
-    from qtasks.starters.base import BaseStarter
-    from qtasks.plugins.base import BasePlugin
-    from qtasks.executors.base import BaseTaskExecutor
     from qtasks.events.base import BaseEvents
+    from qtasks.executors.base import BaseTaskExecutor
     from qtasks.middlewares.base import BaseMiddleware
     from qtasks.middlewares.task import TaskMiddleware
+    from qtasks.plugins.base import BasePlugin
+    from qtasks.starters.base import BaseStarter
+    from qtasks.workers.base import BaseWorker
 
 
 class BaseQueueTasks(Generic[TAsyncFlag]):
@@ -72,7 +70,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = "QueueTasks",
         broker_url: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     URL для Брокера. Используется Брокером по умолчанию через параметр url.
@@ -82,7 +80,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -92,7 +90,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -154,10 +152,10 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
         self.broker = broker
         self.worker = worker
-        self.starter: Union["BaseStarter", None] = None
+        self.starter: BaseStarter | None = None
 
         self.routers: Annotated[
-            List[Router],
+            list[Router],
             Doc(
                 """
                 Роутеры, тип `qtasks.routers.Router`.
@@ -168,7 +166,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         ] = []
 
         self.tasks: Annotated[
-            Dict[str, TaskExecSchema],
+            dict[str, TaskExecSchema],
             Doc(
                 """
                 Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
@@ -179,7 +177,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         ] = {}
 
         self.plugins: Annotated[
-            Dict[str, List["BasePlugin"]],
+            dict[str, list[BasePlugin]],
             Doc(
                 """
                 Задачи, тип `{trigger_name:[qtasks.plugins.base.BasePlugin]}`.
@@ -192,7 +190,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         self.events = events
 
         self._method: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """Метод использования QueueTasks.
 
@@ -204,20 +202,20 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     @overload
     def task(
         self: "BaseQueueTasks[Literal[False]]",
-        name: Union[str, None] = None,
+        name: str | None = None,
         *,
-        priority: Union[int, None] = None,
+        priority: int | None = None,
         echo: bool = False,
-        max_time: Union[float, None] = None,
-        retry: Union[int, None] = None,
-        retry_on_exc: Union[List[Type[Exception]], None] = None,
-        decode: Union[Callable, None] = None,
-        tags: Union[List[str], None] = None,
-        description: Union[str, None] = None,
-        generate_handler: Union[Callable, None] = None,
-        executor: Union[Type["BaseTaskExecutor"], None] = None,
-        middlewares_before: Optional[List[Type["TaskMiddleware"]]] = None,
-        middlewares_after: Optional[List[Type["TaskMiddleware"]]] = None,
+        max_time: float | None = None,
+        retry: int | None = None,
+        retry_on_exc: list[type[Exception]] | None = None,
+        decode: Callable | None = None,
+        tags: list[str] | None = None,
+        description: str | None = None,
+        generate_handler: Callable | None = None,
+        executor: type["BaseTaskExecutor"] | None = None,
+        middlewares_before: list[type["TaskMiddleware"]] | None = None,
+        middlewares_after: list[type["TaskMiddleware"]] | None = None,
         **kwargs,
     ) -> Callable[[Callable[P, R]], SyncTask[P, R]]:
         """Декоратор для регистрации задач.
@@ -249,20 +247,20 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     @overload
     def task(
         self: "BaseQueueTasks[Literal[True]]",
-        name: Union[str, None] = None,
+        name: str | None = None,
         *,
-        priority: Union[int, None] = None,
+        priority: int | None = None,
         echo: bool = False,
-        max_time: Union[float, None] = None,
-        retry: Union[int, None] = None,
-        retry_on_exc: Union[List[Type[Exception]], None] = None,
-        decode: Union[Callable, None] = None,
-        tags: Union[List[str], None] = None,
-        description: Union[str, None] = None,
-        generate_handler: Union[Callable, None] = None,
-        executor: Union[Type["BaseTaskExecutor"], None] = None,
-        middlewares_before: Optional[List[Type["TaskMiddleware"]]] = None,
-        middlewares_after: Optional[List[Type["TaskMiddleware"]]] = None,
+        max_time: float | None = None,
+        retry: int | None = None,
+        retry_on_exc: list[type[Exception]] | None = None,
+        decode: Callable | None = None,
+        tags: list[str] | None = None,
+        description: str | None = None,
+        generate_handler: Callable | None = None,
+        executor: type["BaseTaskExecutor"] | None = None,
+        middlewares_before: list[type["TaskMiddleware"]] | None = None,
+        middlewares_after: list[type["TaskMiddleware"]] | None = None,
         **kwargs,
     ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
         """Декоратор для регистрации задач.
@@ -304,7 +302,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     def task(
         self,
         name: Annotated[
-            Optional[Union[Callable[P, R], str]],
+            Callable[P, R] | str | None,
             Doc(
                 """
                     Имя задачи или функция.
@@ -315,7 +313,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         ] = None,
         *,
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи по умолчанию.
@@ -335,7 +333,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = False,
         max_time: Annotated[
-            Union[float, None],
+            float | None,
             Doc(
                 """
                     Максимальное время выполнения задачи в секундах.
@@ -345,7 +343,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         retry: Annotated[
-            Union[int, None],
+            int | None,
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -355,7 +353,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         retry_on_exc: Annotated[
-            Union[List[Type[Exception]], None],
+            list[type[Exception]] | None,
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -365,7 +363,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         decode: Annotated[
-            Union[Callable, None],
+            Callable | None,
             Doc(
                 """
                     Декодер результата задачи.
@@ -375,7 +373,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         tags: Annotated[
-            Union[List[str], None],
+            list[str] | None,
             Doc(
                 """
                     Теги задачи.
@@ -385,7 +383,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         description: Annotated[
-            Union[str, None],
+            str | None,
             Doc(
                 """
                     Описание задачи.
@@ -395,7 +393,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         generate_handler: Annotated[
-            Union[Callable, None],
+            Callable | None,
             Doc(
                 """
                     Генератор обработчика.
@@ -405,7 +403,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         executor: Annotated[
-            Optional[Type["BaseTaskExecutor"]],
+            type["BaseTaskExecutor"] | None,
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -415,7 +413,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         middlewares_before: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
+            list[type["TaskMiddleware"]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены до задачи.
@@ -425,7 +423,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         middlewares_after: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
+            list[type["TaskMiddleware"]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -435,10 +433,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         **kwargs,
-    ) -> Union[
-        Union[SyncTask[P, R], AsyncTask[P, R]],
-        Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]],
-    ]:
+    ) -> SyncTask[P, R] | AsyncTask[P, R] | Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
         """Декоратор для регистрации задач.
 
         Args:
@@ -562,8 +557,8 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     def add_plugin(
         self,
         plugin: "BasePlugin",
-        trigger_names: Optional[List[str]] = None,
-        component: Optional[str] = None,
+        trigger_names: list[str] | None = None,
+        component: str | None = None,
     ) -> None:
         """
         Добавить плагин.
@@ -596,7 +591,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         component_data.add_plugin(plugin, trigger_names)
         return
 
-    def add_middleware(self, middleware: Type["BaseMiddleware"], **kwargs) -> None:
+    def add_middleware(self, middleware: type["BaseMiddleware"], **kwargs) -> None:
         """Добавить мидлварь.
 
         Args:
@@ -695,7 +690,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -705,7 +700,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -715,7 +710,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     kwargs задачи.
@@ -748,7 +743,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -758,7 +753,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -801,7 +796,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -854,7 +849,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -906,7 +901,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -916,7 +911,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.

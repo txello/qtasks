@@ -1,20 +1,21 @@
 """Sync Starter."""
 
+from typing import TYPE_CHECKING, Annotated, Literal, Optional
+
+from typing_extensions import Doc
+
 from qtasks.configs.config import QueueConfig
 from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional
-from typing_extensions import Annotated, Doc
-
 from qtasks.mixins.plugin import SyncPluginMixin
 
 from .base import BaseStarter
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
-    from qtasks.workers.base import BaseWorker
-    from qtasks.plugins.base import BasePlugin
     from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
+    from qtasks.workers.base import BaseWorker
 
 
 class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
@@ -42,7 +43,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя проекта. Это имя можно использовать для тегов для Стартеров.
@@ -72,7 +73,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -82,7 +83,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -121,10 +122,10 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             events=events,
         )
         self.events: BaseEvents[Literal[False]] = self.events or SyncEvents()
-        self.worker: "BaseWorker[Literal[False]]"
-        self.broker: "BaseBroker[Literal[False]]"
+        self.worker: BaseWorker[Literal[False]]
+        self.broker: BaseBroker[Literal[False]]
 
-        self._started_plugins: set["BasePlugin"] = set()
+        self._started_plugins: set[BasePlugin] = set()
 
     def start(
         self,
@@ -149,7 +150,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             ),
         ] = True,
         plugins: Annotated[
-            Optional[Dict[str, List["BasePlugin"]]],
+            dict[str, list["BasePlugin"]] | None,
             Doc(
                 """
                     Плагины для воркера и брокера.

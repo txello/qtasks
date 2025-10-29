@@ -9,8 +9,8 @@ from qtasks.exc.plugins import TaskPluginTriggerError
 from qtasks.exc.task import TaskCancelError
 
 if TYPE_CHECKING:
-    from qtasks.qtasks import QueueTasks
     from qtasks.logs import Logger
+    from qtasks.qtasks import QueueTasks
     from qtasks.schemas.task import Task
 
 
@@ -37,22 +37,22 @@ class SyncContext:
         self.task_name = kwargs.get("task_name")
         """Имя задачи."""
 
-        self.task_uuid: Union[UUID, str, None] = kwargs.get("task_uuid")
+        self.task_uuid: UUID | str | None = kwargs.get("task_uuid")
         """UUID задачи."""
 
         self.generate_handler = kwargs.get("generate_handler")
         """Функция-генератор для создания задач."""
 
-        self._app: "QueueTasks" = kwargs.get("app", self._update_app())
+        self._app: QueueTasks = kwargs.get("app", self._update_app())
         """Приложение, к которому принадлежит задача."""
 
-        self._log: "Logger" = kwargs.get("log", self._update_logger())
+        self._log: Logger = kwargs.get("log", self._update_logger())
         """Логгер."""
 
-        self._metadata: Union["Task", None] = None
+        self._metadata: Task | None = None
         """Метаданные задачи."""
 
-    def get_logger(self, name: Union[str, None] = None) -> "Logger":
+    def get_logger(self, name: str | None = None) -> "Logger":
         """Возвращает логгер для текущего контекста.
 
         Args:
@@ -93,7 +93,7 @@ class SyncContext:
             return self._metadata
         return self._app.get(self.task_uuid)
 
-    def get_task(self, uuid: Union[UUID, str]) -> Union["Task", None]:
+    def get_task(self, uuid: UUID | str) -> Union["Task", None]:
         """Возвращает задачу по UUID.
 
         Args:

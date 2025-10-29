@@ -1,20 +1,18 @@
 """Base worker class."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable
 from typing import (
     TYPE_CHECKING,
-    Awaitable,
-    Dict,
+    Annotated,
     Generic,
-    List,
     Literal,
     Optional,
-    Type,
-    Union,
     overload,
 )
 from uuid import UUID
-from typing_extensions import Annotated, Doc
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
@@ -24,9 +22,9 @@ from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
-    from qtasks.plugins.base import BasePlugin
-    from qtasks.executors.base import BaseTaskExecutor
     from qtasks.events.base import BaseEvents
+    from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.plugins.base import BasePlugin
 
 
 class BaseWorker(Generic[TAsyncFlag], ABC):
@@ -69,7 +67,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -79,7 +77,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -122,14 +120,14 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             )
         )
 
-        self._tasks: Dict[str, TaskExecSchema] = {}
-        self.events: Optional["BaseEvents"] = events
-        self.task_middlewares_before: List[Type[TaskMiddleware]] = []
-        self.task_middlewares_after: List[Type[TaskMiddleware]] = []
+        self._tasks: dict[str, TaskExecSchema] = {}
+        self.events: BaseEvents | None = events
+        self.task_middlewares_before: list[type[TaskMiddleware]] = []
+        self.task_middlewares_after: list[type[TaskMiddleware]] = []
 
-        self.task_executor: Optional[Type["BaseTaskExecutor"]] = None
+        self.task_executor: type[BaseTaskExecutor] | None = None
 
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
         self.num_workers = 0
 
@@ -292,7 +290,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
                     """
             ),
         ],
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Добавление задачи в очередь.
 
         Args:
@@ -309,7 +307,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     def start(
         self: "BaseWorker[Literal[False]]",
         num_workers: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Количество воркеров.
@@ -324,7 +322,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     async def start(
         self: "BaseWorker[Literal[True]]",
         num_workers: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Количество воркеров.
@@ -339,7 +337,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     def start(
         self,
         num_workers: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Количество воркеров.
@@ -348,7 +346,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
                     """
             ),
         ] = None,
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Запускает несколько обработчиков задач. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
 
         Args:
@@ -363,7 +361,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     async def stop(self: "BaseWorker[Literal[True]]") -> None: ...
 
     @abstractmethod
-    def stop(self) -> Union[None, Awaitable[None]]:
+    def stop(self) -> None | Awaitable[None]:
         """Останавливает воркеры. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
 
@@ -397,7 +395,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
+            list[str] | None,
             Doc(
                 """
                     Имя триггеров для плагина.

@@ -2,19 +2,19 @@
 
 import importlib
 import logging
-from typing import List
+from typing import Optional
 
 try:
     from django.conf import settings
     from django.utils.module_loading import module_has_submodule
-except ImportError:
-    raise ImportError("Install with `pip install Django` to use this contrib.")
+except ImportError as exc:
+    raise ImportError("Install with `pip install Django` to use this contrib.") from exc
 from importlib.util import find_spec
 
 logger = logging.getLogger(__name__)
 
 
-def autodiscover_tasks(app, modules: List[str] = ["tasks"]):
+def autodiscover_tasks(app, modules: Optional[list[str]] = None):
     """Автоматически импортирует указанные модули из всех INSTALLED_APPS, чтобы зарегистрировать задачи в QTasks.
 
     Args:

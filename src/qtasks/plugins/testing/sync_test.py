@@ -1,6 +1,6 @@
 """Sync Test Plugin."""
 
-from typing import Union
+
 from qtasks.plugins.base import BasePlugin
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 from qtasks.schemas.task_status import TaskStatusProcessSchema
@@ -53,8 +53,8 @@ class SyncTestPlugin(BasePlugin):
 
     def _execute(
         self,
-        task_func: Union[TaskExecSchema, None],
-        task_broker: Union[TaskPrioritySchema, None],
+        task_func: TaskExecSchema | None,
+        task_broker: TaskPrioritySchema | None,
         model: TaskStatusProcessSchema,
     ):
         if (

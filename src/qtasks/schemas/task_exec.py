@@ -1,14 +1,14 @@
 """TaskPriority and TaskExec Schema."""
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from types import FunctionType
-from typing import TYPE_CHECKING, Callable, List, Literal, Type, Union
+from typing import TYPE_CHECKING, Literal
 from uuid import UUID
 
-
 if TYPE_CHECKING:
-    from qtasks.middlewares.task import TaskMiddleware
     from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.middlewares.task import TaskMiddleware
 
 
 @dataclass(order=True)
@@ -76,28 +76,28 @@ class TaskExecSchema:
 
     func: FunctionType
     awaiting: bool = False
-    generating: Union[str, Literal[False]] = False
+    generating: str | Literal[False] = False
 
     echo: bool = False
 
-    max_time: Union[float, None] = None
+    max_time: float | None = None
 
-    retry: Union[int, None] = None
-    retry_on_exc: Union[List[Type[Exception]], None] = None
+    retry: int | None = None
+    retry_on_exc: list[type[Exception]] | None = None
 
-    decode: Union[Callable, None] = None
-    tags: Union[List[str], None] = None
-    description: Union[str, None] = None
+    decode: Callable | None = None
+    tags: list[str] | None = None
+    description: str | None = None
 
-    generate_handler: Union[Callable, None] = None
+    generate_handler: Callable | None = None
 
-    executor: Union[Type["BaseTaskExecutor"], None] = None
-    middlewares_before: List[Type["TaskMiddleware"]] = field(default_factory=list)
-    middlewares_after: List[Type["TaskMiddleware"]] = field(default_factory=list)
+    executor: type["BaseTaskExecutor"] | None = None
+    middlewares_before: list[type["TaskMiddleware"]] = field(default_factory=list)
+    middlewares_after: list[type["TaskMiddleware"]] = field(default_factory=list)
 
     extra: dict = field(default_factory=dict)
 
-    def add_middlewares_before(self, middlewares: List[Type["TaskMiddleware"]]) -> None:
+    def add_middlewares_before(self, middlewares: list[type["TaskMiddleware"]]) -> None:
         """Добавляет мидлвари к задаче.
 
         Args:
@@ -105,7 +105,7 @@ class TaskExecSchema:
         """
         self.middlewares_before.extend(middlewares)
 
-    def add_middlewares_after(self, middlewares: List[Type["TaskMiddleware"]]) -> None:
+    def add_middlewares_after(self, middlewares: list[type["TaskMiddleware"]]) -> None:
         """Добавляет мидлвари к задаче.
 
         Args:

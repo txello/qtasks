@@ -1,11 +1,12 @@
 """Sync Result."""
 
-from concurrent.futures import ThreadPoolExecutor, TimeoutError
-import time
-from typing import TYPE_CHECKING, Optional, Union
-from typing_extensions import Annotated, Doc
-from uuid import UUID
 import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from typing import TYPE_CHECKING, Annotated, Optional, Union
+from uuid import UUID
+
+from typing_extensions import Doc
 
 from qtasks.logs import Logger
 
@@ -34,7 +35,7 @@ class SyncResult:
     def __init__(
         self,
         uuid: Annotated[
-            Optional[Union[UUID, str]],
+            UUID | str | None,
             Doc(
                 """
                     UUID задачи.
@@ -52,7 +53,7 @@ class SyncResult:
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.

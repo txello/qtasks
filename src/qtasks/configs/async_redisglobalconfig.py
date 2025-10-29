@@ -1,17 +1,19 @@
 """Async Redis Global Config."""
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, Dict, Literal, Optional, Union, cast
-from typing_extensions import Annotated, Doc
+from collections.abc import Awaitable
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, cast
+
 import redis.asyncio as aioredis
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
+from qtasks.schemas.global_config import GlobalConfigSchema
 
 from .base import BaseGlobalConfig
-from qtasks.schemas.global_config import GlobalConfigSchema
 
 if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
@@ -62,7 +64,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             ),
         ] = "redis://localhost:6379/0",
         redis_connect: Annotated[
-            Optional[aioredis.Redis],
+            aioredis.Redis | None,
             Doc(
                 """
                     Внешний класс подключения к Redis.
@@ -72,7 +74,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         config_name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя Папки с Hash. Название обновляется на: `name:queue_name`.
@@ -82,7 +84,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -92,7 +94,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -172,7 +174,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             Any: Значение.
         """
         raw = self.client.hget(name=f"{self.config_name}:{key}", key=name)
-        result = await cast(Awaitable[Optional[str]], raw)
+        result = await cast(Awaitable[str | None], raw)
 
         new_result = await self._plugin_trigger(
             "global_config_get", global_config=self, get=result, return_last=True
@@ -181,7 +183,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             result = new_result.get("get", result)
         return result
 
-    async def get_all(self, key: str) -> Dict[str, Any]:
+    async def get_all(self, key: str) -> dict[str, Any]:
         """Получить все значения.
 
         Args:
@@ -191,7 +193,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             Dict[str, Any]: Значения.
         """
         raw = self.client.hgetall(name=f"{self.config_name}:{key}")
-        result = await cast(Awaitable[Dict], raw)
+        result = await cast(Awaitable[dict], raw)
         new_result = await self._plugin_trigger(
             "global_config_get_all", global_config=self, get=result, return_last=True
         )
@@ -199,7 +201,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             result = new_result.get("get", result)
         return result
 
-    async def get_match(self, match: str) -> Union[Any, dict]:
+    async def get_match(self, match: str) -> Any | dict:
         """Получить значения по паттерну.
 
         Args:

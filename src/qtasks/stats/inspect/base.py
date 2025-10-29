@@ -1,17 +1,17 @@
 """BaseInspectStats."""
 
-from dataclasses import asdict, is_dataclass
-from inspect import signature, _empty
 import json
-from pprint import pformat
-from typing import TYPE_CHECKING, Any, List, Tuple, Union
 from collections.abc import ValuesView
+from dataclasses import asdict, is_dataclass
+from inspect import _empty, signature
+from pprint import pformat
+from typing import TYPE_CHECKING, Any, Union
 
 from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
-    from qtasks.qtasks import QueueTasks
     from qtasks.asyncio import QueueTasks as aioQueueTasks
+    from qtasks.qtasks import QueueTasks
 
 
 class UtilsInspectStats:
@@ -83,7 +83,7 @@ class UtilsInspectStats:
         lines.append("-" * 50)
         return "\n".join(lines)
 
-    def _parser_json(self, data: Union[Any, Tuple[Any]]) -> str:
+    def _parser_json(self, data: Any | tuple[Any]) -> str:
         def formatter(d):
             if is_dataclass(d) and not isinstance(d, type):
                 return asdict(d)
@@ -98,9 +98,7 @@ class UtilsInspectStats:
 
     def _tasks_parser(
         self,
-        tasks: Union[
-            Tuple[TaskExecSchema], List[TaskExecSchema], ValuesView[TaskExecSchema]
-        ],
+        tasks: tuple[TaskExecSchema] | list[TaskExecSchema] | ValuesView[TaskExecSchema],
     ) -> str:
         """Форматированный вывод всех зарегистрированных задач."""
         lines = []

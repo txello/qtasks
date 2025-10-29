@@ -1,12 +1,12 @@
 import logging
 
 import pydantic
+import router_tasks
+import shared_tasks
+
 from qtasks import QueueTasks
 from qtasks.plugins.testing.sync_test import SyncTestPlugin
 from qtasks.registries import SyncTask
-
-import shared_tasks
-import router_tasks
 
 app = QueueTasks()
 app.config.logs_default_level_server = logging.INFO

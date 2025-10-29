@@ -1,9 +1,9 @@
 """Task Status Schema."""
 
+import json
 from dataclasses import dataclass, field
 from time import time
-import json
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from qtasks.enums.task_status import TaskStatusEnum
 
@@ -90,9 +90,9 @@ class TaskStatusErrorSchema(BaseTaskStatusSchema):
     traceback: str = ""
 
     # plugins
-    retry: ClassVar[Optional[int]] = None
-    retry_child_uuid: ClassVar[Optional[str]] = None
-    retry_parent_uuid: ClassVar[Optional[str]] = None
+    retry: ClassVar[int | None] = None
+    retry_child_uuid: ClassVar[str | None] = None
+    retry_parent_uuid: ClassVar[str | None] = None
 
 
 @dataclass

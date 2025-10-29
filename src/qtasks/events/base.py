@@ -1,7 +1,8 @@
 """Base events."""
 
 from abc import ABC, abstractmethod
-from typing import Awaitable, Generic, Literal, Union, overload
+from collections.abc import Awaitable
+from typing import Generic, Literal, overload
 
 from qtasks.events.events import OnEvents
 from qtasks.types.typing import TAsyncFlag
@@ -30,7 +31,7 @@ class BaseEvents(Generic[TAsyncFlag], ABC):
     ) -> None: ...
 
     @abstractmethod
-    def fire(self, event_name: str, *args, **kwargs) -> Union[None, Awaitable[None]]:
+    def fire(self, event_name: str, *args, **kwargs) -> None | Awaitable[None]:
         """Срабатывает событие.
 
         Args:

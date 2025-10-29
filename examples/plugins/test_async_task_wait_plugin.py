@@ -1,8 +1,6 @@
 import asyncio
 
-from based_async_plugins_app import (
-    test_task
-)
+from based_async_plugins_app import test_task
 
 
 async def main():

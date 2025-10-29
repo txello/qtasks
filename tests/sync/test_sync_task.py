@@ -2,17 +2,19 @@
 
 import os
 import sys
-import pytest
 from uuid import uuid4
 
-from qtasks.tests import SyncTestCase
+import pytest
+
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.schemas.test import TestConfig
+from qtasks.tests import SyncTestCase
 
 parent_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 sys.path.insert(0, parent_dir)
 
 from apps.app_sync import app
+
 
 @pytest.fixture(scope="package")
 def app_script() -> str:

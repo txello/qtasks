@@ -1,9 +1,10 @@
 """Async Result."""
 
-from typing import TYPE_CHECKING, Optional, Union
-from typing_extensions import Annotated, Doc
-from uuid import UUID
 import asyncio
+from typing import TYPE_CHECKING, Annotated, Optional, Union
+from uuid import UUID
+
+from typing_extensions import Doc
 
 from qtasks.logs import Logger
 
@@ -36,7 +37,7 @@ class AsyncResult:
     def __init__(
         self,
         uuid: Annotated[
-            Optional[Union[UUID, str]],
+            UUID | str | None,
             Doc(
                 """
                     UUID задачи.
@@ -54,7 +55,7 @@ class AsyncResult:
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.

@@ -1,33 +1,30 @@
 """Init module for async worker."""
 
 import asyncio
+import json
+import traceback
 from dataclasses import asdict
 from datetime import datetime
-import json
 from time import time
-import traceback
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional
 from uuid import UUID
-from typing_extensions import Annotated, Doc
 
 from anyio import Semaphore
+from typing_extensions import Doc
 
-from qtasks.events.async_events import AsyncEvents
-from qtasks.plugins.depends.async_depends import AsyncDependsPlugin
-from qtasks.plugins.pydantic import AsyncPydanticWrapperPlugin
-from qtasks.plugins.states.async_state import AsyncStatePlugin
-
-
-from .base import BaseWorker
+from qtasks.brokers.async_redis import AsyncRedisBroker
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.async_events import AsyncEvents
 from qtasks.exc.task import TaskCancelError
 from qtasks.executors.async_task_executor import AsyncTaskExecutor
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
-from qtasks.schemas.task import Task
+from qtasks.plugins.depends.async_depends import AsyncDependsPlugin
+from qtasks.plugins.pydantic import AsyncPydanticWrapperPlugin
 from qtasks.plugins.retries import AsyncRetryPlugin
-
+from qtasks.plugins.states.async_state import AsyncStatePlugin
+from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 from qtasks.schemas.task_status import (
     TaskStatusCancelSchema,
@@ -35,7 +32,8 @@ from qtasks.schemas.task_status import (
     TaskStatusProcessSchema,
     TaskStatusSuccessSchema,
 )
-from qtasks.brokers.async_redis import AsyncRedisBroker
+
+from .base import BaseWorker
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
@@ -81,7 +79,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -91,7 +89,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -125,19 +123,19 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         )
 
         self.events = self.events or AsyncEvents()
-        self.events: "BaseEvents[Literal[True]]"
+        self.events: BaseEvents[Literal[True]]
 
         self.broker = broker or AsyncRedisBroker(
             name=self.name, log=self.log, config=self.config
         )
-        self.broker: "BaseBroker[Literal[True]]"
+        self.broker: BaseBroker[Literal[True]]
 
         self.queue = asyncio.PriorityQueue()
 
-        self._tasks: Dict[str, TaskExecSchema] = {}
-        self._stop_event: Optional[asyncio.Event] = None
+        self._tasks: dict[str, TaskExecSchema] = {}
+        self._stop_event: asyncio.Event | None = None
         self.semaphore = asyncio.Semaphore(self.config.max_tasks_process)
-        self.condition: Optional[asyncio.Condition] = None
+        self.condition: asyncio.Condition | None = None
 
         self.task_executor = AsyncTaskExecutor
 
@@ -171,7 +169,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
                     while self.queue.empty():
                         await self.condition.wait()
 
-                task_broker: Union[TaskPrioritySchema, None] = await self.queue.get()
+                task_broker: TaskPrioritySchema | None = await self.queue.get()
                 if task_broker is None:
                     break
                 asyncio.create_task(self._execute_task(task_broker))
@@ -426,7 +424,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
 
     async def _run_task(
         self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
-    ) -> Union[TaskStatusSuccessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema]:
+    ) -> TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema:
         """Запуск функции задачи.
 
         Args:
@@ -442,10 +440,11 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         if not self.task_executor:
             raise RuntimeError("task_executor не определен.")
 
-        self.log.info(
-            f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}"
-        )
-        self.log.info(f"Аргументы задачи: {task_broker.args}, {task_broker.kwargs}")
+        if self.log:
+            self.log.info(
+                f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}"
+            )
+            self.log.info(f"Аргументы задачи: {task_broker.args}, {task_broker.kwargs}")
         new_data = await self._plugin_trigger(
             "worker_run_task_before",
             worker=self,
@@ -490,12 +489,13 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             returning=result,
             created_at=task_broker.created_at,
             updated_at=time(),
-            args=tuple(task_broker.args),
-            kwargs=task_broker.kwargs,
+            args=json.dumps(task_broker.args),
+            kwargs=json.dumps(task_broker.kwargs),
         )
-        self.log.info(
-            f"Задача {task_broker.uuid} успешно завершена, результат: {result}"
-        )
+        if self.log:
+            self.log.info(
+                f"Задача {task_broker.uuid} успешно завершена, результат: {result}"
+            )
         return model
 
     async def _task_error(
@@ -525,19 +525,21 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             traceback=trace,
             created_at=task_broker.created_at,
             updated_at=time(),
-            args=tuple(task_broker.args),
-            kwargs=task_broker.kwargs,
+            args=json.dumps(task_broker.args),
+            kwargs=json.dumps(task_broker.kwargs),
         )
         if plugin_result:
             model: TaskStatusErrorSchema = plugin_result.get("model", model)
         #
 
         if plugin_result and model.retry != 0:
-            self.log.error(
-                f"Задача {task_broker.uuid} завершена с ошибкой и будет повторена."
-            )
+            if self.log:
+                self.log.error(
+                    f"Задача {task_broker.uuid} завершена с ошибкой и будет повторена."
+                )
         else:
-            self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+            if self.log:
+                self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
         return model
 
     async def _task_cancel(
@@ -551,12 +553,13 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             created_at=task_broker.created_at,
             updated_at=time(),
         )
-        self.log.error(f"Задача {task_broker.uuid} была отменена по причине: {e}")
+        if self.log:
+            self.log.error(f"Задача {task_broker.uuid} была отменена по причине: {e}")
         return model
 
     async def _task_exists(
         self, task_broker: TaskPrioritySchema
-    ) -> Union[TaskExecSchema, None]:
+    ) -> TaskExecSchema | None:
         """Проверка существования задачи.
 
         Args:
@@ -568,7 +571,8 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         try:
             return self._tasks[task_broker.name]
         except KeyError as e:
-            self.log.warning(f"Задачи {e.args[0]} не существует!")
+            if self.log:
+                self.log.warning(f"Задачи {e.args[0]} не существует!")
             trace = traceback.format_exc()
             model = TaskStatusErrorSchema(
                 task_name=task_broker.name,
@@ -580,13 +584,14 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             await self.remove_finished_task(
                 task_func=None, task_broker=task_broker, model=model
             )
-            self.log.error(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
+            if self.log:
+                self.log.error(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
             return None
 
     async def remove_finished_task(
         self,
         task_func: Annotated[
-            Optional[TaskExecSchema],
+            TaskExecSchema | None,
             Doc(
                 """
                     Схема функции задачи.
@@ -602,12 +607,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusSuccessSchema,
-                TaskStatusProcessSchema,
-                TaskStatusErrorSchema,
-                TaskStatusCancelSchema,
-            ],
+            TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
             Doc(
                 """
                     Модель результата задачи.

@@ -79,13 +79,13 @@ line-length = 88
 select = [
     "E",   # базовые ошибки pycodestyle
     "W",   # предупреждения pycodestyle
-    # "F",   # ошибки pyflakes (важно!)
-    # "B",   # flake8-bugbear
-    # "I",   # isort (импорты)
-    # "UP",  # pyupgrade
+    "F",   # ошибки pyflakes (важно!)
+    "B",   # flake8-bugbear
+    "I",   # isort (импорты)
+    "UP",  # pyupgrade
 ]
 
-ignore = ["E501"]
+ignore = ["E501", "UP045", "UP007"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]

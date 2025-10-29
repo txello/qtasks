@@ -5,14 +5,13 @@ from typing import (
     TYPE_CHECKING,
     Annotated,
     Any,
-    Dict,
     ForwardRef,
-    List,
     Union,
     get_args,
     get_origin,
     get_type_hints,
 )
+
 from pydantic import BaseModel, ValidationError
 
 from qtasks.plugins.base import BasePlugin
@@ -55,8 +54,8 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
         task_executor: "BaseTaskExecutor",
         args: list,
         kw: dict,
-        args_info: List[ArgMeta],
-    ) -> Union[Dict, None]:
+        args_info: list[ArgMeta],
+    ) -> dict | None:
         """Заменяет аргументы на Pydantic-модели."""
         new_args, new_kwargs = args.copy(), kw.copy()
         echo = (
@@ -138,7 +137,7 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
 
     def _fields_order(self, model_cls):
         return list(
-            getattr(model_cls, "model_fields", getattr(model_cls, "__fields__")).keys()
+            getattr(model_cls, "model_fields", model_cls.__fields__).keys()
         )
 
     def _add_missing_from_args(self, model_cls, data_kw, args: list):

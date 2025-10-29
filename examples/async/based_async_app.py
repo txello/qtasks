@@ -3,14 +3,12 @@ import logging
 import time
 
 import pydantic
-
-from qtasks.asyncio import QueueTasks
-from qtasks.registries import AsyncTask
-
-from qtasks.stats.async_stats import AsyncStats
-
-import shared_tasks
 import router_tasks
+import shared_tasks
+
+from qtasks.asyncio.qtasks import QueueTasks
+from qtasks.registries.async_task_decorator import AsyncTask
+from qtasks.stats.async_stats import AsyncStats
 
 app = QueueTasks()
 app.config.logs_default_level_server = logging.INFO

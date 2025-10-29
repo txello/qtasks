@@ -2,14 +2,15 @@
 import asyncio
 from concurrent import futures
 from threading import Thread
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import grpc
-from grpc_reflection.v1alpha import reflection
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
+from grpc_reflection.v1alpha import reflection
 
 from qtasks.plugins.grpc.core import qtasks_pb2, qtasks_pb2_grpc
-from .sync_services import QTasksServiceServicer
+
+from .sync_services import SyncQTasksServiceServicer
 
 if TYPE_CHECKING:
     from qtasks.qtasks import QueueTasks
@@ -23,14 +24,14 @@ class SyncQTasksGRPCServer:
         host: str = "0.0.0.0",
         port: int = 50051,
         *,
-        max_concurrent_rpcs: Optional[int] = None,
-        grpc_options: Optional[List[tuple[str, Any]]] = None,
+        max_concurrent_rpcs: int | None = None,
+        grpc_options: list[tuple[str, Any]] | None = None,
     ) -> None:
         self._app = app
         self._host = host
         self._port = int(port)
         self._addr = f"{host}:{port}"
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
         self._max_concurrent_rpcs = max_concurrent_rpcs
         self._grpc_options = grpc_options
 
@@ -47,7 +48,7 @@ class SyncQTasksGRPCServer:
 
         # Сервис QTasks
         qtasks_pb2_grpc.add_QTasksServiceServicer_to_server(
-            QTasksServiceServicer(self._app), self._server
+            SyncQTasksServiceServicer(self._app), self._server
         )
 
         # Health

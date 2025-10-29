@@ -1,20 +1,27 @@
 """Миксин для работы с плагинами."""
 
 import traceback
-from typing import TYPE_CHECKING, Annotated, Any, Dict, List, Literal, Optional, Union, overload
 from copy import deepcopy
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Literal,
+    Optional,
+    overload,
+)
+
 from typing_extensions import Doc
 
-
 if TYPE_CHECKING:
-    from qtasks.plugins.base import BasePlugin
     from qtasks.logs import Logger
+    from qtasks.plugins.base import BasePlugin
 
 
 class SyncPluginMixin:
     """Миксин для синхронной работы с плагинами."""
 
-    plugins: Dict[str, List["BasePlugin"]]
+    plugins: dict[str, list["BasePlugin"]]
     log: Optional["Logger"] = None
 
     @overload
@@ -26,7 +33,7 @@ class SyncPluginMixin:
         safe: bool = True,
         continue_on_fail: bool = False,
         **kwargs,
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def _plugin_trigger(
@@ -37,17 +44,17 @@ class SyncPluginMixin:
         safe: bool = True,
         continue_on_fail: bool = False,
         **kwargs,
-    ) -> List[Dict[str, Any]]: ...
+    ) -> list[dict[str, Any]]: ...
 
     def _plugin_trigger(
         self,
         name: str,
         *args,
-        return_last: Optional[bool] = None,
+        return_last: bool | None = None,
         safe: bool = True,
         continue_on_fail: bool = False,
         **kwargs,
-    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    ) -> list[dict[str, Any]] | dict[str, Any]:
         """Триггер для запуска обработчика плагина.
 
         Args:
@@ -65,7 +72,7 @@ class SyncPluginMixin:
         plugins = self.plugins.get(name, []) + self.plugins.get("Globals", [])
         for plugin in plugins:
             try:
-                result: Union[Dict[str, Any], None] = plugin.trigger(
+                result: dict[str, Any] | None = plugin.trigger(
                     name, *args_copy, **kwargs_copy
                 )
             except Exception as e:
@@ -111,7 +118,7 @@ class SyncPluginMixin:
             ),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
+            list[str] | None,
             Doc(
                 """
                     Имя триггеров для плагина.
@@ -140,7 +147,7 @@ class SyncPluginMixin:
 class AsyncPluginMixin:
     """Миксин для асинхронной работы с плагинами."""
 
-    plugins: Dict[str, List["BasePlugin"]]
+    plugins: dict[str, list["BasePlugin"]]
     log: Optional["Logger"] = None
 
     @overload
@@ -152,7 +159,7 @@ class AsyncPluginMixin:
         safe: bool = True,
         continue_on_fail: bool = False,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Триггер для запуска обработчика плагина.
 
         Args:
@@ -175,7 +182,7 @@ class AsyncPluginMixin:
         safe: bool = True,
         continue_on_fail: bool = False,
         **kwargs,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Триггер для запуска обработчика плагина.
 
         Args:
@@ -193,11 +200,11 @@ class AsyncPluginMixin:
         self,
         name: str,
         *args,
-        return_last: Optional[bool] = None,
+        return_last: bool | None = None,
         safe: bool = True,
         continue_on_fail: bool = False,
         **kwargs,
-    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    ) -> list[dict[str, Any]] | dict[str, Any]:
         """Триггер для запуска обработчика плагина.
 
         Args:
@@ -214,9 +221,9 @@ class AsyncPluginMixin:
         kwargs_copy = kwargs.copy()
         plugins = self.plugins.get(name, []) + self.plugins.get("Globals", [])
         for plugin in plugins:
-            plugin: "BasePlugin[Literal[True]]"
+            plugin: BasePlugin[Literal[True]]
             try:
-                result: Union[Dict[str, Any], None] = await plugin.trigger(
+                result: dict[str, Any] | None = await plugin.trigger(
                     name, *args_copy, **kwargs_copy
                 )
             except Exception as e:
@@ -262,7 +269,7 @@ class AsyncPluginMixin:
             ),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
+            list[str] | None,
             Doc(
                 """
                     Имя триггеров для плагина.

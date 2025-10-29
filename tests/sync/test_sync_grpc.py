@@ -2,17 +2,19 @@ import json
 import os
 import sys
 import time
-import pytest
+
 import grpc
+import pytest
 
 from qtasks.plugins.grpc.core import qtasks_pb2, qtasks_pb2_grpc
-from qtasks.tests import AsyncTestCase
 from qtasks.schemas.test import TestConfig
+from qtasks.tests import AsyncTestCase
 
 parent_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 sys.path.insert(0, parent_dir)
 
 from apps.app_async import app
+
 
 @pytest.fixture(scope="package")
 def app_script() -> str:

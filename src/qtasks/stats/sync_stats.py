@@ -1,10 +1,11 @@
 """Sync Stats."""
 
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING
 
 from qtasks.mixins.plugin import SyncPluginMixin
-from .inspect.inspect import InspectStats
+
 from .base import BaseStats
+from .inspect.inspect import InspectStats
 
 if TYPE_CHECKING:
     from qtasks.asyncio.qtasks import QueueTasks
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 class SyncStats(BaseStats, SyncPluginMixin):
     """Класс для синхронных статистик."""
 
-    def __init__(self, app: "QueueTasks", plugins: Optional[Dict[str, List["BasePlugin"]]] = None):
+    def __init__(self, app: "QueueTasks", plugins: dict[str, list["BasePlugin"]] | None = None):
         """Инициализация асинхронной статистики.
 
         Args:

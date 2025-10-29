@@ -1,5 +1,5 @@
 """Async gRPC plugin."""
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from qtasks.plugins.base import BasePlugin
 from qtasks.plugins.grpc.services.async_server import AsyncQTasksGRPCServer
@@ -17,8 +17,8 @@ class AsyncgRPCPlugin(BasePlugin):
         host: str = "0.0.0.0",
         port: int = 50051,
         *,
-        max_concurrent_rpcs: Optional[int] = None,
-        grpc_options: Optional[List[tuple[str, Any]]] = None,
+        max_concurrent_rpcs: int | None = None,
+        grpc_options: list[tuple[str, Any]] | None = None,
     ) -> None:
         """Инициализация плагина gRPC.
 

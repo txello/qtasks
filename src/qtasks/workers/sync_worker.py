@@ -1,29 +1,29 @@
 """Init module for sync worker."""
 
+import json
+import traceback
 from dataclasses import asdict
 from datetime import datetime
-from threading import Event, Lock, Semaphore, Thread
-from time import time, sleep
-import traceback
 from queue import PriorityQueue
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
+from threading import Event, Lock, Semaphore, Thread
+from time import sleep, time
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional
 from uuid import UUID
-from typing_extensions import Annotated, Doc
 
-from qtasks.events.sync_events import SyncEvents
-from qtasks.plugins.depends.sync_depends import SyncDependsPlugin
-from qtasks.plugins.pydantic import SyncPydanticWrapperPlugin
+from typing_extensions import Doc
 
-from .base import BaseWorker
+from qtasks.brokers import SyncRedisBroker
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.sync_events import SyncEvents
 from qtasks.exc.task import TaskCancelError
 from qtasks.executors.sync_task_executor import SyncTaskExecutor
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
-from qtasks.schemas.task import Task
+from qtasks.plugins.depends.sync_depends import SyncDependsPlugin
+from qtasks.plugins.pydantic import SyncPydanticWrapperPlugin
 from qtasks.plugins.retries import SyncRetryPlugin
-
+from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 from qtasks.schemas.task_status import (
     TaskStatusCancelSchema,
@@ -31,7 +31,8 @@ from qtasks.schemas.task_status import (
     TaskStatusProcessSchema,
     TaskStatusSuccessSchema,
 )
-from qtasks.brokers import SyncRedisBroker
+
+from .base import BaseWorker
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
@@ -76,7 +77,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -86,7 +87,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -120,18 +121,18 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         )
 
         self.events = self.events or SyncEvents()
-        self.events: "BaseEvents[Literal[False]]"
+        self.events: BaseEvents[Literal[False]]
 
         self.broker = broker or SyncRedisBroker(
             name=self.name, log=self.log, config=self.config
         )
-        self.broker: "BaseBroker[Literal[False]]"
+        self.broker: BaseBroker[Literal[False]]
 
         self.queue = PriorityQueue()
-        self._tasks: Dict[str, TaskExecSchema] = {}
+        self._tasks: dict[str, TaskExecSchema] = {}
         self._stop_event = Event()
         self.lock = Lock()
-        self.threads: List[Thread] = []
+        self.threads: list[Thread] = []
         self.semaphore = Semaphore(self.config.max_tasks_process)
 
         self.task_executor = SyncTaskExecutor
@@ -199,8 +200,8 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 priority=task_broker.priority,
                 created_at=task_broker.created_at,
                 updated_at=time(),
-                args=tuple(task_broker.args),
-                kwargs=task_broker.kwargs,
+                args=json.dumps(task_broker.args),
+                kwargs=json.dumps(task_broker.kwargs),
             )
 
             task_func = self._task_exists(task_broker=task_broker)
@@ -394,7 +395,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
 
     def _run_task(
         self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
-    ) -> Union[TaskStatusSuccessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema]:
+    ) -> TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema:
         """Запуск функции задачи.
 
         Args:
@@ -410,9 +411,11 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         if not self.task_executor:
             raise RuntimeError("task_executor не определен.")
 
-        self.log.info(
-            f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}"
-        )
+        if self.log:
+            self.log.info(
+                f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}"
+            )
+            self.log.info(f"Аргументы задачи: {task_broker.args}, {task_broker.kwargs}")
 
         new_data = self._plugin_trigger(
             "worker_run_task_before",
@@ -458,12 +461,13 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             returning=result,
             created_at=task_broker.created_at,
             updated_at=time(),
-            args=tuple(task_broker.args),
-            kwargs=task_broker.kwargs,
+            args=json.dumps(task_broker.args),
+            kwargs=json.dumps(task_broker.kwargs),
         )
-        self.log.info(
-            f"Задача {task_broker.uuid} успешно завершена, результат: {result}"
-        )
+        if self.log:
+            self.log.info(
+                f"Задача {task_broker.uuid} успешно завершена, результат: {result}"
+            )
         return model
 
     def _task_error(
@@ -494,19 +498,21 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             traceback=trace,
             created_at=task_broker.created_at,
             updated_at=time(),
-            args=tuple(task_broker.args),
-            kwargs=task_broker.kwargs,
+            args=json.dumps(task_broker.args),
+            kwargs=json.dumps(task_broker.kwargs),
         )
         if plugin_result:
             model: TaskStatusErrorSchema = plugin_result.get("model", model)
         #
 
         if plugin_result and model.retry != 0:
-            self.log.error(
-                f"Задача {task_broker.uuid} завершена с ошибкой и будет повторена."
-            )
+            if self.log:
+                self.log.error(
+                    f"Задача {task_broker.uuid} завершена с ошибкой и будет повторена."
+                )
         else:
-            self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+            if self.log:
+                self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
         return model
 
     def _task_cancel(
@@ -520,12 +526,13 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             created_at=task_broker.created_at,
             updated_at=time(),
         )
-        self.log.error(f"Задача {task_broker.uuid} была отменена по причине: {e}")
+        if self.log:
+            self.log.error(f"Задача {task_broker.uuid} была отменена по причине: {e}")
         return model
 
     def _task_exists(
         self, task_broker: TaskPrioritySchema
-    ) -> Union[TaskExecSchema, None]:
+    ) -> TaskExecSchema | None:
         """Проверка существования задачи.
 
         Args:
@@ -537,7 +544,8 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         try:
             return self._tasks[task_broker.name]
         except KeyError as e:
-            self.log.warning(f"Задачи {e.args[0]} не существует!")
+            if self.log:
+                self.log.warning(f"Задачи {e.args[0]} не существует!")
             trace = traceback.format_exc()
             model = TaskStatusErrorSchema(
                 task_name=task_broker.name,
@@ -549,13 +557,14 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             self.remove_finished_task(
                 task_func=None, task_broker=task_broker, model=model
             )
-            self.log.error(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
+            if self.log:
+                self.log.error(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
             return None
 
     def remove_finished_task(
         self,
         task_func: Annotated[
-            Optional[TaskExecSchema],
+            TaskExecSchema | None,
             Doc(
                 """
                     Схема функции задачи.
@@ -571,12 +580,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusSuccessSchema,
-                TaskStatusProcessSchema,
-                TaskStatusErrorSchema,
-                TaskStatusCancelSchema,
-            ],
+            TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
             Doc(
                 """
                     Модель результата задачи.

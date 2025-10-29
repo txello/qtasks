@@ -1,8 +1,10 @@
 """Task Registry."""
 
 import inspect
-from typing import Callable, Dict, List, Optional, Type, Union
-from typing_extensions import Annotated, Doc
+from collections.abc import Callable
+from typing import Annotated
+
+from typing_extensions import Doc
 
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
@@ -18,7 +20,7 @@ class TaskRegistry:
     """
 
     _tasks: Annotated[
-        Dict[str, TaskExecSchema],
+        dict[str, TaskExecSchema],
         Doc(
             """
             Задачи.
@@ -32,7 +34,7 @@ class TaskRegistry:
     def register(
         cls,
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя задачи.
@@ -72,7 +74,7 @@ class TaskRegistry:
             ),
         ] = False,
         retry: Annotated[
-            Union[int, None],
+            int | None,
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -82,7 +84,7 @@ class TaskRegistry:
             ),
         ] = None,
         retry_on_exc: Annotated[
-            Union[List[Type[Exception]], None],
+            list[type[Exception]] | None,
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -92,7 +94,7 @@ class TaskRegistry:
             ),
         ] = None,
         decode: Annotated[
-            Union[Callable, None],
+            Callable | None,
             Doc(
                 """
                     Декодер результата задачи.
@@ -102,7 +104,7 @@ class TaskRegistry:
             ),
         ] = None,
         tags: Annotated[
-            Union[List[str], None],
+            list[str] | None,
             Doc(
                 """
                     Теги задачи.
@@ -112,7 +114,7 @@ class TaskRegistry:
             ),
         ] = None,
         description: Annotated[
-            Union[str, None],
+            str | None,
             Doc(
                 """
                     Описание задачи.
@@ -122,7 +124,7 @@ class TaskRegistry:
             ),
         ] = None,
         generate_handler: Annotated[
-            Union[Callable, None],
+            Callable | None,
             Doc(
                 """
                     Генератор обработчика.
@@ -132,7 +134,7 @@ class TaskRegistry:
             ),
         ] = None,
         executor: Annotated[
-            Optional[Type["BaseTaskExecutor"]],
+            type["BaseTaskExecutor"] | None,
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -142,7 +144,7 @@ class TaskRegistry:
             ),
         ] = None,
         middlewares_before: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
+            list[type["TaskMiddleware"]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -152,7 +154,7 @@ class TaskRegistry:
             ),
         ] = None,
         middlewares_after: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
+            list[type["TaskMiddleware"]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -162,7 +164,7 @@ class TaskRegistry:
             ),
         ] = None,
         **kwargs,
-    ) -> Callable[[Callable], Union[SyncTask, AsyncTask]]:
+    ) -> Callable[[Callable], SyncTask | AsyncTask]:
         """Регистрация задачи.
 
         Args:
@@ -246,7 +248,7 @@ class TaskRegistry:
                     """
             ),
         ],
-    ) -> Optional[TaskExecSchema]:
+    ) -> TaskExecSchema | None:
         """Получение задачи.
 
         Args:
@@ -258,7 +260,7 @@ class TaskRegistry:
         return cls._tasks.get(name)
 
     @classmethod
-    def all_tasks(cls) -> Dict[str, TaskExecSchema]:
+    def all_tasks(cls) -> dict[str, TaskExecSchema]:
         """Получение всех задач.
 
         Returns:

@@ -1,10 +1,10 @@
 """App for load testing."""
 
 import time
-from qtasks.asyncio import QueueTasks
 
 from http_plugin import AsyncWebAppPlugin
 
+from qtasks.asyncio import QueueTasks
 
 app = QueueTasks()
 

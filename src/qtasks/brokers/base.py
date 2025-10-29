@@ -1,25 +1,24 @@
 """Base Broker."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable
 from dataclasses import asdict, field, fields, make_dataclass
 from typing import (
+    TYPE_CHECKING,
+    Annotated,
     Any,
-    Awaitable,
-    Dict,
     Generic,
-    List,
     Literal,
     Optional,
-    Union,
     overload,
 )
 from uuid import UUID
-from typing_extensions import Annotated, Doc
-from typing import TYPE_CHECKING
 
+from typing_extensions import Doc
+
+from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
-from qtasks.configs.config import QueueConfig
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import (
     TaskStatusCancelSchema,
@@ -31,10 +30,10 @@ from qtasks.schemas.task_status import (
 from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
+    from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
-    from qtasks.plugins.base import BasePlugin
-    from qtasks.events.base import BaseEvents
 
 
 class BaseBroker(Generic[TAsyncFlag], ABC):
@@ -67,7 +66,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ],
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя проекта. Это имя можно использовать для тегов для Брокеров.
@@ -77,7 +76,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -87,7 +86,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -132,7 +131,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
         self.storage = storage
 
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
         self.init_plugins()
 
@@ -158,7 +157,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = 0,
         extra: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -166,7 +165,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -174,7 +173,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Аргументы задачи типа kwargs.
@@ -205,7 +204,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = 0,
         extra: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -213,7 +212,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -221,7 +220,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Аргументы задачи типа kwargs.
@@ -252,7 +251,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = 0,
         extra: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -260,7 +259,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -268,14 +267,14 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Аргументы задачи типа kwargs.
                     """
             ),
         ] = None,
-    ) -> Union[Task, Awaitable[Task]]:
+    ) -> Task | Awaitable[Task]:
         """Добавление задачи в брокер.
 
         Args:
@@ -294,40 +293,40 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     def get(
         self: "BaseBroker[Literal[False]]",
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Optional[Task]: ...
+    ) -> Task | None: ...
 
     @overload
     async def get(
         self: "BaseBroker[Literal[True]]",
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Optional[Task]: ...
+    ) -> Task | None: ...
 
     @abstractmethod
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Optional[Task], Awaitable[Optional[Task]]]:
+    ) -> Task | None | Awaitable[Task | None]:
         """Получение информации о задаче.
 
         Args:
@@ -375,7 +374,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
                     """
             ),
         ],
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Обновляет информацию о задаче.
 
         Args:
@@ -426,7 +425,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
                     """
             ),
         ] = None,
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
 
         Args:
@@ -445,7 +444,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     ) -> None: ...
 
     @abstractmethod
-    def stop(self) -> Union[None, Awaitable[None]]:
+    def stop(self) -> None | Awaitable[None]:
         """Останавливает брокер. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
 
@@ -479,7 +478,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
+            list[str] | None,
             Doc(
                 """
                     Имя триггеров для плагина.
@@ -510,7 +509,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     @overload
     async def flush_all(self: "BaseBroker[Literal[True]]") -> None: ...
 
-    def flush_all(self) -> Union[None, Awaitable[None]]:
+    def flush_all(self) -> None | Awaitable[None]:
         """Удалить все данные."""
         pass
 
@@ -530,12 +529,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusSuccessSchema,
-                TaskStatusProcessSchema,
-                TaskStatusErrorSchema,
-                TaskStatusCancelSchema,
-            ],
+            TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
             Doc(
                 """
                     Модель результата задачи.
@@ -556,12 +550,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusSuccessSchema,
-                TaskStatusProcessSchema,
-                TaskStatusErrorSchema,
-                TaskStatusCancelSchema,
-            ],
+            TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
             Doc(
                 """
                     Модель результата задачи.
@@ -581,19 +570,14 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusSuccessSchema,
-                TaskStatusProcessSchema,
-                TaskStatusErrorSchema,
-                TaskStatusCancelSchema,
-            ],
+            TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
             Doc(
                 """
                     Модель результата задачи.
                     """
             ),
         ],
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
 
         Args:

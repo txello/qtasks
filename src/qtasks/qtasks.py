@@ -1,28 +1,27 @@
 """qtasks.py - Main module for the QueueTasks framework."""
 
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, overload
-from typing_extensions import Annotated, Doc
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, Union, overload
 from uuid import UUID
 
-from qtasks.events.sync_events import SyncEvents
-from qtasks.mixins.plugin import SyncPluginMixin
-from qtasks.schemas.task_exec import TaskExecSchema
+from typing_extensions import Doc
+
 from qtasks.base.qtasks import BaseQueueTasks
-from qtasks.logs import Logger
-
 from qtasks.brokers.sync_redis import SyncRedisBroker
-from qtasks.workers.sync_worker import SyncThreadWorker
-from qtasks.starters.sync_starter import SyncStarter
-from qtasks.results.sync_result import SyncResult
-
 from qtasks.configs import QueueConfig
+from qtasks.events.sync_events import SyncEvents
+from qtasks.logs import Logger
+from qtasks.mixins.plugin import SyncPluginMixin
+from qtasks.results.sync_result import SyncResult
+from qtasks.schemas.task_exec import TaskExecSchema
+from qtasks.starters.sync_starter import SyncStarter
+from qtasks.workers.sync_worker import SyncThreadWorker
 
 if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
     from qtasks.brokers.base import BaseBroker
-    from qtasks.starters.base import BaseStarter
     from qtasks.events.base import BaseEvents
     from qtasks.schemas.task import Task
+    from qtasks.starters.base import BaseStarter
+    from qtasks.workers.base import BaseWorker
 
 
 class QueueTasks(BaseQueueTasks, SyncPluginMixin):
@@ -54,7 +53,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ] = "QueueTasks",
         broker_url: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     URL для Брокера. Используется Брокером по умолчанию через параметр url.
@@ -84,7 +83,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -94,7 +93,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -145,10 +144,10 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
 
         self._method = "sync"
 
-        self.broker: "BaseBroker[Literal[False]]"
-        self.worker: "BaseWorker[Literal[False]]"
+        self.broker: BaseBroker[Literal[False]]
+        self.worker: BaseWorker[Literal[False]]
 
-        self.starter: Union["BaseStarter[Literal[False]]", None] = None
+        self.starter: BaseStarter[Literal[False]] | None = None
 
         self._registry_tasks()
 
@@ -176,7 +175,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -229,7 +228,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -282,7 +281,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -292,7 +291,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -334,7 +333,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -344,7 +343,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -434,7 +433,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.

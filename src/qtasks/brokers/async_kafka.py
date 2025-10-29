@@ -2,31 +2,31 @@
 
 try:
     from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
-except ImportError:
-    raise ImportError("Install with `pip install qtasks[kafka]` to use this broker.")
+except ImportError as exc:
+    raise ImportError("Install with `pip install qtasks[kafka]` to use this broker.") from exc
 
 import asyncio
 from datetime import datetime
-from typing import Any, Literal, Optional, Union
-from typing_extensions import Annotated, Doc
-from uuid import UUID, uuid4
 from time import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional
+from uuid import UUID, uuid4
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
+from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.storages.sync_redis import SyncRedisStorage
 
 from .base import BaseBroker
-from qtasks.schemas.task_exec import TaskPrioritySchema
 
 if TYPE_CHECKING:
+    from qtasks.events.base import BaseEvents
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
-    from qtasks.events.base import BaseEvents
 
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
@@ -95,7 +95,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = "task_queue",
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -105,7 +105,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -145,7 +145,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             name=name, log=log, config=config, events=events, storage=storage
         )
 
-        self.storage: "BaseStorage[Literal[True]]"
+        self.storage: BaseStorage[Literal[True]]
 
         self.topic = f"{self.name}_{topic}"
         self.events = self.events or AsyncEvents()
@@ -254,7 +254,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = 0,
         extra: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -264,7 +264,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -274,7 +274,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Аргументы задачи типа kwargs.
@@ -348,14 +348,14 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -442,7 +442,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.

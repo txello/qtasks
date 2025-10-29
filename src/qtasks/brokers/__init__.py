@@ -24,11 +24,11 @@ def __getattr__(name: str):
 
 
 if TYPE_CHECKING:
-    from .sync_redis import SyncRedisBroker
-    from .async_redis import AsyncRedisBroker
-    from .sync_rabbitmq import SyncRabbitMQBroker
-    from .async_rabbitmq import AsyncRabbitMQBroker
-    from .sync_kafka import SyncKafkaBroker
     from .async_kafka import AsyncKafkaBroker
-    from .sync_socket import SyncSocketBroker
+    from .async_rabbitmq import AsyncRabbitMQBroker
+    from .async_redis import AsyncRedisBroker
     from .async_socket import AsyncSocketBroker
+    from .sync_kafka import SyncKafkaBroker
+    from .sync_rabbitmq import SyncRabbitMQBroker
+    from .sync_redis import SyncRedisBroker
+    from .sync_socket import SyncSocketBroker

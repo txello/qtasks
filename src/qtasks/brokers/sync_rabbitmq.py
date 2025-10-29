@@ -1,9 +1,8 @@
 """Sync RabbitMQ Broker."""
 
-from datetime import datetime
 import json
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
-
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
@@ -15,13 +14,15 @@ from qtasks.schemas.task_exec import TaskPrioritySchema
 try:
     import pika
     from pika.adapters.blocking_connection import BlockingChannel
-except ImportError:
-    raise ImportError("Install with `pip install qtasks[rabbitmq]` to use this broker.")
+except ImportError as exc:
+    raise ImportError("Install with `pip install qtasks[rabbitmq]` to use this broker.") from exc
 
-from typing_extensions import Annotated, Doc
-from uuid import UUID, uuid4
 from time import time
-from .base import BaseBroker
+from typing import Annotated
+from uuid import UUID, uuid4
+
+from typing_extensions import Doc
+
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
     TaskStatusErrorSchema,
@@ -30,10 +31,12 @@ from qtasks.schemas.task_status import (
 )
 from qtasks.storages import SyncRedisStorage
 
+from .base import BaseBroker
+
 if TYPE_CHECKING:
+    from qtasks.events.base import BaseEvents
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
-    from qtasks.events.base import BaseEvents
 
 
 class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
@@ -95,7 +98,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = "task_queue",
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -105,7 +108,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -144,7 +147,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             name=name, log=log, config=config, events=events, storage=storage
         )
 
-        self.storage: "BaseStorage[Literal[False]]"
+        self.storage: BaseStorage[Literal[False]]
 
         self.queue_name = f"{self.name}:{queue_name}"
         self.events = self.events or SyncEvents()
@@ -257,7 +260,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = 0,
         extra: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -267,7 +270,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -277,7 +280,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Аргументы задачи типа kwargs.
@@ -373,14 +376,14 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -470,7 +473,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.

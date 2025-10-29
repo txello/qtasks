@@ -1,16 +1,17 @@
 """State Machine (FSM)."""
 
 from __future__ import annotations
-from typing import Any, Dict, Type
 
-from .registry import SyncStateRegistry, AsyncStateRegistry
+from typing import Any
+
+from .registry import AsyncStateRegistry, SyncStateRegistry
 
 
 class SyncState:
     """Базовый синхронный State."""
 
     def __init__(
-        self, registry: SyncStateRegistry, state_cls: Type["SyncState"]
+        self, registry: SyncStateRegistry, state_cls: type[SyncState]
     ) -> None:
         """Инициализация состояния."""
         self._registry = registry
@@ -30,7 +31,7 @@ class SyncState:
             return self._registry.get_all(self._cls)
         return self._registry.get(self._cls, key, default)
 
-    def get_all(self) -> Dict[str, Any]:
+    def get_all(self) -> dict[str, Any]:
         """Получить все значения состояния.
 
         Returns:
@@ -47,7 +48,7 @@ class SyncState:
         """
         self._registry.set(self._cls, key, value)
 
-    def update(self, **kwargs: Any) -> Dict[str, Any]:
+    def update(self, **kwargs: Any) -> dict[str, Any]:
         """Обновить значения состояния.
 
         Returns:
@@ -72,7 +73,7 @@ class AsyncState:
     """Базовый асинхронный State."""
 
     def __init__(
-        self, registry: AsyncStateRegistry, state_cls: Type["AsyncState"]
+        self, registry: AsyncStateRegistry, state_cls: type[AsyncState]
     ) -> None:
         """Инициализация состояния."""
         self._registry = registry
@@ -92,7 +93,7 @@ class AsyncState:
             return await self._registry.get_all(self._cls)
         return await self._registry.get(self._cls, key, default)
 
-    async def get_all(self) -> Dict[str, Any]:
+    async def get_all(self) -> dict[str, Any]:
         """Получить все значения состояния.
 
         Returns:
@@ -109,7 +110,7 @@ class AsyncState:
         """
         await self._registry.set(self._cls, key, value)
 
-    async def update(self, **kwargs: Any) -> Dict[str, Any]:
+    async def update(self, **kwargs: Any) -> dict[str, Any]:
         """Обновить значения состояния.
 
         Returns:

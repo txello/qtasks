@@ -1,15 +1,16 @@
 """Sync timer for scheduling tasks."""
 
 from time import sleep
-from typing import TYPE_CHECKING, Any, Literal, Optional
-from typing_extensions import Annotated, Doc
+from typing import TYPE_CHECKING, Annotated, Any, Literal
+
 from apscheduler.job import Job
 from apscheduler.schedulers.background import BackgroundScheduler
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.logs import Logger
 
 from .base import BaseTimer
-from qtasks.logs import Logger
 
 if TYPE_CHECKING:
     from qtasks import QueueTasks
@@ -46,7 +47,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ],
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -56,7 +57,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -74,7 +75,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
         """
         super().__init__(app=app, log=log, config=config)
-        self.app: "QueueTasks"
+        self.app: QueueTasks
         self.scheduler = BackgroundScheduler()
         self.tasks = {}
 
@@ -99,7 +100,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -109,7 +110,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -178,7 +179,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ] = 0,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     args задачи.
@@ -188,7 +189,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     kwargs задачи.
@@ -208,7 +209,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
         """
         args, kwargs = args or (), kwargs or {}
         task = self.app.add_task(
-            task_name=task_name, priority=priority, timeout=None, *args, **kwargs
+            *args, task_name=task_name, priority=priority, timeout=None, **kwargs
         )
         self.log.info(f"Отправлена задача {task_name}: {task.uuid}...")
 

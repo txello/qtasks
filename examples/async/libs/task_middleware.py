@@ -1,5 +1,5 @@
-from qtasks.middlewares import TaskMiddleware
 from qtasks.executors.base import BaseTaskExecutor
+from qtasks.middlewares import TaskMiddleware
 
 
 class MyTaskMiddleware(TaskMiddleware):

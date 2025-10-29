@@ -1,14 +1,13 @@
 import os
-import sys
-import time
-import threading
-import subprocess
 import signal
+import subprocess
+import sys
+import threading
+import time
 from collections import deque
 from pathlib import Path
 
 import pytest
-
 
 parent_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 sys.path.insert(0, parent_dir)

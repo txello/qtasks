@@ -1,7 +1,8 @@
 """Async State."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Dict, List, Type, get_args, get_origin
+
+from typing import TYPE_CHECKING, Any, get_args, get_origin
 
 from qtasks.plugins.base import BasePlugin
 from qtasks.plugins.states.registry import AsyncStateRegistry
@@ -40,10 +41,10 @@ class AsyncStatePlugin(BasePlugin):
 
     async def task_executor_args_replace(
         self,
-        task_executor: "BaseTaskExecutor",
-        args: List[Any],
-        kw: Dict[str, Any],
-        args_info: List[ArgMeta],
+        task_executor: BaseTaskExecutor,
+        args: list[Any],
+        kw: dict[str, Any],
+        args_info: list[ArgMeta],
     ):
         """Заменяет аргументы и ключевые слова в задаче.
 
@@ -86,7 +87,7 @@ class AsyncStatePlugin(BasePlugin):
 
         return {"args": new_args, "kw": new_kw}
 
-    def _extract_state_class(self, ann: Any) -> Type[AsyncState] | None:
+    def _extract_state_class(self, ann: Any) -> type[AsyncState] | None:
         """Извлекает класс состояния из аннотации.
 
         Args:

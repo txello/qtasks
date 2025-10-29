@@ -1,6 +1,7 @@
 """Async test classes."""
 
 from typing import Literal, Optional
+
 from qtasks.brokers.base import BaseBroker
 from qtasks.configs.base import BaseGlobalConfig
 from qtasks.storages.base import BaseStorage
@@ -33,7 +34,7 @@ class AsyncTestGlobalConfig(BaseGlobalConfig):
 class AsyncTestStorage(BaseStorage):
     def __init__(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         global_config: Optional["BaseGlobalConfig[Literal[True]]"] = None,
     ):
         global_config = global_config or AsyncTestGlobalConfig()
@@ -64,7 +65,7 @@ class AsyncTestStorage(BaseStorage):
 class AsyncTestBroker(BaseBroker):
     def __init__(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         storage: Optional["BaseStorage[Literal[True]]"] = None,
     ):
         storage = storage = AsyncTestStorage(name=name)

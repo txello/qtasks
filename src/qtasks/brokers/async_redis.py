@@ -1,22 +1,20 @@
 """Async Redis Broker."""
 
 import asyncio
-from datetime import datetime
 import json
-import asyncio_atexit
-from typing import Any, Awaitable, List, Literal, Optional, Union, cast
-from typing_extensions import Annotated, Doc
-from uuid import UUID, uuid4
+from collections.abc import Awaitable
+from datetime import datetime
 from time import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, cast
+from uuid import UUID, uuid4
+
+import asyncio_atexit
 import redis.asyncio as aioredis
+from typing_extensions import Doc
 
-from qtasks.events.async_events import AsyncEvents
-
-from .base import BaseBroker
-from qtasks.storages.async_redis import AsyncRedisStorage
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.schemas.task import Task
@@ -26,11 +24,14 @@ from qtasks.schemas.task_status import (
     TaskStatusNewSchema,
     TaskStatusSuccessSchema,
 )
+from qtasks.storages.async_redis import AsyncRedisStorage
+
+from .base import BaseBroker
 
 if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
-    from qtasks.storages.base import BaseStorage
     from qtasks.events.base import BaseEvents
+    from qtasks.storages.base import BaseStorage
+    from qtasks.workers.base import BaseWorker
 
 
 class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
@@ -62,7 +63,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
             ),
         ] = "QueueTasks",
         url: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     URL для подключения к Redis.
@@ -92,7 +93,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
             ),
         ] = "task_queue",
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -102,7 +103,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -184,7 +185,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
 
         while self.running:
             raw = self.client.lpop(self.queue_name)
-            task_data = await cast(Awaitable[Optional[Union[str, List[Any]]]], raw)
+            task_data = await cast(Awaitable[str | list[Any] | None], raw)
 
             if not task_data:
                 await asyncio.sleep(self.default_sleep)
@@ -260,7 +261,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
             ),
         ] = 0,
         extra: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -270,7 +271,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -280,7 +281,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Аргументы задачи типа kwargs.
@@ -356,14 +357,14 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -449,7 +450,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.

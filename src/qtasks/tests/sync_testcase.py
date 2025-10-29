@@ -2,16 +2,17 @@
 
 import threading
 from time import time
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, Union
 from uuid import UUID, uuid4
-from typing_extensions import Annotated, Doc
+
+from typing_extensions import Doc
 
 from qtasks.tests.base import BaseTestCase
 
 if TYPE_CHECKING:
     from qtasks import QueueTasks
-    from qtasks.starters.base import BaseStarter
     from qtasks.schemas.task import Task
+    from qtasks.starters.base import BaseStarter
 
 
 class SyncTestCase(BaseTestCase[Literal[False]]):
@@ -41,7 +42,7 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
             ),
         ],
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя проекта. Это имя может быть использовано для тестовых компонентов.
@@ -58,7 +59,7 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
             name (str, optional): Имя проекта. Это имя может быть использовано для тестовых компонентов. По умолчанию: `None`.
         """
         super().__init__(app=app, name=name)
-        self.app: "QueueTasks"
+        self.app: QueueTasks
 
     def start_in_background(
         self,
@@ -198,7 +199,7 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
             ),
         ] = 0,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -252,7 +253,7 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.

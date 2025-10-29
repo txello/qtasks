@@ -1,10 +1,7 @@
 """Init module for qtasks."""
 
-from qtasks.version import __version__
-
+from qtasks.plugins.depends import Depends
 from qtasks.qtasks import QueueTasks
 from qtasks.routers import Router
-
 from qtasks.utils import shared_task
-
-from qtasks.plugins.depends import Depends
+from qtasks.version import __version__

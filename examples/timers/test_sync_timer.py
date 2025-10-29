@@ -5,7 +5,6 @@ from apscheduler.triggers.cron import CronTrigger
 from qtasks import QueueTasks
 from qtasks.timers import SyncTimer
 
-
 app = QueueTasks()
 app.config.logs_default_level_server = logging.INFO
 app.config.running_older_tasks = True

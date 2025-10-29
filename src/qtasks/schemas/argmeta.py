@@ -1,7 +1,7 @@
 """ArgMeta Schema."""
 
 from dataclasses import dataclass
-from typing import Any, Type, Optional
+from typing import Any
 
 
 @dataclass
@@ -20,9 +20,9 @@ class ArgMeta:
 
     name: str
     value: Any
-    origin: Optional[Type]
-    raw_type: Optional[Type]
+    origin: type | None
+    raw_type: type | None
     annotation: Any
     is_kwarg: bool
-    index: Optional[int] = None
-    key: Optional[str] = None
+    index: int | None = None
+    key: str | None = None

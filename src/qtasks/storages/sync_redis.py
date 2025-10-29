@@ -2,21 +2,19 @@
 
 import json
 import time
-from typing import Any, List, Literal, Optional, Union, cast
-from typing_extensions import Annotated, Doc
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, Union, cast
 from uuid import UUID
+
 import redis
-from typing import TYPE_CHECKING
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
-from qtasks.contrib.redis.sync_queue_client import SyncRedisCommandQueue
 from qtasks.configs.sync_redisglobalconfig import SyncRedisGlobalConfig
+from qtasks.contrib.redis.sync_queue_client import SyncRedisCommandQueue
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
-
-from .base import BaseStorage
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import (
     TaskStatusErrorSchema,
@@ -24,11 +22,13 @@ from qtasks.schemas.task_status import (
     TaskStatusSuccessSchema,
 )
 
+from .base import BaseStorage
+
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
-    from qtasks.workers.base import BaseWorker
-    from qtasks.schemas.task import Task
     from qtasks.events.base import BaseEvents
+    from qtasks.schemas.task import Task
+    from qtasks.workers.base import BaseWorker
 
 
 class SyncRedisStorage(BaseStorage, SyncPluginMixin):
@@ -82,7 +82,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ] = "task_process",
         redis_connect: Annotated[
-            Optional[redis.Redis],
+            redis.Redis | None,
             Doc(
                 """
                     Внешний класс подключения к Redis.
@@ -102,7 +102,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -112,7 +112,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -154,7 +154,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         )
         self.redis_contrib = SyncRedisCommandQueue(redis=self.client, log=self.log)
 
-        self.global_config: "BaseGlobalConfig[Literal[False]]" = (
+        self.global_config: BaseGlobalConfig[Literal[False]] = (
             global_config
             or SyncRedisGlobalConfig(
                 name=self.name,
@@ -167,7 +167,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
     def add(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
@@ -205,7 +205,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
         return
 
-    def get(self, uuid: Union[UUID, str]) -> Union["Task", None]:
+    def get(self, uuid: UUID | str) -> Union["Task", None]:
         """Получение информации о задаче.
 
         Args:
@@ -227,7 +227,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             result = new_result.get("result", result)
         return result
 
-    def get_all(self) -> List["Task"]:
+    def get_all(self) -> list["Task"]:
         """Получить все задачи.
 
         Returns:
@@ -235,7 +235,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         """
         pattern = f"{self.name}:*"
 
-        results: List["Task"] = []
+        results: list[Task] = []
         for key in self.client.scan_iter(pattern):
             name, uuid, *_ = key.split(":")
             if uuid in [self._queue_process, "task_queue"]:
@@ -298,7 +298,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.
@@ -430,7 +430,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         self._plugin_trigger("storage_delete_finished_tasks", storage=self)
         pattern = f"{self.name}:"
         try:
-            tasks: List["Task"] = list(
+            tasks: list[Task] = list(
                 filter(
                     lambda task: task.status != TaskStatusEnum.NEW.value, self.get_all()
                 )

@@ -2,22 +2,19 @@
 
 import asyncio
 import contextlib
+import json
 from dataclasses import asdict
 from datetime import datetime
-import json
-import asyncio_atexit
-from typing import Any, Literal, Optional, Union
-from typing_extensions import Annotated, Doc
-from uuid import UUID, uuid4
 from time import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional
+from uuid import UUID, uuid4
 
-from qtasks.events.async_events import AsyncEvents
+import asyncio_atexit
+from typing_extensions import Doc
 
-from .base import BaseBroker
-from qtasks.storages.async_redis import AsyncRedisStorage
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.schemas.task import Task
@@ -27,11 +24,14 @@ from qtasks.schemas.task_status import (
     TaskStatusNewSchema,
     TaskStatusSuccessSchema,
 )
+from qtasks.storages.async_redis import AsyncRedisStorage
+
+from .base import BaseBroker
 
 if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
-    from qtasks.storages.base import BaseStorage
     from qtasks.events.base import BaseEvents
+    from qtasks.storages.base import BaseStorage
+    from qtasks.workers.base import BaseWorker
 
 
 class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
@@ -93,7 +93,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -103,7 +103,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -144,7 +144,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             name=name, log=log, config=config, events=events, storage=storage
         )
 
-        self.storage: "BaseStorage[Literal[True]]"
+        self.storage: BaseStorage[Literal[True]]
 
         self.events = self.events or AsyncEvents()
 
@@ -153,8 +153,8 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self.running = False
 
         self.queue = asyncio.Queue()
-        self._serve_task: Union[asyncio.Task, None] = None
-        self._listen_task: Union[asyncio.Task, None] = None
+        self._serve_task: asyncio.Task | None = None
+        self._listen_task: asyncio.Task | None = None
 
     async def handle_connection(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
@@ -291,7 +291,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = 0,
         extra: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -301,7 +301,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -311,7 +311,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Аргументы задачи типа kwargs.
@@ -391,14 +391,14 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -511,7 +511,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.

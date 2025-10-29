@@ -1,8 +1,8 @@
 """Sync Redis command queue."""
 
 import threading
-from queue import Queue, Empty
-from typing import Optional, Union
+from queue import Empty, Queue
+
 import redis
 
 from qtasks.logs import Logger
@@ -23,7 +23,7 @@ class SyncRedisCommandQueue:
     ```
     """
 
-    def __init__(self, redis: redis.Redis, log: Optional[Logger] = None):
+    def __init__(self, redis: redis.Redis, log: Logger | None = None):
         """Экземпляр класса.
 
         Args:
@@ -68,7 +68,7 @@ class SyncRedisCommandQueue:
                 self.worker_thread = threading.Thread(target=self._worker, daemon=True)
                 self.worker_thread.start()
 
-    def _get_log(self, log: Union[Logger, None]):
+    def _get_log(self, log: Logger | None):
         if log is None:
             import qtasks._state
 

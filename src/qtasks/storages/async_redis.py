@@ -1,24 +1,23 @@
 """Async Redis storage."""
 
 import asyncio
-import time
-import asyncio_atexit
 import json
-from typing import Any, Awaitable, List, Literal, Optional, Union, cast
-from typing_extensions import Annotated, Doc
+import time
+from collections.abc import Awaitable
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, Union, cast
 from uuid import UUID
-import redis.asyncio as aioredis
-from typing import TYPE_CHECKING
 
+import asyncio_atexit
+import redis.asyncio as aioredis
+from typing_extensions import Doc
+
+from qtasks.configs.async_redisglobalconfig import AsyncRedisGlobalConfig
 from qtasks.configs.config import QueueConfig
 from qtasks.contrib.redis.async_queue_client import AsyncRedisCommandQueue
 from qtasks.enums.task_status import TaskStatusEnum
 from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
-
-from .base import BaseStorage
-from qtasks.configs.async_redisglobalconfig import AsyncRedisGlobalConfig
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import (
     TaskStatusCancelSchema,
@@ -27,11 +26,13 @@ from qtasks.schemas.task_status import (
     TaskStatusSuccessSchema,
 )
 
+from .base import BaseStorage
+
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
-    from qtasks.workers.base import BaseWorker
-    from qtasks.schemas.task import Task
     from qtasks.events.base import BaseEvents
+    from qtasks.schemas.task import Task
+    from qtasks.workers.base import BaseWorker
 
 
 class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
@@ -85,7 +86,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             ),
         ] = "task_process",
         redis_connect: Annotated[
-            Optional[aioredis.Redis],
+            aioredis.Redis | None,
             Doc(
                 """
                     Внешний класс подключения к Redis.
@@ -105,7 +106,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -115,7 +116,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -158,7 +159,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         )
         self.redis_contrib = AsyncRedisCommandQueue(redis=self.client, log=self.log)
 
-        self.global_config: "BaseGlobalConfig[Literal[True]]" = (
+        self.global_config: BaseGlobalConfig[Literal[True]] = (
             global_config
             or AsyncRedisGlobalConfig(
                 name=self.name,
@@ -171,7 +172,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     async def add(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
@@ -210,7 +211,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await cast(Awaitable[int], raw)
         return
 
-    async def get(self, uuid: Union[UUID, str]) -> Union["Task", None]:
+    async def get(self, uuid: UUID | str) -> Union["Task", None]:
         """Получение информации о задаче.
 
         Args:
@@ -236,7 +237,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             result = new_result.get("result", result)
         return result
 
-    async def get_all(self) -> List["Task"]:
+    async def get_all(self) -> list["Task"]:
         """Получить все задачи.
 
         Returns:
@@ -244,7 +245,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         """
         pattern = f"{self.name}:*"
 
-        results: List["Task"] = []
+        results: list[Task] = []
         async for key in self.client.scan_iter(pattern):
             name, uuid, *_ = key.split(":")
             if uuid in [self._queue_process, "task_queue"]:
@@ -306,9 +307,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[
-                TaskStatusSuccessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
-            ],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
             Doc(
                 """
                     Модель результата задачи.
@@ -438,7 +437,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await self._plugin_trigger("storage_delete_finished_tasks", storage=self)
         pattern = f"{self.name}:"
         try:
-            tasks: List["Task"] = list(
+            tasks: list[Task] = list(
                 filter(
                     lambda task: task.status != TaskStatusEnum.NEW.value,
                     await self.get_all(),

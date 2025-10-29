@@ -1,7 +1,7 @@
 """Sync Depends."""
 
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 try:
     from contextlib import _GeneratorContextManager as _GCM
@@ -43,9 +43,9 @@ class SyncDependsPlugin(BasePlugin):
     def replace_args(
         self,
         task_executor: "BaseTaskExecutor",
-        args: List[Any],
-        kw: Dict[str, Any],
-        args_info: List[ArgMeta],
+        args: list[Any],
+        kw: dict[str, Any],
+        args_info: list[ArgMeta],
     ):
         """Заменяет аргументы задачи."""
         for args_meta in args_info:

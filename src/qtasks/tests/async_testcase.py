@@ -3,16 +3,17 @@
 import asyncio
 import threading
 from time import time
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, Union
 from uuid import UUID, uuid4
-from typing_extensions import Annotated, Doc
-from qtasks.tests.base import BaseTestCase
 
+from typing_extensions import Doc
+
+from qtasks.tests.base import BaseTestCase
 
 if TYPE_CHECKING:
     from qtasks.asyncio import QueueTasks
-    from qtasks.starters.base import BaseStarter
     from qtasks.schemas.task import Task
+    from qtasks.starters.base import BaseStarter
 
 
 class AsyncTestCase(BaseTestCase[Literal[True]]):
@@ -42,7 +43,7 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             ),
         ],
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя проекта. Это имя может быть использовано для тестовых компонентов.
@@ -59,9 +60,9 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             name (str, optional): Имя проекта. Это имя может быть использовано для тестовых компонентов. По умолчанию: `None`.
         """
         super().__init__(app=app, name=name)
-        self.app: "QueueTasks"
+        self.app: QueueTasks
 
-        self._global_loop: Union[asyncio.AbstractEventLoop, None] = None
+        self._global_loop: asyncio.AbstractEventLoop | None = None
 
     def start_in_background(
         self,
@@ -118,7 +119,7 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
     async def start(
         self,
         loop: Annotated[
-            Optional[asyncio.AbstractEventLoop],
+            asyncio.AbstractEventLoop | None,
             Doc(
                 """
                     Асинхронный loop.
@@ -219,7 +220,7 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             ),
         ] = 0,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -274,7 +275,7 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.

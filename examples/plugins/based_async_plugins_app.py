@@ -3,7 +3,6 @@ from qtasks.exc import TaskPluginTriggerError
 from qtasks.plugins.base import BasePlugin
 from qtasks.registries import AsyncTask
 
-
 app = QueueTasks()
 
 

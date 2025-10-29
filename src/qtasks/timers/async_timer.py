@@ -1,15 +1,16 @@
 """Async timer for scheduling tasks."""
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Literal, Optional
-from typing_extensions import Annotated, Doc
+from typing import TYPE_CHECKING, Annotated, Any, Literal
+
 from apscheduler.job import Job
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
+from qtasks.logs import Logger
 
 from .base import BaseTimer
-from qtasks.logs import Logger
 
 if TYPE_CHECKING:
     from qtasks.asyncio import QueueTasks
@@ -46,7 +47,7 @@ class AsyncTimer(BaseTimer[Literal[True]]):
             ),
         ],
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -56,7 +57,7 @@ class AsyncTimer(BaseTimer[Literal[True]]):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -74,7 +75,7 @@ class AsyncTimer(BaseTimer[Literal[True]]):
             config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
         """
         super().__init__(app=app, log=log, config=config)
-        self.app: "QueueTasks"
+        self.app: QueueTasks
 
         self.scheduler = AsyncIOScheduler()
         self.tasks = {}
@@ -100,7 +101,7 @@ class AsyncTimer(BaseTimer[Literal[True]]):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -110,7 +111,7 @@ class AsyncTimer(BaseTimer[Literal[True]]):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -179,7 +180,7 @@ class AsyncTimer(BaseTimer[Literal[True]]):
             ),
         ] = 0,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     args задачи.
@@ -189,7 +190,7 @@ class AsyncTimer(BaseTimer[Literal[True]]):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     kwargs задачи.
@@ -209,7 +210,7 @@ class AsyncTimer(BaseTimer[Literal[True]]):
         """
         args, kwargs = args or (), kwargs or {}
         task = await self.app.add_task(
-            task_name=task_name, priority=priority, timeout=None, *args, **kwargs
+            *args, task_name=task_name, priority=priority, timeout=None, **kwargs
         )
         self.log.info(f"Отправлена задача {task_name}: {task.uuid}...")
 

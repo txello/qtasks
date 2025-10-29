@@ -2,9 +2,10 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Annotated, Any, Dict, Optional, Tuple, Union
-from typing_extensions import Doc
+from typing import Annotated, Any, Union
 from uuid import UUID
+
+from typing_extensions import Doc
 
 from qtasks.results.async_result import AsyncResult
 from qtasks.results.sync_result import SyncResult
@@ -35,19 +36,19 @@ class Task:
     priority: int
     task_name: str
 
-    args: Tuple[str]
-    kwargs: Dict[str, Any]
+    args: tuple[str]
+    kwargs: dict[str, Any]
 
     created_at: datetime
     updated_at: datetime
 
-    returning: Optional[Any] = None
-    traceback: Optional[Any] = None
+    returning: Any | None = None
+    traceback: Any | None = None
 
     # retry
-    retry: Optional[int] = None
-    retry_child_uuid: Optional[UUID] = None
-    retry_parent_uuid: Optional[UUID] = None
+    retry: int | None = None
+    retry_child_uuid: UUID | None = None
+    retry_parent_uuid: UUID | None = None
 
     def wait_result(
         self,

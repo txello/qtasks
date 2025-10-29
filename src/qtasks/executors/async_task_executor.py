@@ -2,26 +2,23 @@
 
 import asyncio
 import json
+from collections.abc import AsyncGenerator, Generator
 from typing import (
     TYPE_CHECKING,
+    Annotated,
     Any,
-    AsyncGenerator,
-    Dict,
-    Generator,
-    List,
-    Optional,
-    Union,
 )
-from typing_extensions import Annotated, Doc
+
+from typing_extensions import Doc
 
 from qtasks.exc.plugins import TaskPluginTriggerError
+from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
+from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 from .base import BaseTaskExecutor
-from qtasks.logs import Logger
-from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
@@ -63,7 +60,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             ),
         ],
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -73,7 +70,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             ),
         ] = None,
         plugins: Annotated[
-            Optional[Dict[str, List["BasePlugin"]]],
+            dict[str, list["BasePlugin"]] | None,
             Doc(
                 """
                     Массив Плагинов.
@@ -226,7 +223,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
 
         return result
 
-    async def run_task_gen(self, func: Union[AsyncGenerator, Generator]) -> List[Any]:
+    async def run_task_gen(self, func: AsyncGenerator | Generator) -> list[Any]:
         """Вызов генератора задачи.
 
         Args:
@@ -272,7 +269,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             return await value
         return value
 
-    async def execute(self, decode: bool = True) -> Union[Any, str]:
+    async def execute(self, decode: bool = True) -> Any | str:
         """Вызов задачи.
 
         Args:
@@ -306,11 +303,11 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 self._result = new_result.get("result", self._result)
             else:
                 raise e
-        except asyncio.TimeoutError:
+        except asyncio.TimeoutError as exc:
             msg = f"Время выполнения задачи {self.task_func.name} превысило лимит {self.task_func.max_time} секунд"
             if self.log:
                 self.log.error(msg)
-            raise asyncio.TimeoutError(msg)
+            raise asyncio.TimeoutError(msg) from exc
 
         await self.after_execute()
         await self.execute_middlewares_after()

@@ -1,9 +1,10 @@
 """State Registry."""
 
 from __future__ import annotations
+
 import asyncio
 import threading
-from typing import Any, Dict, Type
+from typing import Any
 
 
 class SyncStateRegistry:
@@ -12,9 +13,9 @@ class SyncStateRegistry:
     def __init__(self) -> None:
         """Инициализация реестра состояний."""
         self._lock = threading.Lock()
-        self._buckets: Dict[Type, Dict[str, Any]] = {}
+        self._buckets: dict[type, dict[str, Any]] = {}
 
-    def _ensure(self, state_cls: Type) -> None:
+    def _ensure(self, state_cls: type) -> None:
         """Обеспечить наличие реестра для данного класса состояния.
 
         Args:
@@ -23,7 +24,7 @@ class SyncStateRegistry:
         if state_cls not in self._buckets:
             self._buckets[state_cls] = {}
 
-    def get(self, state_cls: Type, key: str, default: Any = None) -> Any:
+    def get(self, state_cls: type, key: str, default: Any = None) -> Any:
         """Получить значение состояния.
 
         Args:
@@ -38,7 +39,7 @@ class SyncStateRegistry:
             self._ensure(state_cls)
             return self._buckets[state_cls].get(key, default)
 
-    def set(self, state_cls: Type, key: str, value: Any) -> None:
+    def set(self, state_cls: type, key: str, value: Any) -> None:
         """Установить значение состояния.
 
         Args:
@@ -50,7 +51,7 @@ class SyncStateRegistry:
             self._ensure(state_cls)
             self._buckets[state_cls][key] = value
 
-    def update(self, state_cls: Type, mapping: Dict[str, Any]) -> Dict[str, Any]:
+    def update(self, state_cls: type, mapping: dict[str, Any]) -> dict[str, Any]:
         """Обновить значения состояния.
 
         Args:
@@ -66,7 +67,7 @@ class SyncStateRegistry:
             # Возвращаем копию «на чтение», чтобы вне не мутировали напрямую
             return dict(self._buckets[state_cls])
 
-    def get_all(self, state_cls: Type) -> Dict[str, Any]:
+    def get_all(self, state_cls: type) -> dict[str, Any]:
         """Получить все значения состояния.
 
         Args:
@@ -79,7 +80,7 @@ class SyncStateRegistry:
             self._ensure(state_cls)
             return dict(self._buckets[state_cls])
 
-    def delete(self, state_cls: Type, key: str) -> None:
+    def delete(self, state_cls: type, key: str) -> None:
         """Удалить значение состояния.
 
         Args:
@@ -90,7 +91,7 @@ class SyncStateRegistry:
             self._ensure(state_cls)
             self._buckets[state_cls].pop(key, None)
 
-    def clear(self, state_cls: Type) -> None:
+    def clear(self, state_cls: type) -> None:
         """Очистить все значения состояния.
 
         Args:
@@ -107,9 +108,9 @@ class AsyncStateRegistry:
     def __init__(self) -> None:
         """Инициализация реестра состояний."""
         self._lock = asyncio.Lock()
-        self._buckets: Dict[Type, Dict[str, Any]] = {}
+        self._buckets: dict[type, dict[str, Any]] = {}
 
-    async def _ensure(self, state_cls: Type) -> None:
+    async def _ensure(self, state_cls: type) -> None:
         """Обеспечить наличие реестра для данного класса состояния.
 
         Args:
@@ -118,7 +119,7 @@ class AsyncStateRegistry:
         if state_cls not in self._buckets:
             self._buckets[state_cls] = {}
 
-    async def get(self, state_cls: Type, key: str, default: Any = None) -> Any:
+    async def get(self, state_cls: type, key: str, default: Any = None) -> Any:
         """Получить значение состояния.
 
         Args:
@@ -133,7 +134,7 @@ class AsyncStateRegistry:
             await self._ensure(state_cls)
             return self._buckets[state_cls].get(key, default)
 
-    async def set(self, state_cls: Type, key: str, value: Any) -> None:
+    async def set(self, state_cls: type, key: str, value: Any) -> None:
         """Установить значение состояния.
 
         Args:
@@ -145,7 +146,7 @@ class AsyncStateRegistry:
             await self._ensure(state_cls)
             self._buckets[state_cls][key] = value
 
-    async def update(self, state_cls: Type, mapping: Dict[str, Any]) -> Dict[str, Any]:
+    async def update(self, state_cls: type, mapping: dict[str, Any]) -> dict[str, Any]:
         """Обновить значения состояния.
 
         Args:
@@ -160,7 +161,7 @@ class AsyncStateRegistry:
             self._buckets[state_cls].update(mapping)
             return dict(self._buckets[state_cls])
 
-    async def get_all(self, state_cls: Type) -> Dict[str, Any]:
+    async def get_all(self, state_cls: type) -> dict[str, Any]:
         """Получить все значения состояния.
 
         Args:
@@ -173,7 +174,7 @@ class AsyncStateRegistry:
             await self._ensure(state_cls)
             return dict(self._buckets[state_cls])
 
-    async def delete(self, state_cls: Type, key: str) -> None:
+    async def delete(self, state_cls: type, key: str) -> None:
         """Удалить значение состояния.
 
         Args:
@@ -184,7 +185,7 @@ class AsyncStateRegistry:
             await self._ensure(state_cls)
             self._buckets[state_cls].pop(key, None)
 
-    async def clear(self, state_cls: Type) -> None:
+    async def clear(self, state_cls: type) -> None:
         """Очистить все значения состояния.
 
         Args:

@@ -1,3 +1,3 @@
 """init mixins."""
 
-from .plugin import SyncPluginMixin, AsyncPluginMixin
+from .plugin import AsyncPluginMixin, SyncPluginMixin

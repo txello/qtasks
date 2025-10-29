@@ -1,6 +1,6 @@
-from qtasks import shared_task
-
 from libs.task_middleware import MyTaskMiddleware
+
+from qtasks import shared_task
 from qtasks.registries.sync_task_decorator import SyncTask
 
 

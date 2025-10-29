@@ -1,23 +1,21 @@
 """Base Task Executor."""
 
-from abc import ABC, abstractmethod
 import inspect
+from abc import ABC, abstractmethod
+from collections.abc import Awaitable
 from typing import (
     TYPE_CHECKING,
+    Annotated,
     Any,
-    Awaitable,
-    Dict,
     Generic,
-    List,
     Literal,
-    Optional,
-    Tuple,
-    Union,
     get_args,
     get_origin,
     overload,
 )
-from typing_extensions import Annotated, Doc
+
+from typing_extensions import Doc
+
 from qtasks.logs import Logger
 from qtasks.schemas.argmeta import ArgMeta
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
@@ -62,7 +60,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
             ),
         ],
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -72,7 +70,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         plugins: Annotated[
-            Optional[Dict[str, List["BasePlugin"]]],
+            dict[str, list["BasePlugin"]] | None,
             Doc(
                 """
                     Массив Плагинов.
@@ -112,7 +110,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     @overload
     async def before_execute(self: "BaseTaskExecutor[Literal[True]]") -> None: ...
 
-    def before_execute(self) -> Union[None, Awaitable[None]]:
+    def before_execute(self) -> None | Awaitable[None]:
         """Вызывается перед выполнением задачи."""
         pass
 
@@ -122,7 +120,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     @overload
     async def after_execute(self: "BaseTaskExecutor[Literal[True]]") -> None: ...
 
-    def after_execute(self) -> Union[None, Awaitable[None]]:
+    def after_execute(self) -> None | Awaitable[None]:
         """Вызывается после выполнения задачи."""
         pass
 
@@ -136,7 +134,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         self: "BaseTaskExecutor[Literal[True]]",
     ) -> None: ...
 
-    def execute_middlewares_before(self) -> Union[None, Awaitable[None]]:
+    def execute_middlewares_before(self) -> None | Awaitable[None]:
         """Вызов мидлварей до выполнения задачи."""
         pass
 
@@ -148,7 +146,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         self: "BaseTaskExecutor[Literal[True]]",
     ) -> None: ...
 
-    def execute_middlewares_after(self) -> Union[None, Awaitable[None]]:
+    def execute_middlewares_after(self) -> None | Awaitable[None]:
         """Вызов мидлварей после выполнения задачи."""
         pass
 
@@ -158,7 +156,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     @overload
     async def run_task(self: "BaseTaskExecutor[Literal[True]]") -> Any: ...
 
-    def run_task(self) -> Union[Any, Awaitable[Any]]:
+    def run_task(self) -> Any | Awaitable[Any]:
         """Вызов задачи.
 
         Returns:
@@ -221,7 +219,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     @abstractmethod
     def execute(
         self, decode=None
-    ) -> Union[Union[Any, str], Awaitable[Union[Any, str]]]:
+    ) -> Any | str | Awaitable[Any | str]:
         """Обработка задачи.
 
         Args:
@@ -238,7 +236,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     @overload
     async def decode(self: "BaseTaskExecutor[Literal[True]]") -> str: ...
 
-    def decode(self) -> Union[str, Awaitable[str]]:
+    def decode(self) -> str | Awaitable[str]:
         """Декодирование задачи.
 
         Returns:
@@ -257,7 +255,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
             ),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
+            list[str] | None,
             Doc(
                 """
                     Имя триггеров для плагина.
@@ -282,7 +280,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
                 self.plugins[name].append(plugin)
         return
 
-    def _extract_args_kwargs_from_func(self, func: Any) -> Tuple[list, dict]:
+    def _extract_args_kwargs_from_func(self, func: Any) -> tuple[list, dict]:
         """
         Извлекает значения аргументов из функции, если они заданы как значения по умолчанию.
 
@@ -309,7 +307,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
 
         return args, kwargs
 
-    def _build_args_info(self, args: list, kwargs: dict) -> List[ArgMeta]:
+    def _build_args_info(self, args: list, kwargs: dict) -> list[ArgMeta]:
         """Строит список ArgMeta из args и kwargs на основе аннотаций функции.
 
         Args:
@@ -319,7 +317,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         Returns:
             List[ArgMeta]: Список метаданных аргументов.
         """
-        args_info: List[ArgMeta] = []
+        args_info: list[ArgMeta] = []
         func = self.task_func.func
 
         try:

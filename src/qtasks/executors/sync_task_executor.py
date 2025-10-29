@@ -1,17 +1,19 @@
 """Sync Task Executor."""
 
-from concurrent.futures import ThreadPoolExecutor
 import json
-from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
-from typing_extensions import Annotated, Doc
+from collections.abc import Generator
+from concurrent.futures import ThreadPoolExecutor
+from typing import TYPE_CHECKING, Annotated, Any
+
+from typing_extensions import Doc
 
 from qtasks.exc.plugins import TaskPluginTriggerError
+from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.registries.sync_task_decorator import SyncTask
+from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 from .base import BaseTaskExecutor
-from qtasks.logs import Logger
-from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
@@ -52,7 +54,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             ),
         ],
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -62,7 +64,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             ),
         ] = None,
         plugins: Annotated[
-            Optional[Dict[str, List["BasePlugin"]]],
+            dict[str, list["BasePlugin"]] | None,
             Doc(
                 """
                     Массив Плагинов.
@@ -168,7 +170,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 self = new_task_executor
             self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
-    def run_task(self) -> Union[Any, list]:
+    def run_task(self) -> Any | list:
         """Вызов задачи.
 
         Returns:
@@ -194,7 +196,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
 
         return result
 
-    def run_task_gen(self, func: Generator) -> List[Any]:
+    def run_task_gen(self, func: Generator) -> list[Any]:
         """Вызов генератора задачи.
 
         Args:
@@ -232,7 +234,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             results = new_results.get("results", results)
         return results
 
-    def execute(self, decode: bool = True) -> Union[Any, str]:
+    def execute(self, decode: bool = True) -> Any | str:
         """Вызов задачи.
 
         Args:
@@ -266,11 +268,11 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                 self._result = new_result.get("result", self._result)
             else:
                 raise e
-        except TimeoutError:
+        except TimeoutError as exc:
             msg = f"Время выполнения задачи {self.task_func.name} превысило лимит {self.task_func.max_time} секунд"
             if self.log:
                 self.log.error(msg)
-            raise TimeoutError(msg)
+            raise TimeoutError(msg) from exc
 
         self.after_execute()
         self.execute_middlewares_after()

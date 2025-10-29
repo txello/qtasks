@@ -1,13 +1,13 @@
 """Sync Redis Broker."""
 
-from datetime import datetime
 import json
-import redis
-from typing import Any, List, Literal, Optional, Union, cast
-from typing_extensions import Annotated, Doc
+from datetime import datetime
+from time import sleep, time
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, cast
 from uuid import UUID, uuid4
-from time import time, sleep
-from typing import TYPE_CHECKING
+
+import redis
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
@@ -18,17 +18,18 @@ from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.storages import SyncRedisStorage
 
 if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
-    from qtasks.storages.base import BaseStorage
     from qtasks.events.base import BaseEvents
+    from qtasks.storages.base import BaseStorage
+    from qtasks.workers.base import BaseWorker
 
-from .base import BaseBroker
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
     TaskStatusErrorSchema,
     TaskStatusNewSchema,
     TaskStatusSuccessSchema,
 )
+
+from .base import BaseBroker
 
 
 class SyncRedisBroker(BaseBroker, SyncPluginMixin):
@@ -60,7 +61,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = "QueueTasks",
         url: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     URL для подключения к Redis.
@@ -90,7 +91,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = "task_queue",
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -100,7 +101,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -148,7 +149,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             name=name, log=log, config=config, events=events, storage=storage
         )
 
-        self.storage: "BaseStorage[Literal[False]]"
+        self.storage: BaseStorage[Literal[False]]
 
         self.queue_name = f"{self.name}:{queue_name}"
 
@@ -180,7 +181,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
 
         while self.running:
             raw = self.client.lpop(self.queue_name)
-            task_data = cast(Optional[Union[str, List[Any]]], raw)
+            task_data = cast(str | list[Any] | None, raw)
             if not task_data:
                 sleep(self.default_sleep)
                 continue
@@ -257,7 +258,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = 0,
         extra: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -267,7 +268,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -275,7 +276,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Аргументы задачи типа kwargs.
@@ -345,14 +346,14 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -438,7 +439,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.

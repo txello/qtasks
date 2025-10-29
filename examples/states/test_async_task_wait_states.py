@@ -1,8 +1,6 @@
 import asyncio
 
-from based_async_states_app import (
-    step1, step2
-)
+from based_async_states_app import step1, step2
 
 
 async def main():

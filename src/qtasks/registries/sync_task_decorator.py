@@ -1,23 +1,21 @@
 """Sync Task."""
 
+from collections.abc import Callable
 from typing import (
     TYPE_CHECKING,
+    Annotated,
     Any,
-    Callable,
-    Dict,
     Generic,
-    List,
     Optional,
-    Type,
     Union,
 )
-from typing_extensions import Annotated, Doc
 
-from qtasks.types.annotations import P, R
+from typing_extensions import Doc
+
 from qtasks.contexts.sync_context import SyncContext
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
-
+from qtasks.types.annotations import P, R
 
 if TYPE_CHECKING:
     from qtasks import QueueTasks
@@ -45,7 +43,7 @@ class SyncTask(Generic[P, R]):
     def __init__(
         self,
         task_name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя задачи.
@@ -55,7 +53,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи по умолчанию.
@@ -75,7 +73,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = False,
         max_time: Annotated[
-            Union[float, None],
+            float | None,
             Doc(
                 """
                     Максимальное время выполнения задачи в секундах.
@@ -85,7 +83,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         retry: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -95,7 +93,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         retry_on_exc: Annotated[
-            Optional[List[Type[Exception]]],
+            list[type[Exception]] | None,
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -105,7 +103,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         decode: Annotated[
-            Optional[Callable],
+            Callable | None,
             Doc(
                 """
                     Декодер результата задачи.
@@ -113,7 +111,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         tags: Annotated[
-            Optional[List[str]],
+            list[str] | None,
             Doc(
                 """
                     Теги задачи.
@@ -123,7 +121,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         description: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Описание задачи.
@@ -133,7 +131,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         generate_handler: Annotated[
-            Optional[Callable],
+            Callable | None,
             Doc(
                 """
                     Генератор обработчика.
@@ -143,7 +141,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         executor: Annotated[
-            Optional[Type["BaseTaskExecutor"]],
+            type["BaseTaskExecutor"] | None,
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -153,7 +151,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         middlewares_before: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
+            list[type["TaskMiddleware"]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -163,7 +161,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         middlewares_after: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
+            list[type["TaskMiddleware"]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -173,7 +171,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         extra: Annotated[
-            Optional[Dict[str, Any]],
+            dict[str, Any] | None,
             Doc(
                 """
                     Дополнительные параметры.
@@ -253,7 +251,7 @@ class SyncTask(Generic[P, R]):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -263,7 +261,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -273,7 +271,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         task_name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя задачи.

@@ -1,13 +1,22 @@
 """Base storage class."""
 
-from abc import ABC, abstractmethod
-from dataclasses import field, fields, make_dataclass
 import datetime
 import json
-from typing import Any, Awaitable, Dict, Generic, List, Literal, Optional, Union, overload
-from typing_extensions import Annotated, Doc
+from abc import ABC, abstractmethod
+from collections.abc import Awaitable
+from dataclasses import field, fields, make_dataclass
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Generic,
+    Literal,
+    Optional,
+    overload,
+)
 from uuid import UUID
-from typing import TYPE_CHECKING
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
@@ -22,8 +31,8 @@ from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
-    from qtasks.plugins.base import BasePlugin
     from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
     from qtasks.workers.base import BaseWorker
 
 
@@ -66,7 +75,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -76,7 +85,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -106,7 +115,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             events (BaseEvents, optional): События. По умолчанию: `None`.
         """
         self.name = name
-        self.global_config: Optional["BaseGlobalConfig[TAsyncFlag]"] = global_config
+        self.global_config: BaseGlobalConfig[TAsyncFlag] | None = global_config
 
         self.config = config or QueueConfig()
         self.log = (
@@ -122,7 +131,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self.events = events
 
         self.client = None
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
         self.init_plugins()
 
@@ -130,7 +139,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     def add(
         self: "BaseStorage[Literal[False]]",
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
@@ -151,7 +160,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     async def add(
         self: "BaseStorage[Literal[True]]",
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
@@ -172,7 +181,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     def add(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
@@ -187,7 +196,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
                     """
             ),
         ],
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Добавление задачи в хранилище.
 
         Args:
@@ -200,40 +209,40 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     def get(
         self: "BaseStorage[Literal[False]]",
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Task, None]: ...
+    ) -> Task | None: ...
 
     @overload
     async def get(
         self: "BaseStorage[Literal[True]]",
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Task, None]: ...
+    ) -> Task | None: ...
 
     @abstractmethod
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Optional[Task], Awaitable[Optional[Task]]]:
+    ) -> Task | None | Awaitable[Task | None]:
         """Получение информации о задаче.
 
         Args:
@@ -245,13 +254,13 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def get_all(self: "BaseStorage[Literal[False]]") -> List[Task]: ...
+    def get_all(self: "BaseStorage[Literal[False]]") -> list[Task]: ...
 
     @overload
-    async def get_all(self: "BaseStorage[Literal[True]]") -> List[Task]: ...
+    async def get_all(self: "BaseStorage[Literal[True]]") -> list[Task]: ...
 
     @abstractmethod
-    def get_all(self) -> Union[List[Task], Awaitable[List[Task]]]:
+    def get_all(self) -> list[Task] | Awaitable[list[Task]]:
         """Получить все задачи.
 
         Returns:
@@ -296,7 +305,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
                     """
             ),
         ],
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Обновляет информацию о задаче.
 
         Args:
@@ -311,7 +320,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     async def start(self: "BaseStorage[Literal[True]]") -> None: ...
 
     @abstractmethod
-    def start(self) -> Union[None, Awaitable[None]]:
+    def start(self) -> None | Awaitable[None]:
         """Запускает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после запуске функции `run_forever`."""
         pass
 
@@ -322,7 +331,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     async def stop(self: "BaseStorage[Literal[True]]") -> None: ...
 
     @abstractmethod
-    def stop(self) -> Union[None, Awaitable[None]]:
+    def stop(self) -> None | Awaitable[None]:
         """Останавливает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
         pass
 
@@ -387,7 +396,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
                     """
             ),
         ],
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Добавляет задачу в список задач в процессе.
 
         Args:
@@ -407,7 +416,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
+            list[str] | None,
             Doc(
                 """
                     Имя триггеров для плагина.
@@ -444,7 +453,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.
@@ -465,7 +474,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.
@@ -485,14 +494,14 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.
                     """
             ),
         ],
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
 
         Args:
@@ -507,7 +516,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     @overload
     async def _delete_finished_tasks(self: "BaseStorage[Literal[True]]") -> None: ...
 
-    def _delete_finished_tasks(self) -> Union[None, Awaitable[None]]:
+    def _delete_finished_tasks(self) -> None | Awaitable[None]:
         """Удаляет все завершенные задачи."""
         pass
 
@@ -523,7 +532,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     def _running_older_tasks(
         self, worker: "BaseWorker"
-    ) -> Union[None, Awaitable[None]]:
+    ) -> None | Awaitable[None]:
         """Удаляет все старые задачи.
 
         Args:
@@ -556,7 +565,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     @overload
     async def flush_all(self: "BaseStorage[Literal[True]]") -> None: ...
 
-    def flush_all(self) -> Union[None, Awaitable[None]]:
+    def flush_all(self) -> None | Awaitable[None]:
         """Удалить все данные."""
         pass
 

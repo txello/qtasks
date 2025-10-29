@@ -1,25 +1,22 @@
 """Sync Socket Broker."""
 
+import atexit
 import contextlib
-from datetime import datetime
+import json
 import socket
 import threading
-import json
-import atexit
-from queue import Queue, Empty
 from dataclasses import asdict
-from typing import Any, Literal, Optional, Union
-from typing_extensions import Annotated, Doc
-from uuid import UUID, uuid4
+from datetime import datetime
+from queue import Empty, Queue
 from time import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional
+from uuid import UUID, uuid4
 
+from typing_extensions import Doc
 
-from .base import BaseBroker
-from qtasks.events.sync_events import SyncEvents
-from qtasks.storages.sync_redis import SyncRedisStorage
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.schemas.task import Task
@@ -29,11 +26,14 @@ from qtasks.schemas.task_status import (
     TaskStatusNewSchema,
     TaskStatusSuccessSchema,
 )
+from qtasks.storages.sync_redis import SyncRedisStorage
+
+from .base import BaseBroker
 
 if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
-    from qtasks.storages.base import BaseStorage
     from qtasks.events.base import BaseEvents
+    from qtasks.storages.base import BaseStorage
+    from qtasks.workers.base import BaseWorker
 
 
 class SyncSocketBroker(BaseBroker, SyncPluginMixin):
@@ -95,7 +95,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -105,7 +105,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -145,7 +145,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             name=name, log=log, config=config, events=events, storage=storage
         )
 
-        self.storage: "BaseStorage[Literal[False]]"
+        self.storage: BaseStorage[Literal[False]]
 
         self.events = self.events or SyncEvents()
 
@@ -290,7 +290,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = 0,
         extra: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Дополнительные параметры задачи.
@@ -300,7 +300,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         args: Annotated[
-            Optional[tuple],
+            tuple | None,
             Doc(
                 """
                     Аргументы задачи типа args.
@@ -310,7 +310,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         kwargs: Annotated[
-            Optional[dict],
+            dict | None,
             Doc(
                 """
                     Аргументы задачи типа kwargs.
@@ -387,14 +387,14 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
                     """
             ),
         ],
-    ) -> Union[Task, None]:
+    ) -> Task | None:
         """Получение информации о задаче.
 
         Args:
@@ -535,7 +535,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
             Doc(
                 """
                     Модель результата задачи.

@@ -1,8 +1,9 @@
 """QueueConfig Schema."""
 
-from dataclasses import dataclass, field
 import logging
-from typing import Any, Callable, Dict, List
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Any
 
 from qtasks.enums.task_status import TaskStatusEnum
 
@@ -41,7 +42,7 @@ class QueueConfig:
     logs_format: str = "%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s"
 
     result_time_interval: float = 1.0
-    result_statuses_end: List[str] = field(
+    result_statuses_end: list[str] = field(
         default_factory=lambda: [
             TaskStatusEnum.SUCCESS.value,
             TaskStatusEnum.ERROR.value,
@@ -49,10 +50,10 @@ class QueueConfig:
         ]
     )
 
-    _callbacks: List[Callable[["QueueConfig", str, Any], None]] = field(
+    _callbacks: list[Callable[["QueueConfig", str, Any], None]] = field(
         default_factory=list, init=False, repr=False
     )
-    _dynamic_fields: Dict[str, Any] = field(
+    _dynamic_fields: dict[str, Any] = field(
         default_factory=dict, init=False, repr=False
     )
 

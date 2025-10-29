@@ -1,8 +1,9 @@
 """Async gRPC server."""
 import json
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import grpc
+
 from qtasks.plugins.grpc.core import qtasks_pb2, qtasks_pb2_grpc
 
 if TYPE_CHECKING:
@@ -21,12 +22,12 @@ def _loads_or(default: Any, raw: str | bytes | None) -> Any:
 def _dumps(obj: Any) -> str:
     try:
         return json.dumps(obj, ensure_ascii=False, default=str)
-    except Exception as exc:
+    except Exception:
         # В крайних случаях приводим к строке
         return json.dumps({"__non_json__": str(obj)}, ensure_ascii=False)
 
 
-class QTasksServiceServicer(qtasks_pb2_grpc.QTasksServiceServicer):
+class SyncQTasksServiceServicer(qtasks_pb2_grpc.QTasksServiceServicer):
     def __init__(self, app: "QueueTasks"):
         self.app = app
 
@@ -36,7 +37,7 @@ class QTasksServiceServicer(qtasks_pb2_grpc.QTasksServiceServicer):
         context: grpc.aio.ServicerContext,
     ) -> qtasks_pb2.AddTaskResponse:
         task_uuid = None
-        result: Optional[Any] = None
+        result: Any | None = None
 
         args = _loads_or([], request.args_json)
         kwargs = _loads_or({}, request.kwargs_json)

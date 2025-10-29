@@ -2,7 +2,7 @@
 
 import inspect
 from functools import partial
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 try:
     from contextlib import _AsyncGeneratorContextManager as _AGCM
@@ -50,9 +50,9 @@ class AsyncDependsPlugin(BasePlugin):
     async def replace_args(
         self,
         task_executor: "BaseTaskExecutor",
-        args: List[Any],
-        kw: Dict[str, Any],
-        args_info: List[ArgMeta],
+        args: list[Any],
+        kw: dict[str, Any],
+        args_info: list[ArgMeta],
     ):
         """Заменяет аргументы задачи."""
         for args_meta in args_info:
@@ -119,7 +119,7 @@ class AsyncDependsPlugin(BasePlugin):
         if inspect.isfunction(func):
             res = func()
             # результат ещё может оказаться awaitable/генератором/CM — разберём ниже
-        elif isinstance(func, partial) or hasattr(func, "__call__"):
+        elif isinstance(func, partial) or callable(func):
             # поддержка partial / callable-объектов
             res = func()
         else:

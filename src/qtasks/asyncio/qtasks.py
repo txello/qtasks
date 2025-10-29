@@ -1,30 +1,28 @@
 """qtasks.py - Main asyncio module for the QueueTasks framework."""
-
 import asyncio
-import asyncio_atexit
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, overload
-from typing_extensions import Annotated, Doc
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, Union, overload
 from uuid import UUID
 
-from qtasks.events.async_events import AsyncEvents
-from qtasks.mixins.plugin import AsyncPluginMixin
+import asyncio_atexit
+from typing_extensions import Doc
+
 from qtasks.base.qtasks import BaseQueueTasks
-from qtasks.logs import Logger
-
 from qtasks.brokers.async_redis import AsyncRedisBroker
-from qtasks.schemas.task_exec import TaskExecSchema
-from qtasks.workers.async_worker import AsyncWorker
-from qtasks.starters.async_starter import AsyncStarter
-from qtasks.results.async_result import AsyncResult
-
 from qtasks.configs import QueueConfig
+from qtasks.events.async_events import AsyncEvents
+from qtasks.logs import Logger
+from qtasks.mixins.plugin import AsyncPluginMixin
+from qtasks.results.async_result import AsyncResult
+from qtasks.schemas.task_exec import TaskExecSchema
+from qtasks.starters.async_starter import AsyncStarter
+from qtasks.workers.async_worker import AsyncWorker
 
 if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
     from qtasks.brokers.base import BaseBroker
-    from qtasks.starters.base import BaseStarter
     from qtasks.events.base import BaseEvents
     from qtasks.schemas.task import Task
+    from qtasks.starters.base import BaseStarter
+    from qtasks.workers.base import BaseWorker
 
 
 class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
@@ -56,7 +54,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = "QueueTasks",
         broker_url: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     URL для Брокера. Используется Брокером по умолчанию через параметр url.
@@ -86,7 +84,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         log: Annotated[
-            Optional[Logger],
+            Logger | None,
             Doc(
                 """
                     Логгер.
@@ -96,7 +94,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
+            QueueConfig | None,
             Doc(
                 """
                     Конфиг.
@@ -148,13 +146,13 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
 
         self._method = "async"
 
-        self.broker: "BaseBroker[Literal[True]]"
-        self.worker: "BaseWorker[Literal[True]]"
+        self.broker: BaseBroker[Literal[True]]
+        self.worker: BaseWorker[Literal[True]]
 
-        self.starter: Union["BaseStarter[Literal[True]]", None] = None
+        self.starter: BaseStarter[Literal[True]] | None = None
 
         self._global_loop: Annotated[
-            Optional[asyncio.AbstractEventLoop],
+            asyncio.AbstractEventLoop | None,
             Doc(
                 """
                 Асинхронный loop, может быть указан.
@@ -190,7 +188,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -243,7 +241,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -296,7 +294,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -306,7 +304,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -348,7 +346,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ],
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи.
@@ -358,7 +356,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         timeout: Annotated[
-            Optional[float],
+            float | None,
             Doc(
                 """
                     Таймаут задачи.
@@ -449,7 +447,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
+            UUID | str,
             Doc(
                 """
                     UUID задачи.
@@ -479,7 +477,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
     def run_forever(
         self,
         loop: Annotated[
-            Optional[asyncio.AbstractEventLoop],
+            asyncio.AbstractEventLoop | None,
             Doc(
                 """
                     Асинхронный loop.

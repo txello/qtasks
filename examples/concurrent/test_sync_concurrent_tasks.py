@@ -1,11 +1,9 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import logging
 import threading
 import time
-import logging
-import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from qtasks import QueueTasks
-
 
 app = QueueTasks()
 app.config.logs_default_level_server = logging.INFO

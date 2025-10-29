@@ -1,26 +1,23 @@
 """Router for task execution."""
 
 import inspect
+from collections.abc import Callable
 from typing import (
     TYPE_CHECKING,
-    Callable,
-    Dict,
-    List,
+    Annotated,
     Literal,
-    Optional,
-    Type,
-    Union,
     overload,
 )
-from typing_extensions import Annotated, Doc
 
-from qtasks.mixins.plugin import SyncPluginMixin
-from qtasks.types.annotations import P, R
+from typing_extensions import Doc
+
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
+from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.task_exec import TaskExecSchema
+from qtasks.types.annotations import P, R
 
 if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
@@ -57,7 +54,7 @@ class Router(SyncPluginMixin):
         """Инициализация роутера для асинхронных задач."""
         ...
 
-    def __init__(self, method: Optional[Literal["sync", "async"]] = None):
+    def __init__(self, method: Literal["sync", "async"] | None = None):
         """Инициализация роутера.
 
         Args:
@@ -65,7 +62,7 @@ class Router(SyncPluginMixin):
         """
         self._method = method
         self.tasks: Annotated[
-            Dict[str, TaskExecSchema],
+            dict[str, TaskExecSchema],
             Doc(
                 """
                 Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
@@ -75,12 +72,12 @@ class Router(SyncPluginMixin):
             ),
         ] = {}
 
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
     def task(
         self,
         name: Annotated[
-            Optional[str],
+            str | None,
             Doc(
                 """
                     Имя задачи.
@@ -91,7 +88,7 @@ class Router(SyncPluginMixin):
         ] = None,
         *,
         priority: Annotated[
-            Optional[int],
+            int | None,
             Doc(
                 """
                     Приоритет у задачи по умолчанию.
@@ -111,7 +108,7 @@ class Router(SyncPluginMixin):
             ),
         ] = False,
         max_time: Annotated[
-            Union[float, None],
+            float | None,
             Doc(
                 """
                     Максимальное время выполнения задачи в секундах.
@@ -121,7 +118,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         retry: Annotated[
-            Union[int, None],
+            int | None,
             Doc(
                 """
                     Количество попыток повторного выполнения задачи.
@@ -131,7 +128,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         retry_on_exc: Annotated[
-            Union[List[Type[Exception]], None],
+            list[type[Exception]] | None,
             Doc(
                 """
                     Исключения, при которых задача будет повторно выполнена.
@@ -141,7 +138,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         decode: Annotated[
-            Union[Callable, None],
+            Callable | None,
             Doc(
                 """
                     Декодер результата задачи.
@@ -151,7 +148,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         tags: Annotated[
-            Union[List[str], None],
+            list[str] | None,
             Doc(
                 """
                     Теги задачи.
@@ -161,7 +158,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         description: Annotated[
-            Union[str, None],
+            str | None,
             Doc(
                 """
                     Описание задачи.
@@ -171,7 +168,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         generate_handler: Annotated[
-            Union[Callable, None],
+            Callable | None,
             Doc(
                 """
                     Генератор обработчика.
@@ -181,7 +178,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         executor: Annotated[
-            Optional[Type["BaseTaskExecutor"]],
+            type["BaseTaskExecutor"] | None,
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -191,7 +188,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         middlewares_before: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
+            list[type["TaskMiddleware"]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -201,7 +198,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         middlewares_after: Annotated[
-            Optional[List[Type["TaskMiddleware"]]],
+            list[type["TaskMiddleware"]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -211,7 +208,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         **kwargs,
-    ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
+    ) -> Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
         """Декоратор для регистрации задач.
 
         Args:

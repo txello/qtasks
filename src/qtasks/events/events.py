@@ -1,17 +1,18 @@
 """Events."""
 
-from abc import ABC
 import inspect
-from typing import Awaitable, Callable, List, Union
+from abc import ABC
+from collections.abc import Awaitable, Callable
+
 from qtasks.schemas.inits import InitsExecSchema
 
 
-class BaseOnEvents(ABC):
+class BaseOnEvents(ABC):  # noqa: B024
     """Базовый класс для событий."""
 
     def __init__(self):
         """Инициализация базового класса событий."""
-        self._events: dict[str, List[Callable[..., Union[Awaitable, None]]]] = {}
+        self._events: dict[str, list[Callable[..., Awaitable | None]]] = {}
 
     def _make_decorator(self, event_name: str):
         """Создание декоратора для события."""

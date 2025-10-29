@@ -2,11 +2,12 @@
 
 import importlib
 from typing import TYPE_CHECKING
-from .retries import SyncRetryPlugin, AsyncRetryPlugin
-from .pydantic import SyncPydanticWrapperPlugin, AsyncPydanticWrapperPlugin
-from .testing import SyncTestPlugin, AsyncTestPlugin
-from .depends import SyncDependsPlugin, AsyncDependsPlugin, Depends
-from .states import SyncStatePlugin, AsyncStatePlugin, SyncState, AsyncState
+
+from .depends import AsyncDependsPlugin, Depends, SyncDependsPlugin
+from .pydantic import AsyncPydanticWrapperPlugin, SyncPydanticWrapperPlugin
+from .retries import AsyncRetryPlugin, SyncRetryPlugin
+from .states import AsyncState, AsyncStatePlugin, SyncState, SyncStatePlugin
+from .testing import AsyncTestPlugin, SyncTestPlugin
 
 _plugins = {
     "SyncgRPCPlugin": "qtasks.plugins.grpc.sync_grpc",
@@ -20,5 +21,5 @@ def __getattr__(name: str):
         return getattr(module, name)
 
 if TYPE_CHECKING:
-    from .grpc.sync_grpc import SyncgRPCPlugin
     from .grpc.async_grpc import AsyncgRPCPlugin
+    from .grpc.sync_grpc import SyncgRPCPlugin
