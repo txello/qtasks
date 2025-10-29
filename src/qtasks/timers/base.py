@@ -96,7 +96,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
     def add_task(
         self: "BaseTimer[Literal[False]]",
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -142,7 +142,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ],
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.
@@ -157,7 +157,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
     async def add_task(
         self: "BaseTimer[Literal[True]]",
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -203,7 +203,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ],
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.
@@ -218,7 +218,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
     def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -264,7 +264,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ],
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.

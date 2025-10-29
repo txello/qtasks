@@ -8,7 +8,7 @@ import json
 import atexit
 from queue import Queue, Empty
 from dataclasses import asdict
-from typing import Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID, uuid4
 from time import time
@@ -416,7 +416,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     def update(
         self,
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления для хранилища типа kwargs.

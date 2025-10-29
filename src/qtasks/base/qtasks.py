@@ -3,6 +3,7 @@
 import inspect
 from typing import (
     TYPE_CHECKING,
+    Any,
     Awaitable,
     Callable,
     Dict,
@@ -676,7 +677,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -729,7 +730,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     async def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -767,7 +768,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.
@@ -782,7 +783,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -820,7 +821,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.
@@ -835,7 +836,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     async def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -873,7 +874,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.
@@ -887,7 +888,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -925,7 +926,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.

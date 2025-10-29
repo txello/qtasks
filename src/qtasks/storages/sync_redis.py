@@ -264,7 +264,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
     def update(
         self,
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления типа kwargs.

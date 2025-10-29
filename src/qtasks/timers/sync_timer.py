@@ -81,7 +81,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
     def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -127,7 +127,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ],
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.

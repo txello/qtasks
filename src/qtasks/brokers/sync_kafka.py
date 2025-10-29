@@ -6,7 +6,7 @@ except ImportError:
     raise ImportError("Install with `pip install qtasks[kafka]` to use this broker.")
 
 from datetime import datetime
-from typing import Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID, uuid4
 from time import time
@@ -376,7 +376,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
     def update(
         self,
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления для хранилища типа kwargs.

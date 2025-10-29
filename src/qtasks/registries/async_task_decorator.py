@@ -245,7 +245,7 @@ class AsyncTask(Generic[P, R]):
     async def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -285,7 +285,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.

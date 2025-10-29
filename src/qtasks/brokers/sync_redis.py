@@ -374,7 +374,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
     def update(
         self,
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления для хранилища типа kwargs.

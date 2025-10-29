@@ -229,7 +229,7 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.

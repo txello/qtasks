@@ -4,7 +4,7 @@ import asyncio
 import time
 import asyncio_atexit
 import json
-from typing import Awaitable, List, Literal, Optional, Union, cast
+from typing import Any, Awaitable, List, Literal, Optional, Union, cast
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 import redis.asyncio as aioredis
@@ -273,7 +273,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
     async def update(
         self,
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления типа kwargs.

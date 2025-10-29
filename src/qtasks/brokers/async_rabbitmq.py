@@ -2,7 +2,7 @@
 
 from datetime import datetime
 import json
-from typing import TYPE_CHECKING, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
@@ -397,7 +397,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     async def update(
         self,
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления для хранилища типа kwargs.

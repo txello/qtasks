@@ -210,7 +210,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = 0.0,
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     kwargs задачи.
@@ -263,7 +263,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.
@@ -316,7 +316,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.
@@ -368,7 +368,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.

@@ -324,7 +324,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ],
         *args: Annotated[
-            tuple,
+            Any,
             Doc(
                 """
                     args задачи.

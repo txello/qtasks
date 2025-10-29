@@ -6,7 +6,7 @@ from dataclasses import asdict
 from datetime import datetime
 import json
 import asyncio_atexit
-from typing import Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 from typing_extensions import Annotated, Doc
 from uuid import UUID, uuid4
 from time import time
@@ -420,7 +420,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     async def update(
         self,
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления для хранилища типа kwargs.

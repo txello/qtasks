@@ -208,7 +208,7 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.

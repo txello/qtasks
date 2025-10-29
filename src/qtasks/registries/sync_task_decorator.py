@@ -243,7 +243,7 @@ class SyncTask(Generic[P, R]):
     def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
+            Any,
             Doc(
                 """
                     args задачи.
@@ -283,7 +283,7 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
+            Any,
             Doc(
                 """
                     kwargs задачи.

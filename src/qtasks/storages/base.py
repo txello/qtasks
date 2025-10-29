@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import field, fields, make_dataclass
 import datetime
 import json
-from typing import Awaitable, Dict, Generic, List, Literal, Optional, Union, overload
+from typing import Any, Awaitable, Dict, Generic, List, Literal, Optional, Union, overload
 from typing_extensions import Annotated, Doc
 from uuid import UUID
 from typing import TYPE_CHECKING
@@ -263,7 +263,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     def update(
         self: "BaseStorage[Literal[False]]",
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления типа kwargs.
@@ -276,7 +276,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     async def update(
         self: "BaseStorage[Literal[True]]",
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления типа kwargs.
@@ -289,7 +289,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     def update(
         self,
         **kwargs: Annotated[
-            dict,
+            Any,
             Doc(
                 """
                     Аргументы обновления типа kwargs.
