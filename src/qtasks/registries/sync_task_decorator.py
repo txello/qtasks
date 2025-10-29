@@ -13,12 +13,12 @@ from typing import (
 from typing_extensions import Doc
 
 from qtasks.contexts.sync_context import SyncContext
-from qtasks.executors.base import BaseTaskExecutor
-from qtasks.middlewares.task import TaskMiddleware
 from qtasks.types.annotations import P, R
 
 if TYPE_CHECKING:
     from qtasks import QueueTasks
+    from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.middlewares.task import TaskMiddleware
     from qtasks.schemas.task import Task
 
 
