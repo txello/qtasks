@@ -29,7 +29,7 @@ async def main():
     # task = await test_echo_ctx.add_task(timeout=50)
     # task = await example_stats.add_task(timeout=50)
     # task = await example_error_timeout.add_task(timeout=50)
-    task = await app.add_task("test_num", 5, timeout=50)
+    task = await test_num.add_task(timeout=50)
     print(task)
 
 asyncio.run(main())

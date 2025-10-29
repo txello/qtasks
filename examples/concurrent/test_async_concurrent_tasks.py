@@ -1,6 +1,26 @@
 import asyncio
 import time
-from based_async_app import load_test_job
+import logging
+import time
+
+from qtasks.asyncio import QueueTasks
+
+
+app = QueueTasks()
+app.config.logs_default_level_server = logging.INFO
+app.config.running_older_tasks = True
+app.config.delete_finished_tasks = True
+app.config.result_time_interval = 0.1
+
+@app.task(
+    description="Задача для тестирования нагрузки."
+)
+async def load_test_job(num: int):
+    end_time = time.time()
+    print(f"Job {num} finished at {end_time}")
+    return
+
+###
 
 
 async def enqueue_jobs(num):
@@ -38,7 +58,7 @@ async def main2(num):
 
 
 async def run():
-    await enqueue_jobs(20000)
+    await main(20000)
 
 if __name__ == "__main__":
     asyncio.run(run())

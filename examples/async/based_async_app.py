@@ -8,6 +8,7 @@ from qtasks.asyncio import QueueTasks
 from qtasks.registries import AsyncTask
 
 from qtasks.stats.async_stats import AsyncStats
+
 import shared_tasks
 import router_tasks
 
@@ -51,9 +52,10 @@ def test_num(number: int):
     echo=True
 )
 async def test_echo(self: AsyncTask):
-    task = await self.add_task(task_name="test_num", args=(5,), timeout=50)
-    print(f"Задача {task.task_name}, результат: {task.returning}")
-    return str(task)
+    task = await self.add_task(5, task_name="test_num", timeout=50)
+    if task:
+        print(f"Задача {task.task_name}, результат: {task.returning}")
+        return str(task)
 
 
 @app.task(

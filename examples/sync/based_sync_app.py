@@ -30,8 +30,9 @@ def test_num(number: int):
 @app.task(name="test_echo", echo=True)
 def test_echo(self: SyncTask):
     task = self.add_task(task_name="test_num", args=(5,), timeout=50)
-    print(f"Задача {task.task_name}, результат: {task.returning}")
-    return
+    if task:
+        print(f"Задача {task.task_name}, результат: {task.returning}")
+        return str(task)
 
 
 @app.task(retry=5, retry_on_exc=[ZeroDivisionError])
