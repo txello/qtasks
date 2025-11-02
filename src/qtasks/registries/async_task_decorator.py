@@ -1,4 +1,5 @@
 """Async Task."""
+from __future__ import annotations
 
 from collections.abc import Callable
 from typing import (
@@ -144,7 +145,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         executor: Annotated[
-            type["BaseTaskExecutor"] | None,
+            type[BaseTaskExecutor] | None,
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -154,7 +155,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         middlewares_before: Annotated[
-            list[type["TaskMiddleware"]] | None,
+            list[type[TaskMiddleware]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -164,7 +165,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         middlewares_after: Annotated[
-            list[type["TaskMiddleware"]] | None,
+            list[type[TaskMiddleware]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -184,7 +185,7 @@ class AsyncTask(Generic[P, R]):
             ),
         ] = None,
         app: Annotated[
-            Optional["QueueTasks"],
+            Optional[QueueTasks],
             Doc(
                 """
                     `QueueTasks` экземпляр.
@@ -293,7 +294,7 @@ class AsyncTask(Generic[P, R]):
                     """
             ),
         ],
-    ) -> Union["Task", None]:
+    ) -> Union[Task, None]:
         """Добавить задачу.
 
         Args:

@@ -1,4 +1,5 @@
 """Base Configurations."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable
@@ -73,7 +74,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -112,10 +113,10 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         self.init_plugins()
 
     @overload
-    def set(self: "BaseGlobalConfig[Literal[False]]", **kwargs) -> None: ...
+    def set(self: BaseGlobalConfig[Literal[False]], **kwargs) -> None: ...
 
     @overload
-    async def set(self: "BaseGlobalConfig[Literal[True]]", **kwargs) -> None: ...
+    async def set(self: BaseGlobalConfig[Literal[True]], **kwargs) -> None: ...
 
     @abstractmethod
     def set(self, **kwargs) -> None | Awaitable[None]:
@@ -127,11 +128,11 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def get(self: "BaseGlobalConfig[Literal[False]]", key: str, name: str) -> Any: ...
+    def get(self: BaseGlobalConfig[Literal[False]], key: str, name: str) -> Any: ...
 
     @overload
     async def get(
-        self: "BaseGlobalConfig[Literal[True]]", key: str, name: str
+        self: BaseGlobalConfig[Literal[True]], key: str, name: str
     ) -> Any: ...
 
     @abstractmethod
@@ -149,12 +150,12 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
 
     @overload
     def get_all(
-        self: "BaseGlobalConfig[Literal[False]]", key: str
+        self: BaseGlobalConfig[Literal[False]], key: str
     ) -> dict | list | tuple: ...
 
     @overload
     async def get_all(
-        self: "BaseGlobalConfig[Literal[True]]", key: str
+        self: BaseGlobalConfig[Literal[True]], key: str
     ) -> dict | list | tuple: ...
 
     @abstractmethod
@@ -172,10 +173,10 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def get_match(self: "BaseGlobalConfig[Literal[False]]", match: str) -> Any: ...
+    def get_match(self: BaseGlobalConfig[Literal[False]], match: str) -> Any: ...
 
     @overload
-    async def get_match(self: "BaseGlobalConfig[Literal[True]]", match: str) -> Any: ...
+    async def get_match(self: BaseGlobalConfig[Literal[True]], match: str) -> Any: ...
 
     @abstractmethod
     def get_match(
@@ -192,10 +193,10 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def start(self: "BaseGlobalConfig[Literal[False]]") -> None: ...
+    def start(self: BaseGlobalConfig[Literal[False]]) -> None: ...
 
     @overload
-    async def start(self: "BaseGlobalConfig[Literal[True]]") -> None: ...
+    async def start(self: BaseGlobalConfig[Literal[True]]) -> None: ...
 
     @abstractmethod
     def start(self) -> None | Awaitable[None]:
@@ -203,10 +204,10 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def stop(self: "BaseGlobalConfig[Literal[False]]") -> None: ...
+    def stop(self: BaseGlobalConfig[Literal[False]]) -> None: ...
 
     @overload
-    async def stop(self: "BaseGlobalConfig[Literal[True]]") -> None: ...
+    async def stop(self: BaseGlobalConfig[Literal[True]]) -> None: ...
 
     @abstractmethod
     def stop(self) -> None | Awaitable[None]:
@@ -235,7 +236,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
+            BasePlugin,
             Doc(
                 """
                     Плагин.

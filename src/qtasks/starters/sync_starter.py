@@ -1,4 +1,5 @@
 """Sync Starter."""
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated, Literal, Optional
 
@@ -53,7 +54,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
         broker: Annotated[
-            Optional["BaseBroker"],
+            Optional[BaseBroker],
             Doc(
                 """
                     Брокер.
@@ -63,7 +64,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
         worker: Annotated[
-            Optional["BaseWorker"],
+            Optional[BaseWorker],
             Doc(
                 """
                     Воркер.
@@ -93,7 +94,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -150,7 +151,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             ),
         ] = True,
         plugins: Annotated[
-            dict[str, list["BasePlugin"]] | None,
+            dict[str, list[BasePlugin]] | None,
             Doc(
                 """
                     Плагины для воркера и брокера.

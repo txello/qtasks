@@ -1,4 +1,5 @@
 """TaskPriority and TaskExec Schema."""
+from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -91,13 +92,13 @@ class TaskExecSchema:
 
     generate_handler: Callable | None = None
 
-    executor: type["BaseTaskExecutor"] | None = None
-    middlewares_before: list[type["TaskMiddleware"]] = field(default_factory=list)
-    middlewares_after: list[type["TaskMiddleware"]] = field(default_factory=list)
+    executor: type[BaseTaskExecutor] | None = None
+    middlewares_before: list[type[TaskMiddleware]] = field(default_factory=list)
+    middlewares_after: list[type[TaskMiddleware]] = field(default_factory=list)
 
     extra: dict = field(default_factory=dict)
 
-    def add_middlewares_before(self, middlewares: list[type["TaskMiddleware"]]) -> None:
+    def add_middlewares_before(self, middlewares: list[type[TaskMiddleware]]) -> None:
         """Добавляет мидлвари к задаче.
 
         Args:
@@ -105,7 +106,7 @@ class TaskExecSchema:
         """
         self.middlewares_before.extend(middlewares)
 
-    def add_middlewares_after(self, middlewares: list[type["TaskMiddleware"]]) -> None:
+    def add_middlewares_after(self, middlewares: list[type[TaskMiddleware]]) -> None:
         """Добавляет мидлвари к задаче.
 
         Args:

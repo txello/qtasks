@@ -1,4 +1,5 @@
 """Init module for sync worker."""
+from __future__ import annotations
 
 import json
 import traceback
@@ -67,7 +68,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             ),
         ] = "QueueTasks",
         broker: Annotated[
-            Optional["BaseBroker"],
+            Optional[BaseBroker],
             Doc(
                 """
                     Брокер.
@@ -97,7 +98,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.

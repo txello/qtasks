@@ -1,4 +1,5 @@
 """Sync Kafka Broker."""
+from __future__ import annotations
 
 try:
     from kafka import KafkaConsumer, KafkaProducer
@@ -74,7 +75,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = "localhost:9092",
         storage: Annotated[
-            Optional["BaseStorage"],
+            Optional[BaseStorage],
             Doc(
                 """
                     Хранилище.
@@ -114,7 +115,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -168,7 +169,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
     def listen(
         self,
         worker: Annotated[
-            "BaseWorker[Literal[False]]",
+            BaseWorker[Literal[False]],
             Doc(
                 """
                     Класс воркера.
@@ -399,7 +400,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
     def start(
         self,
         worker: Annotated[
-            "BaseWorker",
+            BaseWorker,
             Doc(
                 """
                     Класс Воркера.

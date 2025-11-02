@@ -1,4 +1,5 @@
 """Base timer class."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable
@@ -43,7 +44,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
     def __init__(
         self,
         app: Annotated[
-            Union["QueueTasks", "aioQueueTasks"],
+            Union[QueueTasks, aioQueueTasks],
             Doc(
                 """
                     Задача.
@@ -95,7 +96,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
 
     @overload
     def add_task(
-        self: "BaseTimer[Literal[False]]",
+        self: BaseTimer[Literal[False]],
         *args: Annotated[
             Any,
             Doc(
@@ -156,7 +157,7 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
 
     @overload
     async def add_task(
-        self: "BaseTimer[Literal[True]]",
+        self: BaseTimer[Literal[True]],
         *args: Annotated[
             Any,
             Doc(

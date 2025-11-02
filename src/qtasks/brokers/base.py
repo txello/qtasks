@@ -1,4 +1,5 @@
 """Base Broker."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable
@@ -56,7 +57,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     def __init__(
         self,
         storage: Annotated[
-            "BaseStorage[TAsyncFlag]",
+            BaseStorage[TAsyncFlag],
             Doc(
                 """
                     Хранилище `qtasks.storages.base.BaseStorage`.
@@ -96,7 +97,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -137,7 +138,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     def add(
-        self: "BaseBroker[Literal[False]]",
+        self: BaseBroker[Literal[False]],
         task_name: Annotated[
             str,
             Doc(
@@ -184,7 +185,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     async def add(
-        self: "BaseBroker[Literal[True]]",
+        self: BaseBroker[Literal[True]],
         task_name: Annotated[
             str,
             Doc(
@@ -291,7 +292,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     def get(
-        self: "BaseBroker[Literal[False]]",
+        self: BaseBroker[Literal[False]],
         uuid: Annotated[
             UUID | str,
             Doc(
@@ -304,7 +305,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     async def get(
-        self: "BaseBroker[Literal[True]]",
+        self: BaseBroker[Literal[True]],
         uuid: Annotated[
             UUID | str,
             Doc(
@@ -339,7 +340,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     def update(
-        self: "BaseBroker[Literal[False]]",
+        self: BaseBroker[Literal[False]],
         **kwargs: Annotated[
             Any,
             Doc(
@@ -352,7 +353,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     async def update(
-        self: "BaseBroker[Literal[True]]",
+        self: BaseBroker[Literal[True]],
         **kwargs: Annotated[
             Any,
             Doc(
@@ -384,9 +385,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     def start(
-        self: "BaseBroker[Literal[False]]",
+        self: BaseBroker[Literal[False]],
         worker: Annotated[
-            Optional["BaseWorker"],
+            Optional[BaseWorker],
             Doc(
                 """
                     Класс Воркера.
@@ -399,9 +400,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     async def start(
-        self: "BaseBroker[Literal[True]]",
+        self: BaseBroker[Literal[True]],
         worker: Annotated[
-            Optional["BaseWorker"],
+            Optional[BaseWorker],
             Doc(
                 """
                     Класс Воркера.
@@ -416,7 +417,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     def start(
         self,
         worker: Annotated[
-            Optional["BaseWorker"],
+            Optional[BaseWorker],
             Doc(
                 """
                     Класс Воркера.
@@ -435,12 +436,12 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     def stop(
-        self: "BaseBroker[Literal[False]]",
+        self: BaseBroker[Literal[False]],
     ) -> None: ...
 
     @overload
     async def stop(
-        self: "BaseBroker[Literal[True]]",
+        self: BaseBroker[Literal[True]],
     ) -> None: ...
 
     @abstractmethod
@@ -470,7 +471,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
+            BasePlugin,
             Doc(
                 """
                     Плагин.
@@ -504,10 +505,10 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         return
 
     @overload
-    def flush_all(self: "BaseBroker[Literal[False]]") -> None: ...
+    def flush_all(self: BaseBroker[Literal[False]]) -> None: ...
 
     @overload
-    async def flush_all(self: "BaseBroker[Literal[True]]") -> None: ...
+    async def flush_all(self: BaseBroker[Literal[True]]) -> None: ...
 
     def flush_all(self) -> None | Awaitable[None]:
         """Удалить все данные."""
@@ -519,7 +520,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     def remove_finished_task(
-        self: "BaseBroker[Literal[False]]",
+        self: BaseBroker[Literal[False]],
         task_broker: Annotated[
             TaskPrioritySchema,
             Doc(
@@ -540,7 +541,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @overload
     async def remove_finished_task(
-        self: "BaseBroker[Literal[True]]",
+        self: BaseBroker[Literal[True]],
         task_broker: Annotated[
             TaskPrioritySchema,
             Doc(

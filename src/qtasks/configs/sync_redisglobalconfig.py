@@ -1,4 +1,5 @@
 """Sync Redis Global Config."""
+from __future__ import annotations
 
 import time
 from threading import Thread
@@ -104,7 +105,7 @@ class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.

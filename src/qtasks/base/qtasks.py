@@ -1,4 +1,5 @@
 """Base QueueTasks."""
+from __future__ import annotations
 
 import inspect
 from collections.abc import Awaitable, Callable
@@ -21,7 +22,6 @@ from qtasks.logs import Logger
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
-from qtasks.routers.router import Router
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskExecSchema
 from qtasks.types.annotations import P, R
@@ -34,6 +34,8 @@ if TYPE_CHECKING:
     from qtasks.middlewares.base import BaseMiddleware
     from qtasks.middlewares.task import TaskMiddleware
     from qtasks.plugins.base import BasePlugin
+    from qtasks.routers.async_router import AsyncRouter
+    from qtasks.routers.sync_router import SyncRouter
     from qtasks.starters.base import BaseStarter
     from qtasks.workers.base import BaseWorker
 
@@ -44,7 +46,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     def __init__(
         self,
         broker: Annotated[
-            "BaseBroker",
+            BaseBroker,
             Doc(
                 """
                     Брокер. Хранит в себе обработку из очередей задач и хранилище данных.
@@ -52,7 +54,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ],
         worker: Annotated[
-            "BaseWorker",
+            BaseWorker,
             Doc(
                 """
                     Воркер. Хранит в себе обработку задач.
@@ -100,7 +102,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -155,10 +157,10 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         self.starter: BaseStarter | None = None
 
         self.routers: Annotated[
-            list[Router],
+            list[SyncRouter | AsyncRouter],
             Doc(
                 """
-                Роутеры, тип `qtasks.routers.Router`.
+                Роутеры, тип `qtasks.routers.SyncRouter | qtasks.routers.AsyncRouter`.
 
                 По умолчанию: `Пустой массив`.
                 """
@@ -201,7 +203,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
     @overload
     def task(
-        self: "BaseQueueTasks[Literal[False]]",
+        self: BaseQueueTasks[Literal[False]],
         name: str | None = None,
         *,
         priority: int | None = None,
@@ -213,9 +215,9 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         tags: list[str] | None = None,
         description: str | None = None,
         generate_handler: Callable | None = None,
-        executor: type["BaseTaskExecutor"] | None = None,
-        middlewares_before: list[type["TaskMiddleware"]] | None = None,
-        middlewares_after: list[type["TaskMiddleware"]] | None = None,
+        executor: type[BaseTaskExecutor] | None = None,
+        middlewares_before: list[type[TaskMiddleware]] | None = None,
+        middlewares_after: list[type[TaskMiddleware]] | None = None,
         **kwargs,
     ) -> Callable[[Callable[P, R]], SyncTask[P, R]]:
         """Декоратор для регистрации задач.
@@ -246,7 +248,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
     @overload
     def task(
-        self: "BaseQueueTasks[Literal[True]]",
+        self: BaseQueueTasks[Literal[True]],
         name: str | None = None,
         *,
         priority: int | None = None,
@@ -258,9 +260,9 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         tags: list[str] | None = None,
         description: str | None = None,
         generate_handler: Callable | None = None,
-        executor: type["BaseTaskExecutor"] | None = None,
-        middlewares_before: list[type["TaskMiddleware"]] | None = None,
-        middlewares_after: list[type["TaskMiddleware"]] | None = None,
+        executor: type[BaseTaskExecutor] | None = None,
+        middlewares_before: list[type[TaskMiddleware]] | None = None,
+        middlewares_after: list[type[TaskMiddleware]] | None = None,
         **kwargs,
     ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
         """Декоратор для регистрации задач.
@@ -291,12 +293,12 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
     @overload
     def task(
-        self: "BaseQueueTasks[Literal[False]]", name: Callable[P, R]
+        self: BaseQueueTasks[Literal[False]], name: Callable[P, R]
     ) -> SyncTask[P, R]: ...
 
     @overload
     def task(
-        self: "BaseQueueTasks[Literal[True]]", name: Callable[P, R]
+        self: BaseQueueTasks[Literal[True]], name: Callable[P, R]
     ) -> AsyncTask[P, R]: ...
 
     def task(
@@ -403,7 +405,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         executor: Annotated[
-            type["BaseTaskExecutor"] | None,
+            type[BaseTaskExecutor] | None,
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -413,7 +415,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         middlewares_before: Annotated[
-            list[type["TaskMiddleware"]] | None,
+            list[type[TaskMiddleware]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены до задачи.
@@ -423,7 +425,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
         middlewares_after: Annotated[
-            list[type["TaskMiddleware"]] | None,
+            list[type[TaskMiddleware]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -537,10 +539,10 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     def include_router(
         self,
         router: Annotated[
-            Router,
+            SyncRouter | AsyncRouter,
             Doc(
                 """
-                    Роутер `qtasks.routers.Router`.
+                    Роутер `qtasks.routers.SyncRouter` | `qtasks.routers.AsyncRouter`.
                     """
             ),
         ],
@@ -548,7 +550,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         """Добавить Router.
 
         Args:
-            router (Router): Роутер `qtasks.routers.Router`.
+            router (Router): Роутер `qtasks.routers.SyncRouter` | `qtasks.routers.AsyncRouter`.
         """
         self.routers.append(router)
         self.tasks.update(router.tasks)
@@ -556,7 +558,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
     def add_plugin(
         self,
-        plugin: "BasePlugin",
+        plugin: BasePlugin,
         trigger_names: list[str] | None = None,
         component: str | None = None,
     ) -> None:
@@ -591,7 +593,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         component_data.add_plugin(plugin, trigger_names)
         return
 
-    def add_middleware(self, middleware: type["BaseMiddleware"], **kwargs) -> None:
+    def add_middleware(self, middleware: type[BaseMiddleware], **kwargs) -> None:
         """Добавить мидлварь.
 
         Args:
@@ -719,7 +721,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
                     """
             ),
         ],
-    ) -> Optional["Task"]: ...
+    ) -> Optional[Task]: ...
 
     @overload
     async def add_task(
@@ -772,7 +774,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
                     """
             ),
         ],
-    ) -> Optional["Task"]: ...
+    ) -> Optional[Task]: ...
 
     @overload
     def add_task(
@@ -825,7 +827,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
                     """
             ),
         ],
-    ) -> "Task": ...
+    ) -> Task: ...
 
     @overload
     async def add_task(
@@ -878,7 +880,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
                     """
             ),
         ],
-    ) -> "Task": ...
+    ) -> Task: ...
 
     def add_task(
         self,
@@ -931,7 +933,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ],
     ) -> Union[
-        Optional["Task"], Awaitable[Optional["Task"]], "Task", Awaitable["Task"]
+        Optional[Task], Awaitable[Optional[Task]], Task, Awaitable[Task]
     ]:
         """Добавить задачу.
 

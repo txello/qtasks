@@ -1,4 +1,5 @@
 """Sync Redis Broker."""
+from __future__ import annotations
 
 import json
 from datetime import datetime
@@ -71,7 +72,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         storage: Annotated[
-            Optional["BaseStorage"],
+            Optional[BaseStorage],
             Doc(
                 """
                     Хранилище.
@@ -111,7 +112,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -159,7 +160,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
     def listen(
         self,
         worker: Annotated[
-            "BaseWorker[Literal[False]]",
+            BaseWorker[Literal[False]],
             Doc(
                 """
                     Класс воркера.
@@ -398,7 +399,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
     def start(
         self,
         worker: Annotated[
-            "BaseWorker",
+            BaseWorker,
             Doc(
                 """
                     Класс Воркера.

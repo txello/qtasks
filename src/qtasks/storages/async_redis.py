@@ -1,4 +1,5 @@
 """Async Redis storage."""
+from __future__ import annotations
 
 import asyncio
 import json
@@ -96,7 +97,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             ),
         ] = None,
         global_config: Annotated[
-            Optional["BaseGlobalConfig"],
+            Optional[BaseGlobalConfig],
             Doc(
                 """
                     Глобальный конфиг.
@@ -126,7 +127,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -211,7 +212,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await cast(Awaitable[int], raw)
         return
 
-    async def get(self, uuid: UUID | str) -> Union["Task", None]:
+    async def get(self, uuid: UUID | str) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -237,7 +238,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             result = new_result.get("result", result)
         return result
 
-    async def get_all(self) -> list["Task"]:
+    async def get_all(self) -> list[Task]:
         """Получить все задачи.
 
         Returns:
@@ -398,7 +399,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         await self.client.zadd(self.queue_process, {task_data: priority})
         return
 
-    async def _running_older_tasks(self, worker: "BaseWorker[Literal[True]]"):
+    async def _running_older_tasks(self, worker: BaseWorker[Literal[True]]):
         tasks = await self.client.zrange(self.queue_process, 0, -1)
         for task_data in tasks:
             task_name, uuid, priority = task_data.split(":")

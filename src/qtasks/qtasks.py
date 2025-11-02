@@ -1,4 +1,5 @@
 """qtasks.py - Main module for the QueueTasks framework."""
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, Union, overload
 from uuid import UUID
@@ -63,7 +64,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ] = None,
         broker: Annotated[
-            Optional["BaseBroker"],
+            Optional[BaseBroker],
             Doc(
                 """
                     Брокер. Хранит в себе обработку из очередей задач и хранилище данных.
@@ -73,7 +74,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ] = None,
         worker: Annotated[
-            Optional["BaseWorker"],
+            Optional[BaseWorker],
             Doc(
                 """
                     Воркер. Хранит в себе обработку задач.
@@ -103,7 +104,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -204,7 +205,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
                     """
             ),
         ],
-    ) -> Optional["Task"]: ...
+    ) -> Optional[Task]: ...
 
     @overload
     def add_task(
@@ -257,7 +258,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
                     """
             ),
         ],
-    ) -> "Task": ...
+    ) -> Task: ...
 
     @overload
     def add_task(
@@ -310,7 +311,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
                     """
             ),
         ],
-    ) -> Optional["Task"]: ...
+    ) -> Optional[Task]: ...
 
     def add_task(
         self,
@@ -362,7 +363,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
                     """
             ),
         ],
-    ) -> Union["Task", Optional["Task"]]:
+    ) -> Union[Task, Optional[Task]]:
         """Добавить задачу.
 
         Args:
@@ -440,7 +441,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
                     """
             ),
         ],
-    ) -> Union["Task", None]:
+    ) -> Union[Task, None]:
         """Получить задачу.
 
         Args:
@@ -462,7 +463,7 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
     def run_forever(
         self,
         starter: Annotated[
-            Optional["BaseStarter"],
+            Optional[BaseStarter],
             Doc(
                 """
                     Обновить Стартер.

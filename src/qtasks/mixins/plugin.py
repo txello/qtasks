@@ -1,4 +1,5 @@
 """Миксин для работы с плагинами."""
+from __future__ import annotations
 
 import traceback
 from copy import deepcopy
@@ -22,8 +23,8 @@ if TYPE_CHECKING:
 class SyncPluginMixin:
     """Миксин для синхронной работы с плагинами."""
 
-    plugins: dict[str, list["BasePlugin"]]
-    log: Optional["Logger"] = None
+    plugins: dict[str, list[BasePlugin]]
+    log: Optional[Logger] = None
 
     @overload
     def _plugin_trigger(
@@ -111,7 +112,7 @@ class SyncPluginMixin:
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
+            BasePlugin,
             Doc(
                 """
                     Плагин.
@@ -148,8 +149,8 @@ class SyncPluginMixin:
 class AsyncPluginMixin:
     """Миксин для асинхронной работы с плагинами."""
 
-    plugins: dict[str, list["BasePlugin[Literal[True]]"]]
-    log: Optional["Logger"] = None
+    plugins: dict[str, list[BasePlugin[Literal[True]]]]
+    log: Optional[Logger] = None
 
     plugins_cache: Dict[str, Any] = {}
 
@@ -276,7 +277,7 @@ class AsyncPluginMixin:
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
+            BasePlugin,
             Doc(
                 """
                     Плагин.

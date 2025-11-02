@@ -1,4 +1,5 @@
 """Base storage class."""
+from __future__ import annotations
 
 import datetime
 import json
@@ -65,7 +66,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ] = "QueueTasks",
         global_config: Annotated[
-            Optional["BaseGlobalConfig[TAsyncFlag]"],
+            Optional[BaseGlobalConfig[TAsyncFlag]],
             Doc(
                 """
                     Глобальный конфиг.
@@ -95,7 +96,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -137,7 +138,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     def add(
-        self: "BaseStorage[Literal[False]]",
+        self: BaseStorage[Literal[False]],
         uuid: Annotated[
             UUID | str,
             Doc(
@@ -158,7 +159,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     async def add(
-        self: "BaseStorage[Literal[True]]",
+        self: BaseStorage[Literal[True]],
         uuid: Annotated[
             UUID | str,
             Doc(
@@ -207,7 +208,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     def get(
-        self: "BaseStorage[Literal[False]]",
+        self: BaseStorage[Literal[False]],
         uuid: Annotated[
             UUID | str,
             Doc(
@@ -220,7 +221,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     async def get(
-        self: "BaseStorage[Literal[True]]",
+        self: BaseStorage[Literal[True]],
         uuid: Annotated[
             UUID | str,
             Doc(
@@ -254,10 +255,10 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def get_all(self: "BaseStorage[Literal[False]]") -> list[Task]: ...
+    def get_all(self: BaseStorage[Literal[False]]) -> list[Task]: ...
 
     @overload
-    async def get_all(self: "BaseStorage[Literal[True]]") -> list[Task]: ...
+    async def get_all(self: BaseStorage[Literal[True]]) -> list[Task]: ...
 
     @abstractmethod
     def get_all(self) -> list[Task] | Awaitable[list[Task]]:
@@ -270,7 +271,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     def update(
-        self: "BaseStorage[Literal[False]]",
+        self: BaseStorage[Literal[False]],
         **kwargs: Annotated[
             Any,
             Doc(
@@ -283,7 +284,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     async def update(
-        self: "BaseStorage[Literal[True]]",
+        self: BaseStorage[Literal[True]],
         **kwargs: Annotated[
             Any,
             Doc(
@@ -314,10 +315,10 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def start(self: "BaseStorage[Literal[False]]") -> None: ...
+    def start(self: BaseStorage[Literal[False]]) -> None: ...
 
     @overload
-    async def start(self: "BaseStorage[Literal[True]]") -> None: ...
+    async def start(self: BaseStorage[Literal[True]]) -> None: ...
 
     @abstractmethod
     def start(self) -> None | Awaitable[None]:
@@ -325,10 +326,10 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def stop(self: "BaseStorage[Literal[False]]") -> None: ...
+    def stop(self: BaseStorage[Literal[False]]) -> None: ...
 
     @overload
-    async def stop(self: "BaseStorage[Literal[True]]") -> None: ...
+    async def stop(self: BaseStorage[Literal[True]]) -> None: ...
 
     @abstractmethod
     def stop(self) -> None | Awaitable[None]:
@@ -337,7 +338,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     def add_process(
-        self: "BaseStorage[Literal[False]]",
+        self: BaseStorage[Literal[False]],
         task_data: Annotated[
             str,
             Doc(
@@ -358,7 +359,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     async def add_process(
-        self: "BaseStorage[Literal[True]]",
+        self: BaseStorage[Literal[True]],
         task_data: Annotated[
             str,
             Doc(
@@ -408,7 +409,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
+            BasePlugin,
             Doc(
                 """
                     Плагин.
@@ -443,7 +444,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     def remove_finished_task(
-        self: "BaseStorage[Literal[False]]",
+        self: BaseStorage[Literal[False]],
         task_broker: Annotated[
             TaskPrioritySchema,
             Doc(
@@ -464,7 +465,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     async def remove_finished_task(
-        self: "BaseStorage[Literal[True]]",
+        self: BaseStorage[Literal[True]],
         task_broker: Annotated[
             TaskPrioritySchema,
             Doc(
@@ -511,10 +512,10 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def _delete_finished_tasks(self: "BaseStorage[Literal[False]]") -> None: ...
+    def _delete_finished_tasks(self: BaseStorage[Literal[False]]) -> None: ...
 
     @overload
-    async def _delete_finished_tasks(self: "BaseStorage[Literal[True]]") -> None: ...
+    async def _delete_finished_tasks(self: BaseStorage[Literal[True]]) -> None: ...
 
     def _delete_finished_tasks(self) -> None | Awaitable[None]:
         """Удаляет все завершенные задачи."""
@@ -522,16 +523,16 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @overload
     def _running_older_tasks(
-        self: "BaseStorage[Literal[False]]", worker: "BaseWorker"
+        self: BaseStorage[Literal[False]], worker: BaseWorker
     ) -> None: ...
 
     @overload
     async def _running_older_tasks(
-        self: "BaseStorage[Literal[True]]", worker: "BaseWorker"
+        self: BaseStorage[Literal[True]], worker: BaseWorker
     ) -> None: ...
 
     def _running_older_tasks(
-        self, worker: "BaseWorker"
+        self, worker: BaseWorker
     ) -> None | Awaitable[None]:
         """Удаляет все старые задачи.
 
@@ -560,10 +561,10 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         return
 
     @overload
-    def flush_all(self: "BaseStorage[Literal[False]]") -> None: ...
+    def flush_all(self: BaseStorage[Literal[False]]) -> None: ...
 
     @overload
-    async def flush_all(self: "BaseStorage[Literal[True]]") -> None: ...
+    async def flush_all(self: BaseStorage[Literal[True]]) -> None: ...
 
     def flush_all(self) -> None | Awaitable[None]:
         """Удалить все данные."""

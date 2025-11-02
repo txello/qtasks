@@ -1,4 +1,5 @@
 """Async RabbitMQ Broker."""
+from __future__ import annotations
 
 import json
 from datetime import datetime
@@ -77,7 +78,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = "amqp://guest:guest@localhost/",
         storage: Annotated[
-            Optional["BaseStorage"],
+            Optional[BaseStorage],
             Doc(
                 """
                     Хранилище.
@@ -117,7 +118,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -167,7 +168,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     async def listen(
         self,
         worker: Annotated[
-            "BaseWorker[Literal[True]]",
+            BaseWorker[Literal[True]],
             Doc(
                 """
                     Класс воркера.
@@ -424,7 +425,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     async def start(
         self,
         worker: Annotated[
-            "BaseWorker",
+            BaseWorker,
             Doc(
                 """
                     Класс Воркера.

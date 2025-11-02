@@ -1,4 +1,5 @@
 """Sync timer for scheduling tasks."""
+from __future__ import annotations
 
 from time import sleep
 from typing import TYPE_CHECKING, Annotated, Any, Literal
@@ -39,7 +40,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
     def __init__(
         self,
         app: Annotated[
-            "QueueTasks",
+            QueueTasks,
             Doc(
                 """
                     Приложение.

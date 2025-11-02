@@ -1,4 +1,5 @@
 """Async Result."""
+from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING, Annotated, Optional, Union
@@ -45,7 +46,7 @@ class AsyncResult:
             ),
         ] = None,
         app: Annotated[
-            Optional["QueueTasks"],
+            Optional[QueueTasks],
             Doc(
                 """
                     `QueueTasks` экземпляр.
@@ -102,7 +103,7 @@ class AsyncResult:
                     """
             ),
         ] = 100,
-    ) -> Union["Task", None]:
+    ) -> Union[Task, None]:
         """Ожидание результата задачи.
 
         Args:
@@ -121,7 +122,7 @@ class AsyncResult:
             self._stop_event.set()
             return None
 
-    async def _execute_task(self) -> Union["Task", None]:
+    async def _execute_task(self) -> Union[Task, None]:
         if not self.uuid:
             raise ValueError("UUID задачи не задан.")
 
@@ -146,7 +147,7 @@ class AsyncResult:
 
             return task
 
-    def _update_state(self) -> "QueueTasks":
+    def _update_state(self) -> QueueTasks:
         import qtasks._state
 
         if qtasks._state.app_main is None:

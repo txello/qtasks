@@ -1,4 +1,5 @@
 """Sync Socket Broker."""
+from __future__ import annotations
 
 import atexit
 import contextlib
@@ -85,7 +86,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = 6379,
         storage: Annotated[
-            Optional["BaseStorage"],
+            Optional[BaseStorage],
             Doc(
                 """
                     Хранилище.
@@ -115,7 +116,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -199,7 +200,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     def listen(
         self,
         worker: Annotated[
-            "BaseWorker[Literal[False]]",
+            BaseWorker[Literal[False]],
             Doc(
                 """
                     Класс воркера.
@@ -439,7 +440,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     def start(
         self,
         worker: Annotated[
-            "BaseWorker",
+            BaseWorker,
             Doc(
                 """
                     Класс Воркера.

@@ -1,4 +1,5 @@
 """Sync Result."""
+from __future__ import annotations
 
 import threading
 import time
@@ -43,7 +44,7 @@ class SyncResult:
             ),
         ] = None,
         app: Annotated[
-            Optional["QueueTasks"],
+            Optional[QueueTasks],
             Doc(
                 """
                     `QueueTasks` экземпляр.
@@ -100,7 +101,7 @@ class SyncResult:
                     """
             ),
         ] = 100,
-    ) -> Union["Task", None]:
+    ) -> Union[Task, None]:
         """Ожидание результата задачи.
 
         Args:
@@ -121,7 +122,7 @@ class SyncResult:
                 self._stop_event.set()
                 return None
 
-    def _execute_task(self) -> Union["Task", None]:
+    def _execute_task(self) -> Union[Task, None]:
         if not self.uuid:
             raise ValueError("UUID задачи не задан.")
 
@@ -146,7 +147,7 @@ class SyncResult:
 
             return task
 
-    def _update_state(self) -> "QueueTasks":
+    def _update_state(self) -> QueueTasks:
         import qtasks._state
 
         if qtasks._state.app_main is None:

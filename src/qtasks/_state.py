@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Union
 
 from qtasks.logs import Logger
@@ -7,7 +9,7 @@ if TYPE_CHECKING:
     from qtasks.qtasks import QueueTasks
 
 
-app_main: Union["QueueTasks", "aioQueueTasks", None] = None
+app_main: Union[QueueTasks, aioQueueTasks, None] = None
 """
 `app_main` - Хранит в себе основное приложение [`QueueTasks`](/qtasks/ru/api/queuetasks/).
 

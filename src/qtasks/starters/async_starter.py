@@ -1,4 +1,5 @@
 """Async Starter."""
+from __future__ import annotations
 
 import asyncio
 import contextlib
@@ -55,7 +56,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         broker: Annotated[
-            Optional["BaseBroker"],
+            Optional[BaseBroker],
             Doc(
                 """
                     Брокер.
@@ -65,7 +66,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         worker: Annotated[
-            Optional["BaseWorker"],
+            Optional[BaseWorker],
             Doc(
                 """
                     Воркер.
@@ -95,7 +96,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -163,7 +164,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             ),
         ] = True,
         plugins: Annotated[
-            dict[str, list["BasePlugin"]] | None,
+            dict[str, list[BasePlugin]] | None,
             Doc(
                 """
                     Плагины для воркера и брокера.

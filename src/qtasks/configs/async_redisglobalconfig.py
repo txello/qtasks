@@ -1,4 +1,5 @@
 """Async Redis Global Config."""
+from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable
@@ -104,7 +105,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.

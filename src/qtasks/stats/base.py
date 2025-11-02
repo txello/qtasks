@@ -1,4 +1,5 @@
 """Base Stats."""
+from __future__ import annotations
 
 from abc import ABC
 from typing import TYPE_CHECKING, Union
@@ -14,8 +15,8 @@ class BaseStats(ABC): # noqa: B024
 
     def __init__(
             self,
-            app: Union["QueueTasks", "aioQueueTasks"],
-            plugins: dict[str, list["BasePlugin"]] | None = None
+            app: Union[QueueTasks, aioQueueTasks],
+            plugins: dict[str, list[BasePlugin]] | None = None
         ):
         """Инициализация базовой статистики."""
         self.app = app

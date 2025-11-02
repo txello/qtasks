@@ -1,4 +1,5 @@
 """Async timer for scheduling tasks."""
+from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING, Annotated, Any, Literal
@@ -39,7 +40,7 @@ class AsyncTimer(BaseTimer[Literal[True]]):
     def __init__(
         self,
         app: Annotated[
-            "QueueTasks",
+            QueueTasks,
             Doc(
                 """
                     Приложение.

@@ -1,4 +1,5 @@
 """Логирование."""
+from __future__ import annotations
 
 import logging
 from typing import Annotated
@@ -116,7 +117,7 @@ class Logger:
         new_subname: str,
         default_level: int | None = None,
         format: str | None = None,
-    ) -> "Logger":
+    ) -> Logger:
         """Обновляем `subname`.
 
         Args:
@@ -134,7 +135,7 @@ class Logger:
             format=format or self.format,
         )
 
-    def update_logger(self, **kwargs) -> "Logger":
+    def update_logger(self, **kwargs) -> Logger:
         """Обновляем `Logger`.
 
         Args:

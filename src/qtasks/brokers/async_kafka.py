@@ -1,4 +1,5 @@
 """Async Kafka Broker."""
+from __future__ import annotations
 
 try:
     from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
@@ -75,7 +76,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = "localhost:9092",
         storage: Annotated[
-            Optional["BaseStorage"],
+            Optional[BaseStorage],
             Doc(
                 """
                     Хранилище.
@@ -115,7 +116,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -172,7 +173,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
     async def listen(
         self,
         worker: Annotated[
-            "BaseWorker[Literal[True]]",
+            BaseWorker[Literal[True]],
             Doc(
                 """
                     Класс воркера.
@@ -400,7 +401,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
     async def start(
         self,
         worker: Annotated[
-            "BaseWorker",
+            BaseWorker,
             Doc(
                 """
                     Класс Воркера.

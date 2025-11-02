@@ -1,4 +1,5 @@
 """Base Task Middleware."""
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
@@ -25,7 +26,7 @@ class TaskMiddleware(BaseMiddleware):
     ```
     """
 
-    def __init__(self, task_executor: "BaseTaskExecutor"):
+    def __init__(self, task_executor: BaseTaskExecutor):
         """Инициализация мидлвары задач.
 
         Args:

@@ -1,4 +1,5 @@
 """BaseInspectStats."""
+from __future__ import annotations
 
 import json
 from collections.abc import ValuesView
@@ -20,7 +21,7 @@ class UtilsInspectStats:
     label_width = 26
 
     def _app_parser(
-        self, app: Union["QueueTasks", "aioQueueTasks"], json: bool = False
+        self, app: Union[QueueTasks, aioQueueTasks], json: bool = False
     ):
         """Парсер для информации о приложении.
 

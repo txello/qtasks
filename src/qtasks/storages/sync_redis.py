@@ -1,4 +1,5 @@
 """Sync Redis storage."""
+from __future__ import annotations
 
 import json
 import time
@@ -92,7 +93,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ] = None,
         global_config: Annotated[
-            Optional["BaseGlobalConfig"],
+            Optional[BaseGlobalConfig],
             Doc(
                 """
                     Глобальный конфиг.
@@ -122,7 +123,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -205,7 +206,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         self.client.hset(f"{self.name}:{uuid}", mapping=task_status.__dict__)
         return
 
-    def get(self, uuid: UUID | str) -> Union["Task", None]:
+    def get(self, uuid: UUID | str) -> Union[Task, None]:
         """Получение информации о задаче.
 
         Args:
@@ -227,7 +228,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             result = new_result.get("result", result)
         return result
 
-    def get_all(self) -> list["Task"]:
+    def get_all(self) -> list[Task]:
         """Получить все задачи.
 
         Returns:
@@ -391,7 +392,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         self.client.zadd(self.queue_process, {task_data: priority})
         return
 
-    def _running_older_tasks(self, worker: "BaseWorker[Literal[False]]") -> None:
+    def _running_older_tasks(self, worker: BaseWorker[Literal[False]]) -> None:
         tasks = cast(Any, self.client.zrange(self.queue_process, 0, -1))
         for task_data in tasks:
             task_name, uuid, priority = task_data.split(":")

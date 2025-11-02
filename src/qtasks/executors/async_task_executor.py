@@ -1,4 +1,5 @@
 """Async Task Executor."""
+from __future__ import annotations
 
 import asyncio
 import json
@@ -70,7 +71,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             ),
         ] = None,
         plugins: Annotated[
-            dict[str, list["BasePlugin"]] | None,
+            dict[str, list[BasePlugin]] | None,
             Doc(
                 """
                     Массив Плагинов.

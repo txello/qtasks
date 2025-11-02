@@ -1,4 +1,5 @@
 """Sync RabbitMQ Broker."""
+from __future__ import annotations
 
 import json
 from datetime import datetime
@@ -78,7 +79,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = "amqp://guest:guest@localhost/",
         storage: Annotated[
-            Optional["BaseStorage"],
+            Optional[BaseStorage],
             Doc(
                 """
                     Хранилище.
@@ -118,7 +119,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -167,7 +168,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     def listen(
         self,
         worker: Annotated[
-            "BaseWorker[Literal[False]]",
+            BaseWorker[Literal[False]],
             Doc(
                 """
                     Класс воркера.
@@ -428,7 +429,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     def start(
         self,
         worker: Annotated[
-            "BaseWorker",
+            BaseWorker,
             Doc(
                 """
                     Класс Воркера.

@@ -1,4 +1,5 @@
 """Входная точка для запуска QTasks."""
+from __future__ import annotations
 
 import os
 import sys
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 sys.path.append(os.path.abspath(os.getcwd()))
 
 
-def get_app(app_arg: str) -> Union["QueueTasks", "aioQueueTasks", None]:
+def get_app(app_arg: str) -> Union[QueueTasks, aioQueueTasks, None]:
     """Получение экземпляра приложения.
 
     Args:

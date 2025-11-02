@@ -1,4 +1,6 @@
 """qtasks.py - Main asyncio module for the QueueTasks framework."""
+from __future__ import annotations
+
 import asyncio
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, Union, overload
 from uuid import UUID
@@ -64,7 +66,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         broker: Annotated[
-            Optional["BaseBroker"],
+            Optional[BaseBroker],
             Doc(
                 """
                     Брокер. Хранит в себе обработку из очередей задач и хранилище данных.
@@ -74,7 +76,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         worker: Annotated[
-            Optional["BaseWorker"],
+            Optional[BaseWorker],
             Doc(
                 """
                     Воркер. Хранит в себе обработку задач.
@@ -104,7 +106,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -217,7 +219,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
                     """
             ),
         ],
-    ) -> Optional["Task"]: ...
+    ) -> Optional[Task]: ...
 
     @overload
     async def add_task(
@@ -270,7 +272,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
                     """
             ),
         ],
-    ) -> "Task": ...
+    ) -> Task: ...
 
     @overload
     async def add_task(
@@ -323,7 +325,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
                     """
             ),
         ],
-    ) -> Optional["Task"]: ...
+    ) -> Optional[Task]: ...
 
     async def add_task(
         self,
@@ -375,7 +377,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
                     """
             ),
         ],
-    ) -> Union["Task", Optional["Task"]]:
+    ) -> Union[Task, Optional[Task]]:
         """Добавить задачу.
 
         Args:
@@ -454,7 +456,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
                     """
             ),
         ],
-    ) -> Union["Task", None]:
+    ) -> Union[Task, None]:
         """Получить задачу.
 
         Args:
@@ -487,7 +489,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         starter: Annotated[
-            Optional["BaseStarter"],
+            Optional[BaseStarter],
             Doc(
                 """
                     Стартер. Хранит в себе способы запуска компонентов.

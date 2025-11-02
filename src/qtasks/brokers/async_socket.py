@@ -1,4 +1,5 @@
 """Async Socket Broker."""
+from __future__ import annotations
 
 import asyncio
 import contextlib
@@ -83,7 +84,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = 6379,
         storage: Annotated[
-            Optional["BaseStorage"],
+            Optional[BaseStorage],
             Doc(
                 """
                     Хранилище.
@@ -113,7 +114,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -198,7 +199,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     async def listen(
         self,
         worker: Annotated[
-            "BaseWorker[Literal[True]]",
+            BaseWorker[Literal[True]],
             Doc(
                 """
                     Класс воркера.
@@ -443,7 +444,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     async def start(
         self,
         worker: Annotated[
-            "BaseWorker",
+            BaseWorker,
             Doc(
                 """
                     Класс Воркера.

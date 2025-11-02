@@ -1,4 +1,5 @@
 """Base Task Executor."""
+from __future__ import annotations
 
 import inspect
 from abc import ABC, abstractmethod
@@ -70,7 +71,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         plugins: Annotated[
-            dict[str, list["BasePlugin"]] | None,
+            dict[str, list[BasePlugin]] | None,
             Doc(
                 """
                     Массив Плагинов.
@@ -105,20 +106,20 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         self.plugins = plugins or {}
 
     @overload
-    def before_execute(self: "BaseTaskExecutor[Literal[False]]") -> None: ...
+    def before_execute(self: BaseTaskExecutor[Literal[False]]) -> None: ...
 
     @overload
-    async def before_execute(self: "BaseTaskExecutor[Literal[True]]") -> None: ...
+    async def before_execute(self: BaseTaskExecutor[Literal[True]]) -> None: ...
 
     def before_execute(self) -> None | Awaitable[None]:
         """Вызывается перед выполнением задачи."""
         pass
 
     @overload
-    def after_execute(self: "BaseTaskExecutor[Literal[False]]") -> None: ...
+    def after_execute(self: BaseTaskExecutor[Literal[False]]) -> None: ...
 
     @overload
-    async def after_execute(self: "BaseTaskExecutor[Literal[True]]") -> None: ...
+    async def after_execute(self: BaseTaskExecutor[Literal[True]]) -> None: ...
 
     def after_execute(self) -> None | Awaitable[None]:
         """Вызывается после выполнения задачи."""
@@ -126,12 +127,12 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
 
     @overload
     def execute_middlewares_before(
-        self: "BaseTaskExecutor[Literal[False]]",
+        self: BaseTaskExecutor[Literal[False]],
     ) -> None: ...
 
     @overload
     async def execute_middlewares_before(
-        self: "BaseTaskExecutor[Literal[True]]",
+        self: BaseTaskExecutor[Literal[True]],
     ) -> None: ...
 
     def execute_middlewares_before(self) -> None | Awaitable[None]:
@@ -139,11 +140,11 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def execute_middlewares_after(self: "BaseTaskExecutor[Literal[False]]") -> None: ...
+    def execute_middlewares_after(self: BaseTaskExecutor[Literal[False]]) -> None: ...
 
     @overload
     async def execute_middlewares_after(
-        self: "BaseTaskExecutor[Literal[True]]",
+        self: BaseTaskExecutor[Literal[True]],
     ) -> None: ...
 
     def execute_middlewares_after(self) -> None | Awaitable[None]:
@@ -151,10 +152,10 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def run_task(self: "BaseTaskExecutor[Literal[False]]") -> Any: ...
+    def run_task(self: BaseTaskExecutor[Literal[False]]) -> Any: ...
 
     @overload
-    async def run_task(self: "BaseTaskExecutor[Literal[True]]") -> Any: ...
+    async def run_task(self: BaseTaskExecutor[Literal[True]]) -> Any: ...
 
     def run_task(self) -> Any | Awaitable[Any]:
         """Вызов задачи.
@@ -165,7 +166,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def execute(self: "BaseTaskExecutor[Literal[False]]", decode: bool = True) -> str:
+    def execute(self: BaseTaskExecutor[Literal[False]], decode: bool = True) -> str:
         """Обработка задачи.
 
         Args:
@@ -177,7 +178,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         ...
 
     @overload
-    def execute(self: "BaseTaskExecutor[Literal[False]]", decode: bool = False) -> Any:
+    def execute(self: BaseTaskExecutor[Literal[False]], decode: bool = False) -> Any:
         """Обработка задачи.
 
         Args:
@@ -190,7 +191,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
 
     @overload
     async def execute(
-        self: "BaseTaskExecutor[Literal[True]]", decode: bool = True
+        self: BaseTaskExecutor[Literal[True]], decode: bool = True
     ) -> str:
         """Обработка задачи.
 
@@ -204,7 +205,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
 
     @overload
     async def execute(
-        self: "BaseTaskExecutor[Literal[True]]", decode: bool = False
+        self: BaseTaskExecutor[Literal[True]], decode: bool = False
     ) -> Any:
         """Обработка задачи.
 
@@ -231,10 +232,10 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def decode(self: "BaseTaskExecutor[Literal[False]]") -> str: ...
+    def decode(self: BaseTaskExecutor[Literal[False]]) -> str: ...
 
     @overload
-    async def decode(self: "BaseTaskExecutor[Literal[True]]") -> str: ...
+    async def decode(self: BaseTaskExecutor[Literal[True]]) -> str: ...
 
     def decode(self) -> str | Awaitable[str]:
         """Декодирование задачи.
@@ -247,7 +248,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
+            BasePlugin,
             Doc(
                 """
                     Плагин.

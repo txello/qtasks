@@ -1,4 +1,5 @@
 """Init module for async worker."""
+from __future__ import annotations
 
 import asyncio
 import json
@@ -69,7 +70,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ] = "QueueTasks",
         broker: Annotated[
-            Optional["BaseBroker"],
+            Optional[BaseBroker],
             Doc(
                 """
                     Брокер.
@@ -99,7 +100,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.

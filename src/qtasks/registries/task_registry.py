@@ -1,4 +1,5 @@
 """Task Registry."""
+from __future__ import annotations
 
 import inspect
 from collections.abc import Callable
@@ -134,7 +135,7 @@ class TaskRegistry:
             ),
         ] = None,
         executor: Annotated[
-            type["BaseTaskExecutor"] | None,
+            type[BaseTaskExecutor] | None,
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -144,7 +145,7 @@ class TaskRegistry:
             ),
         ] = None,
         middlewares_before: Annotated[
-            list[type["TaskMiddleware"]] | None,
+            list[type[TaskMiddleware]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -154,7 +155,7 @@ class TaskRegistry:
             ),
         ] = None,
         middlewares_after: Annotated[
-            list[type["TaskMiddleware"]] | None,
+            list[type[TaskMiddleware]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.

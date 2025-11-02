@@ -1,4 +1,5 @@
 """Base worker class."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable
@@ -57,7 +58,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ] = "QueueTasks",
         broker: Annotated[
-            Optional["BaseBroker"],
+            Optional[BaseBroker],
             Doc(
                 """
                     Брокер `qtasks.brokers.base.BaseBroker`.
@@ -87,7 +88,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -135,7 +136,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
 
     @overload
     def add(
-        self: "BaseWorker[Literal[False]]",
+        self: BaseWorker[Literal[False]],
         name: Annotated[
             str,
             Doc(
@@ -188,7 +189,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
 
     @overload
     async def add(
-        self: "BaseWorker[Literal[True]]",
+        self: BaseWorker[Literal[True]],
         name: Annotated[
             str,
             Doc(
@@ -305,7 +306,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
 
     @overload
     def start(
-        self: "BaseWorker[Literal[False]]",
+        self: BaseWorker[Literal[False]],
         num_workers: Annotated[
             int | None,
             Doc(
@@ -320,7 +321,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
 
     @overload
     async def start(
-        self: "BaseWorker[Literal[True]]",
+        self: BaseWorker[Literal[True]],
         num_workers: Annotated[
             int | None,
             Doc(
@@ -355,10 +356,10 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def stop(self: "BaseWorker[Literal[False]]") -> None: ...
+    def stop(self: BaseWorker[Literal[False]]) -> None: ...
 
     @overload
-    async def stop(self: "BaseWorker[Literal[True]]") -> None: ...
+    async def stop(self: BaseWorker[Literal[True]]) -> None: ...
 
     @abstractmethod
     def stop(self) -> None | Awaitable[None]:
@@ -387,7 +388,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
+            BasePlugin,
             Doc(
                 """
                     Плагин.

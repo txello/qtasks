@@ -1,4 +1,5 @@
 """Sync Task Executor."""
+from __future__ import annotations
 
 import json
 from collections.abc import Generator
@@ -64,7 +65,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             ),
         ] = None,
         plugins: Annotated[
-            dict[str, list["BasePlugin"]] | None,
+            dict[str, list[BasePlugin]] | None,
             Doc(
                 """
                     Массив Плагинов.

@@ -1,4 +1,5 @@
 """Sync context for tasks."""
+from __future__ import annotations
 
 import time
 from typing import TYPE_CHECKING, NoReturn, Union
@@ -52,7 +53,7 @@ class SyncContext:
         self._metadata: Task | None = None
         """Метаданные задачи."""
 
-    def get_logger(self, name: str | None = None) -> "Logger":
+    def get_logger(self, name: str | None = None) -> Logger:
         """Возвращает логгер для текущего контекста.
 
         Args:
@@ -72,7 +73,7 @@ class SyncContext:
         """
         return self._app.config
 
-    def get_metadata(self, cache=True) -> Union["Task", None]:
+    def get_metadata(self, cache=True) -> Union[Task, None]:
         """Возвращает метаданные задачи.
 
         Args:
@@ -93,7 +94,7 @@ class SyncContext:
             return self._metadata
         return self._app.get(self.task_uuid)
 
-    def get_task(self, uuid: UUID | str) -> Union["Task", None]:
+    def get_task(self, uuid: UUID | str) -> Union[Task, None]:
         """Возвращает задачу по UUID.
 
         Args:
@@ -150,7 +151,7 @@ class SyncContext:
         app = qtasks._state.app_main  # type: ignore
         return app
 
-    def _update_logger(self) -> "Logger":
+    def _update_logger(self) -> Logger:
         if self._app and self._app.log:
             log = self._app.log.with_subname(self.task_name or "AsyncContext")
         else:

@@ -1,4 +1,5 @@
 """Base starter."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable
@@ -54,7 +55,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         broker: Annotated[
-            Optional["BaseBroker"],
+            Optional[BaseBroker],
             Doc(
                 """
                     Брокер.
@@ -64,7 +65,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         worker: Annotated[
-            Optional["BaseWorker"],
+            Optional[BaseWorker],
             Doc(
                 """
                     Воркер.
@@ -94,7 +95,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -136,10 +137,10 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
         self.init_plugins()
 
     @overload
-    def start(self: "BaseStarter[Literal[False]]", *args, **kwargs) -> None: ...
+    def start(self: BaseStarter[Literal[False]], *args, **kwargs) -> None: ...
 
     @overload
-    def start(self: "BaseStarter[Literal[True]]", *args, **kwargs) -> None: ...
+    def start(self: BaseStarter[Literal[True]], *args, **kwargs) -> None: ...
 
     @abstractmethod
     def start(self, *args, **kwargs) -> None:
@@ -147,10 +148,10 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
         pass
 
     @overload
-    def stop(self: "BaseStarter[Literal[False]]") -> None: ...
+    def stop(self: BaseStarter[Literal[False]]) -> None: ...
 
     @overload
-    async def stop(self: "BaseStarter[Literal[True]]") -> None: ...
+    async def stop(self: BaseStarter[Literal[True]]) -> None: ...
 
     @abstractmethod
     def stop(self) -> None | Awaitable[None]:
@@ -160,7 +161,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
+            BasePlugin,
             Doc(
                 """
                     Плагин.

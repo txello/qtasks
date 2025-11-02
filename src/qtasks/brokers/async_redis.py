@@ -1,4 +1,5 @@
 """Async Redis Broker."""
+from __future__ import annotations
 
 import asyncio
 import json
@@ -73,7 +74,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         storage: Annotated[
-            Optional["BaseStorage"],
+            Optional[BaseStorage],
             Doc(
                 """
                     Хранилище.
@@ -113,7 +114,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
+            Optional[BaseEvents],
             Doc(
                 """
                     События.
@@ -163,7 +164,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     async def listen(
         self,
         worker: Annotated[
-            "BaseWorker[Literal[True]]",
+            BaseWorker[Literal[True]],
             Doc(
                 """
                     Класс воркера.
@@ -409,7 +410,7 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     async def start(
         self,
         worker: Annotated[
-            "BaseWorker",
+            BaseWorker,
             Doc(
                 """
                     Класс Воркера.

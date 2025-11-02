@@ -1,4 +1,5 @@
 """Sync Stats."""
+from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 class SyncStats(BaseStats, SyncPluginMixin):
     """Класс для синхронных статистик."""
 
-    def __init__(self, app: "QueueTasks", plugins: dict[str, list["BasePlugin"]] | None = None):
+    def __init__(self, app: QueueTasks, plugins: dict[str, list[BasePlugin]] | None = None):
         """Инициализация асинхронной статистики.
 
         Args:
