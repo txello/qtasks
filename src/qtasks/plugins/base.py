@@ -38,6 +38,8 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
                     """
             ),
         ] = None,
+        *args,
+        **kwargs
     ):
         """Инициализация плагина.
 
@@ -45,6 +47,8 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
             name (str, optional): Имя проекта. По умолчанию: `None`.
         """
         self.name: str | None = name
+
+        self.plugin_cache: dict[str, Any] = {}
         pass
 
     @overload

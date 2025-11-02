@@ -85,11 +85,11 @@ select = [
     "UP",  # pyupgrade
 ]
 
-ignore = ["E501", "UP045", "UP007"]
+ignore = ["E501", "UP045", "UP006", "UP007", "UP035"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"examples/*" = ["D100", "D101", "D102", "D103", "D107", "E226", "E402", "F401"]
+"examples/*" = ["D100", "D101", "D102", "D103", "D107", "E226", "E402", "F401", "I001"]
 "src/qtasks/tests/async_classes.py" = ["D101", "D102", "D107"]
 "src/qtasks/tests/sync_classes.py" = ["D101", "D102", "D107"]
 "tests/apps/*" = ["D103", "E226"]

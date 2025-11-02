@@ -6,6 +6,7 @@ from typing import (
     TYPE_CHECKING,
     Annotated,
     Any,
+    Dict,
     Literal,
     Optional,
     overload,
@@ -147,8 +148,10 @@ class SyncPluginMixin:
 class AsyncPluginMixin:
     """Миксин для асинхронной работы с плагинами."""
 
-    plugins: dict[str, list["BasePlugin"]]
+    plugins: dict[str, list["BasePlugin[Literal[True]]"]]
     log: Optional["Logger"] = None
+
+    plugins_cache: Dict[str, Any] = {}
 
     @overload
     async def _plugin_trigger(
@@ -219,9 +222,14 @@ class AsyncPluginMixin:
         results = []
         args_copy = deepcopy(args)
         kwargs_copy = kwargs.copy()
-        plugins = self.plugins.get(name, []) + self.plugins.get("Globals", [])
-        for plugin in plugins:
-            plugin: BasePlugin[Literal[True]]
+
+        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+
+            if plugin.name and plugin.name in self.plugins_cache:
+                kwargs_copy.update({"plugin_cache": self.plugins_cache[plugin.name]})
+            elif kwargs_copy.get("plugin_cache"):
+                del kwargs_copy["plugin_cache"]
+
             try:
                 result: dict[str, Any] | None = await plugin.trigger(
                     name, *args_copy, **kwargs_copy
@@ -240,6 +248,13 @@ class AsyncPluginMixin:
                     continue
 
             if result is not None:
+                if "plugin_cache" in result:
+                    if plugin.name:
+                        self.plugins_cache[plugin.name] = result["plugin_cache"]
+                    del result["plugin_cache"]
+                    if "plugin_cache" in kwargs_copy:
+                        del kwargs_copy["plugin_cache"]
+
                 results.append(result)
                 args_copy = result.get("args", args_copy)
                 if result.get("kw"):

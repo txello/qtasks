@@ -165,7 +165,8 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             new_task_executor: BaseTaskExecutor = await m()
             if new_task_executor:
                 self = new_task_executor
-            self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+            if self.log:
+                self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
     async def execute_middlewares_after(self):
         """Вызов мидлварей после выполнения задачи."""
@@ -179,7 +180,8 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             new_task_executor: BaseTaskExecutor = await m()
             if new_task_executor:
                 self = new_task_executor
-            self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+            if self.log:
+                self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
     async def run_task(self) -> Any:
         """Вызов задачи.
@@ -313,6 +315,13 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         await self.execute_middlewares_after()
         if decode:
             self._result = await self.decode()
+
+        await self._plugin_trigger(
+                "task_executor_task_close",
+                task_executor=self,
+                task_func=self.task_func,
+                task_broker=self.task_broker
+            )
         return self._result
 
     async def decode(self) -> Any:

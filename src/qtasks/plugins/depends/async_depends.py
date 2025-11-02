@@ -2,7 +2,18 @@
 
 import inspect
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    AsyncGenerator,
+    Optional,
+    cast,
+    get_args,
+)
+
+from qtasks.plugins.depends.contexts.async_contexts import AsyncContextPool
+from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 try:
     from contextlib import _AsyncGeneratorContextManager as _AGCM
@@ -20,17 +31,30 @@ from qtasks.plugins.depends.class_depends import Depends
 from qtasks.schemas.argmeta import ArgMeta
 
 if TYPE_CHECKING:
+    from qtasks.brokers.base import BaseBroker
+    from qtasks.configs.base import BaseGlobalConfig
     from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.storages.base import BaseStorage
+    from qtasks.workers.base import BaseWorker
 
 
 class AsyncDependsPlugin(BasePlugin):
     """Async Depends plugin."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, name="AsyncDependsPlugin"):
         """Инициализация плагина Pydantic."""
-        super().__init__(*args, **kwargs)
+        super().__init__(name=name)
 
-        self.handlers = {"task_executor_args_replace": self.replace_args}
+        self.contexts = AsyncContextPool()
+
+        self.handlers = {
+            "task_executor_args_replace": self.replace_args,
+            "task_executor_task_close": self.task_close,
+            "worker_stop": self.worker_close,
+            "broker_stop": self.broker_close,
+            "storage_stop": self.storage_close,
+            "global_config_stop": self.global_config_close
+        }
 
     async def start(self, *args, **kwargs):
         """Запуск плагина Pydantic."""
@@ -43,8 +67,7 @@ class AsyncDependsPlugin(BasePlugin):
     async def trigger(self, name, *args, **kwargs):
         """Триггер плагина."""
         if name in self.handlers:
-            task_executor = kwargs.pop("task_executor", None)
-            return await self.handlers[name](task_executor, **kwargs)
+            return await self.handlers[name](*args, **kwargs)
         return None
 
     async def replace_args(
@@ -53,17 +76,33 @@ class AsyncDependsPlugin(BasePlugin):
         args: list[Any],
         kw: dict[str, Any],
         args_info: list[ArgMeta],
+        plugin_cache: Optional[dict] = None
     ):
         """Заменяет аргументы задачи."""
-        for args_meta in args_info:
-            if not args_meta.is_kwarg:
-                continue
+        result = {}
 
-            val = args_meta.value
-            if hasattr(val, "__class__") and val.__class__ == Depends:
-                dep_callable = val.func
-                kw[args_meta.name] = await self._eval_dep_callable(dep_callable)
-        return {"kw": kw}
+        for args_meta in args_info:
+            if args_meta.is_kwarg:
+                dep = args_meta.value
+            elif args_meta.origin is Annotated:
+                dep = get_args(args_meta.annotation)[-1]
+            else:
+                continue
+            if not hasattr(dep, "__class__") or not dep.__class__ == Depends:
+                continue
+            dep: Depends
+            dep_callable = dep.func
+            kw[args_meta.name], cm = await self._eval_dep_callable(dep_callable, dep.scope)
+
+            if not plugin_cache or dep.scope not in plugin_cache:
+                plugin_cache = {dep.scope: [cm[1]]}
+                result.update({"plugin_cache": {dep.scope: [cm[1]]}})
+            else:
+                plugin_cache[dep.scope].append(cm[1])
+                result["plugin_cache"] = plugin_cache
+
+        result.update({"kw": kw})
+        return result
 
     def _is_async_cm_function(self, func) -> bool:
         """Функция, обёрнутая @asynccontextmanager. asynccontextmanager сохраняет исходную функцию в __wrapped__."""
@@ -83,7 +122,7 @@ class AsyncDependsPlugin(BasePlugin):
             and inspect.isgeneratorfunction(wrapped)
         )
 
-    async def _eval_dep_callable(self, callable_obj):
+    async def _eval_dep_callable(self, callable_obj, scope):
         """Универсально "разворачивает" зависимость до значения. Никаких аргументов не прокидываем — если нужно, добавьте их где вызываете."""
         func = callable_obj
 
@@ -94,8 +133,7 @@ class AsyncDependsPlugin(BasePlugin):
             if (_AGCM and isinstance(cm, _AGCM)) or (
                 hasattr(cm, "__aenter__") and hasattr(cm, "__aexit__")
             ):
-                async with cm as v:
-                    return v
+                return await self.contexts.enter(scope, cm)
             else:
                 # на всякий случай — падаем в общий разбор ниже
                 func = cm
@@ -106,7 +144,7 @@ class AsyncDependsPlugin(BasePlugin):
 
         # 3) async-генератор-функция (берём первый yield и закрываем)
         if inspect.isasyncgenfunction(func):
-            agen = func()
+            agen: AsyncGenerator = func()
             try:
                 v = await agen.__anext__()
             except StopAsyncIteration:
@@ -134,7 +172,11 @@ class AsyncDependsPlugin(BasePlugin):
                 return v
         if hasattr(res, "__aenter__") and hasattr(res, "__aexit__"):
             # любой объект с async CM протоколом
-            async with res as v:
+            async with cast(Any, res) as v:
+                return v
+        # Проверка на наличие методов __aenter__ и __aexit__
+        if hasattr(res, "__aenter__") and hasattr(res, "__aexit__"):
+            async with cast(Any, res) as v:
                 return v
 
         # 6) Короутина (awaitable)
@@ -146,7 +188,7 @@ class AsyncDependsPlugin(BasePlugin):
             with res as v:
                 return v
         if hasattr(res, "__enter__") and hasattr(res, "__exit__"):
-            with res as v:
+            with cast(Any, res) as v:
                 return v
 
         # 8) Синхронный генератор: взять первый yield и закрыть
@@ -161,3 +203,55 @@ class AsyncDependsPlugin(BasePlugin):
 
         # 9) Обычное значение
         return res
+
+    async def task_close(
+        self,
+        task_executor: "BaseTaskExecutor",
+        task_func: TaskExecSchema,
+        task_broker: TaskPrioritySchema,
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "task" in plugin_cache:
+            for cm in plugin_cache["task"]:
+                await self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"task": []}}
+
+    async def worker_close(
+        self,
+        worker: "BaseWorker",
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "worker" in plugin_cache:
+            for cm in plugin_cache["worker"]:
+                await self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"worker": []}}
+
+    async def broker_close(
+        self,
+        broker: "BaseBroker",
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "broker" in plugin_cache:
+            for cm in plugin_cache["broker"]:
+                await self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"broker": []}}
+
+    async def storage_close(
+        self,
+        storage: "BaseStorage",
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "storage" in plugin_cache:
+            for cm in plugin_cache["storage"]:
+                await self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"storage": []}}
+
+    async def global_config_close(
+        self,
+        global_config: "BaseGlobalConfig",
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "global_config" in plugin_cache:
+            for cm in plugin_cache["global_config"]:
+                await self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"global_config": []}}

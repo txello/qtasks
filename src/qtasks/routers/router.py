@@ -231,7 +231,7 @@ class Router(SyncPluginMixin):
             ValueError: Неизвестный метод {self._method}.
 
         Returns:
-            SyncTask | AsyncTask: Декоратор для регистрации задачи.
+            SyncTask|AsyncTask: Декоратор для регистрации задачи.
         """
 
         def wrapper(func):

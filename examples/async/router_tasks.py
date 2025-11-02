@@ -1,6 +1,6 @@
 from qtasks import Router
 
-router = Router(method="async")
+router = Router(method="sync")
 
 
 @router.task(

@@ -648,7 +648,14 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ],
         )
         self.add_plugin(
-            AsyncDependsPlugin(), trigger_names=["task_executor_args_replace"]
+            AsyncDependsPlugin(), trigger_names=[
+                "task_executor_args_replace",
+                "task_executor_task_close",
+                "worker_stop",
+                "broker_stop",
+                "storage_stop",
+                "global_config_stop"
+            ]
         )
         self.add_plugin(
             AsyncStatePlugin(), trigger_names=["task_executor_args_replace"]

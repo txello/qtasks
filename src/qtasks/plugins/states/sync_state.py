@@ -19,6 +19,7 @@ class SyncStatePlugin(BasePlugin):
 
     def __init__(self, accept_annotated: bool = True):
         """Инициализация плагина."""
+        super().__init__()
         self.accept_annotated = accept_annotated
         self._registry = SyncStateRegistry()
 
