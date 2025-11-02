@@ -1,10 +1,10 @@
-from qtasks import Router
+from qtasks import AsyncRouter
 
-router = Router(method="sync")
+router = AsyncRouter()
 
 
 @router.task(
     description="Тестовая задача маршрутизатора."
 )
-def router_test():
+async def router_test():
     print("router_test")

@@ -1,21 +1,19 @@
 """Router for task execution."""
+from __future__ import annotations
 
 import inspect
 from collections.abc import Callable
 from typing import (
     TYPE_CHECKING,
     Annotated,
-    Literal,
-    overload,
 )
 
 from typing_extensions import Doc
 
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
-from qtasks.mixins.plugin import SyncPluginMixin
+from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.registries.async_task_decorator import AsyncTask
-from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.task_exec import TaskExecSchema
 from qtasks.types.annotations import P, R
 
@@ -23,18 +21,18 @@ if TYPE_CHECKING:
     from qtasks.plugins.base import BasePlugin
 
 
-class Router(SyncPluginMixin):
+class AsyncRouter(AsyncPluginMixin):
     """
     Роутер, который хранит в себе задачи, которые подключает к себе основной `QueueTasks`.
 
     ## Example
 
     ```python
-    from qtasks import QueueTasks, Router
+    from qtasks import QueueTasks, AsyncRouter
 
     app = QueueTasks()
 
-    router = Router()
+    router = AsyncRouter()
 
     @router.task()
     async def test():
@@ -44,23 +42,8 @@ class Router(SyncPluginMixin):
     ```
     """
 
-    @overload
-    def __init__(self, method: Literal["sync"] = "sync") -> None:
-        """Инициализация роутера для синхронных задач."""
-        ...
-
-    @overload
-    def __init__(self, method: Literal["async"] = "async") -> None:
-        """Инициализация роутера для асинхронных задач."""
-        ...
-
-    def __init__(self, method: Literal["sync", "async"] | None = None):
-        """Инициализация роутера.
-
-        Args:
-            method (Literal["sync", "async"], optional): Метод выполнения задач. По умолчанию: `None`.
-        """
-        self._method = method
+    def __init__(self) -> None:
+        """Инициализация роутера."""
         self.tasks: Annotated[
             dict[str, TaskExecSchema],
             Doc(
@@ -178,7 +161,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         executor: Annotated[
-            type["BaseTaskExecutor"] | None,
+            type[BaseTaskExecutor] | None,
             Doc(
                 """
                     Класс `BaseTaskExecutor`.
@@ -188,7 +171,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         middlewares_before: Annotated[
-            list[type["TaskMiddleware"]] | None,
+            list[type[TaskMiddleware]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены перед задачей.
@@ -198,7 +181,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         middlewares_after: Annotated[
-            list[type["TaskMiddleware"]] | None,
+            list[type[TaskMiddleware]] | None,
             Doc(
                 """
                     Мидлвари, которые будут выполнены после задачи.
@@ -208,7 +191,7 @@ class Router(SyncPluginMixin):
             ),
         ] = None,
         **kwargs,
-    ) -> Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
+    ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
         """Декоратор для регистрации задач.
 
         Args:
@@ -228,10 +211,9 @@ class Router(SyncPluginMixin):
 
         Raises:
             ValueError: Если задача с таким именем уже зарегистрирована.
-            ValueError: Неизвестный метод {self._method}.
 
         Returns:
-            SyncTask|AsyncTask: Декоратор для регистрации задачи.
+            SyncTask: Декоратор для регистрации задачи.
         """
 
         def wrapper(func):
@@ -274,11 +256,8 @@ class Router(SyncPluginMixin):
             )
 
             self.tasks[task_name] = model
-            if self._method not in ["async", "sync"]:
-                raise ValueError(f"Неизвестный метод {self._method}")
 
-            method = AsyncTask if self._method == "async" else SyncTask
-            return method(
+            return AsyncTask(
                 task_name=model.name,
                 priority=model.priority,
                 echo=model.echo,
