@@ -584,6 +584,8 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         )
         if "returning" in result:
             base_kwargs["returning"] = json.loads(result["returning"])
+        if "traceback" in result:
+            base_kwargs["traceback"] = result["traceback"]
 
         # Вычисляем имена стандартных полей
         task_field_names = {f.name for f in fields(Task)}
