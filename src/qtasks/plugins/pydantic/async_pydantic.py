@@ -93,7 +93,6 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
                         "args": new_args_trimmed,
                         "kw": {**new_kwargs, meta.name: model_instance},
                     }
-
                 return {"kw": {**new_kwargs, meta.name: model_instance}}
 
             except Exception as e:

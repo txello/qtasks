@@ -33,7 +33,7 @@ class AsyncStatePlugin(BasePlugin):
         """Остановка плагина."""
         pass
 
-    async def trigger(self, name, **kwargs):
+    async def trigger(self, name, *args, **kwargs):
         """Триггер для запуска обработчика."""
         handler = self.handlers.get(name)
         if not handler:

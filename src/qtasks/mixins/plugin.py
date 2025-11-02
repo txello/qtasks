@@ -203,7 +203,7 @@ class AsyncPluginMixin:
     async def _plugin_trigger(
         self,
         name: str,
-        *args,
+        *,
         return_last: bool | None = None,
         safe: bool = True,
         continue_on_fail: bool = False,
@@ -221,7 +221,6 @@ class AsyncPluginMixin:
             List[Dict[str, Any]]: Результаты выполнения обработчиков.
         """
         results = []
-        args_copy = deepcopy(args)
         kwargs_copy = kwargs.copy()
 
         for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
@@ -233,7 +232,7 @@ class AsyncPluginMixin:
 
             try:
                 result: dict[str, Any] | None = await plugin.trigger(
-                    name, *args_copy, **kwargs_copy
+                    name, **kwargs_copy
                 )
             except Exception as e:
                 if safe:
@@ -255,11 +254,11 @@ class AsyncPluginMixin:
                     del result["plugin_cache"]
                     if "plugin_cache" in kwargs_copy:
                         del kwargs_copy["plugin_cache"]
-
                 results.append(result)
-                args_copy = result.get("args", args_copy)
+                if result.get("args"):
+                    kwargs_copy["args"] = result.get("args", [])
                 if result.get("kw"):
-                    kwargs_copy["kw"].update(result.get("kw", {}))
+                    kwargs_copy["kw"] = result.get("kw", {})
 
         if return_last and results:
             return {

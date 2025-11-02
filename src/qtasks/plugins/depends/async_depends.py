@@ -67,7 +67,7 @@ class AsyncDependsPlugin(BasePlugin):
     async def trigger(self, name, *args, **kwargs):
         """Триггер плагина."""
         if name in self.handlers:
-            return await self.handlers[name](*args, **kwargs)
+            return await self.handlers[name](**kwargs)
         return None
 
     async def replace_args(
