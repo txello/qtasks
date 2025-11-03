@@ -254,10 +254,11 @@ class AsyncPluginMixin:
                     del result["plugin_cache"]
                     if "plugin_cache" in kwargs_copy:
                         del kwargs_copy["plugin_cache"]
+
                 results.append(result)
-                if result.get("args"):
+                if "args" in result:
                     kwargs_copy["args"] = result.get("args", [])
-                if result.get("kw"):
+                if "kw" in result:
                     kwargs_copy["kw"] = result.get("kw", {})
 
         if return_last and results:

@@ -102,10 +102,10 @@ class Item(pydantic.BaseModel):
 @app.task(
     description="Тестовая задача с использованием Pydantic.",
     tags=["example"],
-    echo=True,
+    # echo=True,
     decode=json.dumps,
 )
-async def example_pydantic(self: AsyncTask, item: Item):
+async def example_pydantic(item: Item):
     return f"Hello, {item.name}!"
 
 
