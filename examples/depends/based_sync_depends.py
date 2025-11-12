@@ -1,7 +1,7 @@
-from contextlib import asynccontextmanager
+from contextlib import contextmanager
 from typing import Annotated
 
-from qtasks.asyncio import QueueTasks
+from qtasks import QueueTasks
 from qtasks.plugins.depends import Depends, ScopeEnum
 
 
@@ -11,15 +11,15 @@ app.config.running_older_tasks = True
 app.config.logs_default_level_server = 20
 
 
-@asynccontextmanager
-async def test_dep():
+@contextmanager
+def test_dep():
     print("Open")
     yield 123
     print("Close")
 
 
 @app.task
-async def test(dep: Annotated[int, Depends(test_dep, scope=ScopeEnum.TASK)]):
+def test(dep: Annotated[int, Depends(test_dep, scope=ScopeEnum.TASK)]):
     print(dep)
 
 

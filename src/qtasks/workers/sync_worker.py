@@ -24,6 +24,7 @@ from qtasks.mixins.plugin import SyncPluginMixin
 from qtasks.plugins.depends.sync_depends import SyncDependsPlugin
 from qtasks.plugins.pydantic import SyncPydanticWrapperPlugin
 from qtasks.plugins.retries import SyncRetryPlugin
+from qtasks.plugins.states.sync_state import SyncStatePlugin
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 from qtasks.schemas.task_status import (
@@ -622,5 +623,15 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             ],
         )
         self.add_plugin(
-            SyncDependsPlugin(), trigger_names=["task_executor_args_replace"]
+            SyncDependsPlugin(), trigger_names=[
+                "task_executor_args_replace",
+                "task_executor_task_close",
+                "worker_stop",
+                "broker_stop",
+                "storage_stop",
+                "global_config_stop"
+            ]
+        )
+        self.add_plugin(
+            SyncStatePlugin(), trigger_names=["task_executor_args_replace"]
         )

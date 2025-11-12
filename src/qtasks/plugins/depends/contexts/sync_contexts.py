@@ -15,10 +15,10 @@ class SyncContextPool:
     def enter(self, name: str, cm: object) -> Any:
         """
         Войти в асинхронный контекст cm и сохранить его.
-        Возвращает значение, полученное из yield в @asynccontextmanager.
+        Возвращает значение, полученное из yield в @contextmanager.
         """
         stack = ExitStack()
-        value = await stack.enter_async_context(cm) # type: ignore
+        value = stack.enter_context(cm) # type: ignore
         entry = (id(cm), cm, stack, value)
         self._contexts.setdefault(name, []).append(entry)
         return value, entry

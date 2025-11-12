@@ -1,5 +1,5 @@
 import asyncio
-from based_async_depends import test, close_worker
+from based_async_depends import test
 
 
 async def main():
@@ -7,6 +7,5 @@ async def main():
     await asyncio.gather(*tasks)
     await asyncio.sleep(1)
 
-    # await close_worker.add_task()
 
 asyncio.run(main())

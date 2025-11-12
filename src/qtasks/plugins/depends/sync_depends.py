@@ -1,7 +1,16 @@
 """Sync Depends."""
 
 import inspect
-from typing import TYPE_CHECKING, Any
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Optional,
+    get_args,
+)
+
+from qtasks.plugins.depends.contexts.sync_contexts import SyncContextPool
+from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 try:
     from contextlib import _GeneratorContextManager as _GCM
@@ -14,17 +23,30 @@ from qtasks.plugins.depends.class_depends import Depends
 from qtasks.schemas.argmeta import ArgMeta
 
 if TYPE_CHECKING:
+    from qtasks.brokers.base import BaseBroker
+    from qtasks.configs.base import BaseGlobalConfig
     from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.storages.base import BaseStorage
+    from qtasks.workers.base import BaseWorker
 
 
 class SyncDependsPlugin(BasePlugin):
     """Depends plugin."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, name="AsyncDependsPlugin"):
         """Инициализация плагина Pydantic."""
-        super().__init__(*args, **kwargs)
+        super().__init__(name=name)
 
-        self.handlers = {"task_executor_args_replace": self.replace_args}
+        self.contexts = SyncContextPool()
+
+        self.handlers = {
+            "task_executor_args_replace": self.replace_args,
+            "task_executor_task_close": self.task_close,
+            "worker_stop": self.worker_close,
+            "broker_stop": self.broker_close,
+            "storage_stop": self.storage_close,
+            "global_config_stop": self.global_config_close
+        }
 
     def start(self, *args, **kwargs):
         """Запуск плагина Pydantic."""
@@ -46,38 +68,95 @@ class SyncDependsPlugin(BasePlugin):
         args: list[Any],
         kw: dict[str, Any],
         args_info: list[ArgMeta],
+        plugin_cache: Optional[dict] = None
     ):
         """Заменяет аргументы задачи."""
+        result = {}
+
         for args_meta in args_info:
-            if not args_meta.is_kwarg:
+            if args_meta.is_kwarg:
+                dep = args_meta.value
+            elif args_meta.origin is Annotated:
+                dep = get_args(args_meta.annotation)[-1]
+            else:
                 continue
+            if not hasattr(dep, "__class__") or not dep.__class__ == Depends:
+                continue
+            dep: Depends
+            dep_callable = dep.func
+            kw[args_meta.name], cm = self._eval_dep_callable(dep_callable, dep.scope)
 
-            val = args_meta.value
-            if hasattr(val, "__class__") and val.__class__ == Depends:
-                dep_callable = val.func
-                kw[args_meta.name] = self._eval_dep_callable(dep_callable)
-        return {"kw": kw}
+            if not plugin_cache or dep.scope not in plugin_cache:
+                plugin_cache = {dep.scope: [cm[1]]}
+                result.update({"plugin_cache": {dep.scope: [cm[1]]}})
+            else:
+                plugin_cache[dep.scope].append(cm[1])
+                result["plugin_cache"] = plugin_cache
 
-    def _eval_dep_callable(self, callable_obj):
+        result.update({"kw": kw})
+        return result
+
+    def _eval_dep_callable(self, callable_obj, scope):
         """Универсально "разворачивает" зависимость до значения. Никаких аргументов не прокидываем — если нужно, добавьте их где вызываете."""
         func = callable_obj
 
         res = func() if inspect.isfunction(func) else func
 
         if _GCM and isinstance(res, _GCM):
-            with res as v:
-                return v
+            return self.contexts.enter(scope, res)
         if hasattr(res, "__enter__") and hasattr(res, "__exit__"):
-            with res as v:
-                return v
+            return self.contexts.enter(scope, res)
 
-        if inspect.isgenerator(res):
-            try:
-                v = next(res)
-            except StopIteration:
-                v = None
-            finally:
-                res.close()
-            return v
+        return self.contexts.enter(scope, res)
 
-        return res
+    def task_close(
+        self,
+        task_executor: "BaseTaskExecutor",
+        task_func: TaskExecSchema,
+        task_broker: TaskPrioritySchema,
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "task" in plugin_cache:
+            for cm in plugin_cache["task"]:
+                self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"task": []}}
+
+    def worker_close(
+        self,
+        worker: "BaseWorker",
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "worker" in plugin_cache:
+            for cm in plugin_cache["worker"]:
+                self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"worker": []}}
+
+    def broker_close(
+        self,
+        broker: "BaseBroker",
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "broker" in plugin_cache:
+            for cm in plugin_cache["broker"]:
+                self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"broker": []}}
+
+    def storage_close(
+        self,
+        storage: "BaseStorage",
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "storage" in plugin_cache:
+            for cm in plugin_cache["storage"]:
+                self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"storage": []}}
+
+    def global_config_close(
+        self,
+        global_config: "BaseGlobalConfig",
+        plugin_cache: Optional[dict] = None
+    ):
+        if plugin_cache and "global_config" in plugin_cache:
+            for cm in plugin_cache["global_config"]:
+                self.contexts.close_by_cm(cm)
+            return {"plugin_cache" : {"global_config": []}}

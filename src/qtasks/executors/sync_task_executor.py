@@ -279,6 +279,13 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         self.execute_middlewares_after()
         if decode:
             self._result = self.decode()
+
+        self._plugin_trigger(
+            "task_executor_task_close",
+            task_executor=self,
+            task_func=self.task_func,
+            task_broker=self.task_broker
+        )
         return self._result
 
     def decode(self) -> Any:
