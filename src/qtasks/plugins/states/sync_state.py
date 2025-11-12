@@ -25,22 +25,22 @@ class SyncStatePlugin(BasePlugin):
 
         self.handlers = {"task_executor_args_replace": self.task_executor_args_replace}
 
-    async def start(self, *args, **kwargs):
+    def start(self, *args, **kwargs):
         """Запуск плагина."""
         pass
 
-    async def stop(self, *args, **kwargs):
+    def stop(self, *args, **kwargs):
         """Остановка плагина."""
         pass
 
-    async def trigger(self, name, **kwargs):
+    def trigger(self, name, **kwargs):
         """Триггер для запуска обработчика."""
         handler = self.handlers.get(name)
         if not handler:
             return
-        return await handler(**kwargs)
+        return handler(**kwargs)
 
-    async def task_executor_args_replace(
+    def task_executor_args_replace(
         self,
         task_executor: BaseTaskExecutor,
         args: list[Any],
