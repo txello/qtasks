@@ -14,6 +14,7 @@ from typing import (
 from typing_extensions import Doc
 
 from qtasks.contexts.async_context import AsyncContext
+from qtasks.schemas.task_cls import AsyncTaskCls
 from qtasks.types.annotations import P, R
 
 if TYPE_CHECKING:
@@ -60,7 +61,7 @@ class AsyncTask(Generic[P, R]):
                 """
                     Приоритет у задачи по умолчанию.
 
-                    По умолчанию: `config.default_task_priority`.
+                    По умолчанию: `config.task_default_priority`.
                     """
             ),
         ] = None,
@@ -326,6 +327,69 @@ class AsyncTask(Generic[P, R]):
             timeout=timeout,
             **kwargs,
         )
+
+    def __call__(
+            self,
+            *args: Annotated[
+                Any,
+                Doc(
+                    """
+                        args задачи.
+
+                        По умолчанию: `()`.
+                        """
+                ),
+            ],
+            priority: Annotated[
+                int | None,
+                Doc(
+                    """
+                        Приоритет задачи.
+
+                        По умолчанию: Значение приоритета у задачи.
+                        """
+                ),
+            ] = None,
+            timeout: Annotated[
+                float | None,
+                Doc(
+                    """
+                        Таймаут задачи.
+
+                        Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                        """
+                ),
+            ] = None,
+            task_name: Annotated[
+                str | None,
+                Doc(
+                    """
+                        Имя задачи.
+
+                        По умолчанию: Значение имени у задачи.
+                        """
+                ),
+            ] = None,
+            **kwargs: Annotated[
+                Any,
+                Doc(
+                    """
+                        kwargs задачи.
+
+                        По умолчанию: `{}`.
+                        """
+                ),
+            ]
+    ) -> AsyncTaskCls:
+        task_cls = AsyncTaskCls(
+            task_name=task_name or self.task_name,
+            priority=priority or self.priority,
+            timeout=timeout,
+            args=args,
+            kwargs=kwargs
+        )
+        task_cls.bind(self)
+        return task_cls
 
     def _update_app(self):
         """Обновление приложения."""
