@@ -12,7 +12,7 @@ from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.stats.async_stats import AsyncStats
 
 app = QueueTasks()
-app.config.logs_default_level_server = logging.INFO
+app.config.logs_default_level_server = logging.DEBUG
 app.config.running_older_tasks = True
 app.config.result_time_interval = 0.1
 

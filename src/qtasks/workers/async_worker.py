@@ -443,9 +443,10 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
 
         if self.log:
             self.log.info(
-                f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}"
+                f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}.\n"
+                f"Аргументы задачи: {task_broker.args}, {task_broker.kwargs}"
             )
-            self.log.info(f"Аргументы задачи: {task_broker.args}, {task_broker.kwargs}")
+
         new_data = await self._plugin_trigger(
             "worker_run_task_before",
             worker=self,
