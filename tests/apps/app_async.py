@@ -1,13 +1,9 @@
 """Async App."""
 
 from qtasks.asyncio import QueueTasks
-from qtasks.plugins import AsyncgRPCPlugin
 
 app = QueueTasks(name="QueueTasks")
 app.config.delete_finished_tasks = True
-
-app.add_plugin(AsyncgRPCPlugin(app=app, host="localhost"))
-
 
 @app.task(name="test")
 async def sample_task(id: int):
