@@ -47,14 +47,14 @@ class BaseTaskCls(Generic[TTask], ABC):
         self._task_deco = deco
 
     @overload
-    def add_task(self) -> Optional[Task]: ...
+    def add_task(self: BaseTaskCls["SyncTask"]) -> Optional[Task]: ...  # noqa: UP037
 
     @overload
-    async def add_task(self) -> Optional[Task]: ...
+    async def add_task(self: BaseTaskCls["AsyncTask"]) -> Optional[Task]: ...  # noqa: UP037
 
     @abstractmethod
     def add_task(self) -> Union[
-        Optional[Task], Awaitable[Optional[Task]], Task, Awaitable[Task]
+        Optional[Task], Awaitable[Optional[Task]]
     ]:
         """Добавить задачу.
 

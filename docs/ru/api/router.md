@@ -1,3 +1,5 @@
 # Роутер
 
-::: qtasks.routers.router
+::: qtasks.routers.async_router
+
+::: qtasks.routers.sync_router

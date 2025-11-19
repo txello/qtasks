@@ -33,7 +33,7 @@ def shared_task(
             """
                     Приоритет у задачи по умолчанию.
 
-                    По умолчанию: `config.default_task_priority`.
+                    По умолчанию: `config.task_default_priority`.
                     """
         ),
     ] = None,
@@ -169,7 +169,7 @@ def shared_task(
             """
                     Приоритет у задачи по умолчанию.
 
-                    По умолчанию: `config.default_task_priority`.
+                    По умолчанию: `config.task_default_priority`.
                     """
         ),
     ] = None,
@@ -304,7 +304,7 @@ def shared_task(
             """
                     Приоритет у задачи по умолчанию.
 
-                    По умолчанию: `config.default_task_priority`.
+                    По умолчанию: `config.task_default_priority`.
                     """
         ),
     ] = None,
@@ -424,7 +424,7 @@ def shared_task(
 
     Args:
         name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-        priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+        priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
         echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
         retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
         retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import inspect
+import json
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable
 from typing import (
@@ -95,6 +96,8 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         self._kwargs = self.task_broker.kwargs.copy()
         self._result: Any = None
         self.echo = None
+
+        self.decode_cls = lambda res: json.dumps(res, ensure_ascii=False)
 
         self.log = log
         if self.log is None:

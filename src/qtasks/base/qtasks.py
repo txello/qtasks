@@ -224,7 +224,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
             echo (bool, optional): Добавить SyncTask первым параметром. По умолчанию: `False`.
             max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
@@ -269,7 +269,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
             echo (bool, optional): Добавить AsyncTask первым параметром. По умолчанию: `False`.
             max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
@@ -320,7 +320,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
                 """
                     Приоритет у задачи по умолчанию.
 
-                    По умолчанию: `config.default_task_priority`.
+                    По умолчанию: `config.task_default_priority`.
                     """
             ),
         ] = None,
@@ -440,7 +440,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
             echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
             retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
@@ -471,7 +471,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
                 raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
 
             priority = (
-                priority if priority is not None else self.config.default_task_priority
+                priority if priority is not None else self.config.task_default_priority
             )
 
             generating = (
@@ -631,7 +631,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
         for task in all_tasks.values():
             if task.priority is None:
-                task.priority = self.config.default_task_priority
+                task.priority = self.config.task_default_priority
 
         self.tasks.update(all_tasks)
         self.worker._tasks.update(all_tasks)

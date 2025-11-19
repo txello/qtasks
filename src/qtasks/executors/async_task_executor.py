@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from collections.abc import AsyncGenerator, Generator
 from typing import (
     TYPE_CHECKING,
@@ -332,7 +331,8 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         if self.task_func.decode is not None:
             result = await self._maybe_await(self.task_func.decode(self._result))
         else:
-            result = json.dumps(self._result, ensure_ascii=False)
+            result = self.decode_cls(self._result)
+
         new_result = await self._plugin_trigger(
             "task_executor_decode", task_executor=self, result=result
         )

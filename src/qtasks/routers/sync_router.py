@@ -76,7 +76,7 @@ class SyncRouter(SyncPluginMixin):
                 """
                     Приоритет у задачи по умолчанию.
 
-                    По умолчанию: `config.default_task_priority`.
+                    По умолчанию: `config.task_default_priority`.
                     """
             ),
         ] = None,
@@ -196,7 +196,7 @@ class SyncRouter(SyncPluginMixin):
 
         Args:
             name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
+            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
             echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
             max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
             retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
