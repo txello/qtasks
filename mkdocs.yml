@@ -9,7 +9,9 @@ repo_url: https://github.com/txello/qtasks
 
 theme:
   name: material
-  language: ru
+  language: en
+  favicon: assets/images/qtasks.png
+  logo: assets/images/qtasks.png
   palette:
     - scheme: default
       toggle:
@@ -30,10 +32,6 @@ theme:
   - content.tooltips
   - navigation.footer
   - navigation.indexes
-  - navigation.instant
-  - navigation.instant.prefetch
-  # - navigation.instant.preview
-  - navigation.instant.progress
   - navigation.path
   - navigation.tabs
   - navigation.tabs.sticky
@@ -50,6 +48,8 @@ theme:
       info: octicons/info-16
     annotation: material/arrow-right-circle
 
+extra_css:
+  - assets/css/images.css
 
 markdown_extensions:
   admonition:
@@ -104,153 +104,163 @@ markdown_extensions:
 
 extra:
   alternate:
-    #- name: en - English
-    #  link: ./en/
-    
+    - name: en - English
+      link: "/"
+      lang: en
+
     - name: ru - Russian
-      link: ./ru/
+      link: /qtasks/ru/
+      lang: ru
   social:
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/qtasks/
       name: PyPI
 
+
 plugins:
   - search
+  - autorefs:
+      resolve_closest: true
   - mkdocstrings:
+      default_handler: python
       handlers:
         python:
           options:
             docstring_style: google
             show_source: true
-            griffe:
-              warn_missing_types: false
+            docstring_options:
+              warnings: false
   - i18n:
-      #default_language_only: ru
+      docs_structure: folder
       languages:
+        - locale: en
+          name: English
+          build: true
+          default: true
         - locale: ru
           name: Русский
-          default: true
           build: true
-        #- locale: en
-        #  name: English
-        #  build: true
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js
+  - assets/js/mermaid-init.js
 
 nav:
   - QueueTasks:
       - QueueTasks: index.md
-      - Установка: ru/install.md
-      - Первые шаги: ru/getting_started.md
-      - Компоненты: ru/components.md
-      - Схемы: ru/schemas.md
-      - Работа с консолью: ru/console.md
-      - Тестирование: ru/tests.md
-      - Что дальше?: ru/next.md
+      - Установка: install.md
+      - Первые шаги: getting_started.md
+      - Компоненты: components.md
+      - Схемы: schemas.md
+      - Работа с консолью: console.md
+      - Тестирование: tests.md
+      - Что дальше?: next.md
   - Возможности:
-      - Общее: ru/features/features.md
-      - Уникальность: ru/features/uniqueness.md
+      - Общее: features/features.md
+      - Уникальность: features/uniqueness.md
   - Примеры:
-    - Примеры: ru/examples/examples.md
-    - Возможности: ru/examples/features.md
-    - Генераторы: ru/examples/yield.md
-    - Контексты: ru/examples/echo.md
-    - Переменные: ru/examples/variables.md
-    - Плагины: ru/examples/plugins.md
+    - Примеры: examples/examples.md
+    - Возможности: examples/features.md
+    - Генераторы: examples/yield.md
+    - Контексты: examples/echo.md
+    - Переменные: examples/variables.md
+    - Плагины: examples/plugins.md
     - Интеграция с другими библиотеками:
-      - Общее: ru/examples/integrations/index.md
-      - Django: ru/examples/integrations/django.md
-    - Аналитика: ru/examples/analytics.md
+      - Общее: examples/integrations/index.md
+      - Django: examples/integrations/django.md
+    - Аналитика: examples/analytics.md
     - Практика:
-      - Фрилансер: ru/examples/practice/freelancer.md
-      - Малый бизнес: ru/examples/practice/small_business.md
-      - Крупный бизнес: ru/examples/practice/large_business.md
+      - Фрилансер: examples/practice/freelancer.md
+      - Малый бизнес: examples/practice/small_business.md
+      - Крупный бизнес: examples/practice/large_business.md
   - API:
       - Триггеры плагинов:
-        - Триггеры: ru/api/plugins/triggers.md
-        - Ошибки: ru/api/plugins/errors.md
+        - Триггеры: api/plugins/triggers.md
+        - Ошибки: api/plugins/errors.md
       - Поддержка библиотек:
-        - Django: ru/api/libraries/django.md
-      - QueueTasks: ru/api/queuetasks.md
+        - Django: api/libraries/django.md
+      - QueueTasks: api/queuetasks.md
       - Asyncio:
-        - QueueTasks: ru/api/asyncio/queuetasks.md
-      - Роутер: ru/api/router.md
+        - QueueTasks: api/asyncio/queuetasks.md
+      - Роутер: api/router.md
       - Брокеры:
-        - BaseBroker - Пишем свой брокер: ru/api/brokers/basebroker.md
-        - SyncRedisBroker: ru/api/brokers/sync_redisbroker.md
-        - AsyncRedisBroker: ru/api/brokers/async_redisbroker.md
-        - SyncRabbitMQBroker: ru/api/brokers/sync_rabbitmqbroker.md
-        - AsyncRabbitMQBroker: ru/api/brokers/async_rabbitmqbroker.md
-        - SyncKafkaBroker: ru/api/brokers/sync_kafkabroker.md
-        - AsyncKafkaBroker: ru/api/brokers/async_kafkabroker.md
-        - SyncSocketBroker: ru/api/brokers/sync_socket.md
-        - AsyncSocketBroker: ru/api/brokers/async_socket.md
+        - BaseBroker - Пишем свой брокер: api/brokers/basebroker.md
+        - SyncRedisBroker: api/brokers/sync_redisbroker.md
+        - AsyncRedisBroker: api/brokers/async_redisbroker.md
+        - SyncRabbitMQBroker: api/brokers/sync_rabbitmqbroker.md
+        - AsyncRabbitMQBroker: api/brokers/async_rabbitmqbroker.md
+        - SyncKafkaBroker: api/brokers/sync_kafkabroker.md
+        - AsyncKafkaBroker: api/brokers/async_kafkabroker.md
+        - SyncSocketBroker: api/brokers/sync_socket.md
+        - AsyncSocketBroker: api/brokers/async_socket.md
       - Воркеры:
-        - BaseWorker - Пишем свой воркер: ru/api/workers/baseworker.md
-        - SyncThreadWorker: ru/api/workers/sync_threadworker.md
-        - AsyncWorker: ru/api/workers/async_worker.md
+        - BaseWorker - Пишем свой воркер: api/workers/baseworker.md
+        - SyncThreadWorker: api/workers/sync_threadworker.md
+        - AsyncWorker: api/workers/async_worker.md
       - Хранилища:
-        - BaseStorage - Пишем своё хранилище: ru/api/storages/basestorage.md
-        - SyncRedisStorage: ru/api/storages/sync_redisstorage.md
-        - AsyncRedisStorage: ru/api/storages/async_redisstorage.md
+        - BaseStorage - Пишем своё хранилище: api/storages/basestorage.md
+        - SyncRedisStorage: api/storages/sync_redisstorage.md
+        - AsyncRedisStorage: api/storages/async_redisstorage.md
       - Глобальные конфиги:
-        - BaseGlobalConfig - Пишем свой глобальный конфиг: ru/api/globalconfig/baseglobalconfig.md
-        - SyncRedisGlobalConfig: ru/api/globalconfig/sync_redisglobalconfig.md
-        - AsyncRedisGlobalConfig: ru/api/globalconfig/async_redisglobalconfig.md
+        - BaseGlobalConfig - Пишем свой глобальный конфиг: api/globalconfig/baseglobalconfig.md
+        - SyncRedisGlobalConfig: api/globalconfig/sync_redisglobalconfig.md
+        - AsyncRedisGlobalConfig: api/globalconfig/async_redisglobalconfig.md
       - Стартеры:
-        - BaseStarter - Пишем свой запуск: ru/api/starters/basestarter.md
-        - SyncStarter: ru/api/starters/sync_starter.md
-        - AsyncStarter: ru/api/starters/async_starter.md
+        - BaseStarter - Пишем свой запуск: api/starters/basestarter.md
+        - SyncStarter: api/starters/sync_starter.md
+        - AsyncStarter: api/starters/async_starter.md
       - Ожидание результата:
-        - SyncResult: ru/api/results/sync_result.md
-        - AsyncResult: ru/api/results/async_result.md
+        - SyncResult: api/results/sync_result.md
+        - AsyncResult: api/results/async_result.md
       - Модели:
-        - Task: ru/api/models/task.md
+        - Task: api/models/task.md
       - Схемы:
-        - QueueConfig: ru/api/schemas/queueconfig.md
-        - TaskStatus: ru/api/schemas/task_status.md
-        - TaskExec: ru/api/schemas/task_exec.md
-        - Inits: ru/api/schemas/inits.md
-        - GlobalConfig: ru/api/schemas/global_config.md
-        - TestConfig: ru/api/schemas/test_config.md
-        - TaskStatusEnum: ru/api/schemas/task_status_enum.md
+        - QueueConfig: api/schemas/queueconfig.md
+        - TaskStatus: api/schemas/task_status.md
+        - TaskExec: api/schemas/task_exec.md
+        - Inits: api/schemas/inits.md
+        - GlobalConfig: api/schemas/global_config.md
+        - TestConfig: api/schemas/test_config.md
+        - TaskStatusEnum: api/schemas/task_status_enum.md
       - Декораторы:
-        - SyncTask: ru/api/registries/sync_task_decorator.md
-        - AsyncTask: ru/api/registries/async_task_decorator.md
+        - SyncTask: api/registries/sync_task_decorator.md
+        - AsyncTask: api/registries/async_task_decorator.md
       - Контексты:
-        - SyncContext: ru/api/contexts/sync_context.md
-        - AsyncContext: ru/api/contexts/async_context.md
+        - SyncContext: api/contexts/sync_context.md
+        - AsyncContext: api/contexts/async_context.md
       - Исполнители задач:
-        - BaseTaskExecutor - Пишем свой исполнитель задач: ru/api/executors/basetask_executor.md
-        - SyncTaskExecutor: ru/api/executors/sync_task_executor.md
-        - AsyncTaskExecutor: ru/api/executors/async_task_executor.md
+        - BaseTaskExecutor - Пишем свой исполнитель задач: api/executors/basetask_executor.md
+        - SyncTaskExecutor: api/executors/sync_task_executor.md
+        - AsyncTaskExecutor: api/executors/async_task_executor.md
       - Мидлвари:
-        - BaseMiddleware - Пишем свой мидлварь: ru/api/middlewares/basemiddleware.md
-        - TaskMiddleware: ru/api/middlewares/task_middleware.md
-      - Глобальные переменные: ru/api/states.md
+        - BaseMiddleware - Пишем свой мидлварь: api/middlewares/basemiddleware.md
+        - TaskMiddleware: api/middlewares/task_middleware.md
+      - Глобальные переменные: api/states.md
       - Тестирование:
-        - BaseTestCase - Пишем свой кейс тестирования: ru/api/tests/basetests.md
-        - SyncTestCase: ru/api/tests/sync_testcase.md
-        - AsyncTestCase: ru/api/tests/async_testcase.md
-      - Логирование: ru/api/logs.md
+        - BaseTestCase - Пишем свой кейс тестирования: api/tests/basetests.md
+        - SyncTestCase: api/tests/sync_testcase.md
+        - AsyncTestCase: api/tests/async_testcase.md
+      - Логирование: api/logs.md
       - Классы:
-        - SyncRedisCommandQueue: ru/api/classes/sync_redis_commands.md
-        - AsyncRedisCommandQueue: ru/api/classes/async_redis_commands.md
-        - BaseQueueTasks: ru/api/classes/baseqtasks.md
+        - SyncRedisCommandQueue: api/classes/sync_redis_commands.md
+        - AsyncRedisCommandQueue: api/classes/async_redis_commands.md
+        - BaseQueueTasks: api/classes/baseqtasks.md
       - Timer:
-        - BaseTimer - Пишем свой Таймер: ru/api/timers/basetimer.md
-        - SyncTimer: ru/api/timers/sync_timer.md
-        - AsyncTimer: ru/api/timers/async_timer.md
+        - BaseTimer - Пишем свой Таймер: api/timers/basetimer.md
+        - SyncTimer: api/timers/sync_timer.md
+        - AsyncTimer: api/timers/async_timer.md
       - Аналитика:
-        - BaseStats - Пишем свою аналитику: ru/api/stats/base_stats.md
-        - AsyncStats - Пишем свою аналитику: ru/api/stats/async_stats.md
-        - SyncStats - Пишем свою аналитику: ru/api/stats/sync_stats.md
+        - BaseStats - Пишем свою аналитику: api/stats/basestats.md
+        - AsyncStats - Пишем свою аналитику: api/stats/async_stats.md
+        - SyncStats - Пишем свою аналитику: api/stats/sync_stats.md
         - Inspect:
-          - UtilsInspectStats: ru/api/stats/inspect/utils_inspect_stats.md
-          - InspectStats: ru/api/stats/inspect/inspect_stats.md
-      - WebView: ru/api/webview.md
-      - Исключения: ru/api/exceptions.md
-  - История изменений: ru/changelog.md
-  - Блог: ru/blog.md
-  #- О проекте: ru/about.md
+          - UtilsInspectStats: api/stats/inspect/utils_inspect_stats.md
+          - InspectStats: api/stats/inspect/inspect_stats.md
+      - WebView: api/webview.md
+      - Исключения: api/exceptions.md
+  - История изменений: changelog.md
+  - Блог: blog.md
+  #- О проекте: about.md
 
 
 watch:

@@ -32,7 +32,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
     `QueueTasks` - Фреймворк для очередей задач.
 
     Читать больше:
-    [Первые шаги](https://txello.github.io/qtasks/ru/getting_started/).
+    [Первые шаги](https://txello.github.io/qtasks/getting_started/).
 
     ## Пример
 

@@ -11,16 +11,16 @@ if TYPE_CHECKING:
 
 app_main: Union[QueueTasks, aioQueueTasks, None] = None
 """
-`app_main` - Хранит в себе основное приложение [`QueueTasks`](/qtasks/ru/api/queuetasks/).
+`app_main` - Хранит в себе основное приложение [`QueueTasks`](../api/queuetasks.md).
 
-Переменная обновляется при инициализации `QueueTasks` и/или перед вызовом [`self.starter.start()`](/qtasks/ru/api/starters/basestarter#qtasks.starters.base.BaseStarter.start)
-внутри [`app.run_forever()`](/qtasks/ru/api/queuetasks/#qtasks.qtasks.QueueTasks.run_forever).
+Переменная обновляется при инициализации `QueueTasks` и/или перед вызовом [`self.starter.start()`](../api/starters/basestarter.md#qtasks.starters.base.BaseStarter.start)
+внутри [`app.run_forever()`](../api/queuetasks.md#qtasks.qtasks.QueueTasks.run_forever).
 """
 
 log_main: Logger = Logger(name="QueueTasks", subname="_state")
 """
-`log_main` - Хранит в себе компонент логирования [`Logger`](/qtasks/ru/api/logs/).
-Переменная обновляется при инициализации [`QueueTasks`](/qtasks/ru/api/queuetasks/).
+`log_main` - Хранит в себе компонент логирования [`Logger`](../api/logs.md).
+Переменная обновляется при инициализации [`QueueTasks`](../api/queuetasks.md).
 
 По умолчанию: Logger(name="QueueTasks", subname="_state")
 """
