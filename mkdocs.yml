@@ -108,7 +108,7 @@ extra:
       link: "/"
       lang: en
 
-    - name: ru - Russian
+    - name: ru - Русский
       link: /qtasks/ru/
       lang: ru
   social:
