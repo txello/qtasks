@@ -209,6 +209,7 @@ class SyncTask(Generic[P, R]):
             executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `None`.
             middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
             middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+            extra (Dict[str, Any], optional): Дополнительные параметры. По умолчанию: `Пустой словарь`.
             app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: `None`.
         """
         self.task_name = task_name

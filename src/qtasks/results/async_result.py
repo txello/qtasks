@@ -73,7 +73,7 @@ class AsyncResult:
             app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: None.
             log (Logger, optional): Логгер. По умолчанию: None.
         """
-        self._app = self._update_state()
+        self._app = app or self._update_state()
 
         self.log = (
             log.with_subname(

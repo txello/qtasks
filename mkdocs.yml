@@ -155,11 +155,36 @@ nav:
       - Работа с консолью: console.md
       - Тестирование: tests.md
       - Что дальше?: next.md
+
   - Возможности:
-      - Общее: features/features.md
+      - Общее: features/index.md
       - Уникальность: features/uniqueness.md
+      - (A)syncTask - Декоратор задачи: features/task.md
+      - Contexts - Контексты задач: features/contexts.md
+      - yield - Генераторы в задачах: features/yield.md
+      - Pydantic - Моделирование данных: features/pydantic.md
+      - Depends - Управляемые зависимости: features/depends.md
+      - States - Машины состояния данных: features/states.md
+      - Timer - Планировщик задач: features/timer.md
+      - Stats - Встроенная аналитика: features/stats.md
+
+  - Архитектура:
+    - Главная: architecture/index.md
+    - Выполнение задач: architecture/task_flow.md
+    - Схема компонентов:
+      - Главная: architecture/components/index.md
+      - Абстрактные классы: architecture/components/abstract_classes.md
+      - Схемы данных: architecture/components/schemas.md
+      - Потоки и асинхронность: architecture/components/threads_async.md
+      - Плагинная система: architecture/components/plugin_system.md
+    - Интеграция с библиотеками:
+      - Главная: architecture/integrations/index.md
+      - Django: architecture/integrations/django.md
+    - Конфигурация: architecture/configuration.md
+    - Расширяемость: architecture/extensibility.md
+
   - Примеры:
-    - Примеры: examples/examples.md
+    - Примеры: examples/index.md
     - Возможности: examples/features.md
     - Генераторы: examples/yield.md
     - Контексты: examples/echo.md
@@ -173,6 +198,7 @@ nav:
       - Фрилансер: examples/practice/freelancer.md
       - Малый бизнес: examples/practice/small_business.md
       - Крупный бизнес: examples/practice/large_business.md
+
   - API:
       - Триггеры плагинов:
         - Триггеры: api/plugins/triggers.md
