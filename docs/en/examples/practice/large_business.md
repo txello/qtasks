@@ -1,39 +1,38 @@
-# Пример использования QTasks в крупном бизнесе
+# Example of using QTasks in large businesses
 
-QTasks масштабируется для использования в высоконагруженных системах и подходит
-для корпоративного уровня благодаря модульной архитектуре, возможности
-расширения и контролю исполнения задач. Эта система может использоваться в роли
-процессинга задач в микросервисной архитектуре, автоматизации сложных цепочек и
-распределения нагрузки.
-
----
-
-## 🏢 Сценарий
-
-Крупная компания имеет десятки микросервисов:
-
-1. Требуется связать их через фоновую обработку задач.
-2. Обеспечить надёжное выполнение и контроль.
-3. Поддерживать масштабируемость, отказоустойчивость и интеграции с
-внешними системами (Kafka, Redis, PostgreSQL, REST, gRPC).
+QTasks scales for use in high-load systems and is suitable
+for enterprise-level use thanks to its modular architecture, expandability,
+and task execution control. This system can be used for task processing in
+microservice architecture, automation of complex chains, and load distribution.
 
 ---
 
-## ⚙️ Распределённая обработка задач
+## 🏢 Scenario
 
-Развёртывание воркеров на разных серверах/контейнерах:
+A large company has dozens of microservices:
+
+1. They need to be connected via background task processing.
+2. Ensure reliable execution and control.
+3. Maintain scalability, fault tolerance, and integration with
+external systems (Kafka, Redis, PostgreSQL, REST, gRPC).
+
+---
+
+## ⚙️ Distributed task processing
+
+Deploy workers on different servers/containers:
 
 ```bash
 py -m qtasks -A myproject.qtasks_app run --worker-id node1
 py -m qtasks -A myproject.qtasks_app run --worker-id node2
 ```
 
-Можно запускать с разными конфигурациями при помощи переменных окружения или аргументов
-командной строки.
+Can be run with different configurations using environment variables or command
+line arguments.
 
 ---
 
-## 🔀 Интеграция с Kafka и другими брокерами
+## 🔀 Integration with Kafka and other brokers
 
 ```python
 from my_kafka_broker import KafkaBroker
@@ -41,11 +40,11 @@ from my_kafka_broker import KafkaBroker
 app = QueueTasks(broker=KafkaBroker(...))
 ```
 
-Также поддерживаются кастомные `Storage`, `GlobalConfig` и другие компоненты.
+Custom `Storage`, `GlobalConfig`, and other components are also supported.
 
 ---
 
-## 🧩 TaskManager для управления стратегиями задач
+## 🧩 TaskManager for managing task strategies
 
 ```python
 from qtasks.components.task_manager import TaskManager
@@ -61,10 +60,10 @@ app.config.task_manager = MyManager()
 
 ---
 
-## 📊 Интеграция с BI и внутренними сервисами
+## 📊 Integration with BI and internal services
 
-С помощью `generate_handler`, `yield`, `middlewares`, задач можно строить сложные
-пайплайны:
+Using `generate_handler`, `yield`, `middlewares`, tasks can be used to build complex
+pipelines:
 
 ```python
 @app.task(generate_handler=send_to_bi)
@@ -75,25 +74,25 @@ def export_metrics():
 
 ---
 
-## 🧠 Контроль и мониторинг
+## 🧠 Control and monitoring
 
-В связке с QTasks WebView можно:
+In conjunction with QTasks WebView, you can:
 
-* отслеживать статус задач;
-* фильтровать по типам/ошибкам/времени;
-* отменять, перезапускать, просматривать логи;
-* интегрировать в корпоративные панели управления.
+* track task status;
+* filter by type/error/time;
+* cancel, restart, view logs;
+* integrate into corporate dashboards.
 
 ---
 
-## ✅ Результат
+## ✅ Result
 
-QTasks в крупной компании позволяет:
+QTasks in a large company allows you to:
 
-* гибко настраивать компоненты (брокер, storage, config);
-* управлять распределённой обработкой задач;
-* расширять поведение задач без переписывания ядра;
-* интегрироваться с BI, мониторингом, логированием, Kafka, REST, gRPC и др.
+* flexibly configure components (broker, storage, config);
+* manage distributed task processing;
+* extend task behavior without rewriting the core;
+* integrate with BI, monitoring, logging, Kafka, REST, gRPC, etc.
 
-Это превращает QTasks в основу фреймворка для автоматизации и обработки событий
-корпоративного уровня.
+This makes QTasks the foundation of a framework for enterprise-level automation
+and event processing.

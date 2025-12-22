@@ -1,46 +1,44 @@
-# Интеграция с Django
+# Integration with Django
 
-На данный момент в `QTasks` реализована одна основная функция интеграции
-с Django: **`autodiscover_tasks`**.
+Currently, QTasks implements one main integration feature with Django: **autodiscover_tasks**.
 
 ---
 
-## 📌 Что делает autodiscover\_tasks?
+## 📌 What does autodiscover_tasks do?
 
-Эта функция автоматически импортирует указанные модули (например, `tasks.py`) из
-всех приложений, перечисленных в `INSTALLED_APPS`.
-Таким образом задачи регистрируются в QTasks без необходимости ручного подключения.
-
-Сигнатура функции:
+This function automatically imports the specified modules (e.g., `tasks.py`) from
+all applications listed in `INSTALLED_APPS`.
+This way, tasks are registered in QTasks without the need for manual connection.
+Function signature:
 
 ```python
 def autodiscover_tasks(app, modules: List[str] = ["tasks"]):
-    """Автоматически импортирует указанные модули из всех INSTALLED_APPS,
-    чтобы зарегистрировать задачи в QTasks.
+    """Automatically imports the specified modules from all INSTALLED_APPS
+    to register tasks in QTasks.
 
     Args:
-        app (QueueTasks): приложение.
-        modules (List[str]): Модули для автодискавери. По умолчанию: ["tasks"].
-    """
+        app (QueueTasks): application.
+        modules (List[str]): Modules for autodiscovery. Default: ["tasks"].
+"""
 ```
 
-📖 Подробное описание доступно в [API → autodiscover\_tasks](../../api/libraries/django.md).
+📖 A detailed description is available in [API → autodiscover_tasks](../../api/libraries/django.md).
 
 ---
 
-## 🔧 Как использовать
+## 🔧 How to use
 
-В `settings.py`:
+In `settings.py`:
 
 ```python
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
-    "myapp",  # здесь будет tasks.py
+    "myapp",  # tasks.py will be here
 ]
 ```
 
-В `myapp/tasks.py`:
+In `myapp/tasks.py`:
 
 ```python
 from qtasks import QueueTasks
@@ -52,7 +50,7 @@ def hello(name: str):
     return f"Hello, {name}!"
 ```
 
-В `manage.py` или основном модуле проекта:
+In `manage.py` or the main module of the project:
 
 ```python
 from qtasks.contrib.django import autodiscover_tasks
@@ -62,15 +60,15 @@ app = QueueTasks()
 autodiscover_tasks(app)
 ```
 
-После вызова `autodiscover_tasks(app)` все задачи из `tasks.py` будут автоматически
-зарегистрированы и доступны для выполнения.
+After calling `autodiscover_tasks(app)`, all tasks from `tasks.py` will be automatically
+registered and available for execution.
 
 ---
 
-## ✅ Итоги
+## ✅ Summary
 
-* `autodiscover_tasks` ищет `tasks.py` (или другие модули, если указаны) во всех
-приложениях `INSTALLED_APPS`.
-* Это упрощает интеграцию QTasks в проекты Django.
-* Не нужно вручную регистрировать задачи — достаточно создать их в `tasks.py` внутри
-каждого приложения.
+* `autodiscover_tasks` searches for `tasks.py` (or other modules, if specified)
+in all `INSTALLED_APPS` applications.
+* This simplifies the integration of QTasks into Django projects.
+* There is no need to manually register tasks — simply create them in `tasks.py`
+within each application.

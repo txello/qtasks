@@ -1,18 +1,18 @@
-# Пример переменных в функциях задач
+# Example of variables in task functions
 
-`QTasks` поддерживает два встроенных механизма управления логикой задач:
+QTasks supports two built-in mechanisms for managing task logic:
 
-* **Depends** — вызов внешних функций, генераторов или контекстных менеджеров при
-выполнении задачи.
-* **State** — хранение и обмен состоянием между задачами.
+* **Depends** — calling external functions, generators, or context managers when
+a task is executed.
+* **State** — storing and exchanging state between tasks.
 
 ---
 
-## 🔧 Пример 1: Depends (зависимости)
+## 🔧 Example 1: Depends
 
-`Depends` позволяет подключать ресурсы, которые нужно инициализировать и закрыть
-по завершении.
-Функция может быть простой, генераторной или асинхронным контекстным менеджером.
+`Depends` allows you to connect resources that need to be initialized and closed
+upon completion.
+The function can be simple, generator, or asynchronous context manager.
 
 ```python
 from qtasks.plugins import Depends
@@ -28,26 +28,26 @@ async def get_db():
 @app.task
 async def test_depends(depends: Depends(get_db)):
     depends.execute(...)
-    print("Вызов выполнен")
+    print("Call completed")
     return
 ```
 
-**Вывод в консоль:**
+**Console output:**
 
 ```bash
-<Сервер запускает задачу>
-Вызов выполнен
-<Сервер завершает задачу>
+<Server starts task>
+Call completed
+<Server completes task>
 close...
 ```
 
-**Итог:** задача использует подключение к БД, которое автоматически закрывается.
+**Result:** the task uses a database connection that closes automatically.
 
 ---
 
-## 🔧 Пример 2: State (состояние между задачами)
+## 🔧 Example 2: State (state between tasks)
 
-`State` — это хранилище данных, доступное для последовательных шагов одной логики.
+`State` is a data store available for sequential steps of a single logic.
 
 ```python
 from qtasks.plugins import AsyncState
@@ -58,7 +58,7 @@ class MyState(AsyncState):
 @app.task
 async def step1(state: MyState):
     await state.set("state", "await_phone")
-    await state.update(step=1, prompt="Введите телефон")
+    await state.update(step=1, prompt="Enter phone number")
     return "ok"
 
 @app.task
@@ -68,48 +68,51 @@ async def step2(state: MyState):
     cur = await state.get("state")
     if cur != "await_phone":
         return "error"
-    await state.update(step=2)
-    await state.delete("state")
-    await state.clear()
-    return "ok"
+await state.update(step=2)
+await state.delete("state")
+await state.clear()
+return "ok"
 ```
 
-**Вывод в консоль:**
+**Console output:**
 
 ```bash
-{"state": "await_phone", "step": 1, "prompt": "Введите телефон"}
+{"state": "await_phone", "step": 1, "prompt": "Enter phone number"}
 ```
 
-**Итог:** первый шаг записал данные в состояние, второй шаг их прочитал, проверил
-и очистил.
+**Result:** the first step wrote the data to the state, the second step read it,
+checked it, and cleared it.
+
+---
+⚙️ How does this work inside `QTasks`?
+
+## ⚙️ How does it work inside `QTasks`?
+
+* **Depends** is registered when the task is called, and the function inside is
+triggered when TaskExecutor is executed. This is useful for connecting to databases,
+APIs, or external services.
+* **State** is implemented as an asynchronous key-value store. It supports
+`set`, `update`, `get`, `delete`, `clear`, as well as reading all data at once (`get_all`).
 
 ---
 
-## ⚙️ Как это работает внутри `QTasks`?
+## 🏢 Example of use in a company
 
-* **Depends** регистрируется при вызове задачи и функция внутри запускается при
-выполнении TaskExecutor. Это удобно для подключения к БД, API или внешним сервисам.
-* **State** реализован как асинхронное key-value хранилище. Оно поддерживает
-`set`, `update`, `get`, `delete`, `clear`, а также чтение всех данных разом (`get_all`).
+Let's say a step-by-step registration form is being implemented:
 
----
+1. `step1` shows the user a request to enter their phone number.
+2. `step2` checks that the phone number has been entered and moves the process forward.
 
-## 🏢 Пример использования в компании
-
-Допустим, реализуется пошаговая форма регистрации:
-
-1. `step1` показывает пользователю запрос на ввод телефона.
-2. `step2` проверяет, что введён телефон, и двигает процесс дальше.
-
-При этом `Depends` может использоваться для работы с подключением к базе, а `State`
-— для хранения промежуточных данных пользователя.
+In this case, `Depends` can be used to work with the database connection, and `State`
+can be used to store the user's intermediate data.
 
 ---
 
-## ✅ Итоги
+## ✅ Summary
 
-* **Depends** — для подключения зависимостей (ресурсы, контексты, сервисы).
-* **State** — для пошагового хранения данных между задачами.
+* **Depends** — for connecting dependencies (resources, contexts, services).
+* **State** — for step-by-step data storage between tasks.
 
-Вместе они позволяют строить гибкие пайплайны: от интеграций с БД до чат-ботов
-и сложных бизнес-процессов.
+Together, they allow you to build flexible pipelines: from database integrations
+to chatbots
+and complex business processes.

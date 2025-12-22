@@ -1,28 +1,28 @@
-# Возможности QTasks
+# QTasks Features
 
-QTasks — это современный фреймворк для очередей задач, созданный вокруг идеи
-**полной расширяемости**, **минималистичной архитектуры** и **удобства использования**.
-Он одинаково хорошо подходит для небольших проектов и крупной распределённой инфраструктуры.
+QTasks is a modern task queue framework built around the ideas of
+**full extensibility**, **minimalist architecture**, and **ease of use**.
+It is equally well suited for small projects and large distributed infrastructures.
 
-Эта страница описывает ключевые возможности фреймворка, включая его уникальные
-архитектурные особенности.
-
----
-
-## Простая и быстрая настройка
-
-* Регистрация задач через `@app.task` — синхронных и асинхронных.
-* Нативная поддержка `asyncio` без ограничений GIL.
-* Лёгкое подключение приложения через CLI: `qtasks -A app:app run`.
-* Гибкая конфигурация: параметры по умолчанию или кастомные компоненты.
+This page describes the key features of the framework, including its unique
+architectural features.
 
 ---
 
-## Уникальные архитектурные возможности
+## Simple and quick setup
 
-### 🔧 Компонентная архитектура
+* Register tasks via `@app.task` — synchronous and asynchronous.
+* Native support for `asyncio` without GIL restrictions.
+* Easy application connection via CLI: `qtasks -A app:app run`.
+* Flexible configuration: default parameters or custom components.
 
-Каждый элемент системы можно заменить:
+---
+
+## Unique architectural features
+
+### 🔧 Component-based architecture
+
+Every element of the system can be replaced:
 
 * Broker
 * Worker
@@ -31,31 +31,31 @@ QTasks — это современный фреймворк для очеред�
 * Starter
 * TaskExecutor
 
-Это позволяет адаптировать QTasks под любые сценарии: in-memory тестирование,
-распределённые системы, собственные брокеры, альтернативные executors.
+This allows QTasks to be adapted to any scenario: in-memory testing,
+distributed systems, custom brokers, alternative executors.
 
-### ⚙️ Полностью заменяемый **TaskExecutor**
+### ⚙️ Fully replaceable **TaskExecutor**
 
-Логика выполнения задач изолирована в отдельном классе. Его можно заменить через:
+The task execution logic is isolated in a separate class. It can be replaced via:
 
 ```python
 @app.task(executor=MyTaskExecutor)
 ```
 
-Это даёт контроль над:
+This gives control over:
 
-* обработкой ошибок,
-* retry-стратегиями,
+* error handling,
+* retry strategies,
 * middleware,
-* кастомными пайплайнами выполнения.
+* custom execution pipelines.
 
 ---
 
-## Работа с задачами
+## Working with tasks
 
-### ✔️ Поддержка `yield` в задачах
+### ✔️ Support for `yield` in tasks
 
-QTasks позволяет использовать генераторы в задачах.
+QTasks allows you to use generators in tasks.
 
 ```python
 @app.task(generate_handler=gen_handler)
@@ -64,14 +64,14 @@ def mytask():
     return value
 ```
 
-`gen_handler(result)` принимает *значение, переданное через yield*, а результат
-`return` возвращается в задачу.
+`gen_handler(result)` accepts *the value passed through yield*, and the result of
+`return` is returned to the task.
 
-Это позволяет строить поэтапные сценарии выполнения задач.
+This allows you to build step-by-step task execution scenarios.
 
-### ✔️ Поддержка Depends
+### ✔️ Depends support
 
-Плагин Depends позволяет внедрять зависимости в задачи.
+The Depends plugin allows you to embed dependencies in tasks.
 
 ```python
 @app.task
@@ -87,11 +87,11 @@ Scopes:
 * `storage`
 * `global_config`
 
-Фреймворк автоматически создаёт и корректно закрывает контекст зависимости.
+The framework automatically creates and correctly closes the dependency context.
 
-### ✔️ Поддержка State
+### ✔️ State support
 
-Потокобезопасный способ передачи данных между задачами.
+A thread-safe way to transfer data between tasks.
 
 ```python
 from qtasks.plugins import AsyncState
@@ -104,70 +104,70 @@ def sample(state: MyState):
     ...
 ```
 
-State позволяет задаче безопасно передавать промежуточные данные поэтапно.
+State allows a task to safely transfer intermediate data in stages.
 
 ---
 
-## Интеграция с брокерами сообщений
+## Integration with message brokers
 
-* Redis — основной поддерживаемый брокер.
-* RabbitMQ — доступен через доп. установку.
-* Kafka — также поддерживается.
+* Redis — the main supported broker.
+* RabbitMQ — available through additional installation.
+* Kafka — also supported.
 
-Брокеры легко подключаются:
+Brokers are easy to connect:
 
 ```python
 app = QueueTasks(broker_url="redis://localhost:6379/0")
 ```
 
-При необходимости можно передать собственную реализацию брокера.
+If necessary, you can pass your own broker implementation.
 
 ---
 
-## Расширяемость и плагины
+## Extensibility and plugins
 
-QTasks предоставляет многоуровневую систему триггеров:
+QTasks provides a multi-level trigger system:
 
-* на выполнение задач,
-* на изменение аргументов,
-* на изменение результата,
-* на события внутри компонентов.
+* for task execution,
+* for argument changes,
+* for result changes,
+* for events within components.
 
-Плагин легко добавить:
+Plugins are easy to add:
 
 ```python
 app.add_plugin(MyPlugin(), trigger_names=["task_executor_args_replace"], component="worker")
 ```
 
-Фреймворк поддерживает создание дополнительных инструментов: gRPC-передача задач,
-унифицированные middleware, Depends, State.
+The framework supports the creation of additional tools: gRPC task transfer,
+unified middleware, Depends, State.
 
 ---
 
-## Масштабируемость
+## Scalability
 
-QTasks масштабируется горизонтально благодаря простой, надёжной модели:
+QTasks scales horizontally thanks to a simple, reliable model:
 
-> «Кто первый взял задачу, тот и обрабатывает».
+> "Whoever takes the task first, processes it."
 
-Это обеспечивает:
+This ensures:
 
-* работу нескольких воркеров одновременно;
-* естественную балансировку нагрузки;
-* распределённое выполнение задач без сложных алгоритмов.
+* multiple workers running simultaneously;
+* natural load balancing;
+* distributed task execution without complex algorithms.
 
 ---
 
-## Асинхронная обработка задач
+## Asynchronous task processing
 
-Асинхронный режим имеет преимущества:
+Asynchronous mode has the following advantages:
 
-* высокая производительность;
-* потокобезопасность (используются Semaphore и PriorityQueue);
-* инкапсуляция контекста задач;
-* легко внедряется внутрь других фреймворков.
+* high performance;
+* thread safety (using Semaphore and PriorityQueue);
+* task context encapsulation;
+* easy integration into other frameworks.
 
-Асинхронные задачи объявляются как:
+Asynchronous tasks are declared as:
 
 ```python
 @app.task
@@ -177,16 +177,16 @@ async def handler(x: int):
 
 ---
 
-## Мониторинг и статистика
+## Monitoring and statistics
 
-(Описание аналитики — на отдельной странице.)
+(Description of analytics — on a separate page.)
 
-Возможности включают:
+Features include:
 
-* `(A)syncStats` для получения статистики приложений и задач;
-* вывод статистики через CLI: `qtasks stats inspect ...`.
+* `(A)syncStats` for obtaining application and task statistics;
+* outputting statistics via CLI: `qtasks stats inspect ...`.
 
 ---
 
-Эти возможности делают QTasks не просто очередью задач, а гибким и расширяемым
-фреймворком, который легко адаптируется под реальные бизнес-сценарии.
+These features make QTasks more than just a task queue; it is a flexible and extensible
+framework that can be easily adapted to real-world business scenarios.

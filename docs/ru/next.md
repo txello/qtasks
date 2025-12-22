@@ -17,7 +17,7 @@
 
     Пишем свои плагины, которые мягко интегрируются в систему.
 
-    [:octicons-arrow-right-24: Как писать плагины](architecture/plugins/index.md)
+    [:octicons-arrow-right-24: Как писать плагины](architecture/components/plugin_system.md)
 
 - :octicons-package-dependencies-24:{ .lg .middle } __Интегрируем__
 
