@@ -1,37 +1,37 @@
-# Обработка ошибок через плагины
+# Error handling via plugins
 
-В QTasks предусмотрена система перехвата ошибок задач через плагины. Это позволяет:
+QTasks provides a system for intercepting task errors via plugins. This allows
+you to:
 
-* централизованно обрабатывать исключения;
-* возвращать альтернативный результат при ошибке;
-* внедрять кастомную логику (например, логирование, уведомления, восстановление).
-
----
-
-## 📌 Используемый триггер
-
-**Триггер**: [`task_executor_run_task_trigger_error`](./triggers.md#taskexecutor)
-
-* **Компонент**: `TaskExecutor`
-* **Вызов**: происходит при возникновении исключения `TaskPluginTriggerError`
-* **Параметры**:
-
-  * `task_executor` — экземпляр TaskExecutor
-  * `task_func` — выполняемая задача
-  * `task_broker` — брокер задачи
-  * `e` — экземпляр ошибки `TaskPluginTriggerError`
+* centrally handle exceptions;
+* return an alternative result in case of an error;
+* implement custom logic (e.g., logging, notifications, recovery).
 
 ---
 
-## 🧠 Механизм обработки
+## 📌 Trigger used
 
-Если в задаче вызывается:
+**Trigger**: [`task_executor_run_task_trigger_error`](./triggers.md#taskexecutor)
+
+* **Component**: `TaskExecutor`
+* **Call**: occurs when a `TaskPluginTriggerError` exception occurs
+* **Parameters**:
+  * `task_executor` — TaskExecutor instance
+  * `task_func` — task being executed
+  * `task_broker` — task broker
+  * `e` — instance of the `TaskPluginTriggerError` error
+
+---
+
+## 🧠 Handling mechanism
+
+If the following is called in the task:
 
 ```python
 self.ctx.plugin_error()
 ```
 
-то будет выброшено исключение:
+an exception will be thrown:
 
 ```python
 from qtasks.exc import TaskPluginTriggerError
@@ -39,7 +39,7 @@ from qtasks.exc import TaskPluginTriggerError
 raise TaskPluginTriggerError(**kwargs)
 ```
 
-Внутри `TaskExecutor` исключение будет обработано следующим образом:
+Inside `TaskExecutor`, the exception will be handled as follows:
 
 ```python
 try:
@@ -59,25 +59,25 @@ except TaskPluginTriggerError as e:
         raise e
 ```
 
-Если хотя бы один плагин вернёт значение — оно станет результатом задачи.
-Иначе исключение пробрасывается дальше.
+If at least one plugin returns a value, it will become the result of the task.
+Otherwise, the exception is thrown further.
 
 ---
 
-## 🔧 Пример задачи с вызовом ошибки
+## 🔧 Example of a task with an error call
 
 ```python
 from qtasks.exc import TaskPluginTriggerError
 
 @app.task(echo=True)
 async def test_task(self: AsyncTask):
-    self.ctx.plugin_error(message="Нестандартная ситуация")
-    # Альтернатива: raise TaskPluginTriggerError("Ошибка напрямую")
+    self.ctx.plugin_error(message="Non-standard situation")
+    # Alternative: raise TaskPluginTriggerError("Direct error")
 ```
 
 ---
 
-## 🔌 Обработка в плагине
+## 🔌 Processing in the plugin
 
 ```python
 class TestPlugin(BasePlugin):
@@ -106,12 +106,12 @@ class TestPlugin(BasePlugin):
 
 ---
 
-## 📘 Связанные ресурсы
+## 📘 Related resources
 
-* 📄 [Триггеры компонентов](./triggers.md)
-* ⚠️ [Исключения](../exceptions.md)
+* 📄 [Component triggers](./triggers.md)
+* ⚠️ [Exceptions](../exceptions.md)
 
 ---
 
-Система `plugin_error` даёт контроль над логикой ошибок и может использоваться
-как точка расширения поведения задач.
+The `plugin_error` system gives you control over error logic and can be used
+as an extension point for task behavior.
