@@ -21,6 +21,8 @@ def autodiscover_tasks(app, modules: Optional[list[str]] = None):
         app (QueueTasks): приложение.
         modules (List[str]): Модули для автодискавери. По умолчанию: `["tasks"]`.
     """
+    modules = modules or ["tasks"]
+
     for app_name in settings.INSTALLED_APPS:
         try:
             module = importlib.import_module(app_name)
