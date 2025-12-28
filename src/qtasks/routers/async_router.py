@@ -60,7 +60,7 @@ class AsyncRouter(AsyncPluginMixin):
     def task(
         self,
         name: Annotated[
-            str | None,
+            str | Callable | None,
             Doc(
                 """
                     Имя задачи.
@@ -191,7 +191,7 @@ class AsyncRouter(AsyncPluginMixin):
             ),
         ] = None,
         **kwargs,
-    ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
+    ) -> AsyncTask[P, R] | Callable[[Callable[P, R]], AsyncTask[P, R]]:
         """Декоратор для регистрации задач.
 
         Args:
@@ -216,10 +216,10 @@ class AsyncRouter(AsyncPluginMixin):
             SyncTask: Декоратор для регистрации задачи.
         """
 
-        def wrapper(func):
+        def wrapper(func: Callable[P, R]):
             nonlocal priority, middlewares_before, middlewares_after
 
-            task_name = name or func.__name__
+            task_name = name or func.__name__ if not callable(name) else name.__name__
             if task_name in self.tasks:
                 raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
 
