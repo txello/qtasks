@@ -4,6 +4,5 @@ from qtasks.utils.tasks.chains.async_chains import AsyncChain
 
 class AsyncTaskUtils:
     @staticmethod
-    async def chain(*tasks: AsyncTaskCls) -> AsyncChain:
-        chain = AsyncChain(*tasks)
-        return chain
+    def chain(*tasks: AsyncTaskCls) -> AsyncChain:
+        return AsyncChain(*tasks)
