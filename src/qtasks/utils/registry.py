@@ -17,8 +17,8 @@ from qtasks.types.annotations import P, R
 
 @overload
 def shared_task(
-    func_or_name: Annotated[
-        str | Callable[P, R] | None,
+    name: Annotated[
+        str | Callable | None,
         Doc(
             """
                     Имя задачи.
@@ -148,12 +148,12 @@ def shared_task(
         ),
     ] = False,
     **kwargs,
-) -> Callable[[Callable[P, R]], SyncTask[P, R]]: ...
+) -> SyncTask[P, R] | Callable[[Callable[P, R]], SyncTask[P, R]]: ...
 
 
 @overload
 def shared_task(
-    func_or_name: Annotated[
+    name: Annotated[
         str | Callable[P, R] | None,
         Doc(
             """
@@ -284,12 +284,12 @@ def shared_task(
         ),
     ] = True,
     **kwargs,
-) -> Callable[[Callable[P, R]], AsyncTask[P, R]]: ...
+) -> AsyncTask[P, R] | Callable[[Callable[P, R]], AsyncTask[P, R]]: ...
 
 
 def shared_task(
-    func_or_name: Annotated[
-        str | Callable[P, R] | None,
+    name: Annotated[
+        str | Callable | None,
         Doc(
             """
                     Имя задачи.
@@ -419,7 +419,7 @@ def shared_task(
         ),
     ] = None,
     **kwargs,
-) -> Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
+) -> SyncTask[P, R] | AsyncTask[P, R] | Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
     """Декоратор для регистрации задач.
 
     Args:
@@ -450,10 +450,10 @@ def shared_task(
     if not awaiting:
         awaiting = False
 
-    if isinstance(func_or_name, FunctionType):
+    if isinstance(name, FunctionType):
         # Декоратор без скобок
         return TaskRegistry.register(
-            name=func_or_name.__name__,
+            name=name.__name__,
             priority=priority or 0,
             awaiting=awaiting,
             echo=echo,
@@ -468,13 +468,13 @@ def shared_task(
             middlewares_after=middlewares_after,
             **kwargs,
         )(
-            func_or_name
+            name
         )  # type: ignore
 
     # Декоратор со скобками
-    def wrapper(func: Callable):
+    def wrapper(func: Callable[P, R]):
         return TaskRegistry.register(
-            name=func_or_name if isinstance(func_or_name, str) else func.__name__,
+            name=name if isinstance(name, str) else func.__name__,
             priority=priority or 0,
             awaiting=awaiting,
             echo=echo,
