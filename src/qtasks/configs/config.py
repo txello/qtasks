@@ -1,6 +1,7 @@
 """QueueConfig Schema."""
 
 import logging
+import os
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, Optional
@@ -27,6 +28,8 @@ class QueueConfig:
 
         result_time_interval (float): Интервал времени для результатов. По умолчанию: `1.0`
         result_statuses_end (list[str]): Статусы завершения результатов. По умолчанию: `["success", "error", "cancel"]`
+
+        environ_prefix (str): Префикс для переменных окружения. По умолчанию: `QTASKS_`
     """
 
     max_tasks_process: int = 10
@@ -51,6 +54,8 @@ class QueueConfig:
             TaskStatusEnum.CANCEL.value,
         ]
     )
+
+    environ_prefix: str = "QTASKS_"
 
     _callbacks: list[Callable[["QueueConfig", str, Any], None]] = field(
         default_factory=list, init=False, repr=False
@@ -92,3 +97,24 @@ class QueueConfig:
             dynamic_fields = object.__getattribute__(self, "_dynamic_fields")
             dynamic_fields[key] = value
             self._notify(key, value)
+
+    def __post_init__(self):
+        """Инициализация после создания."""
+        env_vars = self._get_env_all()
+        for key, value in env_vars.items():
+            attr_key = key[len(self.environ_prefix) :].lower()
+            if hasattr(self, attr_key):
+                attr_type = type(getattr(self, attr_key))
+                try:
+                    if attr_type is bool:
+                        casted_value = value.lower() in ("1", "true", "yes", "on")
+                    else:
+                        casted_value = attr_type(value)
+                    setattr(self, attr_key, casted_value)
+                except (ValueError, TypeError):
+                    pass
+
+
+    def _get_env_all(self) -> dict[str, Any]:
+        """Получение переменных окружения с префиксом."""
+        return {k: v for k, v in os.environ.items() if k.startswith(self.environ_prefix)}
