@@ -1,93 +1,113 @@
-# Схемы
+# Diagrams
 
-## Background-схема связей фреймворка
+## Background diagram of framework connections
 
-``` mermaid
+```mermaid
 sequenceDiagram
   autonumber
-  Participant QueueTasks
-  Participant Starter
-  Participant Worker
-  Participant Broker
-  Participant Storage
-  Participant GlobalConfig
-  QueueTasks->>Starter: (Перенос логики)
-  Starter->>Worker: Запуск
-  Starter->>Broker: Запуск
-  Broker->>Storage: Запуск
-  Storage->>Broker: Остановка
-  Storage->>GlobalConfig: Запуск
-  GlobalConfig->>Storage: Остановка
+  participant QueueTasks
+  participant Starter
+  participant Worker
+  participant Broker
+  participant Storage
+  participant GlobalConfig
+
+  QueueTasks->>Starter: Initialization / configuration
+  Starter->>Worker: Start
+  Starter->>Broker: Start
+  Broker->>Storage: Initialization / start
+  Storage->>GlobalConfig: Initialization (if any)
+
+  GlobalConfig-->>Storage: Stop
+  Storage-->>Broker: Stop
+  Broker-->>Worker: Stop
+  Starter-->>QueueTasks: Termination
 ```
 
-На этой диаграмме показано связь компонентов.
+This diagram shows the relationship between components and the correct startup order:
+
+* Starter starts **only Worker and Broker**.
+* Broker starts **Storage**.
+* Storage starts **GlobalConfig**, if present.
+* Shutdown occurs in reverse order.
 
 ---
 
-## Обработка задачи сервером
+## Task processing by the server
 
-``` mermaid
+```mermaid
 sequenceDiagram
   autonumber
-  Participant Storage
-  Participant Broker
-  Participant Worker
-  Participant TaskExecutor
-  Broker->>Storage: Новая задача
-  Broker->>Worker: Задача
-  Worker->>TaskExecutor: Выполнение задачи
-  Worker->>Storage: Результат
+  participant Storage
+  participant Broker
+  participant Worker
+  participant TaskExecutor
+
+  Broker->>Storage: Save new task
+  Broker->>Worker: Transfer task
+  Worker->>TaskExecutor: Execute task
+  TaskExecutor-->>Worker: Execution result
+  Worker->>Storage: Save result
 ```
 
-Этапы:
+This diagram reflects the actual process:
 
-1. Сначала задача сохраняется в Хранилище
-2. Затем задача отправляется в основную очередь Воркеров, и свободный
-Воркер(сабворкер) получает и работает с ней
-3. Воркер работает с функцией задачи через TaskExecutor и получает от него результат
-4. Результат сохраняется в Хранилище
+1. The task is saved in Storage.
+2. The broker transfers the task to the worker.
+3. Worker calls TaskExecutor — a replaceable task execution component.
+4. TaskExecutor executes the task function, calls middlewares_before/middlewares_after,
+handles errors and retries.
+5. The result is transferred to the worker and saved in Storage.
 
 ---
 
-## Создание задачи клиентом
+## Task creation by the client
 
-``` mermaid
+```mermaid
 sequenceDiagram
   autonumber
-  Participant (A)syncTask.add_task()
-  Participant QueueTasks.add_task()
-  Participant Broker
-  (A)syncTask.add_task()->>QueueTasks.add_task(): (Перенос логики)
-  QueueTasks.add_task()->>Broker: Новая задача
+  participant AT as (A)syncTask.add_task()
+  participant QT as QueueTasks.add_task()
+  participant Broker
+
+  AT->>QT: Preparing task parameters
+  QT->>Broker: Registering a new task
 ```
 
-Этапы:
+The process looks like this:
 
-1. Если используется (A)syncTask.add_task(), то он переносит данные на QueueTasks.add_task()
-2. Отправляет новую задачу Брокеру(а точнее его серверу)
+1. `(A)syncTask.add_task()` or `TaskCls().__call__().add_task()` prepares
+the parameters.
+2. Internally, everything is translated to `QueueTasks.add_task()`.
+3. The broker accepts the task and saves it via Storage.
 
 ---
 
-## Получение задачи клиентом
+## Receiving the task result by the client
 
-``` mermaid
+```mermaid
 sequenceDiagram
   autonumber
-  Participant (A)syncTask.add_task()
-  Participant (A)syncResult.result()
-  Participant QueueTasks.get()
-  Participant Storage
-  (A)syncTask.add_task()->>(A)syncResult.result(): (Перенос логики)
-  (A)syncResult.result()->>QueueTasks.get(): Запрос результата
-  QueueTasks.get()->>Storage: Запрос результата
-  Storage->>QueueTasks.get(): Получение результата
-  QueueTasks.get()->>(A)syncResult.result(): Возврат результата
+  participant AT as (A)syncTask.add_task()
+  participant AR as (A)syncResult.result()
+  participant QT as QueueTasks
+  participant Broker
+  participant Storage
+
+  AT->>AR: Create result object
+  AR->>QT: Request result
+  QT->>Broker: Proxy request
+  Broker->>Storage: Read result
+  Storage-->>Broker: Data
+  Broker-->>QT: Result
+  QT-->>AR: Return result
 ```
 
-Этапы:
+Steps:
 
-1. Если используется (A)syncTask.add_task(), то он переносит данные на (A)syncResult.result()
-2. Запрашиваем результат через связное ядро, в котором есть Хранилище
-3. Запрашиваем результат у Хранилища
-4. Получаем от Хранилища данные
-5. Возвращаем результат
+1. `(A)syncTask.add_task()` creates `(A)syncResult`.
+2. `(A)syncResult.result()` calls `QueueTasks`, which proxies the request.
+3. `QueueTasks.get()` is redirected to `Broker.get()`.
+4. Broker requests data from Storage.
+5. Storage returns the result.
+6. The result is sent back through Broker → QueueTasks → (A)syncResult.

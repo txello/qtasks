@@ -1,28 +1,31 @@
-# Установка
+# Installation
 
-`QTasks` можно установить как через PyPI, так и из исходного кода на GitHub.
-Поддерживаются различные брокеры сообщений, включая Redis (по умолчанию), RabbitMQ
-и Kafka.
+`QTasks` can be installed via PyPI or used directly from the source code.
+The framework does not restrict the choice of infrastructure and supports multiple
+message brokers.
+Redis is used by default.
 
-## Установка через PyPI
+## Installation via PyPI
 
-### Базовая установка (Redis по умолчанию)
+### Basic installation (Redis by default)
 
 ```bash
 pip install qtasks
 ```
 
-### Установка WebView (опциональный компонент для мониторинга)
+### WebView installation (optional)
+
+The `QTasks WebView` component provides a web interface for monitoring tasks.
 
 ```bash
 pip install qtasks_webview
 ```
 
-### Установка с поддержкой других брокеров
+### Installation with support for other brokers
 
 !!! info
-    Убедитесь, что соответствующий брокер сообщений установлен и настроен на вашем
-    сервере.
+    Before installing, make sure that the selected broker is deployed and accessible
+    to your application.
 
 #### RabbitMQ
 
@@ -33,12 +36,13 @@ pip install qtasks[rabbitmq]
 #### Kafka
 
 ```bash
-pip install qtasks[kafka]
+pip install qtasks [kafka]
 ```
 
-## Установка из исходного кода (GitHub)
+## Installation from source code (GitHub)
 
-Если вы хотите использовать последнюю версию из репозитория или внести изменения:
+Use the source repository if you need the latest version or if you
+plan to make changes:
 
 ```bash
 git clone https://github.com/txello/qtasks.git

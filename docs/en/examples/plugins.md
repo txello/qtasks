@@ -1,33 +1,35 @@
-# Пример: Плагины
+# Example: Plugins
 
-У `QTasks` существует система плагинов.
-Система строится на вызове **именных** и **глобальных** триггеров.
-Подробнее о триггерах указано в [Справочнике триггеров плагинов](../api/plugins/triggers.md).
+QTasks has a plugin system.
+The system is based on calling **named** and **global** triggers.
+For more information about triggers, see the [Plugin Trigger Reference](../api/plugins/triggers.md).
 
-Помимо основных триггеров также существует триггер на исключение внутри функции задачи.
-Название исключения: **`TaskPluginTriggerError`**.
-Его можно вызвать так:
+In addition to the main triggers, there is also an exception trigger inside the
+task function.
+Exception name: **`TaskPluginTriggerError`**.
+It can be called like this:
 
 ```python
-raise TaskPluginTriggerError("Это причина")
+raise TaskPluginTriggerError("This is the reason")
 ```
 
-или через контекст задачи:
+or via the task context:
 
 ```python
-self.ctx.plugin_error("Это причина")
+self.ctx.plugin_error("This is the reason")
 ```
 
 ---
 
-## ⚙️ Как работают триггеры?
+## ⚙️ How do triggers work?
 
-* Триггеры вызывают метод `trigger()` внутри плагина.
-* Вызов зависит от того, синхронный или асинхронный компонент инициировал событие.
+* Triggers call the `trigger()` method inside the plugin.
+* The call depends on whether a synchronous or asynchronous component initiated
+the event.
 
 ---
 
-## 📐 Абстрактный класс плагина (ABC)
+## 📐 Abstract plugin class (ABC)
 
 ````python
 """Base Plugin."""
@@ -59,9 +61,9 @@ class BasePlugin(ABC):
             Optional[str],
             Doc(
                 """
-                    Имя проекта. Это имя можно использовать для тегов для Плагинов.
+                    Project name. This name can be used for Plugin tags.
 
-                    По умолчанию: `None`.
+                    Default: `None`.
                     """
             ),
         ] = None,
@@ -71,23 +73,23 @@ class BasePlugin(ABC):
 
     @abstractmethod
     def trigger(self, name: str, *args, **kwargs) -> Union[Dict[str, Any], None]:
-        """Триггер плагина."""
+        """Plugin trigger."""
         pass
 
-    @abstractmethod
-    def start(self, *args, **kwargs):
-        """Запускает плагин."""
-        pass
+@abstractmethod
+def start(self, *args, **kwargs):
+"""Starts the plugin."""
+pass
 
-    @abstractmethod
-    def stop(self, *args, **kwargs):
-        """Останавливает плагин."""
+@abstractmethod
+def stop(self, *args, **kwargs):
+"""Stops the plugin."""
         pass
 ````
 
 ---
 
-## 🔧 Пример пользовательского плагина
+## 🔧 Example of a user plugin
 
 ```python
 from qtasks.plugins.base import BasePlugin
@@ -103,7 +105,7 @@ class TestPlugin(BasePlugin):
         return super().start(*args, **kwargs)
 
     async def stop(self, *args, **kwargs):
-        return super().stop(*args, **kwargs)
+    return super().stop(*args, **kwargs)
 
     async def trigger(self, name, **kwargs):
         handler = self.handlers.get(name)
@@ -118,11 +120,11 @@ class TestPlugin(BasePlugin):
 
 ---
 
-## ✅ Итоги
+## ✅ Summary
 
-* Система плагинов в `QTasks` основана на **триггерах**.
-* Плагины могут изменять аргументы, данные, модели и результат выполнения задач.
-* Исключения через `TaskPluginTriggerError` позволяют заменять результат задачи
-и/или завершать задачи с осмысленной причиной.
-* Гибкость системы позволяет подключать как встроенные плагины, так и плагины
-сторонних разработчиков.
+* The plugin system in `QTasks` is based on **triggers**.
+* Plugins can modify arguments, data, models, and task execution results.
+* Exceptions via `TaskPluginTriggerError` allow you to replace the task result
+and/or terminate tasks with a meaningful reason.
+* The flexibility of the system allows you to connect both built-in plugins and
+plugins from third-party developers.

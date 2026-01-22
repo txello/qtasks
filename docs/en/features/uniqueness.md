@@ -1,115 +1,169 @@
-# Уникальность QTasks
+# The uniqueness of QTasks
 
-QTasks — это не просто альтернатива Celery или RQ, а принципиально иная архитектура,
-ориентированная на гибкость, скорость и расширяемость. Вот ключевые особенности,
-которые отличают QTasks от других систем:
-
----
-
-## 🧬 Компонентная архитектура
-
-* Все элементы (Broker, Worker, Storage, Config, Router и др.) — заменяемы.
-* Компоненты можно полностью переписать под свои нужды без модификации ядра.
-* Расширения и сторонние имплементации легко внедряются через плагины.
-
-> 🆚 Celery: tightly coupled. QTasks: plug-n-play компоненты.
+QTasks is not just an alternative to Celery or RQ. It is a framework with a different
+approach to task queue architecture: flexible, modular, and expansion-oriented.
+Below are the key features that set it apart.
 
 ---
 
-## 🔁 Поддержка `yield` в задачах
+## 🧬 Component-based architecture
 
-* Позволяет строить потоковые пайплайны.
-* Возможность обрабатывать значения по мере генерации через `generate_handler`.
-* Результаты аккумулируются автоматически — удобно для стриминга и логирования.
+* All key elements (Broker, Worker, Storage, GlobalConfig, Starter,
+TaskExecutor, etc.) are fully replaceable.
+* Components can be rewritten for your own infrastructure without changing the core.
+* Extensions are connected via plugins and starters.
 
-> 🆚 Большинство фреймворков не поддерживает `yield` внутри задач.
-
----
-
-## 🧠 Echo и доступ к задаче через `self`
-
-* При `echo=True` задача получает доступ к себе (`self`) — как объекту `AsyncTask`
-или `SyncTask`.
-* Можно создавать вложенные задачи (`self.add_task()`), обращаться к логгеру, конфигу
-и другим частям через `self.ctx`.
-
-> 🆚 Обычно задача — это просто функция без доступа к инфраструктуре.
+> 🆚 **Celery:** monolithic bundle.
+> **QTasks:** independent components with a plug-and-play approach.
 
 ---
 
-## ⚙️ Встроенный контекст (ctx) задачи
+## 🔁 Support for `yield` in tasks
 
-* `self.ctx` предоставляет:
+Allows you to build step-by-step, streamlined scenarios.
 
-  * UUID задачи
-  * логгер
-  * доступ к Storage, Broker, Config
-  * метод `cancel()` для завершения задачи с пометкой CANCEL
+* Support for generators in tasks.
+* Processing of `yield` results via `generate_handler`.
+* The final `return` value is returned as a normal task result.
 
-> Это создаёт инфраструктуру, доступную прямо из тела задачи — без глобальных переменных.
+```python
+@app.task(generate_handler=handler)
+def task():
+    step = yield "INIT"
+    return step
+```
 
----
-
-## 🔗 State и Depends для управления зависимостями
-
-* Встроенная система управления состоянием задач.
-* Возможность передачи состояния и данных между задачами.
-* Использование контекстных менеджеров.
-
-> Это позволяет более удобно управлять состоянием и зависимостями.
+> 🆚 Most frameworks do not support generator-based tasks.
 
 ---
 
-## 🧩 Встроенная система плагинов и стартеров
+## 🧠 Echo and access to the task via `self`
 
-* Любой компонент может быть обёрнут или дополнен плагином.
-* Плагины можно загружать через конфигурацию или стартер.
-* Пример: логирование, трассировка, мониторинг — без вмешательства в ядро.
+When `echo=True` is enabled, the task becomes a `Task` (Async/Sync) object, which
+opens access to the infrastructure:
 
-> 🆚 В Celery такое возможно только через monkeypatch или middleware на уровне брокера.
+* `self.add_task()` — creating nested tasks
+* `self.ctx.get_logger()` — contextual logger
+* `self.ctx.cancel()` — terminating a task early
+* `self.ctx.get_task()` — getting another task by UUID
 
----
-
-## ⏱ Таймеры без внешних библиотек
-
-* Встроенная система `AsyncTimer` позволяет запускать задачи по cron/interval логике.
-* Используется `apscheduler`, но работает в связке с ядром QTasks напрямую.
-
-> 🆚 Celery требует Celery Beat и отдельный сервис.
+> 🆚 In other frameworks, a task is a simple function without a self context.
 
 ---
 
-## 🛠 Минимальные зависимости и лёгкий запуск
+## ⚙️ Execution context (ctx)
 
-* Работает без Redis и брокеров по умолчанию — можно использовать in-memory очередь.
-* Запуск: `python main.py` или `py -m qtasks -A file:app run`
-* Простота делает QTasks идеальным для микросервисов, скриптов и фрилансеров.
+The task context provides:
 
----
+* Task UUID
+* Access to Broker, Storage, GlobalConfig
+* metadata manipulation (`get_metadata()`)
+* safe sleep (`ctx.sleep()`)
+* task cancellation (`cancel()`)
 
-## 🚀 Высокая производительность
-
-* 0.6–0.7 секунд на задачу при использовании Redis (в сравнении с Celery: 1–3 сек).
-* Использование `asyncio.PriorityQueue`, `anyio.Semaphore` и оптимизированных обработчиков.
-
----
-
-## 🧪 Инфраструктура для тестирования
-
-* Возможность использовать in-memory компоненты.
-* Тестирование задач без запуска воркера.
-* Поддержка `pytest`, `unittest`, кастомного `AsyncTestCase`.
+This allows you to build complex scenarios without global variables and third-party
+singletons.
 
 ---
 
-## 💡 Адаптивность под уровень разработчика
+## 🔗 State and Depends
 
-* Junior: простота использования и регистрации задач.
-* Middle: плагины, middleware, TaskManager.
-* Senior: замена компонентов, трассировка, работа с памятью.
-* Lead: мониторинг, масштабирование, WebView, управление воркерами.
+### **State**
+
+Thread-safe storage of intermediate data between tasks.
+
+```python
+from qtasks.plugins import AsyncState
+
+class MyState(AsyncState):
+    pass
+
+@app.task
+def sample(state: MyState):
+    ...
+```
+
+### **Depends**
+
+Injecting dependencies into tasks:
+
+```python
+@app.task
+def job(data: int, db=Depends(connect_db, scope="worker")):
+    return db.save(data)
+```
+
+Scopes include:
+
+* task
+* worker
+* broker
+* storage
+* global_config
+
+> QTasks automatically creates and completes dependencies for the specified scope.
 
 ---
 
-QTasks — это не просто инструмент, а конструктор, который даёт разработчику контроль
-на любом уровне сложности.
+## 🧩 Plugins and starters
+
+* Plugins can be attached to any events (triggers) within the system.
+* You can extend the behavior of Worker, Broker, Storage, and TaskExecutor.
+* Starters manage the lifecycle of components and allow you to implement custom
+flow scenarios.
+
+> 🆚 Celery requires monkeypatching or deep modification.
+
+---
+
+## ⏱ Timers without a separate service
+
+The built-in `AsyncTimer` runs tasks on a schedule:
+
+* cron logic via `apscheduler`
+* integration with the application without a separate process such as Celery Beat
+
+---
+
+## 🛠 Minimal dependencies, easy to start
+
+* Can work without Redis and brokers — via in-memory queue.
+* Launch:
+
+```bash
+python main.py
+qtasks -A app:app run
+```
+
+* Simplicity allows QTasks to be used in microservices, automation, and freelance
+projects.
+
+---
+
+## 🚀 Performance
+
+* 0.6–0.7 seconds per task with Redis.
+* Asynchronous processing via `PriorityQueue` and `anyio.Semaphore`.
+* Low overhead even for large volumes of tasks.
+
+---
+
+## 🧪 Testing infrastructure
+
+* `SyncTestCase` and `AsyncTestCase` replace components for isolated testing.
+* Works without running a worker.
+* Supports `pytest`, `unittest`, `pytest-asyncio`.
+
+---
+
+## 💡 Suitable for any level of developer
+
+* **Junior:** simplicity of API
+* **Middle:** plugins, middleware, TaskManager
+* **Senior:** component replacement, context management, custom executors
+* **Lead:** monitoring, scaling, system architecture on QTasks
+
+---
+
+QTasks is a constructor that allows you to assemble a framework for your tasks:
+from a small script to a distributed service.

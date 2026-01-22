@@ -1,51 +1,71 @@
-# Начинаем работу с `QTasks`
+# Getting started with QTasks
 
-## Как за пару минут настроить и запустить первую задачу с помощью `QueueTasks`
+## Quick start: your first task in a couple of minutes
 
-### 1. Создание экземпляра приложения
+Below is a minimal example of setting up and running QTasks for synchronous tasks,
+as well as a brief guide on how to use the asynchronous version.
+
+### 1. Creating an application instance
 
 ```py
 from qtasks import QueueTasks
-# или для асинхронного варианта:
+# for the asynchronous version:
 # from qtasks.asyncio import QueueTasks
 
 app = QueueTasks()
 ```
 
 !!! info
-    По умолчанию в качестве брокера и хранилища используется Redis по адресу `redis://localhost:6379/0`.
+    By default, Redis at `redis://localhost:6379/0` is used as the broker and storage.
 
-### 2. Регистрация задач
+### 2. Registering tasks
 
-Задачи регистрируются через декоратор [`@app.task`](api/registries/sync_task_decorator.md).
+Tasks are registered using the [`@app.task`](api/registries/sync_task_decorator.md)
+decorator.
 
 ```py
-@app.task(name="mytest") # Обычная задача 
+@app.task(name=“mytest”)  # Regular task
 def mytest(text: str):
     print(text)
     return text
 
-@app.task(name="error_zero") # Задача с ошибкой
+
+@app.task(name=“error_zero”)  # Task with an error
 def error_zero():
-    result = 1/0
+    result = 1 / 0
     return
 ```
 
 !!! info
-    Если имя задачи уже не указано, будет использовано имя функции
+    If the task name is not explicitly specified (`name` parameter), the function
+    name is used.
 
 !!! tip
-    Имя задачи может быть любым, но должно быть уникальным в пределах приложения.
-    Если задача с таким именем уже существует, будет вызвано исключение
+    The task name can be anything, but it must be unique within the application.
+    If a task with that name already exists, an exception will be raised during
+    registration.
 
-### 3. Запускаем `QueueTasks`
+### 3. Running the task handler
+
+There are two ways to start the task handler.
+
+#### Option 1: via `run_forever()`
 
 ```py
-if __name__ == "__main__":
+if __name__ == “__main__”:
     app.run_forever()
 ```
 
-### 4. Полный пример
+#### Option 2: via CLI
+
+```bash
+qtasks -A app:app run
+```
+
+Where `app:app` is `module:variable`, i.e. the module with the application and
+the variable that stores the `QueueTasks` instance.
+
+### 4. Complete example of a file with tasks
 
 ```py
 # file: app.py
@@ -55,32 +75,92 @@ from qtasks import QueueTasks
 app = QueueTasks()
 
 
-@app.task(name="mytest") # Пример обычной задачи
+@app.task(name=“mytest”)  # Example of a normal task
 def mytest(text: str):
     print(text)
     return text
 
 
-@app.task(name="error_zero") # Пример задачи с ошибкой
+@app.task(name=“error_zero”)  # Example of a task with an error
 def error_zero():
-    result = 1/0
+    result = 1 / 0
     return
 
 
-if __name__ == "__main__":
+if __name__ == “__main__”:
     app.run_forever()
 ```
 
-### 5. Добавление задач в очередь
+### 5. Adding tasks to the queue
 
-После запуска обработчика задач, можно добавлять задачи из другого файла или
-интерпретатора Python:
+After starting the task handler, you can add tasks from another file or from the
+interactive Python interpreter:
 
 ```py
 # file: add_tasks.py
 from app import app, mytest
 
-app.add_task(task_name="mytest", "Тест")
-mytest.add_task("Тест")
-app.add_task(task_name="error_zero")
+# Adding a task by name via an application instance
+app.add_task(“mytest”, “Test”)
+
+# Calling via a registered task function
+mytest.add_task(“Test”)
+
+# Adding a task with a timeout (in seconds)
+mytest.add_task(“Test”, timeout=50)
+
+# Adding a task that will result in an error
+app.add_task(“error_zero”)
 ```
+
+The `add_task` method supports positional and named arguments (`*args`, `**kwargs`)
+that will be passed to the task function.
+
+### 6. Asynchronous option (briefly)
+
+The asynchronous option is configured similarly, but using
+`qtasks.asyncio.QueueTasks` and `async` functions:
+
+```py
+from qtasks.asyncio import QueueTasks
+
+
+app = QueueTasks()
+
+
+@app.task(name=“mytest_async”)
+async def mytest_async(text: str):
+    print(text)
+    return text
+
+
+if __name__ == “__main__”:
+    app.run_forever()
+```
+
+---
+
+More about asynchronous tasks, `AsyncTask`, and the execution context:
+
+<div class="result" markdown>
+  <div class="grid cards" markdown>
+
+- :fontawesome-solid-laptop-code:{ .lg .middle } __(A)syncTask__
+
+    ---
+
+    Learn more about converting @app.task
+
+    [:octicons-arrow-right-24: Task decorator](features/task.md)
+
+- :fontawesome-solid-plus:{ .lg .middle } __Task Context__
+
+    ---
+
+    Understand task execution context and its application
+
+    [:octicons-arrow-right-24: Task context](features/contexts.md)
+
+  </div>
+
+</div>

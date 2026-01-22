@@ -1,197 +1,203 @@
-# Примеры → Аналитика
+# Examples → Analytics
 
-Компонент [**(A)syncStats**](../api/stats/basestats.md) отвечает за сбор и
-форматированный вывод диагностической
-информации по приложению `QTasks` и его задачам.
-Он инициализируется экземпляром `QueueTasks` и предоставляет набор методов для интроспекции.
-Синхронная версия дополнительно интегрирована в CLI как команда `qtasks stats`.
+The [**(A)syncStats**](../api/stats/basestats.md) component is responsible for
+collecting and formatting diagnostic information
+about the `QTasks` application and its tasks.
+It is initialized by an instance of `QueueTasks` and provides a set of methods for
+introspection.
+The synchronous version is additionally integrated into the CLI as
+the `qtasks stats` command.
 
 ---
 
-## 🚀 Где это используется
+## 🚀 Where it is used
 
-* **Прямо из кода**: создаётся экземпляр [`(A)syncStats`](../api/stats/basestats.md)
-и вызываются методы анализа.
-* **Через CLI**: синхронная версия доступна как `qtasks stats`.
+* **Directly from the code**: an instance of [`(A)syncStats`](../api/stats/basestats.md)
+is created
+and analysis methods are called.
+* **Via CLI**: the synchronous version is available as `qtasks stats`.
 
-Пример команды (для ориентира):
+Command example (for reference):
 
 ```bash
 qtasks stats inspect tasks my_task json=true
 ```
 
-Эта команда выведет структуру с описанием задач (в JSON при `json=true`).
+This command will output a structure describing the tasks (in JSON when `json=true`).
 
 ---
 
 ## 🔎 `inspect()`
 
-Метод `inspect()` создаёт объект [**`InspectStats`**](../api/stats/inspect/inspect_stats.md),
-который содержит функции для
-детального осмотра:
+The `inspect()` method creates an [**`InspectStats`**] object (../api/stats/inspect/inspect_stats.md),
+which contains functions for
+detailed inspection:
 
-* `app(json: bool = False)` — информация о самом приложении
-* `task(task_name: str, json: bool = False)` — информация о конкретной задаче
-* `tasks(*tasks: Tuple[str], json: bool = False)` — сводка по нескольким задачам
-или по всем
+* `app(json: bool = False)` — information about the application itself
+* `task(task_name: str, json: bool = False)` — information about a specific task
+* `tasks(*tasks: Tuple[str], json: bool = False)` — summary of several tasks
+or all tasks
 
-Все эти функции поддерживают два формата вывода:
+All these functions support two output formats:
 
-* **Текстовый** (по умолчанию): выровненные колонки + разделители
-* **JSON** (`json=True`): сериализованная структура, удобная для парсинга и автоматизации
+* **Text** (default): aligned columns +
+* **JSON** (`json=True`): serialized structure, convenient for parsing and automation
 
 ---
 
-## 🧭 `app(json: bool = False)` — сводка по приложению
+## 🧭 `app(json: bool = False)` — summary for the application
 
-**Что выводится в текстовом режиме:**
+**What is output in text mode:**
 
-* Имя приложения
-* Метод запуска
-* Версия `QTasks`
-* Текущая конфигурация (как строка)
-* Количество зарегистрированных задач и роутеров
-* Общее количество подключённых плагинов (суммируется по ядру, брокеру, воркеру,
-стартеру, сториджу и глобальной конфигурации)
-* Количество зарегистрированных инициализаций (событий `on`)
-* Классы задействованных компонентов: Брокер, Воркер, Стартер (или `—`), Хранилище,
-GlobalConfig (или `—`), Логер
+* Application name
+* Launch method
+* `QTasks` version
+* Current configuration (as a string)
+* Number of registered tasks and routers
+* Total number of connected plugins (summed by kernel, broker, worker,
+starter, storage, and global configuration)
+* Number of registered initializations (`on` events)
+* Classes of components involved: Broker, Worker, Starter (or `—`), Storage,
+GlobalConfig (or `—`), Logger
 
-Формат — блочный, с выравниванием меток по ширине и горизонтальной линией-разделителем.
-Пример формы (данные условные):
+Format — block, with labels aligned by width and a horizontal separator line.
+Example form (data is conditional):
 
 ```text
-Имя                       : QueueTasks
-Метод                     : async
-Версия                    : 1.6.0
-Конфигурация              : QueueConfig(max_tasks_process=10,
+Name: QueueTasks
+Method: async
+Version: 1.6.0
+Configuration: QueueConfig(max_tasks_process=10,
 running_older_tasks=True, delete_finished_tasks=True, default_task_priority=0,
 logs_default_level_server=20, logs_default_level_client=20,
 logs_format='%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s',
 result_time_interval=0.1, result_statuses_end=['success', 'error', 'cancel'])
-Количество задач          : 14
-Количество роутеров       : 1
-Количество плагинов       : 3
-Количество инициализаций  : 0
-Брокер                    : AsyncRedisBroker
-Воркер                    : AsyncWorker
-Стартер                   : —
-Хранилище                 : AsyncRedisStorage
-GlobalConfig              : AsyncRedisGlobalConfig
-Лог                       : Logger
+Number of tasks: 14
+Number of routers: 1
+Number of plugins: 3
+Number of initializations: 0
+Broker: AsyncRedisBroker
+Worker: AsyncWorker
+Starter: —
+Storage: AsyncRedisStorage
+GlobalConfig: AsyncRedisGlobalConfig
+Log: Logger
 --------------------------------------------------
 ```
 
-**При `json=True`** возвращается JSON-объект с теми же ключами и значениями.
+**When `json=True`**, a JSON object with the same keys and values is returned.
 
 ---
 
-## 🧩 `task(task_name, json: bool = False)` — детально о задаче
+## 🧩 `task(task_name, json: bool = False)` — detailed information about the task
 
-**Что выводится в текстовом режиме:** один блок по задаче с полями:
+**What is displayed in text mode:** one block per task with the following fields:
 
-* Имя задачи
-* Приоритет
-* Описание (или `—`)
-* Теги (списком через запятую или `—`)
-* Асинхронность (флаг «awaiting»)
-* Генерация (`yield`-режим, флаг «generating»)
-* «Self перед задачей» (`echo`)
-* Сигнатура аргументов: `Args` (позиционные) и `Kwargs` (ключевые с дефолтами)
+* Task name
+* Priority
+* Description (or `—`)
+* Tags (comma-separated list or `—`)
+* Asynchronous (flag "awaiting")
+* Generation (`yield` mode, flag "generating")
+* "Self before task" (`echo`)
+* Argument signature: `Args` (positional) and `Kwargs` (keywords with defaults)
 
-**Условные поля, если заданы в задаче:**
+**Conditional fields, if specified in the task:**
 
-* `Повторов` (retry)
-* `Искл. для повторов` (`retry_on_exc`, красиво форматируется)
-* `Декодирование` (`decode`)
-* `Генератор` (`generate_handler`)
-* `Исполнитель` (`executor`)
-* `Мидлвари до` / `Мидлвари после`
-* `Дополнительно` — многострочный раздел, где каждая пара ключ-значение выводится
-отдельной строкой с маркером `*`
+* `Retries` (retry)
+* `Exclude for retries` (`retry_on_exc`, nicely formatted)
+* `Decoding` (`decode`)
+* `Generator` (`generate_handler`)
+* `Executor` (`executor`)
+* `Middleware before` / `Middleware after`
+* `Additional` — a multi-line section where each key-value pair is output
+on a separate line with the marker `*`
 
-**Пример формы (данные условные):**
+**Example form (data is conditional):**
 
 ```text
-Имя задачи              : send_email
-Приоритет               : 0
-Описание                : Рассылка писем
-Теги                    : email, marketing
-Асинхронность           : True
-Генерация               : False
-Self перед задачей      : False
-Args                    : recipient: str, subject: str
-Kwargs                  : retries: int=3, timeout: int=30
-Повторов                : 3
-Искл. для повторов      : [<class 'KeyError'>]
-Мидлвари до             : [<class 'AuthMiddleware'>]
-Мидлвари после          : [<class 'MetricsMiddleware'>]
-Дополнительно           :
- * concurrency: 5
- * queue: high
+Task name: send_email
+Priority: 0
+Description: Mailing list
+Tags: email, marketing
+Asynchronous: True
+Generation: False
+Self before task: False
+Args: recipient: str, subject: str
+Kwargs: retries: int=3, timeout: int=30
+Retries: 3
+Exceptions for retries: [<class 'KeyError'>]
+Middleware before: [<class 'AuthMiddleware'>]
+Middleware after: [<class 'MetricsMiddleware'>]
+Additional:
+* concurrency: 5
+* queue: high
 --------------------------------------------------
-```
 
-**При `json=True`** возвращается объект с теми же данными (ключи соответствуют
-меткам выше).
+**When `json=True`**, an object with the same data is returned (keys correspond
+to the labels above).
 
-Если задача не найдена — выводится соответствующее диагностическое сообщение (текст),
-а при `json=True` — пустая структура или описательная ошибка (в зависимости от
-реализации CLI/обёртки).
+
+If the task is not found, a corresponding diagnostic message (text) is displayed,
+and when `json=True`, an empty structure or a descriptive error is displayed
+(depending on the CLI/wrapper implementation).
+
 
 ---
 
-## 📚 `tasks(*tasks, json: bool = False)` — несколько или все задачи
+---
 
-Поведение аналогично `task(...)`, но для набора задач:
+## 📚 `tasks(*tasks, json: bool = False)` — several or all tasks
 
-* Если имена задач переданы — выводятся только они, в порядке перечисления
-* Если ничего не передано — выводится **весь реестр** задач
-* Блоки задач следуют друг за другом, разделены линией `--------------------------------------------------`
+The behavior is similar to `task(...)`, but for a set of tasks:
 
-**Пример формы (условные данные):**
+* If task names are passed, only they are displayed, in the order listed
+* If nothing is passed — **the entire registry** of tasks is displayed
+* Task blocks follow each other, separated by the line.
+
+**Example form (conditional data):**
 
 ```text
-Имя задачи              : ping
-Приоритет               : 0
-Описание                : —
-Теги                    : —
-Асинхронность           : True
-Генерация               : False
-Self перед задачей      : False
-Args                    : host: str
-Kwargs                  : timeout: int=5
+Task name: ping
+Priority: 0
+Description: —
+Tags: —
+Asynchronous: True
+Generation: False
+Self before task: False
+Args: host: str
+Kwargs: timeout: int=5
 --------------------------------------------------
-Имя задачи              : report_daily
-Приоритет               : 1
-Описание                : Ежедневный отчёт
-Теги                    : analytics
-Асинхронность           : False
-Генерация               : False
-Self перед задачей      : False
-Args                    : date: datetime.date
-Kwargs                  : format: str=pdf
---------------------------------------------------
+Task name: report_daily
+Priority: 1
+Description: Daily report
+Tags: analytics
+Asynchronous: False
+Generation: False
+Self before task: False
+Args: date: datetime.date
+Kwargs: format: str=pdf
+----------------------- ---------------------------
 ```
 
-**При `json=True`** возвращается список JSON-объектов — по одному на каждую задачу
-в выборке.
+**When `json=True`**, a list of JSON objects is returned — one for each task
+in the sample.
 
 ---
 
-## 🧱 Форматирование и удобство чтения
+## 🧱 Formatting and readability
 
-Текстовый вывод выравнивает метки по фиксированной ширине (через внутренний `label_width`),
-поэтому таблицы выглядят аккуратно в терминале и логах. Разделители `-` используются
-для визуального отделения блоков.
+The text output aligns labels to a fixed width (via the internal `label_width`),
+so tables look neat in the terminal and logs. `-` separators are used
+to visually separate blocks.
 
 ---
 
-## ✅ Что это даёт на практике
+## ✅ What this means in practice
 
-* Быстрый аудит конфигурации приложения и окружения компонентов
-* Полная видимость по каждой задаче: от сигнатуры аргументов до middleware и дополнительных
-опций
-* Универсальный JSON-формат для интеграции с наблюдением, алертингом и дашбордами
+* Quick audit of application configuration and component environment
+* Full visibility for each task: from argument signatures to middleware and additional
+options
+* Universal JSON format for integration with monitoring, alerting, and dashboards
 
-Эта аналитика полезна в проде, на CI и в отладке локально — одинаково.
+This analytics is useful in production, CI, and local debugging alike.

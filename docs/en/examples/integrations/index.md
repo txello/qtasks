@@ -1,13 +1,14 @@
-# Интеграции
+# Integrations
 
-По умолчанию `QTasks` является очень простой для интеграции системой за счёт своей
-облегчённой работы с памятью и потоками.
-Её можно встроить практически в любой фреймворк, и для этого доступны разные способы:
+By default, `QTasks` is very easy to integrate into a system due to its
+lightweight memory and threading.
+It can be integrated into almost any framework, and there are several ways to
+do this:
 
-* Создание задач через `@app.task`, `@shared_task`, `@router.task`
-* Вызов задачи через `app.add_task(...)` или `this_is_func.add_task(...)`
-* Запуск приложения фреймворка как сервера через `app.run_forever()`,
-либо через CLI:
+* Creating tasks via `@app.task`, `@shared_task`, `@router.task`
+* Calling a task via `app.add_task(...)` or `this_is_func.add_task(...)`
+* Running the framework application as a server via `app.run_forever()`,
+or via CLI:
 
 ```bash
 qtasks -A file:app run
@@ -15,7 +16,7 @@ qtasks -A file:app run
 
 ---
 
-## 📌 Текущие интеграции
+## 📌 Current integrations
 
-На данный момент существует готовая интеграция: **с Django**.
-Подробнее см. раздел [Примеры → Интеграции → Django](./django.md).
+Currently, there is a ready-made integration: **with Django**.
+For more details, see the section [Examples → Integrations → Django](./django.md).

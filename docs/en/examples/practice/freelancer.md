@@ -1,26 +1,26 @@
-# Пример использования QTasks для фрилансера
+# Example of using QTasks for freelancers
 
-Фреймворк QTasks отлично подходит для фрилансеров, которым важно быстро автоматизировать
-задачи, обрабатывать события из внешних API и управлять потоками данных. Ниже
-представлен пример, как фрилансер может использовать QTasks для создания
-системы уведомлений и интеграций.
-
----
-
-## 💼 Сценарий
-
-Допустим, вы фрилансер, создающий Telegram-бота для клиента. Бот должен:
-
-1. Отправлять напоминания по расписанию.
-2. Проверять статусы заказов с API клиента.
-3. Логировать события и ошибки.
-
-Вы хотите обрабатывать эти задачи независимо и в фоне, без зависимостей от
-тяжёлых решений вроде Celery.
+The QTasks framework is ideal for freelancers who need to quickly automate
+tasks, process events from external APIs, and manage data flows. Below
+is an example of how a freelancer can use QTasks to create a notification and
+integration system.
 
 ---
 
-## 🚀 Настройка приложения
+## 💼 Scenario
+
+Let's say you are a freelancer creating a Telegram bot for a client. The bot must:
+
+1. Send reminders on a schedule.
+2. Check order statuses with the client's API.
+3. Log events and errors.
+
+You want to process these tasks independently and in the background, without
+relying on heavy solutions like Celery.
+
+---
+
+## 🚀 Application setup
 
 ```python
 from qtasks.asyncio import QueueTasks
@@ -33,7 +33,7 @@ app.config.logs_default_level = logging.INFO
 
 ---
 
-## ⏰ Напоминания по времени
+## ⏰ Time-based reminders
 
 ```python
 @app.task(name="send_reminder")
@@ -41,27 +41,26 @@ async def send_reminder(chat_id: int, text: str):
     await telegram_api.send_message(chat_id, text)
 ```
 
-Можно запускать эту задачу по расписанию с помощью встроенной системы таймеров:
+You can run this task on a schedule using the built-in timer system:
 
 ```python
 from qtasks.timers import AsyncTimer
 from apscheduler.triggers.cron import CronTrigger
 
-# Предположим, что app уже инициализирован
+# Let's assume that app is already initialized
 
 timer = AsyncTimer(app=app)
 timer.add_task("send_reminder", trigger=CronTrigger(minute="*/1"),
-args=(123456789, "Не забудьте про заказ!"))
+args=(123456789, "Don't forget about your order!"))
 
 timer.run_forever()
 ```
 
 ---
 
-## 📦 Проверка заказов
+## 📦 Checking orders
 
 ```python
-@app.task(name="check_orders", echo=True)
 async def check_orders(self: AsyncTask):
     orders = await external_api.get_orders()
     for order in orders:
@@ -69,13 +68,13 @@ async def check_orders(self: AsyncTask):
             await self.add_task(
                 "send_reminder",
                 order.user_id,
-                "Ваш заказ доставлен!"
+                "Your order has been delivered!"
             )
 ```
 
 ---
 
-## 📋 Логирование ошибок
+## 📋 Error logging
 
 ```python
 @app.task(name="error_logger")
@@ -84,7 +83,7 @@ def error_logger(message: str):
         f.write(message + "\n")
 ```
 
-Во всех задачах можно использовать:
+You can use this in all tasks:
 
 ```python
 try:
@@ -95,16 +94,16 @@ except Exception as e:
 
 ---
 
-## 🧩 Почему QTasks удобен для фрилансера?
+## 🧩 Why is QTasks useful for freelancers?
 
-* Не требует Redis или RabbitMQ по умолчанию.
-* Можно запускать через `python main.py`, без докеров и миграций.
-* Гибкость: можно добавлять retry, middleware, кастомные executor'ы.
-* Поддержка `yield`, `echo`, вложенных задач и логирования.
+* Does not require Redis or RabbitMQ by default.
+* Can be run via `python main.py`, without dockers or migrations.
+* Flexibility: you can add retry, middleware, custom executors.
+* Supports `yield`, `echo`, nested tasks, and logging.
 
 ---
 
-## ✅ Результат
+## ✅ Result
 
-Вы получаете мощную систему фоновых задач с минимальным кодом и зависимостями.
-Идеально подходит для микросервисов, ботов и API-интеграций — типичной среды фрилансера.
+You get a powerful background task system with minimal code and dependencies.
+Ideal for microservices, bots, and API integrations — the typical freelancer environment.

@@ -137,9 +137,154 @@ plugins:
           name: English
           build: true
           default: true
+
         - locale: ru
           name: Русский
           build: true
+        
+          nav:
+            - QueueTasks:
+                - QueueTasks: index.md
+                - Установка: install.md
+                - Первые шаги: getting_started.md
+                - Компоненты: components.md
+                - Схемы: schemas.md
+                - Работа с консолью: console.md
+                - Тестирование: tests.md
+                - Что дальше?: next.md
+
+            - Возможности:
+                - Общее: features/index.md
+                - Уникальность: features/uniqueness.md
+                - (A)syncTask - Декоратор задачи: features/task.md
+                - Contexts - Контексты задач: features/contexts.md
+                - yield - Генераторы в задачах: features/yield.md
+                - Pydantic - Моделирование данных: features/pydantic.md
+                - Depends - Управляемые зависимости: features/depends.md
+                - States - Машины состояния данных: features/states.md
+                - Timer - Планировщик задач: features/timer.md
+                - Stats - Встроенная аналитика: features/stats.md
+
+            - Архитектура:
+              - Главная: architecture/index.md
+              - Выполнение задач: architecture/task_flow.md
+              - Схема компонентов:
+                - Главная: architecture/components/index.md
+                - Абстрактные классы: architecture/components/abstract_classes.md
+                - Схемы данных: architecture/components/schemas.md
+                - Потоки и асинхронность: architecture/components/threads_async.md
+                - Плагинная система: architecture/components/plugin_system.md
+              - Интеграция с библиотеками:
+                - Главная: architecture/integrations/index.md
+                - Django: architecture/integrations/django.md
+              - Конфигурация: architecture/configuration.md
+              - Расширяемость: architecture/extensibility.md
+
+            - Примеры:
+              - Примеры: examples/index.md
+              - Возможности: examples/features.md
+              - Генераторы: examples/yield.md
+              - Контексты: examples/echo.md
+              - Переменные: examples/variables.md
+              - Плагины: examples/plugins.md
+              - Интеграция с другими библиотеками:
+                - Общее: examples/integrations/index.md
+                - Django: examples/integrations/django.md
+              - Аналитика: examples/analytics.md
+              - Практика:
+                - Фрилансер: examples/practice/freelancer.md
+                - Малый бизнес: examples/practice/small_business.md
+                - Крупный бизнес: examples/practice/large_business.md
+
+            - API:
+                - Триггеры плагинов:
+                  - Триггеры: api/plugins/triggers.md
+                  - Ошибки: api/plugins/errors.md
+                - Поддержка библиотек:
+                  - Django: api/libraries/django.md
+                - QueueTasks: api/queuetasks.md
+                - Asyncio:
+                  - QueueTasks: api/asyncio/queuetasks.md
+                - Роутер: api/router.md
+                - Брокеры:
+                  - BaseBroker - Пишем свой брокер: api/brokers/basebroker.md
+                  - SyncRedisBroker: api/brokers/sync_redisbroker.md
+                  - AsyncRedisBroker: api/brokers/async_redisbroker.md
+                  - SyncRabbitMQBroker: api/brokers/sync_rabbitmqbroker.md
+                  - AsyncRabbitMQBroker: api/brokers/async_rabbitmqbroker.md
+                  - SyncKafkaBroker: api/brokers/sync_kafkabroker.md
+                  - AsyncKafkaBroker: api/brokers/async_kafkabroker.md
+                  - SyncSocketBroker: api/brokers/sync_socket.md
+                  - AsyncSocketBroker: api/brokers/async_socket.md
+                - Воркеры:
+                  - BaseWorker - Пишем свой воркер: api/workers/baseworker.md
+                  - SyncThreadWorker: api/workers/sync_threadworker.md
+                  - AsyncWorker: api/workers/async_worker.md
+                - Хранилища:
+                  - BaseStorage - Пишем своё хранилище: api/storages/basestorage.md
+                  - SyncRedisStorage: api/storages/sync_redisstorage.md
+                  - AsyncRedisStorage: api/storages/async_redisstorage.md
+                - Глобальные конфиги:
+                  - BaseGlobalConfig - Пишем свой глобальный конфиг: api/globalconfig/baseglobalconfig.md
+                  - SyncRedisGlobalConfig: api/globalconfig/sync_redisglobalconfig.md
+                  - AsyncRedisGlobalConfig: api/globalconfig/async_redisglobalconfig.md
+                - Стартеры:
+                  - BaseStarter - Пишем свой запуск: api/starters/basestarter.md
+                  - SyncStarter: api/starters/sync_starter.md
+                  - AsyncStarter: api/starters/async_starter.md
+                - Ожидание результата:
+                  - SyncResult: api/results/sync_result.md
+                  - AsyncResult: api/results/async_result.md
+                - Модели:
+                  - Task: api/models/task.md
+                - Схемы:
+                  - QueueConfig: api/schemas/queueconfig.md
+                  - TaskStatus: api/schemas/task_status.md
+                  - TaskExec: api/schemas/task_exec.md
+                  - Inits: api/schemas/inits.md
+                  - GlobalConfig: api/schemas/global_config.md
+                  - TestConfig: api/schemas/test_config.md
+                  - TaskStatusEnum: api/schemas/task_status_enum.md
+                - Декораторы:
+                  - SyncTask: api/registries/sync_task_decorator.md
+                  - AsyncTask: api/registries/async_task_decorator.md
+                - Контексты:
+                  - SyncContext: api/contexts/sync_context.md
+                  - AsyncContext: api/contexts/async_context.md
+                - Исполнители задач:
+                  - BaseTaskExecutor - Пишем свой исполнитель задач: api/executors/basetask_executor.md
+                  - SyncTaskExecutor: api/executors/sync_task_executor.md
+                  - AsyncTaskExecutor: api/executors/async_task_executor.md
+                - Мидлвари:
+                  - BaseMiddleware - Пишем свой мидлварь: api/middlewares/basemiddleware.md
+                  - TaskMiddleware: api/middlewares/task_middleware.md
+                - Глобальные переменные: api/states.md
+                - Тестирование:
+                  - BaseTestCase - Пишем свой кейс тестирования: api/tests/basetests.md
+                  - SyncTestCase: api/tests/sync_testcase.md
+                  - AsyncTestCase: api/tests/async_testcase.md
+                - Логирование: api/logs.md
+                - Классы:
+                  - SyncRedisCommandQueue: api/classes/sync_redis_commands.md
+                  - AsyncRedisCommandQueue: api/classes/async_redis_commands.md
+                  - BaseQueueTasks: api/classes/baseqtasks.md
+                - Timer:
+                  - BaseTimer - Пишем свой Таймер: api/timers/basetimer.md
+                  - SyncTimer: api/timers/sync_timer.md
+                  - AsyncTimer: api/timers/async_timer.md
+                - Аналитика:
+                  - BaseStats - Пишем свою аналитику: api/stats/basestats.md
+                  - AsyncStats - Пишем свою аналитику: api/stats/async_stats.md
+                  - SyncStats - Пишем свою аналитику: api/stats/sync_stats.md
+                  - Inspect:
+                    - UtilsInspectStats: api/stats/inspect/utils_inspect_stats.md
+                    - InspectStats: api/stats/inspect/inspect_stats.md
+                - WebView: api/webview.md
+                - Исключения: api/exceptions.md
+            - История изменений: changelog.md
+            - Блог: blog.md
+            # - О проекте: about.md
+
 
 extra_javascript:
   - https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js
@@ -147,120 +292,145 @@ extra_javascript:
 
 nav:
   - QueueTasks:
-      - QueueTasks: index.md
-      - Установка: install.md
-      - Первые шаги: getting_started.md
-      - Компоненты: components.md
-      - Схемы: schemas.md
-      - Работа с консолью: console.md
-      - Тестирование: tests.md
-      - Что дальше?: next.md
-  - Возможности:
-      - Общее: features/features.md
-      - Уникальность: features/uniqueness.md
-  - Примеры:
-    - Примеры: examples/examples.md
-    - Возможности: examples/features.md
-    - Генераторы: examples/yield.md
-    - Контексты: examples/echo.md
-    - Переменные: examples/variables.md
-    - Плагины: examples/plugins.md
-    - Интеграция с другими библиотеками:
-      - Общее: examples/integrations/index.md
+    - QueueTasks: index.md
+    - Installation: install.md
+    - Getting started: getting_started.md
+    - Components: components.md
+    - Schemas: schemas.md
+    - Working with the console: console.md
+    - Testing: tests.md
+    - What's next?: next.md
+
+  - Features:
+    - Features: features/index.md
+    - Uniqueness: features/uniqueness.md
+    - (A)syncTask - Task decorator: features/task.md
+    - Contexts - Task contexts: features/contexts.md
+    - yield - Generators in tasks: features/yield.md
+    - Pydantic - Data modeling: features/pydantic.md
+    - Depends - Managed dependencies: features/depends.md
+    - States - Data state machines: features/states.md
+    - Timer - Task scheduler: features/timer.md
+    - Stats - Built-in analytics: features/stats.md
+
+  - Architecture:
+    - Architecture: architecture/index.md
+    - Task execution: architecture/task_flow.md
+    - Components:
+      - Components: architecture/components/index.md
+      - Abstract classes: architecture/components/abstract_classes.md
+      - Data schemas: architecture/components/schemas.md
+      - Threads and asynchrony: architecture/components/threads_async.md
+      - Plugin system: architecture/components/plugin_system.md
+    - Integrations:
+      - Integrations: architecture/integrations/index.md
+      - Django: architecture/integrations/django.md
+      - Configuration: architecture/configuration.md
+    - Extensibility: architecture/extensibility.md
+
+  - Examples:
+    - Examples: examples/index.md
+    - Features: examples/features.md
+    - Generators: examples/yield.md
+    - Contexts: examples/echo.md
+    - Variables: examples/variables.md
+    - Plugins: examples/plugins.md
+    - Integration with other libraries:
+      - General: examples/integrations/index.md
       - Django: examples/integrations/django.md
-    - Аналитика: examples/analytics.md
-    - Практика:
-      - Фрилансер: examples/practice/freelancer.md
-      - Малый бизнес: examples/practice/small_business.md
-      - Крупный бизнес: examples/practice/large_business.md
+    - Analytics: examples/analytics.md
+    - Practice:
+      - Freelancer: examples/practice/freelancer.md
+      - Small business: examples/practice/small_business.md
+      - Large business: examples/practice/large_business.md
   - API:
-      - Триггеры плагинов:
-        - Триггеры: api/plugins/triggers.md
-        - Ошибки: api/plugins/errors.md
-      - Поддержка библиотек:
-        - Django: api/libraries/django.md
-      - QueueTasks: api/queuetasks.md
-      - Asyncio:
-        - QueueTasks: api/asyncio/queuetasks.md
-      - Роутер: api/router.md
-      - Брокеры:
-        - BaseBroker - Пишем свой брокер: api/brokers/basebroker.md
-        - SyncRedisBroker: api/brokers/sync_redisbroker.md
-        - AsyncRedisBroker: api/brokers/async_redisbroker.md
-        - SyncRabbitMQBroker: api/brokers/sync_rabbitmqbroker.md
-        - AsyncRabbitMQBroker: api/brokers/async_rabbitmqbroker.md
-        - SyncKafkaBroker: api/brokers/sync_kafkabroker.md
-        - AsyncKafkaBroker: api/brokers/async_kafkabroker.md
-        - SyncSocketBroker: api/brokers/sync_socket.md
-        - AsyncSocketBroker: api/brokers/async_socket.md
-      - Воркеры:
-        - BaseWorker - Пишем свой воркер: api/workers/baseworker.md
-        - SyncThreadWorker: api/workers/sync_threadworker.md
-        - AsyncWorker: api/workers/async_worker.md
-      - Хранилища:
-        - BaseStorage - Пишем своё хранилище: api/storages/basestorage.md
-        - SyncRedisStorage: api/storages/sync_redisstorage.md
-        - AsyncRedisStorage: api/storages/async_redisstorage.md
-      - Глобальные конфиги:
-        - BaseGlobalConfig - Пишем свой глобальный конфиг: api/globalconfig/baseglobalconfig.md
-        - SyncRedisGlobalConfig: api/globalconfig/sync_redisglobalconfig.md
-        - AsyncRedisGlobalConfig: api/globalconfig/async_redisglobalconfig.md
-      - Стартеры:
-        - BaseStarter - Пишем свой запуск: api/starters/basestarter.md
-        - SyncStarter: api/starters/sync_starter.md
-        - AsyncStarter: api/starters/async_starter.md
-      - Ожидание результата:
-        - SyncResult: api/results/sync_result.md
-        - AsyncResult: api/results/async_result.md
-      - Модели:
-        - Task: api/models/task.md
-      - Схемы:
-        - QueueConfig: api/schemas/queueconfig.md
-        - TaskStatus: api/schemas/task_status.md
-        - TaskExec: api/schemas/task_exec.md
-        - Inits: api/schemas/inits.md
-        - GlobalConfig: api/schemas/global_config.md
-        - TestConfig: api/schemas/test_config.md
-        - TaskStatusEnum: api/schemas/task_status_enum.md
-      - Декораторы:
-        - SyncTask: api/registries/sync_task_decorator.md
-        - AsyncTask: api/registries/async_task_decorator.md
-      - Контексты:
-        - SyncContext: api/contexts/sync_context.md
-        - AsyncContext: api/contexts/async_context.md
-      - Исполнители задач:
-        - BaseTaskExecutor - Пишем свой исполнитель задач: api/executors/basetask_executor.md
-        - SyncTaskExecutor: api/executors/sync_task_executor.md
-        - AsyncTaskExecutor: api/executors/async_task_executor.md
-      - Мидлвари:
-        - BaseMiddleware - Пишем свой мидлварь: api/middlewares/basemiddleware.md
-        - TaskMiddleware: api/middlewares/task_middleware.md
-      - Глобальные переменные: api/states.md
-      - Тестирование:
-        - BaseTestCase - Пишем свой кейс тестирования: api/tests/basetests.md
-        - SyncTestCase: api/tests/sync_testcase.md
-        - AsyncTestCase: api/tests/async_testcase.md
-      - Логирование: api/logs.md
-      - Классы:
-        - SyncRedisCommandQueue: api/classes/sync_redis_commands.md
-        - AsyncRedisCommandQueue: api/classes/async_redis_commands.md
-        - BaseQueueTasks: api/classes/baseqtasks.md
-      - Timer:
-        - BaseTimer - Пишем свой Таймер: api/timers/basetimer.md
-        - SyncTimer: api/timers/sync_timer.md
-        - AsyncTimer: api/timers/async_timer.md
-      - Аналитика:
-        - BaseStats - Пишем свою аналитику: api/stats/basestats.md
-        - AsyncStats - Пишем свою аналитику: api/stats/async_stats.md
-        - SyncStats - Пишем свою аналитику: api/stats/sync_stats.md
-        - Inspect:
-          - UtilsInspectStats: api/stats/inspect/utils_inspect_stats.md
-          - InspectStats: api/stats/inspect/inspect_stats.md
-      - WebView: api/webview.md
-      - Исключения: api/exceptions.md
-  - История изменений: changelog.md
-  - Блог: blog.md
-  #- О проекте: about.md
+    - Plugin triggers:
+      - Triggers: api/plugins/triggers.md
+      - Errors: api/plugins/errors.md
+    - Library support:
+      - Django: api/libraries/django.md
+    - QueueTasks: api/queuetasks.md
+    - Asyncio:
+      - QueueTasks: api/asyncio/queuetasks.md
+    - Router: api/router.md
+    - Brokers:
+      - BaseBroker - Writing your own broker: api/brokers/basebroker.md
+      - SyncRedisBroker: api/brokers/sync_redisbroker.md
+      - AsyncRedisBroker: api/brokers/async_redisbroker.md
+      - SyncRabbitMQBroker: api/brokers/sync_rabbitmqbroker.md
+      - AsyncRabbitMQBroker: api/brokers/async_rabbitmqbroker.md
+    - SyncKafkaBroker: api/brokers/sync_kafkabroker.md
+    - AsyncKafkaBroker: api/brokers/async_kafkabroker.md
+    - SyncSocketBroker: api/brokers/sync_socket.md
+    - AsyncSocketBroker: api/brokers/async_socket.md
+    - Workers:
+      - BaseWorker - Writing your own worker: api/workers/baseworker.md
+      - SyncThreadWorker: api/workers/sync_threadworker.md
+      - AsyncWorker: api/workers/async_worker.md
+    - Storage:
+      - BaseStorage - Write your own storage: api/storages/basestorage.md
+      - SyncRedisStorage: api/storages/sync_redisstorage.md
+      - AsyncRedisStorage: api/storages/async_redisstorage.md
+    - GlobalConfig:
+      - BaseGlobalConfig - Write your own global configuration: api/globalconfig/baseglobalconfig.md
+      - SyncRedisGlobalConfig: api/globalconfig/sync_redisglobalconfig.md
+      - AsyncRedisGlobalConfig: api/globalconfig/async_redisglobalconfig.md
+    - Starters:
+      - BaseStarter - Write your own startup: api/starters/basestarter.md
+      - SyncStarter: api/starters/sync_starter.md
+      - AsyncStarter: api/starters/async_starter.md
+    - Results:
+      - SyncResult: api/results/sync_result.md
+      - AsyncResult: api/results/async_result.md
+    - Models:
+      - Task: api/models/task.md
+    - Schemas:
+      - QueueConfig: api/schemas/queueconfig.md
+      - TaskStatus: api/schemas/task_status.md
+      - TaskExec: api/schemas/task_exec.md
+      - Inits: api/schemas/inits.md
+      - GlobalConfig: api/schemas/global_config.md
+      - TestConfig: api/schemas/test_config.md
+      - TaskStatusEnum: api/schemas/task_status_enum.md
+    - Decorators:
+      - SyncTask: api/registries/sync_task_decorator.md
+      - AsyncTask: api/registries/async_task_decorator.md
+    - Contexts:
+      - SyncContext: api/contexts/sync_context.md
+      - AsyncContext: api/contexts/async_context.md
+    - Task executors:
+      - BaseTaskExecutor - Writing your own task executor: api/executors/basetask_executor.md
+      - SyncTaskExecutor: api/executors/sync_task_executor.md
+      - AsyncTaskExecutor: api/executors/async_task_executor.md
+    - Middleware:
+      - BaseMiddleware - Write your own middleware: api/middlewares/basemiddleware.md
+      - TaskMiddleware: api/middlewares/task_middleware.md
+      - Global variables: api/states.md
+    - Testing:
+      - BaseTestCase - Writing our own test case: api/tests/basetests.md
+      - SyncTestCase: api/tests/sync_testcase.md
+      - AsyncTestCase: api/tests/async_testcase.md
+      - Logging: api/logs.md
+    - Classes:
+      - SyncRedisCommandQueue: api/classes/sync_redis_commands.md
+      - AsyncRedisCommandQueue: api/classes/async_redis_commands.md
+      - BaseQueueTasks: api/classes/baseqtasks.md
+    - Timer:
+      - BaseTimer - Write your Timer: api/timers/basetimer.md
+      - SyncTimer: api/timers/sync_timer.md
+      - AsyncTimer: api/timers/async_timer.md
+    - Analytics:
+      - BaseStats - Writing our own analytics: api/stats/basestats.md
+      - AsyncStats - Writing our own analytics: api/stats/async_stats.md
+      - SyncStats - Writing our own analytics: api/stats/sync_stats.md
+    - Inspect:
+      - UtilsInspectStats: api/stats/inspect/utils_inspect_stats.md
+      - InspectStats: api/stats/inspect/inspect_stats.md
+    - WebView: api/webview.md
+  - Exceptions: api/exceptions.md
+  - Change history: changelog.md
+  - Blog: blog.md
+  # - About: about.md
 
 
 watch:

@@ -1,116 +1,122 @@
-# Справочник триггеров плагинов
+# Plugin Trigger Reference Guide
 
-QTasks предоставляет гибкий механизм внедрения плагинов с использованием системы триггеров. Эти триггеры вызываются внутри компонентов и позволяют:
+QTasks provides a flexible mechanism for integrating plugins using a system of triggers. These triggers are called within components and allow you to:
 
-* Изменять входные аргументы задач
-* Заменять результат выполнения функций
-* Реагировать на события без вмешательства в основную логику
+* Change task input arguments
+* Replace function execution results
+* Respond to events without interfering with the main logic
 
-## 📘 Правила именования
+## 📘 Naming rules
 
-* Шаблон: `{компонент}_{функция}_{дополнение}`
-* Исключение: компонент `QueueTasks` обозначается как `qtasks`
-* Параметры: первым всегда идёт основной компонент (например, `self`), далее — связанные компоненты и параметры контекста
+* Template: `{component}_{function}_{addition}`
+* Exception: the `QueueTasks` component is denoted as `qtasks`
+* Parameters: the main component always comes first (e.g., `self`), followed by
+related components and context parameters.
 
-## 📌 Поведение `return`
+## 📌 `return` behavior
 
-* `new_args` / `new_model` / `new_data` / `new_result` заменяют соответствующие переменные, если присутствуют
-* Если `return` отсутствует или `None`, переменные остаются без изменений
-* Следующий плагин получает результат от предыдущего. Если у предыдущего плагина результат - `None`, то используется последнее значение, или самое первое.
-* Последний сработавший плагин имеет приоритет на замену
+* `new_args` / `new_model` / `new_data` / `new_result` replace the corresponding
+variables if present.
+* If `return` is absent or `None`, the variables remain unchanged.
+* The next plugin receives the result from the previous one. If the previous plugin's
+result is `None`, the last value or the very first value is used.
+* The last plugin that worked has priority for replacement.
 
-Пример: если `new_args`, то в нём хранится `{"args": (123,), "kw": {"test": 123}}`. Если один из его параметров равен `None`, то применяется логика выше.
+Example: if `new_args`, then it stores `{"args": (123,), "kw": {"test": 123}}`.
+If one of its parameters is `None`, then the logic above applies.
 
 ---
 
-## 🔷 Компоненты
+## 🔷 Components
 
 ### 🔹 QueueTasks (`qtasks`)
 
-| Триггер                         | Return             | Назначение                                    |
-| ------------------------------- | ------------------ | --------------------------------------------- |
-| `qtasks_add_task_before_broker` | `new_args: dict`   | Заменяет параметры задачи до передачи брокеру |
-| `qtasks_add_task_after_broker`  | —                  | Вызывается после передачи задачи брокеру      |
-| `qtasks_get`                    | `new_result: Task` | Заменяет результат получения задачи           |
-| `qtasks_stop`                   | —                  | Вызывается при остановке приложения           |
-| `qtasks_ping`                   | —                  | Пингует global\_config                        |
-| `qtasks_flush_all`              | —                  | Сброс очередей и хранилищ                     |
+| Trigger                         | Return             | Purpose                                           |
+| ------------------------------- | ----------------- - | ------------------------------------------------ |
+| `qtasks_add_task_before_broker` | `new_args: dict`   | Replaces task parameters before passing to broker |
+| `qtasks_add_task_after_broker`  | —                  | Called after the task is transferred to the broker|
+| `qtasks_get`                    | `new_result: Task` | Replaces the result of receiving the task         |
+| `qtasks_stop`                   | —                  | Called when the application is stopped            |
+| `qtasks_ping`                   | —                  | Pings global\_config                              |
+| `qtasks_flush_all`              | —                  | Resets queues and stores                          |
 
 ### 🔹 Broker
 
-| Триггер                       | Return                           | Назначение                                      |
-| ----------------------------- | -------------------------------- | ----------------------------------------------- |
-| `broker_listen_start`         | —                                | Инициализация прослушивания                     |
-| `broker_add_worker`           | `new_args: dict`                 | Заменяет входные параметры задачи для воркера   |
-| `broker_add_before`           | `new_model: TaskStatusNewSchema` | Заменяет модель перед записью в хранилище       |
-| `broker_add_after`            | —                                | Вызывается после добавления в хранилище         |
-| `broker_get`                  | `new_task: Task`                 | Заменяет результат получения задачи             |
-| `broker_update`               | `new_kw: dict`                   | Заменяет kwargs при обновлении задачи           |
-| `broker_start`                | —                                | Запуск брокера                                  |
-| `broker_stop`                 | —                                | Остановка брокера                               |
-| `broker_remove_finished_task` | `new_model`                      | Заменяет модель для удаления завершённой задачи |
-| `broker_running_older_tasks`  | —                                | Вызывается при восстановлении старых задач      |
-| `broker_flush_all`            | —                                | Сброс очередей                                  |
+| Trigger                       | Return                           | Purpose                                          |
+| ----------------------------- | -------------------------------- | ------------------------------------------------ |
+| `broker_listen_start`         | —                                | Initializes listening                            |
+| `broker_add_worker`           | `new_args: dict`                 | Replaces the task input parameters for the worker|
+| `broker_add_before`           | `new_model: TaskStatusNewSchema` | Replaces the model before writing to storage     |
+| `broker_add_after`            | —                                | Called after adding to storage                   |
+| `broker_get`                  | `new_task: Task`                 | Replaces the result of getting the task          |
+| `broker_update`               | `new_kw: dict`                   | Replaces kwargs when updating a task             |
+| `broker_start`                | —                                | Starts the broker                                |
+| `broker_stop`                 | —                                | Stops the broker                                 |
+| `broker_remove_finished_task` | `new_model`                      | Replaces the model for deleting a completed task |
+| `broker_running_older_tasks`  | —                                | Called when restoring old tasks                  |
+| `broker_flush_all`            | —                                | Resets queues                                    |
 
 ### 🔹 GlobalConfig
 
-| Триггер                    | Return           | Назначение                                   |
+| Trigger                    | Return           | Purpose                                      |
 | -------------------------- | ---------------- | -------------------------------------------- |
-| `global_config_set`        | `new_data: dict` | Заменяет параметры перед установкой значения |
-| `global_config_get`        | `new_result`     | Заменяет полученное значение                 |
-| `global_config_get_all`    | `new_result`     | Заменяет результат получения всех значений   |
-| `global_config_get_match`  | `new_result`     | Заменяет результат поиска по шаблону         |
-| `global_config_start`      | —                | Запуск компонента                            |
-| `global_config_stop`       | —                | Остановка компонента                         |
-| `global_config_set_status` | —                | Сигнал установки статуса                     |
+| `global_config_set`        | `new_data: dict` | Replaces parameters before setting the value |
+| `global_config_get`        | `new_result`     | Replaces the retrieved value                 |
+| `global_config_get_all`    | `new_result`     | Replaces the result of obtaining all values  |
+| `global_config_get_match`  | `new_result`     | Replaces the result of searching by pattern  |
+| `global_config_start`      | —                | Component startup                            |
+| `global_config_stop`       | —                | Stops the component                          |
+| `global_config_set_status` | —                | Status setting signal                        |
 
 ### 🔹 TaskExecutor
 
-| Триггер                                | Return                        | Назначение                                                        |
-| -------------------------------------- | ----------------------------- | ----------------------------------------------------------------- |
-| `task_executor_args_replace`           | `new_args: Tuple[list, dict]` | Заменяет args и kwargs до выполнения                              |
-| `task_executor_middlewares_execute`    | —                             | Вызывается перед выполнением задачи с мидлварами                  |
-| `task_executor_run_task`               | `new_result`                  | Заменяет результат выполнения задачи                              |
-| `task_executor_run_task_gen`           | `new_results`                 | Заменяет результаты генератора                                    |
-| `task_executor_run_task_trigger_error` | `new_result`                  | Заменяет результат при вызове исключения `TaskPluginTriggerError` |
-| `task_executor_decode`                 | `new_result`                  | Заменяет результат декодирования результата                       |
+| Trigger                                | Return                        | Assignment                                                  |
+| -------------------------------------- | ----------------------------- | ----------------------------------------------------------- |
+| `task_executor_args_replace`           | `new_args: Tuple[list, dict]` | Replaces args and kwargs before execution                   |
+| `task_executor_middlewares_execute`    | —                             | Called before task execution with middlewares               |
+| `task_executor_run_task`               | `new_result`                  | Replaces the task execution result                          |
+| `task_executor_run_task_gen`           | `new_results`                 | Replaces the generator results                              |
+| `task_executor_run_task_trigger_error` | `new_result`                  | Replaces the result when `TaskPluginTriggerError` is raised |
+| `task_executor_decode`                 | `new_result`                  | Replaces the result of decoding the result                  |
+
 
 ### 🔹 Starter
 
-| Триггер         | Return | Назначение                   |
-| --------------- | ------ | ---------------------------- |
-| `starter_start` | —      | Запуск компонента Starter    |
-| `starter_stop`  | —      | Остановка компонента Starter |
+| Trigger         | Return | Assignment                 |
+| --------------- | ------ | -------------------------- |
+| `starter_start` | —      | Start the Starter component|
+| `starter_stop`  | —      | Stop the Starter component |
 
 ### 🔹 Storage
 
-| Триггер                         | Return                    | Назначение                                     |
-| ------------------------------- | ------------------------- | ---------------------------------------------- |
-| `storage_add`                   | `new_data`                | Заменяет параметры перед добавлением задачи    |
-| `storage_get`                   | `new_result: Task`        | Заменяет результат получения задачи            |
-| `storage_get_all`               | `new_results: List[Task]` | Заменяет список полученных задач               |
-| `storage_update`                | `new_kw: dict`            | Заменяет kwargs при обновлении                 |
-| `storage_remove_finished_task`  | —                         | Удаление завершённой задачи                    |
-| `storage_start`                 | —                         | Запуск компонента                              |
-| `storage_stop`                  | —                         | Остановка компонента                           |
-| `storage_add_process`           | `new_data`                | Заменяет параметры при добавлении в процессинг |
-| `storage_running_older_tasks`   | `new_data`                | Заменяет данные при восстановлении задач       |
-| `storage_delete_finished_tasks` | —                         | Очистка завершённых задач                      |
-| `storage_flush_all`             | —                         | Сброс хранилища                                |
+| Trigger                         | Return                    | Purpose                                       |
+| ------------------------------- | ------------------------- | --------------------------------------------- |
+| `storage_add`                   | `new_data`                | Replaces parameters before adding a task      |
+| `storage_get`                   | `new_result: Task`        | Replaces the result of receiving a task       |
+| `storage_get_all`               | `new_results: List[Task]` | Replaces the list of received tasks           |
+| `storage_update`                | `new_kw: dict`            | Replaces kwargs when updating                 |
+| `storage_remove_finished_task`  | —                         | Deletes a completed task                      |
+| `storage_start`                 | —                         | Starts the component                          |
+| `storage_stop`                  | —                         | Stops the component                           |
+| `storage_add_process`           | `new_data`                | Replaces parameters when adding to processing |
+| `storage_running_older_tasks`   | `new_data`                | Replaces data when restoring tasks            |
+| `storage_delete_finished_tasks` | —                         | Clears completed tasks                        |
+| `storage_flush_all`             | —                         | Resets storage                                |
 
 ### 🔹 Worker
 
-| Триггер                       | Return          | Назначение                                                          |
-| ----------------------------- | --------------- | ------------------------------------------------------------------- |
-| `worker_execute_before`       | `new_model`     | Заменяет модель перед выполнением                                   |
-| `worker_execute_after`        | —               | Вызывается после выполнения задачи                                  |
-| `worker_add`                  | `new_data`      | Заменяет параметры создания задачи                                  |
-| `worker_start`                | —               | Запуск воркера                                                      |
-| `worker_stop`                 | —               | Остановка воркера                                                   |
-| `worker_run_task_before`      | `new_data`      | Заменяет данные до выполнения задачи                                |
-| `worker_task_error_retry`     | `plugin_result` | Заменяет TaskStatusErrorSchema при повторе                          |
-| `worker_remove_finished_task` | `new_data`      | Заменяет TaskPrioritySchema и TaskStatus... для удаления из очереди |
+| Trigger                       | Return          | Assignment                                                               |
+| ----------------------------- | --------------- | ------------------------------------------------------------------------ |
+| `worker_execute_before`       | `new_model`     | Replaces the model before execution                                      |
+| `worker_execute_after`        | —               | Called after task execution                                              |
+| `worker_add`                  | `new_data`      | Replaces task creation parameters                                        |
+| `worker_start`                | —               | Starts the worker                                                        |
+| `worker_stop`                 | —               | Stops the worker                                                         |
+| `worker_run_task_before`      | `new_data`      | Replaces data before task execution                                      |
+| `worker_task_error_retry`     | `plugin_result` | Replaces TaskStatusErrorSchema on retry                                  |
+| `worker_remove_finished_task` | `new_data`      | Replaces TaskPrioritySchema and TaskStatus... for removal from the queue |
 
 ---
 
-Это справочник можно использовать при разработке плагинов, интеграций или системной логики поверх QTasks.
+This reference can be used when developing plugins, integrations, or
+system logic on top of QTasks.

@@ -1,68 +1,149 @@
-# Работа с консолью через `qtasks.__main__`
+# Working with the console via `qtasks.__main__`
 
-Модуль `qtasks.__main__` позволяет запускать и управлять приложением `QTasks` из
-консоли. Это удобно для автоматизации и интеграции с другими инструментами.
+The `qtasks.__main__` module provides a command line interface for launching and
+managing QTasks applications. The CLI is suitable for automation, production work,
+and integration with external tools.
 
-## Основные возможности
+Available commands include:
 
-- Запуск приложения
-- Запуск экспериментального веб-интерфейса для управления задачами
-- Указание приложения через параметр `-A` или `-app`
-- Настройка порта для веб-интерфейса
+* launching an application;
+* viewing statistics via `(A)syncStats`;
+* launching an experimental web interface (will be
+  migrated to the `qtasks_webview` library).
 
-### Пример использования
+---
+
+## Main CLI features
+
+* launching the application with the specified `QueueTasks` instance;
+* calling component statistics (via `stats inspect`);
+* launching the experimental web interface;
+* specifying the application via `-A` or `--app` in the format `module:variable`;
+* configuring the web interface port.
+
+The command is called in the general form:
 
 ```bash
-qtasks [опции] <команда> [опции]
+qtasks [options] <command> [options]
 ```
 
-#### Примеры команд
+---
 
-- Запустить приложение:
+## `run` command
 
-    ```bash
-    qtasks -A <путь_к_модулю:имя_приложения> run
-    ```
+Starts the QTasks application with the specified `QueueTasks` instance.
 
-    Пример:
+```bash
+qtasks -A <path_to_module:variable_name> run
+```
 
-    ```bash
-    qtasks -A based_async_app:app run
-    ```
+Example:
 
-- Посмотреть статистику приложения через `(A)syncStats` в формате `json`:
+```bash
+qtasks -A based_async_app:app run
+```
 
-    ```bash
-    qtasks -A <путь_к_модулю:имя_приложения> stats <команда> [опции]
-    ```
+`-A` and `--app` are completely equivalent.
 
-    Пример:
+---
 
-    ```bash
-    qtasks -A based_async_app:app stats inspect app json=true
-    ```
+## `stats` command
 
-- Запустить веб-интерфейс (В стадии разработки...):
+Used to retrieve data from `(A)syncStats`.
+Only the `inspect` subcommand is available in the current version.
 
-    ```bash
-    qtasks web -A <путь_к_модулю:имя_приложения> --port <порт>
-    ```
+```bash
+qtasks -A <module:app> stats inspect <target> [parameters]
+```
 
-    Пример:
+Where `target` is the statistics object:
 
-    ```bash
-    qtasks -A based_async_app:app web --port 8000
-    ```
+* `app` — information about the application;
+* `tasks` — information about tasks.
 
-### Параметры
+Example:
 
-- `-A`, `-app` — путь к приложению в формате `модуль:переменная`
-- `--port` — порт для запуска веб-интерфейса (по умолчанию 8000)
+```bash
+qtasks -A based_async_app:app stats inspect app json=true
+```
 
-### Дополнительная информация
+The `json=true` parameter is passed as a *positional argument* to the `inspect`
+function and enables output in JSON format.
 
-Для получения справки по командам используйте стандартный флаг `--help`:
+The subcommands `inspect app` and `inspect tasks` directly call the methods:
+
+* `(A)syncStats().inspect().app(json=True)`
+* `(A)syncStats().inspect().tasks(json=True)`
+
+The list of targets can be extended (`inspect workers`, `inspect broker`, etc.)
+without changing the CLI.
+
+---
+
+## `web` command (experimental)
+
+Launches an experimental web interface (will be moved to the
+`qtasks_webview`).
+
+```bash
+qtasks web -A <module:app> --port <port>
+```
+
+Example:
+
+```bash
+qtasks web -A based_async_app:app --port 8000
+```
+
+If no port is specified, the default value of `8000` is used.
+
+---
+
+## CLI parameters
+
+### `-A`, `--app`
+
+The path to the application in the format:
+
+```bash
+module:variable_name
+```
+
+Example:
+
+```bash
+based_async_app:app
+```
+
+The CLI does not determine the application automatically — this behaviour is
+intentional, as the developer may not use the global variable `app`.
+
+### `--port`
+
+Used only by the `web` command. Specifies the web interface port.
+
+---
+
+## Command help
+
+For a complete list of parameters and help:
 
 ```bash
 qtasks --help
+```
+
+For help on a command:
+
+```bash
+qtasks <command> --help
+```
+
+---
+
+## Example
+
+```bash
+qtasks -A based_async_app:app run
+qtasks -A based_async_app:app stats inspect tasks json=true
+qtasks web -A based_async_app:app --port 8000
 ```

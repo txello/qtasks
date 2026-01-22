@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     Узнаем больше о преобразовании @app.task
 
-    [:octicons-arrow-right-24: Декоратор задачи](features/task_decorator.md)
+    [:octicons-arrow-right-24: Декоратор задачи](features/task.md)
 
 - :fontawesome-solid-plus:{ .lg .middle } __Task Context__
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
     Понимаем контекст выполнения задач и его применение
 
-    [:octicons-arrow-right-24: Контекст задачи](features/task_context.md)
+    [:octicons-arrow-right-24: Контекст задачи](features/contexts.md)
 
   </div>
 
