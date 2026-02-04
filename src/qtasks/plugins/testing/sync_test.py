@@ -13,9 +13,9 @@ class SyncTestPlugin(BasePlugin):
     def __init__(self, name: str = "SyncTestPlugin"):
         """
         Initializing the plugin.
-        
-                Args:
-                    name (str, optional): Project name. Default: "SyncTestPlugin".
+
+        Args:
+            name (str, optional): Project name. Default: "SyncTestPlugin".
         """
         super().__init__(name=name)
         self.handlers = {

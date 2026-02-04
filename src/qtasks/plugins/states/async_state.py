@@ -49,15 +49,15 @@ class AsyncStatePlugin(BasePlugin):
     ):
         """
         Replaces arguments and keywords in a task.
-        
-                Args:
-                    task_executor (BaseTaskExecutor): A task executor instance.
-                    args (List[Any]): Positional arguments to the task.
-                    kw (Dict[str, Any]): Named task arguments.
-                    args_info (List[ArgMeta]): Argument metadata.
-        
-                Returns:
-                    Tuple[List[Any], Dict[str, Any]]: Replaced arguments and keywords.
+
+        Args:
+            task_executor (BaseTaskExecutor): A task executor instance.
+            args (List[Any]): Positional arguments to the task.
+            kw (Dict[str, Any]): Named task arguments.
+            args_info (List[ArgMeta]): Argument metadata.
+
+        Returns:
+            Tuple[List[Any], Dict[str, Any]]: Replaced arguments and keywords.
         """
         new_args = list(args)
         new_kw = dict(kw)
@@ -92,12 +92,12 @@ class AsyncStatePlugin(BasePlugin):
     def _extract_state_class(self, ann: Any) -> type[AsyncState] | None:
         """
         Retrieves the state class from the annotation.
-        
-                Args:
-                    ann (Any): Abstract.
-        
-                Returns:
-                    Type[State] | None: State class or None.
+
+        Args:
+            ann (Any): Abstract.
+
+        Returns:
+            Type[State] | None: State class or None.
         """
         if ann is None:
             return None

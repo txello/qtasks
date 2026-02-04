@@ -12,18 +12,18 @@ from qtasks.types.typing import TAsyncFlag
 class BasePlugin(Generic[TAsyncFlag], ABC):
     """
     `BasePlugin` - An abstract class that is the foundation for Plugins.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.plugins.base import BasePlugin
-    
-        class MyPlugin(BasePlugin):
-            def __init__(self, name: str = None):
-                super().__init__(name=name)
-                pass
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.plugins.base import BasePlugin
+
+    class MyPlugin(BasePlugin):
+        def __init__(self, name: str = None):
+            super().__init__(name=name)
+            pass
+    ```
     """
 
     def __init__(
@@ -41,9 +41,9 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
     ):
         """
         Initializing the plugin.
-        
-                Args:
-                    name (str, optional): Project name. Default: `None`.
+
+        Args:
+            name (str, optional): Project name. Default: `None`.
         """
         self.name: str | None = name
 
@@ -66,11 +66,11 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
     ) -> dict[str, Any] | None | Awaitable[dict[str, Any] | None]:
         """
         Plugin trigger.
-        
-                Args:
-                    name (str): Trigger name.
-                    args (tuple, optional): Trigger arguments of type args.
-                    kwargs (dict, optional): Trigger arguments of type kwargs.
+
+        Args:
+            name (str): Trigger name.
+            args (tuple, optional): Trigger arguments of type args.
+            kwargs (dict, optional): Trigger arguments of type kwargs.
         """
         pass
 
@@ -84,10 +84,10 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
     def start(self, *args, **kwargs) -> None | Awaitable[None]:
         """
         Launches the Plugin.
-        
-                Args:
-                    args (tuple, optional): Trigger arguments of type args.
-                    kwargs (dict, optional): Trigger arguments of type kwargs.
+
+        Args:
+            args (tuple, optional): Trigger arguments of type args.
+            kwargs (dict, optional): Trigger arguments of type kwargs.
         """
         pass
 
@@ -101,9 +101,9 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
     def stop(self, *args, **kwargs) -> None | Awaitable[None]:
         """
         Stops the Plugin.
-        
-                Args:
-                    args (tuple, optional): Trigger arguments of type args.
-                    kwargs (dict, optional): Trigger arguments of type kwargs.
+
+        Args:
+            args (tuple, optional): Trigger arguments of type args.
+            kwargs (dict, optional): Trigger arguments of type kwargs.
         """
         pass

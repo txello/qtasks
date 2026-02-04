@@ -16,9 +16,9 @@ class AsyncRetryPlugin(BasePlugin):
     def __init__(self, name: str = "AsyncRetryPlugin"):
         """
         Initializing the plugin.
-        
-                Args:
-                    name (str, optional): Project name. Default: "AsyncRetryPlugin".
+
+        Args:
+            name (str, optional): Project name. Default: "AsyncRetryPlugin".
         """
         super().__init__(name=name)
         self.handlers = {"worker_task_error_retry": self._execute}

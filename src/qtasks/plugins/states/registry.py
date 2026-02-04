@@ -18,9 +18,9 @@ class SyncStateRegistry:
     def _ensure(self, state_cls: type) -> None:
         """
         Ensure that there is a registry for this condition class.
-        
-                Args:
-                    state_cls (Type): State class.
+
+        Args:
+            state_cls (Type): State class.
         """
         if state_cls not in self._buckets:
             self._buckets[state_cls] = {}
@@ -28,14 +28,14 @@ class SyncStateRegistry:
     def get(self, state_cls: type, key: str, default: Any = None) -> Any:
         """
         Get the status value.
-        
-                Args:
-                    state_cls (Type): State class.
-                    key (str): State key.
-                    default (Any, optional): Default value if the state is not found. Defaults to None.
-        
-                Returns:
-                    Any: Status value or default value.
+
+        Args:
+            state_cls (Type): State class.
+            key (str): State key.
+            default (Any, optional): Default value if the state is not found. Defaults to None.
+
+        Returns:
+            Any: Status value or default value.
         """
         with self._lock:
             self._ensure(state_cls)
@@ -44,11 +44,11 @@ class SyncStateRegistry:
     def set(self, state_cls: type, key: str, value: Any) -> None:
         """
         Set the status value.
-        
-                Args:
-                    state_cls (Type): State class.
-                    key (str): State key.
-                    value (Any): State value.
+
+        Args:
+            state_cls (Type): State class.
+            key (str): State key.
+            value (Any): State value.
         """
         with self._lock:
             self._ensure(state_cls)
@@ -57,13 +57,13 @@ class SyncStateRegistry:
     def update(self, state_cls: type, mapping: dict[str, Any]) -> dict[str, Any]:
         """
         Update status values.
-        
-                Args:
-                    state_cls (Type): State class.
-                    mapping (Dict[str, Any]): Dictionary of updated state values.
-        
-                Returns:
-                    Dict[str, Any]: Dictionary of old state values.
+
+        Args:
+            state_cls (Type): State class.
+            mapping (Dict[str, Any]): Dictionary of updated state values.
+
+        Returns:
+            Dict[str, Any]: Dictionary of old state values.
         """
         with self._lock:
             self._ensure(state_cls)
@@ -74,12 +74,12 @@ class SyncStateRegistry:
     def get_all(self, state_cls: type) -> dict[str, Any]:
         """
         Get all state values.
-        
-                Args:
-                    state_cls (Type): State class.
-        
-                Returns:
-                    Dict[str, Any]: Dictionary of all state values.
+
+        Args:
+            state_cls (Type): State class.
+
+        Returns:
+            Dict[str, Any]: Dictionary of all state values.
         """
         with self._lock:
             self._ensure(state_cls)
@@ -88,10 +88,10 @@ class SyncStateRegistry:
     def delete(self, state_cls: type, key: str) -> None:
         """
         Remove status value.
-        
-                Args:
-                    state_cls (Type): State class.
-                    key (str): State key.
+
+        Args:
+            state_cls (Type): State class.
+            key (str): State key.
         """
         with self._lock:
             self._ensure(state_cls)
@@ -100,9 +100,9 @@ class SyncStateRegistry:
     def clear(self, state_cls: type) -> None:
         """
         Clear all status values.
-        
-                Args:
-                    state_cls (Type): State class.
+
+        Args:
+            state_cls (Type): State class.
         """
         with self._lock:
             self._ensure(state_cls)
@@ -120,9 +120,9 @@ class AsyncStateRegistry:
     async def _ensure(self, state_cls: type) -> None:
         """
         Ensure that there is a registry for this condition class.
-        
-                Args:
-                    state_cls (Type): State class.
+
+        Args:
+            state_cls (Type): State class.
         """
         if state_cls not in self._buckets:
             self._buckets[state_cls] = {}
@@ -130,14 +130,14 @@ class AsyncStateRegistry:
     async def get(self, state_cls: type, key: str, default: Any = None) -> Any:
         """
         Get the status value.
-        
-                Args:
-                    state_cls (Type): State class.
-                    key (str): State key.
-                    default (Any, optional): Default value if the state is not found. Defaults to None.
-        
-                Returns:
-                    Any: Status value or default value.
+
+        Args:
+            state_cls (Type): State class.
+            key (str): State key.
+            default (Any, optional): Default value if the state is not found. Defaults to None.
+
+        Returns:
+            Any: Status value or default value.
         """
         async with self._lock:
             await self._ensure(state_cls)
@@ -146,11 +146,11 @@ class AsyncStateRegistry:
     async def set(self, state_cls: type, key: str, value: Any) -> None:
         """
         Set the status value.
-        
-                Args:
-                    state_cls (Type): State class.
-                    key (str): State key.
-                    value (Any): State value.
+
+        Args:
+            state_cls (Type): State class.
+            key (str): State key.
+            value (Any): State value.
         """
         async with self._lock:
             await self._ensure(state_cls)
@@ -159,13 +159,13 @@ class AsyncStateRegistry:
     async def update(self, state_cls: type, mapping: dict[str, Any]) -> dict[str, Any]:
         """
         Update status values.
-        
-                Args:
-                    state_cls (Type): State class.
-                    mapping (Dict[str, Any]): Dictionary of updated state values.
-        
-                Returns:
-                    Dict[str, Any]: Dictionary of old state values.
+
+        Args:
+            state_cls (Type): State class.
+            mapping (Dict[str, Any]): Dictionary of updated state values.
+
+        Returns:
+            Dict[str, Any]: Dictionary of old state values.
         """
         async with self._lock:
             await self._ensure(state_cls)
@@ -175,12 +175,12 @@ class AsyncStateRegistry:
     async def get_all(self, state_cls: type) -> dict[str, Any]:
         """
         Get all state values.
-        
-                Args:
-                    state_cls (Type): State class.
-        
-                Returns:
-                    Dict[str, Any]: Dictionary of all state values.
+
+        Args:
+            state_cls (Type): State class.
+
+        Returns:
+            Dict[str, Any]: Dictionary of all state values.
         """
         async with self._lock:
             await self._ensure(state_cls)
@@ -189,10 +189,10 @@ class AsyncStateRegistry:
     async def delete(self, state_cls: type, key: str) -> None:
         """
         Remove status value.
-        
-                Args:
-                    state_cls (Type): State class.
-                    key (str): State key.
+
+        Args:
+            state_cls (Type): State class.
+            key (str): State key.
         """
         async with self._lock:
             await self._ensure(state_cls)
@@ -201,9 +201,9 @@ class AsyncStateRegistry:
     async def clear(self, state_cls: type) -> None:
         """
         Clear all status values.
-        
-                Args:
-                    state_cls (Type): State class.
+
+        Args:
+            state_cls (Type): State class.
         """
         async with self._lock:
             await self._ensure(state_cls)

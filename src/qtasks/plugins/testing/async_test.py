@@ -13,9 +13,9 @@ class AsyncTestPlugin(BasePlugin):
     def __init__(self, name: str = "AsyncTestPlugin"):
         """
         Initializing the plugin.
-        
-                Args:
-                    name (str, optional): Project name. Default: "AsyncTestPlugin".
+
+        Args:
+            name (str, optional): Project name. Default: "AsyncTestPlugin".
         """
         super().__init__(name=name)
         self.handlers = {
