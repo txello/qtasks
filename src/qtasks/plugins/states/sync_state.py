@@ -67,7 +67,7 @@ class SyncStatePlugin(BasePlugin):
             if state_cls is None:
                 continue
 
-            # Если пользователь уже передал готовый State — не трогаем
+            # If the user has already passed a ready-made State, we don’t touch it.
             existing = None
             if meta.is_kwarg and meta.key is not None:
                 existing = new_kw.get(meta.key)
@@ -78,7 +78,7 @@ class SyncStatePlugin(BasePlugin):
 
             bound = state_cls(
                 self._registry, state_cls
-            )  # сигнатура: (registry, state_cls)
+            )  # signature: (registry, state_cls)
 
             if meta.is_kwarg and meta.key is not None:
                 new_kw[meta.key] = bound

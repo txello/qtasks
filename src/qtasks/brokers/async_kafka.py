@@ -188,7 +188,7 @@ class AsyncKafkaBroker(BaseBroker, AsyncPluginMixin):
                     model_get.created_at.timestamp(),
                 )
                 if self.log:
-                    self.log.info(f"Получена новая задача: {uuid}")
+                    self.log.info(f"Received new task: {uuid}")
                 new_args = await self._plugin_trigger(
                     "broker_add_worker",
                     broker=self,

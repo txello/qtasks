@@ -46,7 +46,7 @@ class SyncQTasksGRPCServer:
             maximum_concurrent_rpcs=self._max_concurrent_rpcs,
         )
 
-        # Сервис QTasks
+        # QTasks service
         qtasks_pb2_grpc.add_QTasksServiceServicer_to_server(
             SyncQTasksServiceServicer(self._app), self._server
         )

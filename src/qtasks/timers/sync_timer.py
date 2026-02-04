@@ -136,7 +136,6 @@ class SyncTimer(BaseTimer[Literal[False]]):
         """
         self.tasks[task_name] = trigger
 
-        # Добавляем синхронную задачу
         return self.scheduler.add_job(
             self._add_task_sync,
             trigger=trigger,
@@ -189,17 +188,16 @@ class SyncTimer(BaseTimer[Literal[False]]):
         task = self.app.add_task(
             *args, task_name=task_name, priority=priority, timeout=None, **kwargs
         )
-        self.log.info(f"Отправлена задача {task_name}: {task.uuid}...")
+        self.log.info(f"Task {task_name} sent with UUID: {task.uuid}")
 
     def run_forever(self):
         """Start Timer."""
-        self.log.info("Запуск...")
-
+        self.log.info("Starting...")
         try:
-            self.scheduler.start()  # Запускаем планировщик
+            self.scheduler.start()
             while True:
                 sleep(1)
-                pass  # Держим основной поток активным
+                pass
         except KeyboardInterrupt:
-            self.log.info("Остановка...")
+            self.log.info("Stopping...")
             self.scheduler.shutdown()

@@ -517,7 +517,6 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         pass
 
     def _build_task(self, uuid, result: dict) -> Task:
-        # Сначала собираем стандартные аргументы Task
         base_kwargs = dict(
             status=result["status"],
             uuid=uuid,

@@ -179,7 +179,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             model_get = self.get(uuid=uuid)
             if model_get is None:
                 if self.log:
-                    self.log.warning(f"Задача {uuid} не найдена в хранилище.")
+                    self.log.warning(f"Task {uuid} not found in repository.")
                 continue
             args, kwargs, created_at = (
                 model_get.args or (),
@@ -187,7 +187,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
                 model_get.created_at.timestamp(),
             )
             if self.log:
-                self.log.info(f"Получена новая задача: {uuid}")
+                self.log.info(f"Received new task: {uuid}")
             new_args = self._plugin_trigger(
                 "broker_add_worker",
                 broker=self,

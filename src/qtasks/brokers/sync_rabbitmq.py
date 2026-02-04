@@ -186,7 +186,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
                 task_data["priority"],
             )
             if self.log:
-                self.log.info(f"Получена новая задача: {task_data['uuid']}")
+                self.log.info(f"Received new task: {task_data['uuid']}")
             new_args = self._plugin_trigger(
                 "broker_add_worker",
                 broker=self,

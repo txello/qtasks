@@ -74,25 +74,25 @@ class QueueConfig:
 
     def __getattr__(self, item):
         """Getting an attribute."""
-        # Проверяем динамические поля
+        # Checking dynamic fields
         if item in self._dynamic_fields:
             return self._dynamic_fields[item]
-        # Вызов стандартного поведения dataclass
+        # Calling the default behavior of dataclass
         raise AttributeError(f"{type(self).__name__} has no attribute '{item}'")
 
     def __setattr__(self, key, value):
         """Setting the attribute."""
-        # Для полей dataclass
+        # For dataclass fields
         if key in self.__annotations__:
             object.__setattr__(self, key, value)
             if (
                 "_callbacks" in self.__dict__
-            ):  # Проверяем наличие для избежания рекурсии
+            ):  # Checking for presence to avoid recursion
                 self._notify(key, value)
-        # Для внутренних атрибутов
+        # For internal attributes
         elif key.startswith("_"):
             object.__setattr__(self, key, value)
-        # Для динамических полей
+        # For dynamic fields
         else:
             dynamic_fields = object.__getattribute__(self, "_dynamic_fields")
             dynamic_fields[key] = value

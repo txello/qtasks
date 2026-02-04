@@ -35,7 +35,7 @@ def get_app(app_arg: str) -> Union[QueueTasks, aioQueueTasks, None]:
         app = getattr(file, app_var)
         return app() if isinstance(app, FunctionType) else app
     except Exception as e:
-        print(f"[QTasks] Ошибка при получении приложения: {e}")
+        print(f"[QTasks] Error retrieving application: {e}")
         return
 
 
@@ -97,11 +97,11 @@ def main():
 
     if args.command == "run":
         if not app:
-            parser.error("Не удалось получить экземпляр приложения!")
+            parser.error("Failed to get application instance!")
         app.run_forever()
 
     elif args.command == "web":
-        # Эксперементально!
+        # Experimental!
         import qtasks_webview
 
         qtasks_webview.app_qtasks = app

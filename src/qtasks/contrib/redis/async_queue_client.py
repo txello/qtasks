@@ -40,12 +40,12 @@ class AsyncRedisCommandQueue:
     async def _worker(self):
         while not self.queue.empty():
             cmd, args, kwargs = await self.queue.get()
-            self.log.debug(f"Задача {cmd} с параметрами {args} и {kwargs} вызвана")
+            self.log.debug(f"Task {cmd} with parameters {args} and {kwargs} executed")
             try:
                 await getattr(self.redis, cmd)(*args, **kwargs)
             except Exception as e:
                 self.log.error(
-                    f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}"
+                    f"Error executing Redis command {cmd}: {e}. Args: {args}, Kwargs: {kwargs}"
                 )
             self.queue.task_done()
 

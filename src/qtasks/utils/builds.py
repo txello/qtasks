@@ -29,7 +29,7 @@ def _convert_value(field_type, value):
         else:
             return value
     except Exception:
-        return value  # fallback: оригинальное значение
+        return value
 
 
 def _build_task(cls, **kwargs):
@@ -42,7 +42,6 @@ def _build_task(cls, **kwargs):
     base_field_defs = fields(base_cls)
     base_field_names = {f.name for f in base_field_defs}
 
-    # 1. Извлекаем значения уже существующих полей
     known_fields = {}
     for f in base_field_defs:
         if f.name in kwargs:
@@ -50,7 +49,6 @@ def _build_task(cls, **kwargs):
         else:
             known_fields[f.name] = getattr(cls, f.name)
 
-    # 2. Новые поля
     extra_fields = []
     extra_values = {}
     for key, value in kwargs.items():
@@ -59,7 +57,6 @@ def _build_task(cls, **kwargs):
             extra_fields.append((key, field_type, field(default=None)))
             extra_values[key] = _convert_value(field_type, value)
 
-    # 3. Создаём новый dataclass с расширением
     if extra_fields:
         NewCls = make_dataclass(cls.__class__.__name__, extra_fields, bases=(base_cls,))
     else:

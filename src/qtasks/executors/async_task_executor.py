@@ -157,7 +157,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             if new_task_executor:
                 self = new_task_executor
             if self.log:
-                self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+                self.log.debug(f"Middleware {m.name} for {self.task_func.name} was called.")
 
     async def execute_middlewares_after(self):
         """Calling middleware after completing a task."""
@@ -172,7 +172,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             if new_task_executor:
                 self = new_task_executor
             if self.log:
-                self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+                self.log.debug(f"Middleware {m.name} for {self.task_func.name} was called.")
 
     async def run_task(self) -> Any:
         """
@@ -275,7 +275,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             Any|str: Result of the task.
         """
         if self.log:
-            self.log.debug(f"Вызван execute для {self.task_func.name}")
+            self.log.debug(f"Called execute for {self.task_func.name}")
 
         await self.execute_middlewares_before()
         await self.before_execute()
@@ -300,7 +300,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             else:
                 raise e
         except asyncio.TimeoutError as exc:
-            msg = f"Время выполнения задачи {self.task_func.name} превысило лимит {self.task_func.max_time} секунд"
+            msg = f"Time limit exceeded for task {self.task_func.name}: {self.task_func.max_time} seconds"
             if self.log:
                 self.log.error(msg)
             raise asyncio.TimeoutError(msg) from exc

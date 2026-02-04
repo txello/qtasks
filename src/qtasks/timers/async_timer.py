@@ -137,7 +137,6 @@ class AsyncTimer(BaseTimer[Literal[True]]):
         """
         self.tasks[task_name] = trigger
 
-        # Добавляем асинхронную задачу без вызова функции
         return self.scheduler.add_job(
             self._add_task_async,
             trigger=trigger,
@@ -190,21 +189,20 @@ class AsyncTimer(BaseTimer[Literal[True]]):
         task = await self.app.add_task(
             *args, task_name=task_name, priority=priority, timeout=None, **kwargs
         )
-        self.log.info(f"Отправлена задача {task_name}: {task.uuid}...")
+        self.log.info(f"Task {task_name} sent with UUID: {task.uuid}")
 
     def run_forever(self):
         """Start Timer."""
-        self.log.info("Запуск...")
-
+        self.log.info("Starting...")
         try:
             asyncio.run(
                 self._start_scheduler()
-            )  # Запускаем асинхронную функцию в основном цикле
+            )
         except KeyboardInterrupt:
-            self.log.info("Остановка...")
+            self.log.info("Stopping...")
 
     async def _start_scheduler(self):
         """Start Timer asynchronously."""
-        self.scheduler.start()  # Запускаем планировщик
+        self.scheduler.start()
         while True:
-            await asyncio.sleep(1)  # Держим цикл событий активным
+            await asyncio.sleep(1)

@@ -41,12 +41,12 @@ class SyncRedisCommandQueue:
         while not self.queue.empty():
             try:
                 cmd, args, kwargs = self.queue.get(timeout=2)
-                self.log.debug(f"Задача {cmd} с параметрами {args} и {kwargs} вызвана")
+                self.log.debug(f"Task {cmd} with parameters {args} and {kwargs} executed")
                 try:
                     getattr(self.redis, cmd)(*args, **kwargs)
                 except Exception as e:
                     self.log.error(
-                        f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}"
+                        f"Error executing Redis command {cmd}: {e}. Args: {args}, Kwargs: {kwargs}"
                     )
                 self.queue.task_done()
             except Empty:

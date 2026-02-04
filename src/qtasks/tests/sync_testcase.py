@@ -224,7 +224,7 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
             )
         else:
             print(
-                f"[SyncTestCase: {self.name}] Обязательно включить Воркер или Брокер!"
+                f"[SyncTestCase: {self.name}] Be sure to enable Worker or Broker!"
             )
             return
 

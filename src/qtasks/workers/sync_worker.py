@@ -393,8 +393,8 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
 
         if self.log:
             self.log.info(
-                f"Выполняю задачу {task_broker.uuid} ({task_broker.name}), приоритет: {task_broker.priority}./n",
-                f"Аргументы задачи: {task_broker.args}, {task_broker.kwargs}"
+                f"Task {task_broker.uuid} ({task_broker.name}) in process, priority: {task_broker.priority}./n",
+                f"Task arguments: {task_broker.args}, {task_broker.kwargs}"
             )
 
         new_data = self._plugin_trigger(
@@ -446,7 +446,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         )
         if self.log:
             self.log.info(
-                f"Задача {task_broker.uuid} успешно завершена, результат: {result}"
+                f"Task {task_broker.uuid} successfully completed, result: {result}"
             )
         return model
 
@@ -488,11 +488,11 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         if plugin_result and model.retry != 0:
             if self.log:
                 self.log.error(
-                    f"Задача {task_broker.uuid} завершена с ошибкой и будет повторена."
+                    f"Task {task_broker.uuid} completed with an error and will be retried."
                 )
         else:
             if self.log:
-                self.log.error(f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}")
+                self.log.error(f"Task {task_broker.uuid} completed with an error:\n{trace}")
         return model
 
     def _task_cancel(
@@ -507,7 +507,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             updated_at=time(),
         )
         if self.log:
-            self.log.error(f"Задача {task_broker.uuid} была отменена по причине: {e}")
+            self.log.error(f"Task {task_broker.uuid} was cancelled because: {e}")
         return model
 
     def _task_exists(
@@ -526,7 +526,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             return self._tasks[task_broker.name]
         except KeyError as e:
             if self.log:
-                self.log.warning(f"Задачи {e.args[0]} не существует!")
+                self.log.warning(f"Task {e.args[0]} does not exist!")
             trace = traceback.format_exc()
             model = TaskStatusErrorSchema(
                 task_name=task_broker.name,
@@ -539,7 +539,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
                 task_func=None, task_broker=task_broker, model=model
             )
             if self.log:
-                self.log.error(f"Задача {task_broker.name} завершена с ошибкой:\n{trace}")
+                self.log.error(f"Task {task_broker.name} completed with an error:\n{trace}")
             return None
 
     def remove_finished_task(

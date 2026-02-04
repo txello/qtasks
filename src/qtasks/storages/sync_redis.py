@@ -306,7 +306,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             )
             if self.log:
                 self.log.error(
-                    f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}"
+                    f"Task {task_broker.uuid} finished with an error:\n{trace}"
                 )
 
         self.redis_contrib.execute(

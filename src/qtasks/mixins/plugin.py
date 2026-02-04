@@ -93,7 +93,7 @@ class SyncPluginMixin:
                         tb = "".join(
                             traceback.TracebackException.from_exception(e).format()
                         )
-                        msg = f"Плагин {plugin.name} завершился с ошибкой:\n {tb}"
+                        msg = f"Plugin {plugin.name} finished with an error:\n {tb}"
                         if hasattr(self, "log") and self.log:
                             self.log.error(msg)
                         print(msg)
@@ -260,7 +260,7 @@ class AsyncPluginMixin:
                         tb = "".join(
                             traceback.TracebackException.from_exception(e).format()
                         )
-                        msg = f"Плагин {plugin.name} завершился с ошибкой:\n {tb}"
+                        msg = f"Plugin {plugin.name} finished with an error:\n {tb}"
                         if hasattr(self, "log") and self.log:
                             self.log.error(msg)
                         print(msg)

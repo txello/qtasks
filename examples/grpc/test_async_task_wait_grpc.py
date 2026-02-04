@@ -7,11 +7,11 @@ from qtasks.plugins.grpc.core import qtasks_pb2, qtasks_pb2_grpc
 
 
 async def main():
-    # Подключаемся к серверу
+    # Connect to the gRPC server
     async with grpc.aio.insecure_channel("localhost:50051") as channel:
         stub = qtasks_pb2_grpc.QTasksServiceStub(channel)
 
-        # --- 1. Добавляем задачу ---
+        # --- 1. Add task ---
         req = qtasks_pb2.AddTaskRequest(
             name="add",
             args_json=json.dumps([2, 3]),
@@ -23,7 +23,7 @@ async def main():
         resp = await stub.AddTask(req)
         print("AddTask →", resp.ok, resp.uuid, resp.error, resp.result_json)
 
-        # --- 2. Получаем статус задачи ---
+        # --- 2. Get task status ---
         if resp.ok:
             get_req = qtasks_pb2.GetTaskRequest(uuid=resp.uuid, include_result=True)
             while True:

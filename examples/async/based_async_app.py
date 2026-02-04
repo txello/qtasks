@@ -119,7 +119,7 @@ async def example_pydantic(item: Item):
 )
 async def test_echo_ctx(self: AsyncTask):
     # app = self.ctx._app - экземпляр QueueTasks
-    # self.ctx.get_logger(name="NewName" или имя задачи)
+    # self.ctx.get_logger(name="NewName" or task name)
     self.ctx.get_logger().info("This is a test task!")
     await self.ctx.sleep(5)
     # task = await self.add_task(task_name="test", timeout=50)

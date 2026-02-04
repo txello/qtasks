@@ -112,7 +112,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         """
         self.name = name
 
-        self.version: Annotated[str, Doc("Project version.")] = "1.7.0"
+        self.version: Annotated[str, Doc("Project version.")] = "1.7.1"
 
         self.config: Annotated[
             QueueConfig,
@@ -216,7 +216,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
 
         Raises:
-            ValueError: Если задача с таким именем уже зарегистрирована.
+            ValueError: If a task with the same name is already registered.
             ValueError: Unknown method {self._method}.
 
         Returns:
@@ -262,7 +262,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             middlewares_after (List[Type["TaskMiddleware"]],, optional): Middleware that will be executed after the task. Default: `Empty array`.
 
         Raises:
-            ValueError: Если задача с таким именем уже зарегистрирована.
+            ValueError: If a task with the same name is already registered.
             ValueError: Unknown method {self._method}.
 
         Returns:
@@ -459,9 +459,9 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
 
         Raises:
-            ValueError: Если задача с таким именем уже зарегистрирована.
+            ValueError: If a task with the same name is already registered.
             ValueError: Unknown method {self._method}.
-            ValueError: Неподдерживаемый метод {self._method}.
+            ValueError: Unsupported method {self._method}.
 
         Returns:
             SyncTask | AsyncTask: Decorator for registering a task.
@@ -673,7 +673,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
                 self.worker.task_middlewares_before.append(middleware)
             elif position == "after":
                 self.worker.task_middlewares_after.append(middleware)
-        self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
+        self.log.debug(f"Middleware {middleware.__name__} added.")
         return
 
     def _registry_tasks(self):

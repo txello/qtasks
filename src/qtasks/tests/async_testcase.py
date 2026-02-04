@@ -244,7 +244,7 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             )
         else:
             print(
-                f"[AsyncTestCase: {self.name}] Обязательно включить Воркер или Брокер!"
+                f"[AsyncTestCase: {self.name}] Be sure to enable Worker or Broker!"
             )
             return
 

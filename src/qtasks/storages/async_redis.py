@@ -315,7 +315,7 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
             )
             if self.log:
                 self.log.error(
-                    f"Задача {task_broker.uuid} завершена с ошибкой:\n{trace}"
+                    f"Task {task_broker.uuid} finished with an error:\n{trace}"
                 )
         await self.redis_contrib.execute(
             "hset", f"{self.name}:{task_broker.uuid}", mapping=model.__dict__

@@ -24,7 +24,7 @@ def _dumps(obj: Any) -> str:
     try:
         return json.dumps(obj, ensure_ascii=False, default=str)
     except Exception:
-        # В крайних случаях приводим к строке
+        # In extreme cases, we reduce to a line
         return json.dumps({"__non_json__": str(obj)}, ensure_ascii=False)
 
 

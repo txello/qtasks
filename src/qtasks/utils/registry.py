@@ -342,29 +342,29 @@ def shared_task(
     ] = None,
     **kwargs,
 ) -> SyncTask[P, R] | AsyncTask[P, R] | Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
-    """Декоратор для регистрации задач.
+    """A decorator for registering tasks.
 
-    Args:
-        name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-        priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
-        echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
-        retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-        retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-        decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-        tags (List[str], optional): Теги задачи. По умолчанию: `None`.
-        description (str, optional): Описание задачи. По умолчанию: `None`.
-        generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
-        executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-        middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
-        middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
-        awaiting (bool, optional): Использовать ли AsyncTask вместо SyncTask. По умолчанию: `False`.
+        Args:
+            name (str, optional): The name of the task. Default: `func.__name__`.
+            priority (int, optional): The default priority of the task. Default: `config.task_default_priority`.
+            echo (bool, optional): Add (A)syncTask as the first parameter. Default: `False`.
+            retry (int, optional): The number of times to retry the task. Default: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Exceptions that will cause the task to be retried. Default: `None`.
+            decode (Callable, optional): The task result decoder. Default: `None`.
+            tags (List[str], optional): The task tags. Default: `None`.
+            description (str, optional): The task description. Default: `None`.
+            generate_handler (Callable, optional): The handler generator. By Default: `None`.
+            executor (Type["BaseTaskExecutor"], optional): The `BaseTaskExecutor` class. Default: `SyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Middlewares to be executed before the task. Default: `Empty array`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Middlewares to be executed after the task. Default: `Empty array`.
+            awaiting (bool, optional): Whether to use AsyncTask instead of SyncTask. Default: `False`.
 
-    Raises:
-        ValueError: Если задача с таким именем уже зарегистрирована.
-        ValueError: Unknown method {self._method}.
+        Raises:
+            ValueError: If a task with this name is already registered.
+            ValueError: Unknown method {self._method}.
 
-    Returns:
-        SyncTask | AsyncTask: Декоратор для регистрации задачи.
+        Returns:
+            SyncTask | AsyncTask: Decorator for registering a task.
     """
     middlewares_before = middlewares_before or []
     middlewares_after = middlewares_after or []
@@ -373,7 +373,6 @@ def shared_task(
         awaiting = False
 
     if isinstance(name, FunctionType):
-        # Декоратор без скобок
         return TaskRegistry.register(
             name=name.__name__,
             priority=priority or 0,
@@ -393,7 +392,6 @@ def shared_task(
             name
         )  # type: ignore
 
-    # Декоратор со скобками
     def wrapper(func: Callable[P, R]):
         return TaskRegistry.register(
             name=name if isinstance(name, str) else func.__name__,

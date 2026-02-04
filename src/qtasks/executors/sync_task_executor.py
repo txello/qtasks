@@ -148,7 +148,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             new_task_executor: BaseTaskExecutor = m()
             if new_task_executor:
                 self = new_task_executor
-            self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+            self.log.debug(f"Middleware {m.name} for {self.task_func.name} was called.")
 
     def execute_middlewares_after(self):
         """Calling middleware after completing a task."""
@@ -162,7 +162,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             new_task_executor: BaseTaskExecutor = m()
             if new_task_executor:
                 self = new_task_executor
-            self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+            self.log.debug(f"Middleware {m.name} for {self.task_func.name} was called.")
 
     def run_task(self) -> Any | list:
         """
@@ -241,7 +241,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             Any|str: Result of the task.
         """
         if self.log:
-            self.log.debug(f"Вызван execute для {self.task_func.name}")
+            self.log.debug(f"Called execute for {self.task_func.name}")
 
         self.before_execute()
         self.execute_middlewares_before()
@@ -266,7 +266,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             else:
                 raise e
         except TimeoutError as exc:
-            msg = f"Время выполнения задачи {self.task_func.name} превысило лимит {self.task_func.max_time} секунд"
+            msg = f"Time limit exceeded for task {self.task_func.name}: {self.task_func.max_time} seconds"
             if self.log:
                 self.log.error(msg)
             raise TimeoutError(msg) from exc
