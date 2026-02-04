@@ -1,5 +1,9 @@
 # Update History
 
+## v1.7.2 2026-02-05
+
+- Update Russian language link in mkdocs.yml for correct routing
+
 ## v1.7.1 2026-02-05
 
 - The translation of the code from Russian to English has been corrected.
