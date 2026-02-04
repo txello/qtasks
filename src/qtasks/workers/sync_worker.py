@@ -60,53 +60,43 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется воркером.
+            Doc("""
+                    Project name. This name is also used by the worker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         broker: Annotated[
             Optional[BaseBroker],
-            Doc(
-                """
-                    Брокер.
+            Doc("""
+                    Broker.
 
-                    По умолчанию: `qtasks.brokers.SyncRedisBroker`.
-                    """
-            ),
+                    Default: `qtasks.brokers.SyncRedisBroker`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.SyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.SyncEvents`.
+                    """),
         ] = None,
     ):
         """
@@ -144,11 +134,9 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self,
         number: Annotated[
             int,
-            Doc(
-                """
-                    Номер Воркера.
-                    """
-            ),
+            Doc("""
+                    Worker number.
+                    """),
         ],
     ) -> None:
         """
@@ -158,10 +146,10 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             number (int): Worker number.
 
         Raises:
-            RuntimeError: The worker is not running.
+            RuntimeError: Worker is not running.
         """
         if not self._stop_event:
-            raise RuntimeError("The worker is not running.")
+            raise RuntimeError("Worker is not running")
 
         self.events.fire("worker_running", worker=self, number=number)
 
@@ -186,11 +174,9 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
     ) -> None:
         """
@@ -261,51 +247,39 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         uuid: Annotated[
             UUID,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
         created_at: Annotated[
             float,
-            Doc(
-                """
-                    Создание задачи в формате timestamp.
-                    """
-            ),
+            Doc("""
+                    Creating a task in timestamp format.
+                    """),
         ],
         args: Annotated[
             tuple,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ],
         kwargs: Annotated[
             dict,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ],
     ) -> Task:
         """
@@ -365,13 +339,11 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self,
         num_workers: Annotated[
             int,
-            Doc(
-                """
-                    Количество воркеров.
+            Doc("""
+                    Number of workers.
 
-                    По умолчанию: `4`.
-                    """
-            ),
+                    Default: `4`.
+                    """),
         ] = 4,
     ) -> None:
         """
@@ -417,7 +389,7 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
             RuntimeError: task_executor is not defined.
         """
         if not self.task_executor:
-            raise RuntimeError("task_executor не определен.")
+            raise RuntimeError("task_executor is not defined.")
 
         if self.log:
             self.log.info(
@@ -574,27 +546,21 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
         self,
         task_func: Annotated[
             TaskExecSchema | None,
-            Doc(
-                """
-                    Схема функции задачи.
-                    """
-            ),
+            Doc("""
+                    Diagram of the task function.
+                    """),
         ],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None:
         """

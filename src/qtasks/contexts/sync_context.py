@@ -86,10 +86,10 @@ class SyncContext:
             Task|None: Task metadata or None if not found.
 
         Raises:
-            ValueError: If the task UUID is not set.
+            ValueError: Если Task UUID is not set.
         """
         if not self.task_uuid:
-            raise ValueError("UUID задачи не установлен.")
+            raise ValueError("Task UUID is not set.")
 
         if cache:
             if not self._metadata:

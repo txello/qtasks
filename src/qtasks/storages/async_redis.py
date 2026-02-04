@@ -58,83 +58,67 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется Хранилищем.
+            Doc("""
+                    Project name. This name is also used by the Repository.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         url: Annotated[
             str,
-            Doc(
-                """
-                    URL для подключения к Redis.
+            Doc("""
+                    URL to connect to Redis.
 
-                    По умолчанию: `redis://localhost:6379/0`.
-                    """
-            ),
+                    Default: `redis://localhost:6379/0`.
+                    """),
         ] = "redis://localhost:6379/0",
         queue_process: Annotated[
             str,
-            Doc(
-                """
-                    Имя канала для задач в процессе.
+            Doc("""
+                    The name of the channel for tasks in the process.
 
-                    По умолчанию: `task_process`.
-                    """
-            ),
+                    Default: `task_process`.
+                    """),
         ] = "task_process",
         redis_connect: Annotated[
             aioredis.Redis | None,
-            Doc(
-                """
-                    Внешний класс подключения к Redis.
+            Doc("""
+                    External connection class to Redis.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         global_config: Annotated[
             Optional[BaseGlobalConfig],
-            Doc(
-                """
-                    Глобальный конфиг.
+            Doc("""
+                    Global config.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.AsyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.AsyncEvents`.
+                    """),
         ] = None,
     ):
         """
@@ -175,19 +159,15 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         task_status: Annotated[
             TaskStatusNewSchema,
-            Doc(
-                """
-                    Схема статуса новой задачи.
-                    """
-            ),
+            Doc("""
+                    New task status diagram.
+                    """),
         ],
     ) -> None:
         """
@@ -280,11 +260,9 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         self,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments of type kwargs.
+                    """),
         ],
     ) -> None:
         """
@@ -306,19 +284,15 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None:
         """
@@ -375,19 +349,15 @@ class AsyncRedisStorage(BaseStorage, AsyncPluginMixin):
         self,
         task_data: Annotated[
             str,
-            Doc(
-                """
-                    Данные задачи из брокера.
-                    """
-            ),
+            Doc("""
+                    Task data from the broker.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
     ) -> None:
         """

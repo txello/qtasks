@@ -45,43 +45,35 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         self,
         name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для GlobalConfig.
+            Doc("""
+                    Project name. This name can be used for tags for GlobalConfig.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
         """
@@ -223,11 +215,9 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
         """
@@ -243,21 +233,17 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         self,
         plugin: Annotated[
             BasePlugin,
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
             list[str] | None,
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
         """

@@ -48,21 +48,17 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
         self,
         app: Annotated[
             Union["QueueTasks", "aioQueueTasks"],
-            Doc(
-                """
-                    Основной экземпляр.
-                    """
-            ),
+            Doc("""
+                    Main copy.
+                    """),
         ],
         name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя проекта. Это имя может быть использовано для тестовых компонентов.
+            Doc("""
+                    Project name. This name can be used for test components.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
         """Test case initialization."""
@@ -106,11 +102,9 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
         """

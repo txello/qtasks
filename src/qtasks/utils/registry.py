@@ -19,133 +19,107 @@ from qtasks.types.annotations import P, R
 def shared_task(
     name: Annotated[
         str | Callable | None,
-        Doc(
-            """
-                    Имя задачи.
+        Doc("""
+                    Task name.
 
-                    По умолчанию: `func.__name__`.
-                    """
-        ),
+                    Default: `func.__name__`.
+                    """),
     ] = None,
     priority: Annotated[
         int | None,
-        Doc(
-            """
-                    Приоритет у задачи по умолчанию.
+        Doc("""
+                    The task has priority by default.
 
-                    По умолчанию: `config.task_default_priority`.
-                    """
-        ),
+                    Default: `config.task_default_priority`.
+                    """),
     ] = None,
     echo: Annotated[
         bool,
-        Doc(
-            """
-                    Добавить (A)syncTask первым параметром.
+        Doc("""
+                    Add (A)syncTask as the first parameter.
 
-                    По умолчанию: `False`.
-                    """
-        ),
+                    Default: `False`.
+                    """),
     ] = False,
     retry: Annotated[
         int | None,
-        Doc(
-            """
-                    Количество попыток повторного выполнения задачи.
+        Doc("""
+                    The number of attempts to retry the task.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = None,
     retry_on_exc: Annotated[
         list[type[Exception]] | None,
-        Doc(
-            """
-                    Исключения, при которых задача будет повторно выполнена.
+        Doc("""
+                    Exceptions under which the task will be re-executed.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = None,
     decode: Annotated[
         Callable | None,
-        Doc(
-            """
-                Декодер результата задачи.
+        Doc("""
+                Task result decoder.
 
-                По умолчанию: `None`.
-            """
-        ),
+                Default: `None`.
+            """),
     ] = None,
     tags: Annotated[
         list[str] | None,
-        Doc(
-            """
-                Теги задачи.
+        Doc("""
+                Task tags.
 
-                По умолчанию: `None`.
-            """
-        ),
+                Default: `None`.
+            """),
     ] = None,
     description: Annotated[
         str | None,
-        Doc(
-            """
-                Описание задачи.
+        Doc("""
+                Description of the task.
 
-                По умолчанию: `None`.
-            """
-        ),
+                Default: `None`.
+            """),
     ] = None,
     generate_handler: Annotated[
         Callable | None,
-        Doc(
-            """
-                    Генератор обработчика.
+        Doc("""
+                    Handler generator.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = None,
     executor: Annotated[
         type[BaseTaskExecutor] | None,
-        Doc(
-            """
-                    Класс `BaseTaskExecutor`.
+        Doc("""
+                    Class `BaseTaskExecutor`.
 
-                    По умолчанию: `SyncTaskExecutor`.
-                    """
-        ),
+                    Default: `SyncTaskExecutor`.
+                    """),
     ] = None,
     middlewares_before: Annotated[
         list[type[TaskMiddleware]] | None,
-        Doc(
-            """
-                    Мидлвари, которые будут выполнены перед задачей.
+        Doc("""
+                    Middleware that will be executed before the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-        ),
+                    Default: `Empty array`.
+                    """),
     ] = None,
     middlewares_after: Annotated[
         list[type[TaskMiddleware]] | None,
-        Doc(
-            """
-                    Мидлвари, которые будут выполнены после задачи.
+        Doc("""
+                    Middleware that will be executed after the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-        ),
+                    Default: `Empty array`.
+                    """),
     ] = None,
     awaiting: Annotated[
         Literal[False],
-        Doc(
-            """
-                    Async версия.
+        Doc("""
+                    Async version.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = False,
     **kwargs,
 ) -> SyncTask[P, R] | Callable[[Callable[P, R]], SyncTask[P, R]]: ...
@@ -155,133 +129,107 @@ def shared_task(
 def shared_task(
     name: Annotated[
         str | Callable[P, R] | None,
-        Doc(
-            """
-                    Имя задачи.
+        Doc("""
+                    Task name.
 
-                    По умолчанию: `func.__name__`.
-                    """
-        ),
+                    Default: `func.__name__`.
+                    """),
     ] = None,
     priority: Annotated[
         int | None,
-        Doc(
-            """
-                    Приоритет у задачи по умолчанию.
+        Doc("""
+                    The task has priority by default.
 
-                    По умолчанию: `config.task_default_priority`.
-                    """
-        ),
+                    Default: `config.task_default_priority`.
+                    """),
     ] = None,
     echo: Annotated[
         bool,
-        Doc(
-            """
-                    Добавить (A)syncTask первым параметром.
+        Doc("""
+                    Add (A)syncTask as the first parameter.
 
-                    По умолчанию: `False`.
-                    """
-        ),
+                    Default: `False`.
+                    """),
     ] = False,
     retry: Annotated[
         int | None,
-        Doc(
-            """
-                    Количество попыток повторного выполнения задачи.
+        Doc("""
+                    The number of attempts to retry the task.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = None,
     retry_on_exc: Annotated[
         list[type[Exception]] | None,
-        Doc(
-            """
-                    Исключения, при которых задача будет повторно выполнена.
+        Doc("""
+                    Exceptions under which the task will be re-executed.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = None,
     decode: Annotated[
         Callable | None,
-        Doc(
-            """
-                Декодер результата задачи.
+        Doc("""
+                Task result decoder.
 
-                По умолчанию: `None`.
-            """
-        ),
+                Default: `None`.
+            """),
     ] = None,
     tags: Annotated[
         list[str] | None,
-        Doc(
-            """
-                Теги задачи.
+        Doc("""
+                Task tags.
 
-                По умолчанию: `None`.
-            """
-        ),
+                Default: `None`.
+            """),
     ] = None,
     description: Annotated[
         str | None,
-        Doc(
-            """
-                Описание задачи.
+        Doc("""
+                Description of the task.
 
-                По умолчанию: `None`.
-            """
-        ),
+                Default: `None`.
+            """),
     ] = None,
     generate_handler: Annotated[
         Callable | None,
-        Doc(
-            """
-                    Генератор обработчика.
+        Doc("""
+                    Handler generator.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = None,
     executor: Annotated[
         type[BaseTaskExecutor] | None,
-        Doc(
-            """
-                    Класс `BaseTaskExecutor`.
+        Doc("""
+                    Class `BaseTaskExecutor`.
 
-                    По умолчанию: `SyncTaskExecutor`.
-                    """
-        ),
+                    Default: `SyncTaskExecutor`.
+                    """),
     ] = None,
     middlewares_before: Annotated[
         list[type[TaskMiddleware]] | None,
-        Doc(
-            """
-                    Мидлвари, которые будут выполнены перед задачей.
+        Doc("""
+                    Middleware that will be executed before the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-        ),
+                    Default: `Empty array`.
+                    """),
     ] = None,
     middlewares_after: Annotated[
         list[type[TaskMiddleware]] | None,
-        Doc(
-            """
-                    Мидлвари, которые будут выполнены после задачи.
+        Doc("""
+                    Middleware that will be executed after the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-        ),
+                    Default: `Empty array`.
+                    """),
     ] = None,
     awaiting: Annotated[
         Literal[True],
-        Doc(
-            """
-                    Async версия.
+        Doc("""
+                    Async version.
 
-                    По умолчанию: `False`.
-                    """
-        ),
+                    Default: `False`.
+                    """),
     ] = True,
     **kwargs,
 ) -> AsyncTask[P, R] | Callable[[Callable[P, R]], AsyncTask[P, R]]: ...
@@ -290,160 +238,133 @@ def shared_task(
 def shared_task(
     name: Annotated[
         str | Callable | None,
-        Doc(
-            """
-                    Имя задачи.
+        Doc("""
+                    Task name.
 
-                    По умолчанию: `func.__name__`.
-                    """
-        ),
+                    Default: `func.__name__`.
+                    """),
     ] = None,
     priority: Annotated[
         int | None,
-        Doc(
-            """
-                    Приоритет у задачи по умолчанию.
+        Doc("""
+                    The task has priority by default.
 
-                    По умолчанию: `config.task_default_priority`.
-                    """
-        ),
+                    Default: `config.task_default_priority`.
+                    """),
     ] = None,
     echo: Annotated[
         bool,
-        Doc(
-            """
-                    Добавить (A)syncTask первым параметром.
+        Doc("""
+                    Add (A)syncTask as the first parameter.
 
-                    По умолчанию: `False`.
-                    """
-        ),
+                    Default: `False`.
+                    """),
     ] = False,
     retry: Annotated[
         int | None,
-        Doc(
-            """
-                    Количество попыток повторного выполнения задачи.
+        Doc("""
+                    The number of attempts to retry the task.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = None,
     retry_on_exc: Annotated[
         list[type[Exception]] | None,
-        Doc(
-            """
-                    Исключения, при которых задача будет повторно выполнена.
+        Doc("""
+                    Exceptions under which the task will be re-executed.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = None,
     decode: Annotated[
         Callable | None,
-        Doc(
-            """
-                Декодер результата задачи.
+        Doc("""
+                Task result decoder.
 
-                По умолчанию: `None`.
-            """
-        ),
+                Default: `None`.
+            """),
     ] = None,
     tags: Annotated[
         list[str] | None,
-        Doc(
-            """
-                Теги задачи.
+        Doc("""
+                Task tags.
 
-                По умолчанию: `None`.
-            """
-        ),
+                Default: `None`.
+            """),
     ] = None,
     description: Annotated[
         str | None,
-        Doc(
-            """
-                Описание задачи.
+        Doc("""
+                Description of the task.
 
-                По умолчанию: `None`.
-            """
-        ),
+                Default: `None`.
+            """),
     ] = None,
     generate_handler: Annotated[
         Callable | None,
-        Doc(
-            """
-                    Генератор обработчика.
+        Doc("""
+                    Handler generator.
 
-                    По умолчанию: `None`.
-                    """
-        ),
+                    Default: `None`.
+                    """),
     ] = None,
     executor: Annotated[
         type[BaseTaskExecutor] | None,
-        Doc(
-            """
-                    Класс `BaseTaskExecutor`.
+        Doc("""
+                    Class `BaseTaskExecutor`.
 
-                    По умолчанию: `SyncTaskExecutor`.
-                    """
-        ),
+                    Default: `SyncTaskExecutor`.
+                    """),
     ] = None,
     middlewares_before: Annotated[
         list[type[TaskMiddleware]] | None,
-        Doc(
-            """
-                    Мидлвари, которые будут выполнены перед задачей.
+        Doc("""
+                    Middleware that will be executed before the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-        ),
+                    Default: `Empty array`.
+                    """),
     ] = None,
     middlewares_after: Annotated[
         list[type[TaskMiddleware]] | None,
-        Doc(
-            """
-                    Мидлвари, которые будут выполнены после задачи.
+        Doc("""
+                    Middleware that will be executed after the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-        ),
+                    Default: `Empty array`.
+                    """),
     ] = None,
     awaiting: Annotated[
         bool | None,
-        Doc(
-            """
-                    Async версия.
+        Doc("""
+                    Async version.
 
-                    По умолчанию: `False`.
-                    """
-        ),
+                    Default: `False`.
+                    """),
     ] = None,
     **kwargs,
 ) -> SyncTask[P, R] | AsyncTask[P, R] | Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
-    """
-    Decorator for registering tasks.
-    
-        Args:
-            name (str, optional): Name of the task. Default: `func.__name__`.
-            priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
-            echo (bool, optional): Add (A)syncTask as the first parameter. Default: `False`.
-            retry (int, optional): Number of attempts to retry the task. Default: `None`.
-            retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
-            decode (Callable, optional): Decoder of the task result. Default: `None`.
-            tags (List[str], optional): Task tags. Default: `None`.
-            description (str, optional): Description of the task. Default: `None`.
-            generate_handler (Callable, optional): Handler generator. Default: `None`.
-            executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
-            middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
-            middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
-            awaiting (bool, optional): Whether to use AsyncTask instead of SyncTask. Default: `False`.
-    
-        Raises:
-            ValueError: If a task with the same name is already registered.
-            ValueError: Unknown method {self._method}.
-    
-        Returns:
-            SyncTask | AsyncTask: Decorator for registering a task.
+    """Декоратор для регистрации задач.
+
+    Args:
+        name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
+        priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
+        echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
+        retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
+        retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
+        decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
+        tags (List[str], optional): Теги задачи. По умолчанию: `None`.
+        description (str, optional): Описание задачи. По умолчанию: `None`.
+        generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
+        executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
+        middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
+        middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+        awaiting (bool, optional): Использовать ли AsyncTask вместо SyncTask. По умолчанию: `False`.
+
+    Raises:
+        ValueError: Если задача с таким именем уже зарегистрирована.
+        ValueError: Unknown method {self._method}.
+
+    Returns:
+        SyncTask | AsyncTask: Декоратор для регистрации задачи.
     """
     middlewares_before = middlewares_before or []
     middlewares_after = middlewares_after or []

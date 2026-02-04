@@ -30,13 +30,11 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
         self,
         name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для Плагинов.
+            Doc("""
+                    Project name. This name can be used for tags for Plugins.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         *args,
         **kwargs

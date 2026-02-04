@@ -29,7 +29,7 @@ def get_app(app_arg: str) -> Union[QueueTasks, aioQueueTasks, None]:
     """
     try:
         if not app_arg:
-            raise ValueError("Не указан аргумент приложения.")
+            raise ValueError("Application argument is not specified.")
         file_path, app_var = app_arg.split(":")[0], app_arg.split(":")[-1]
         file = import_module(file_path)
         app = getattr(file, app_var)
@@ -117,13 +117,13 @@ def main():
         if args.stats_command:
             handler = getattr(stats, args.stats_command, None)
             if handler is None or not callable(handler):
-                raise ValueError(f"Неизвестная команда stats: {args.stats_command}")
+                raise ValueError(f"Unknown stats command: {args.stats_command}")
 
             handler_obj = handler()
             target_func = getattr(handler_obj, args.target, None)
             if target_func is None or not callable(target_func):
                 raise ValueError(
-                    f"Неизвестная подкоманда {args.stats_command}.{args.target}"
+                    f"Unknown subcommand {args.stats_command}.{args.target}"
                 )
 
             positional_args, keyword_args = positional(args)

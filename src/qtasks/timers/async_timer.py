@@ -41,31 +41,25 @@ class AsyncTimer(BaseTimer[Literal[True]]):
         self,
         app: Annotated[
             QueueTasks,
-            Doc(
-                """
-                    Приложение.
-                    """
-            ),
+            Doc("""
+                    Application.
+                    """),
         ],
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
     ):
         """
@@ -86,59 +80,47 @@ class AsyncTimer(BaseTimer[Literal[True]]):
         self,
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    args задачи.
+            Doc("""
+                    args of the task.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ],
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Приоритет у задачи.
+            Doc("""
+                    The task has priority.
 
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
+                    Default: Task priority value.
+                    """),
         ] = None,
         timeout: Annotated[
             float | None,
-            Doc(
-                """
-                    Таймаут задачи.
+            Doc("""
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         trigger: Annotated[
             Any,
-            Doc(
-                """
-                    Триггер задачи.
-                    """
-            ),
+            Doc("""
+                    Task trigger.
+                    """),
         ],
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    kwargs задачи.
+            Doc("""
+                    kwargs tasks.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Job:
         """
@@ -166,41 +148,33 @@ class AsyncTimer(BaseTimer[Literal[True]]):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Название задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         args: Annotated[
             tuple | None,
-            Doc(
-                """
-                    args задачи.
+            Doc("""
+                    args of the task.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ] = None,
         kwargs: Annotated[
             dict | None,
-            Doc(
-                """
-                    kwargs задачи.
+            Doc("""
+                    kwargs tasks.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ] = None,
     ):
         """

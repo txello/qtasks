@@ -45,73 +45,59 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Project name. Default: `QueueTasks`.
+            Doc("""
+                    Project name. This name is also used by components (Worker, Broker, etc.)
 
                     Default: `QueueTasks`.
-                    """
-            ),
+                    """),
         ] = "QueueTasks",
         broker_url: Annotated[
             str | None,
-            Doc(
-                """
-                    URL for the Broker. Used by the Broker by default via the url parameter.
+            Doc("""
+                    Broker URL. Used by the Broker by default via the url parameter.
 
                     Default: `None`.
-                    """
-            ),
+                    """),
         ] = None,
         broker: Annotated[
             Optional[BaseBroker],
-            Doc(
-                """
+            Doc("""
                     Broker. Stores processing from task queues and data storage.
 
                     Default: `qtasks.brokers.SyncRedisBroker`.
-                    """
-            ),
+                    """),
         ] = None,
         worker: Annotated[
             Optional[BaseWorker],
-            Doc(
-                """
+            Doc("""
                     Worker. Stores task processing.
 
                     Default: `qtasks.workers.SyncWorker`.
-                    """
-            ),
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
+            Doc("""
                     Logger.
 
                     Default: `qtasks.logs.Logger`.
-                    """
-            ),
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
+            Doc("""
                     Config.
 
                     Default: `qtasks.configs.QueueConfig`.
-                    """
-            ),
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
+            Doc("""
                     Events.
 
                     Default: `qtasks.events.SyncEvents`.
-                    """
-            ),
+                    """),
         ] = None,
     ):
         """
@@ -159,51 +145,41 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    The name of the task.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    Task args.
+            Doc("""
+                    args of the task.
 
                     Default: `()`.
-                    """
-            ),
+                    """),
         ],
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Task priority
+            Doc("""
+                    The task has priority.
 
                     Default: Task priority value.
-                    """
-            ),
+                    """),
         ] = None,
         timeout: Annotated[
             float,
-            Doc(
-                """
+            Doc("""
                     Task timeout.
 
-                    If specified, the task is returned via `qtasks.results.SyncResult`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = 0.0,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Kwargs tasks.
+            Doc("""
+                    kwargs tasks.
 
-                    Defaults to `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Optional[Task]: ...
 
@@ -212,51 +188,41 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    The name of the task.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    Task args.
+            Doc("""
+                    args of the task.
 
                     Default: `()`.
-                    """
-            ),
+                    """),
         ],
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Task priority
+            Doc("""
+                    The task has priority.
 
                     Default: Task priority value.
-                    """
-            ),
+                    """),
         ] = None,
         timeout: Annotated[
             None,
-            Doc(
-                """
+            Doc("""
                     Task timeout.
 
-                    If specified, the task is returned via `qtasks.results.SyncResult`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Kwargs tasks.
+            Doc("""
+                    kwargs tasks.
 
-                    Defaults to `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Task: ...
 
@@ -265,51 +231,41 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    The name of the task.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    Task args.
+            Doc("""
+                    args of the task.
 
                     Default: `()`.
-                    """
-            ),
+                    """),
         ],
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Task priority
+            Doc("""
+                    The task has priority.
 
                     Default: Task priority value.
-                    """
-            ),
+                    """),
         ] = None,
         timeout: Annotated[
             float | None,
-            Doc(
-                """
+            Doc("""
                     Task timeout.
 
-                    If specified, the task is returned via `qtasks.results.SyncResult`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Kwargs tasks.
+            Doc("""
+                    kwargs tasks.
 
-                    Defaults to `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Optional[Task]: ...
 
@@ -317,51 +273,41 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    The name of the task.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    Task args.
+            Doc("""
+                    args of the task.
 
                     Default: `()`.
-                    """
-            ),
+                    """),
         ],
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Task priority
+            Doc("""
+                    The task has priority.
 
                     Default: Task priority value.
-                    """
-            ),
+                    """),
         ] = None,
         timeout: Annotated[
             float | None,
-            Doc(
-                """
+            Doc("""
                     Task timeout.
 
-                    If specified, the task is returned via `qtasks.results.SyncResult`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Kwargs tasks.
+            Doc("""
+                    kwargs tasks.
 
-                    Defaults to `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Union[Task, Optional[Task]]:
         """
@@ -436,11 +382,9 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID of the Task.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Union[Task, None]:
         """
@@ -466,33 +410,27 @@ class QueueTasks(BaseQueueTasks, SyncPluginMixin):
         self,
         starter: Annotated[
             Optional[BaseStarter],
-            Doc(
-                """
-                    Starter.
+            Doc("""
+                    Update Starter.
 
-                    Default: `qtasks.starters.SyncStarter`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         num_workers: Annotated[
             int,
-            Doc(
-                """
-                    Number of workers running.
+            Doc("""
+                    Number of running workers.
 
-                    Default: 4.
-                    """
-            ),
+                    Default: `4`.
+                    """),
         ] = 4,
         reset_config: Annotated[
             bool,
-            Doc(
-                """
+            Doc("""
                     Update the config of the worker and broker.
 
                     Default: `True`.
-                    """
-            ),
+                    """),
         ] = True,
     ) -> None:
         """

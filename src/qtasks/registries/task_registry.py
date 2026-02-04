@@ -23,13 +23,11 @@ class TaskRegistry:
 
     _tasks: Annotated[
         dict[str, TaskExecSchema],
-        Doc(
-            """
-            Задачи.
+        Doc("""
+            Tasks.
 
-            По умолчанию: `{}`.
-            """
-        ),
+            Default: `{}`.
+            """),
     ] = {}
 
     @classmethod
@@ -37,133 +35,107 @@ class TaskRegistry:
         cls,
         name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя задачи.
+            Doc("""
+                    Task name.
 
-                    По умолчанию: `func.__name__`.
-                    """
-            ),
+                    Default: `func.__name__`.
+                    """),
         ] = None,
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         awaiting: Annotated[
             bool,
-            Doc(
-                """
-                    Использовать ли AsyncTask вместо SyncTask
+            Doc("""
+                    Should I use AsyncTask instead of SyncTask
 
-                    По умолчанию: `False`.
-                    """
-            ),
+                    Default: `False`.
+                    """),
         ] = False,
         echo: Annotated[
             bool,
-            Doc(
-                """
-                    Добавить (A)syncTask первым параметром.
+            Doc("""
+                    Add (A)syncTask as the first parameter.
 
-                    По умолчанию: `False`.
-                    """
-            ),
+                    Default: `False`.
+                    """),
         ] = False,
         retry: Annotated[
             int | None,
-            Doc(
-                """
-                    Количество попыток повторного выполнения задачи.
+            Doc("""
+                    The number of attempts to retry the task.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         retry_on_exc: Annotated[
             list[type[Exception]] | None,
-            Doc(
-                """
-                    Исключения, при которых задача будет повторно выполнена.
+            Doc("""
+                    Exceptions under which the task will be re-executed.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         decode: Annotated[
             Callable | None,
-            Doc(
-                """
-                    Декодер результата задачи.
+            Doc("""
+                    Task result decoder.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         tags: Annotated[
             list[str] | None,
-            Doc(
-                """
-                    Теги задачи.
+            Doc("""
+                    Task tags.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         description: Annotated[
             str | None,
-            Doc(
-                """
-                    Описание задачи.
+            Doc("""
+                    Description of the task.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         generate_handler: Annotated[
             Callable | None,
-            Doc(
-                """
-                    Генератор обработчика.
+            Doc("""
+                    Handler generator.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         executor: Annotated[
             type[BaseTaskExecutor] | None,
-            Doc(
-                """
-                    Класс `BaseTaskExecutor`.
+            Doc("""
+                    Class `BaseTaskExecutor`.
 
-                    По умолчанию: `SyncTaskExecutor`.
-                    """
-            ),
+                    Default: `SyncTaskExecutor`.
+                    """),
         ] = None,
         middlewares_before: Annotated[
             list[type[TaskMiddleware]] | None,
-            Doc(
-                """
-                    Мидлвари, которые будут выполнены перед задачей.
+            Doc("""
+                    Middleware that will be executed before the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
         middlewares_after: Annotated[
             list[type[TaskMiddleware]] | None,
-            Doc(
-                """
-                    Мидлвари, которые будут выполнены после задачи.
+            Doc("""
+                    Middleware that will be executed after the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
         **kwargs,
     ) -> Callable[[Callable], SyncTask | AsyncTask]:
@@ -243,13 +215,11 @@ class TaskRegistry:
         cls,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
+            Doc("""
+                    Task name.
 
-                    По умолчанию: `func.__name__`.
-                    """
-            ),
+                    Default: `func.__name__`.
+                    """),
         ],
     ) -> TaskExecSchema | None:
         """

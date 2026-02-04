@@ -58,53 +58,43 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self,
         storage: Annotated[
             BaseStorage[TAsyncFlag],
-            Doc(
-                """
-                    Хранилище `qtasks.storages.base.BaseStorage`.
+            Doc("""
+                    Storage `qtasks.storages.base.BaseStorage`.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ],
         name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для Брокеров.
+            Doc("""
+                    Project name. This name can be used for tags for Brokers.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
         """
@@ -142,45 +132,35 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[False]],
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         extra: Annotated[
             dict | None,
-            Doc(
-                """
-                    Дополнительные параметры задачи.
-                    """
-            ),
+            Doc("""
+                    Additional task parameters.
+                    """),
         ] = None,
         args: Annotated[
             tuple | None,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ] = None,
         kwargs: Annotated[
             dict | None,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ] = None,
     ) -> Task: ...
 
@@ -189,45 +169,35 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[True]],
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         extra: Annotated[
             dict | None,
-            Doc(
-                """
-                    Дополнительные параметры задачи.
-                    """
-            ),
+            Doc("""
+                    Additional task parameters.
+                    """),
         ] = None,
         args: Annotated[
             tuple | None,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ] = None,
         kwargs: Annotated[
             dict | None,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ] = None,
     ) -> Task: ...
 
@@ -236,45 +206,35 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         extra: Annotated[
             dict | None,
-            Doc(
-                """
-                    Дополнительные параметры задачи.
-                    """
-            ),
+            Doc("""
+                    Additional task parameters.
+                    """),
         ] = None,
         args: Annotated[
             tuple | None,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ] = None,
         kwargs: Annotated[
             dict | None,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ] = None,
     ) -> Task | Awaitable[Task]:
         """
@@ -297,11 +257,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[False]],
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None: ...
 
@@ -310,11 +268,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[True]],
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None: ...
 
@@ -323,11 +279,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None | Awaitable[Task | None]:
         """
@@ -346,11 +300,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[False]],
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
     ) -> None: ...
 
@@ -359,11 +311,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[True]],
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
     ) -> None: ...
 
@@ -372,11 +322,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
     ) -> None | Awaitable[None]:
         """
@@ -392,13 +340,11 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[False]],
         worker: Annotated[
             Optional[BaseWorker],
-            Doc(
-                """
-                    Класс Воркера.
+            Doc("""
+                    Worker class.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> None: ...
 
@@ -407,13 +353,11 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[True]],
         worker: Annotated[
             Optional[BaseWorker],
-            Doc(
-                """
-                    Класс Воркера.
+            Doc("""
+                    Worker class.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> None: ...
 
@@ -422,13 +366,11 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self,
         worker: Annotated[
             Optional[BaseWorker],
-            Doc(
-                """
-                    Класс Воркера.
+            Doc("""
+                    Worker class.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> None | Awaitable[None]:
         """
@@ -458,11 +400,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
         """
@@ -478,21 +418,17 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self,
         plugin: Annotated[
             BasePlugin,
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
             list[str] | None,
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
         """
@@ -530,19 +466,15 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[False]],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None: ...
 
@@ -551,19 +483,15 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self: BaseBroker[Literal[True]],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None: ...
 
@@ -571,19 +499,15 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None | Awaitable[None]:
         """
@@ -599,19 +523,15 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         self,
         model: Annotated[
             TaskStatusNewSchema,
-            Doc(
-                """
-                    Модель задачи.
-                    """
-            ),
+            Doc("""
+                    Task model.
+                    """),
         ],
         extra: Annotated[
             dict,
-            Doc(
-                """
-                    Дополнительные поля.
-                    """
-            ),
+            Doc("""
+                    Additional fields.
+                    """),
         ],
     ):
         # Вычисляем имена стандартных полей

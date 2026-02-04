@@ -49,53 +49,43 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя может быть использовано Воркером.
+            Doc("""
+                    Project name. This name can be used by Worker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         broker: Annotated[
             Optional[BaseBroker],
-            Doc(
-                """
-                    Брокер `qtasks.brokers.base.BaseBroker`.
+            Doc("""
+                    Broker `qtasks.brokers.base.BaseBroker`.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
         """
@@ -140,51 +130,39 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         self: BaseWorker[Literal[False]],
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         uuid: Annotated[
             UUID,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
         created_at: Annotated[
             float,
-            Doc(
-                """
-                    Создание задачи в формате timestamp.
-                    """
-            ),
+            Doc("""
+                    Creating a task in timestamp format.
+                    """),
         ],
         args: Annotated[
             tuple,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ],
         kwargs: Annotated[
             dict,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ],
     ) -> None: ...
 
@@ -193,51 +171,39 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         self: BaseWorker[Literal[True]],
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         uuid: Annotated[
             UUID,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
         created_at: Annotated[
             float,
-            Doc(
-                """
-                    Создание задачи в формате timestamp.
-                    """
-            ),
+            Doc("""
+                    Creating a task in timestamp format.
+                    """),
         ],
         args: Annotated[
             tuple,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ],
         kwargs: Annotated[
             dict,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ],
     ) -> None: ...
 
@@ -246,51 +212,39 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         uuid: Annotated[
             UUID,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
         created_at: Annotated[
             float,
-            Doc(
-                """
-                    Создание задачи в формате timestamp.
-                    """
-            ),
+            Doc("""
+                    Creating a task in timestamp format.
+                    """),
         ],
         args: Annotated[
             tuple,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ],
         kwargs: Annotated[
             dict,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ],
     ) -> None | Awaitable[None]:
         """
@@ -311,13 +265,11 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         self: BaseWorker[Literal[False]],
         num_workers: Annotated[
             int | None,
-            Doc(
-                """
-                    Количество воркеров.
+            Doc("""
+                    Number of workers.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> None: ...
 
@@ -326,13 +278,11 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         self: BaseWorker[Literal[True]],
         num_workers: Annotated[
             int | None,
-            Doc(
-                """
-                    Количество воркеров.
+            Doc("""
+                    Number of workers.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> None: ...
 
@@ -341,13 +291,11 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         self,
         num_workers: Annotated[
             int | None,
-            Doc(
-                """
-                    Количество воркеров.
+            Doc("""
+                    Number of workers.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> None | Awaitable[None]:
         """
@@ -373,11 +321,9 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
         """
@@ -393,21 +339,17 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         self,
         plugin: Annotated[
             BasePlugin,
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
             list[str] | None,
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
         """

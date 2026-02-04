@@ -57,73 +57,59 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется брокером.
+            Doc("""
+                    Project name. This name is also used by the broker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         url: Annotated[
             str,
-            Doc(
-                """
-                    URL для подключения к сокету.
+            Doc("""
+                    URL to connect to the socket.
 
-                    По умолчанию: `127.0.0.1`.
-                    """
-            ),
+                    Default: `127.0.0.1`.
+                    """),
         ] = "127.0.0.1",
         port: Annotated[
             int,
-            Doc(
-                """
-                    Порт для подключения к сокету.
+            Doc("""
+                    Port for connecting to a socket.
 
-                    По умолчанию: `6379`.
-                    """
-            ),
+                    Default: `6379`.
+                    """),
         ] = 6379,
         storage: Annotated[
             Optional[BaseStorage],
-            Doc(
-                """
-                    Хранилище.
+            Doc("""
+                    Storage.
 
-                    По умолчанию: `SyncRedisStorage`.
-                    """
-            ),
+                    Default: `AsyncRedisStorage`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.SyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.AsyncEvents`.
+                    """),
         ] = None,
     ):
         """
@@ -203,11 +189,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         self,
         worker: Annotated[
             BaseWorker[Literal[False]],
-            Doc(
-                """
-                    Класс воркера.
-                    """
-            ),
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ):
         """
@@ -233,7 +217,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             task_name, uuid, priority = item
             model_get = self.get(uuid=uuid)
             if not model_get:
-                raise KeyError(f"Задача не найдена: {uuid}")
+                raise KeyError(f"Task not found: {uuid}")
 
             args, kwargs, created_at = (
                 model_get.args or (),
@@ -277,51 +261,41 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         extra: Annotated[
             dict | None,
-            Doc(
-                """
-                    Дополнительные параметры задачи.
+            Doc("""
+                    Additional task parameters.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         args: Annotated[
             tuple | None,
-            Doc(
-                """
-                    Аргументы задачи типа args.
+            Doc("""
+                    Task arguments of type args.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ] = None,
         kwargs: Annotated[
             dict | None,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
+            Doc("""
+                    Task arguments of type kwargs.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ] = None,
     ) -> Task:
         """
@@ -338,7 +312,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
             Task: `schemas.task.Task`
 
         Raises:
-            ValueError: Incorrect task status.
+            ValueError: Invalid task status.
         """
         atexit.register(self.stop)
         atexit.register(self.storage.stop)
@@ -393,11 +367,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None:
         """
@@ -423,11 +395,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         self,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
     ) -> None:
         """
@@ -447,11 +417,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         self,
         worker: Annotated[
             BaseWorker,
-            Doc(
-                """
-                    Класс Воркера.
-                    """
-            ),
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ) -> None:
         """
@@ -485,7 +453,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
 
         def _serve():
             if not self.client:
-                raise RuntimeError("self.client не инициализирован.")
+                raise RuntimeError("self.client is not initialized.")
 
             while self.running:
                 try:
@@ -536,19 +504,15 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusErrorSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None:
         """

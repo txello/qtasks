@@ -45,33 +45,27 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
         self,
         app: Annotated[
             Union[QueueTasks, aioQueueTasks],
-            Doc(
-                """
-                    Задача.
+            Doc("""
+                    Task.
 
-                    По умолчанию: `{qtasks.QueueTasks}` или `{qtasks.asyncio.QueueTasks}`.
-                    """
-            ),
+                    Default: `{qtasks.QueueTasks}` or `{qtasks.asyncio.QueueTasks}`.
+                    """),
         ],
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
     ):
         """
@@ -100,59 +94,47 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
         self: BaseTimer[Literal[False]],
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    args задачи.
+            Doc("""
+                    args of the task.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ],
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Приоритет у задачи.
+            Doc("""
+                    The task has priority.
 
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
+                    Default: Task priority value.
+                    """),
         ] = None,
         timeout: Annotated[
             float | None,
-            Doc(
-                """
-                    Таймаут задачи.
+            Doc("""
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         trigger: Annotated[
             Any,
-            Doc(
-                """
-                    Триггер задачи.
-                    """
-            ),
+            Doc("""
+                    Task trigger.
+                    """),
         ],
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    kwargs задачи.
+            Doc("""
+                    kwargs tasks.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Any | None: ...
 
@@ -161,59 +143,47 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
         self: BaseTimer[Literal[True]],
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    args задачи.
+            Doc("""
+                    args of the task.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ],
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Приоритет у задачи.
+            Doc("""
+                    The task has priority.
 
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
+                    Default: Task priority value.
+                    """),
         ] = None,
         timeout: Annotated[
             float | None,
-            Doc(
-                """
-                    Таймаут задачи.
+            Doc("""
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         trigger: Annotated[
             Any,
-            Doc(
-                """
-                    Триггер задачи.
-                    """
-            ),
+            Doc("""
+                    Task trigger.
+                    """),
         ],
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    kwargs задачи.
+            Doc("""
+                    kwargs tasks.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Any | None: ...
 
@@ -222,59 +192,47 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
         self,
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    args задачи.
+            Doc("""
+                    args of the task.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ],
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Приоритет у задачи.
+            Doc("""
+                    The task has priority.
 
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
+                    Default: Task priority value.
+                    """),
         ] = None,
         timeout: Annotated[
             float | None,
-            Doc(
-                """
-                    Таймаут задачи.
+            Doc("""
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         trigger: Annotated[
             Any,
-            Doc(
-                """
-                    Триггер задачи.
-                    """
-            ),
+            Doc("""
+                    Task trigger.
+                    """),
         ],
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    kwargs задачи.
+            Doc("""
+                    kwargs tasks.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Any | None | Awaitable[Any | None]:
         """

@@ -47,151 +47,121 @@ class SyncTask(Generic[P, R]):
         self,
         task_name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя задачи.
+            Doc("""
+                    Task name.
 
-                    По умолчанию: `func.__name__`.
-                    """
-            ),
+                    Default: `func.__name__`.
+                    """),
         ] = None,
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Приоритет у задачи по умолчанию.
+            Doc("""
+                    The task has priority by default.
 
-                    По умолчанию: `config.task_default_priority`.
-                    """
-            ),
+                    Default: `config.task_default_priority`.
+                    """),
         ] = None,
         echo: Annotated[
             bool,
-            Doc(
-                """
-                    Добавить SyncTask первым параметром.
+            Doc("""
+                    Add SyncTask as the first parameter.
 
-                    По умолчанию: `False`.
-                    """
-            ),
+                    Default: `False`.
+                    """),
         ] = False,
         max_time: Annotated[
             float | None,
-            Doc(
-                """
-                    Максимальное время выполнения задачи в секундах.
+            Doc("""
+                    The maximum time it takes to complete a task in seconds.
 
-                    По умолчанию: `None`.
-                """
-            ),
+                    Default: `None`.
+                """),
         ] = None,
         retry: Annotated[
             int | None,
-            Doc(
-                """
-                    Количество попыток повторного выполнения задачи.
+            Doc("""
+                    The number of attempts to retry the task.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         retry_on_exc: Annotated[
             list[type[Exception]] | None,
-            Doc(
-                """
-                    Исключения, при которых задача будет повторно выполнена.
+            Doc("""
+                    Exceptions under which the task will be re-executed.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         decode: Annotated[
             Callable | None,
-            Doc(
-                """
-                    Декодер результата задачи.
-                """
-            ),
+            Doc("""
+                    Task result decoder.
+                """),
         ] = None,
         tags: Annotated[
             list[str] | None,
-            Doc(
-                """
-                    Теги задачи.
+            Doc("""
+                    Task tags.
 
-                    По умолчанию: `None`.
-                """
-            ),
+                    Default: `None`.
+                """),
         ] = None,
         description: Annotated[
             str | None,
-            Doc(
-                """
-                    Описание задачи.
+            Doc("""
+                    Description of the task.
 
-                    По умолчанию: `None`.
-                """
-            ),
+                    Default: `None`.
+                """),
         ] = None,
         generate_handler: Annotated[
             Callable | None,
-            Doc(
-                """
-                    Генератор обработчика.
+            Doc("""
+                    Handler generator.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         executor: Annotated[
             type[BaseTaskExecutor] | None,
-            Doc(
-                """
-                    Класс `BaseTaskExecutor`.
+            Doc("""
+                    Class `BaseTaskExecutor`.
 
-                    По умолчанию: `SyncTaskExecutor`.
-                    """
-            ),
+                    Default: `SyncTaskExecutor`.
+                    """),
         ] = None,
         middlewares_before: Annotated[
             list[type[TaskMiddleware]] | None,
-            Doc(
-                """
-                    Мидлвари, которые будут выполнены перед задачей.
+            Doc("""
+                    Middleware that will be executed before the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
         middlewares_after: Annotated[
             list[type[TaskMiddleware]] | None,
-            Doc(
-                """
-                    Мидлвари, которые будут выполнены после задачи.
+            Doc("""
+                    Middleware that will be executed after the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
         extra: Annotated[
             dict[str, Any] | None,
-            Doc(
-                """
-                    Дополнительные параметры.
+            Doc("""
+                    Additional options.
 
-                    По умолчанию: `Пустой словарь`.
-                    """
-            ),
+                    Default: `Empty dictionary`.
+                    """),
         ] = None,
         app: Annotated[
             Optional[QueueTasks],
-            Doc(
-                """
-                    `QueueTasks` экземпляр.
+            Doc("""
+                    `QueueTasks` instance.
 
-                    По умолчанию: `qtasks._state.app_main`.
-                    """
-            ),
+                    Default: `qtasks._state.app_main`.
+                    """),
         ] = None,
     ):
         """
@@ -247,53 +217,43 @@ class SyncTask(Generic[P, R]):
         self,
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    args задачи.
+            Doc("""
+                    args of the task.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ],
         priority: Annotated[
             int | None,
-            Doc(
-                """
-                    Приоритет у задачи.
+            Doc("""
+                    The task has priority.
 
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
+                    Default: Task priority value.
+                    """),
         ] = None,
         timeout: Annotated[
             float | None,
-            Doc(
-                """
-                    Таймаут задачи.
+            Doc("""
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         task_name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя задачи.
+            Doc("""
+                    Task name.
 
-                    По умолчанию: Значение имени у задачи.
-                    """
-            ),
+                    Default: The value of the task name.
+                    """),
         ] = None,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    kwargs задачи.
+            Doc("""
+                    kwargs tasks.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Union[Task, None]:
         """
@@ -310,10 +270,10 @@ class SyncTask(Generic[P, R]):
             Task|None: Result of the task or `None`.
 
         Raises:
-            ValueError: Task name not specified.
+            ValueError: Task name is not specified.
         """
         if not task_name and not self.task_name:
-            raise ValueError("Не указано имя задачи.")
+            raise ValueError("Task name is not specified.")
 
         if not self._app:
             self._update_app()
@@ -333,53 +293,43 @@ class SyncTask(Generic[P, R]):
             self,
             *args: Annotated[
                 Any,
-                Doc(
-                    """
-                        args задачи.
+                Doc("""
+                        args of the task.
 
-                        По умолчанию: `()`.
-                        """
-                ),
+                        Default: `()`.
+                        """),
             ],
             priority: Annotated[
                 int | None,
-                Doc(
-                    """
-                        Приоритет задачи.
+                Doc("""
+                        Task priority.
 
-                        По умолчанию: Значение приоритета у задачи.
-                        """
-                ),
+                        Default: Task priority value.
+                        """),
             ] = None,
             timeout: Annotated[
                 float | None,
-                Doc(
-                    """
-                        Таймаут задачи.
+                Doc("""
+                        Task timeout.
 
-                        Если указан, задача возвращается через `qtasks.results.AsyncTask`.
-                        """
-                ),
+                        If specified, the task is returned via `qtasks.results.AsyncTask`.
+                        """),
             ] = None,
             task_name: Annotated[
                 str | None,
-                Doc(
-                    """
-                        Имя задачи.
+                Doc("""
+                        Task name.
 
-                        По умолчанию: Значение имени у задачи.
-                        """
-                ),
+                        Default: The value of the task name.
+                        """),
             ] = None,
             **kwargs: Annotated[
                 Any,
-                Doc(
-                    """
-                        kwargs задачи.
+                Doc("""
+                        kwargs tasks.
 
-                        По умолчанию: `{}`.
-                        """
-                ),
+                        Default: `{}`.
+                        """),
             ]
     ) -> SyncTaskCls:
         """Create SyncTaskCls instance.
@@ -406,6 +356,6 @@ class SyncTask(Generic[P, R]):
             import qtasks._state
 
             if qtasks._state.app_main is None:
-                raise ImportError("QTasks app is not initialized.")
+                raise ImportError("Unable to get app!")
             self._app = qtasks._state.app_main
         return

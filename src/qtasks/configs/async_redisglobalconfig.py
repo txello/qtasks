@@ -46,73 +46,59 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется брокером.
+            Doc("""
+                    Project name. This name is also used by the broker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         url: Annotated[
             str,
-            Doc(
-                """
-                    URL для подключения к Redis.
+            Doc("""
+                    URL to connect to Redis.
 
-                    По умолчанию: `redis://localhost:6379/0`.
-                    """
-            ),
+                    Default: `redis://localhost:6379/0`.
+                    """),
         ] = "redis://localhost:6379/0",
         redis_connect: Annotated[
             aioredis.Redis | None,
-            Doc(
-                """
-                    Внешний класс подключения к Redis.
+            Doc("""
+                    External connection class to Redis.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         config_name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя Папки с Hash. Название обновляется на: `name:queue_name`.
+            Doc("""
+                    Folder name with Hash. The name is updated to: `name:queue_name`.
 
-                    По умолчанию: `name:GlobalConfig`.
-                    """
-            ),
+                    Default: `name:GlobalConfig`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.AsyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.AsyncEvents`.
+                    """),
         ] = None,
     ):
         """

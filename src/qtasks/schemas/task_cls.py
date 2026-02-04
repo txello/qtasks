@@ -93,7 +93,7 @@ class AsyncTaskCls(BaseTaskCls["AsyncTask"]):
             RuntimeError: If `AsyncTask` is not declared.
         """
         if not self._task_deco:
-            raise RuntimeError("AsyncTask не объявлен!")
+            raise RuntimeError("AsyncTask is not defined!")
 
         return await self._task_deco.add_task(*self.args, task_name=self.task_name, priority=self.priority, timeout=self.timeout, **self.kwargs)
 
@@ -119,6 +119,6 @@ class SyncTaskCls(BaseTaskCls["SyncTask"]):
             RuntimeError: If `SyncTask` is not declared.
         """
         if not self._task_deco:
-            raise RuntimeError("SyncTask не объявлен!")
+            raise RuntimeError("SyncTask is not defined!")
 
         return self._task_deco.add_task(*self.args, task_name=self.task_name, priority=self.priority, timeout=self.timeout, **self.kwargs)

@@ -38,31 +38,25 @@ class SyncResult:
         self,
         uuid: Annotated[
             UUID | str | None,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ] = None,
         app: Annotated[
             Optional[QueueTasks],
-            Doc(
-                """
-                    `QueueTasks` экземпляр.
+            Doc("""
+                    `QueueTasks` instance.
 
-                    По умолчанию: `qtasks._state.app_main`.
-                    """
-            ),
+                    Default: `qtasks._state.app_main`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
     ):
         """
@@ -95,13 +89,11 @@ class SyncResult:
         self,
         timeout: Annotated[
             float,
-            Doc(
-                """
-                    Таймаут задачи
+            Doc("""
+                    Task timeout
 
-                    По умолчанию: `100`.
-                    """
-            ),
+                    Default: `100`.
+                    """),
         ] = 100,
     ) -> Union[Task, None]:
         """
@@ -154,6 +146,6 @@ class SyncResult:
         import qtasks._state
 
         if qtasks._state.app_main is None:
-            raise ImportError("qtasks app is not initialized.")
+            raise ImportError("Unable to get app!")
         app = qtasks._state.app_main
         return app  # type: ignore

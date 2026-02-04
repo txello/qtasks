@@ -45,7 +45,7 @@ class SyncRetryPlugin(BasePlugin):
     ):
         task = broker.get(uuid=task_broker.uuid)
         if not task:
-            raise ValueError("Задача не найдена")
+            raise ValueError("Task not found")
 
         task_retry = task.retry or task_func.retry
         new_task = None

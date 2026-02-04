@@ -46,63 +46,51 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
         self,
         name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для Стартеров.
+            Doc("""
+                    Project name. This name can be used for tags for Starters.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         broker: Annotated[
             Optional[BaseBroker],
-            Doc(
-                """
-                    Брокер.
+            Doc("""
+                    Broker.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         worker: Annotated[
             Optional[BaseWorker],
-            Doc(
-                """
-                    Воркер.
+            Doc("""
+                    Worker.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
         """
@@ -163,21 +151,17 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
         self,
         plugin: Annotated[
             BasePlugin,
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
             list[str] | None,
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
         """
@@ -200,11 +184,9 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ):
         """

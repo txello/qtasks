@@ -60,73 +60,59 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется брокером.
+            Doc("""
+                    Project name. This name is also used by the broker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         url: Annotated[
             str,
-            Doc(
-                """
-                    URL для подключения к RabbitMQ.
+            Doc("""
+                    URL to connect to RabbitMQ.
 
-                    По умолчанию: `amqp://guest:guest@localhost/`.
-                    """
-            ),
+                    Default: `amqp://guest:guest@localhost/`.
+                    """),
         ] = "amqp://guest:guest@localhost/",
         storage: Annotated[
             Optional[BaseStorage],
-            Doc(
-                """
-                    Хранилище.
+            Doc("""
+                    Storage.
 
-                    По умолчанию: `SyncRedisStorage`.
-                    """
-            ),
+                    Default: `SyncRedisStorage`.
+                    """),
         ] = None,
         queue_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя очереди задач для RabbitMQ. Название обновляется на: `name:queue_name`
+            Doc("""
+                    The name of the task queue for RabbitMQ. The title is updated to: `name:queue_name`
 
-                    По умолчанию: `task_queue`.
-                    """
-            ),
+                    Default: `task_queue`.
+                    """),
         ] = "task_queue",
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.SyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.SyncEvents`.
+                    """),
         ] = None,
     ):
         """
@@ -170,11 +156,9 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         self,
         worker: Annotated[
             BaseWorker[Literal[False]],
-            Doc(
-                """
-                    Класс воркера.
-                    """
-            ),
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ):
         """
@@ -233,7 +217,7 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             )
 
         if not isinstance(self.channel, BlockingChannel):
-            raise RuntimeError("self.channel не объявлен. Сервер не запущен!")
+            raise RuntimeError("self.channel is not defined. The server is not running!")
         self.channel: BlockingChannel
 
         self.channel.basic_consume(
@@ -246,51 +230,41 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         extra: Annotated[
             dict | None,
-            Doc(
-                """
-                    Дополнительные параметры задачи.
+            Doc("""
+                    Additional task parameters.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         args: Annotated[
             tuple | None,
-            Doc(
-                """
-                    Аргументы задачи типа args.
+            Doc("""
+                    Task arguments of type args.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         kwargs: Annotated[
             dict | None,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
+            Doc("""
+                    Task arguments of type kwargs.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> Task:
         """
@@ -307,13 +281,13 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
             Task: `schemas.task.Task`
 
         Raises:
-            RuntimeError: self.channel is not declared. The server is not running!
+            RuntimeError: self.channel is not defined. The server is not running!
         """
         args, kwargs = args or (), kwargs or {}
         if not self.channel:
             self.connect()
         if not isinstance(self.channel, BlockingChannel):
-            raise RuntimeError("self.channel не объявлен. Сервер не запущен!")
+            raise RuntimeError("self.channel is not defined. The server is not running!")
         self.channel: BlockingChannel
 
         uuid = uuid4()
@@ -381,11 +355,9 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None:
         """
@@ -411,11 +383,9 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         self,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
     ) -> None:
         """
@@ -435,11 +405,9 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         self,
         worker: Annotated[
             BaseWorker,
-            Doc(
-                """
-                    Класс Воркера.
-                    """
-            ),
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ) -> None:
         """
@@ -473,19 +441,15 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusErrorSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None:
         """

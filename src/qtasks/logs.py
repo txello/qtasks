@@ -27,43 +27,33 @@ class Logger:
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Name.
-
-                    Used in the `%(name)s` pattern.
-                    """
-            ),
+            Doc("""
+                    Name. Used in the `%(name)s` pattern.
+                    """),
         ],
         subname: Annotated[
             str | None,
-            Doc(
-                """
+            Doc("""
                     Component name.
 
                     Default: None.
-                    """
-            ),
+                    """),
         ] = None,
         default_level: Annotated[
             int,
-            Doc(
-                """
-                    Default level.
+            Doc("""
+                    Level by default.
 
                     Default: `logging.INFO`.
-                    """
-            ),
+                    """),
         ] = logging.INFO,
         format: Annotated[
             str | None,
-            Doc(
-                """
+            Doc("""
                     Logging format.
 
                     Default: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`.
-                    """
-            ),
+                    """),
         ] = None,
     ):
         """

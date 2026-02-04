@@ -53,73 +53,59 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется брокером.
+            Doc("""
+                    Project name. This name is also used by the broker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         url: Annotated[
             str | None,
-            Doc(
-                """
-                    URL для подключения к Redis.
+            Doc("""
+                    URL to connect to Redis.
 
-                    По умолчанию: `redis://localhost:6379/0`.
-                    """
-            ),
+                    Default: `redis://localhost:6379/0`.
+                    """),
         ] = None,
         storage: Annotated[
             Optional[BaseStorage],
-            Doc(
-                """
-                    Хранилище.
+            Doc("""
+                    Storage.
 
-                    По умолчанию: `AsyncRedisStorage`.
-                    """
-            ),
+                    Default: `AsyncRedisStorage`.
+                    """),
         ] = None,
         queue_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя массива очереди задач для Redis. Название обновляется на: `name:queue_name`
+            Doc("""
+                    The name of the task queue array for Redis. The title is updated to: `name:queue_name`
 
-                    По умолчанию: `task_queue`.
-                    """
-            ),
+                    Default: `task_queue`.
+                    """),
         ] = "task_queue",
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.SyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.SyncEvents`.
+                    """),
         ] = None,
     ):
         """
@@ -162,11 +148,9 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         self,
         worker: Annotated[
             BaseWorker[Literal[False]],
-            Doc(
-                """
-                    Класс воркера.
-                    """
-            ),
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ):
         """
@@ -190,7 +174,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
                 continue
 
             if isinstance(task_data, list):
-                raise ValueError("Неизвестный формат данных задачи.")
+                raise ValueError("Unknown task data format.")
 
             task_name, uuid, priority = task_data.split(":")
             uuid = UUID(uuid, version=4)
@@ -200,7 +184,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
 
             model_get = self.get(uuid=uuid)
             if not model_get:
-                raise KeyError(f"Задача не найдена: {uuid}")
+                raise KeyError(f"Task not found: {uuid}")
 
             args, kwargs, created_at = (
                 model_get.args or (),
@@ -244,47 +228,37 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         extra: Annotated[
             dict | None,
-            Doc(
-                """
-                    Дополнительные параметры задачи.
+            Doc("""
+                    Additional task parameters.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         args: Annotated[
             tuple | None,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ] = None,
         kwargs: Annotated[
             dict | None,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ] = None,
     ) -> Task:
         """
@@ -301,7 +275,7 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
             Task: `schemas.task.Task`
 
         Raises:
-            ValueError: Incorrect task status.
+            ValueError: Invalid task status.
         """
         args, kwargs = args or (), kwargs or {}
         uuid = uuid4()
@@ -351,11 +325,9 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None:
         """
@@ -381,11 +353,9 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         self,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
     ) -> None:
         """
@@ -405,11 +375,9 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         self,
         worker: Annotated[
             BaseWorker,
-            Doc(
-                """
-                    Класс Воркера.
-                    """
-            ),
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ) -> None:
         """
@@ -439,19 +407,15 @@ class SyncRedisBroker(BaseBroker, SyncPluginMixin):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusErrorSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None:
         """

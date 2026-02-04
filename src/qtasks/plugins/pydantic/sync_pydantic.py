@@ -97,7 +97,7 @@ class SyncPydanticWrapperPlugin(BasePlugin):
 
             except Exception as e:
                 raise ValueError(
-                    f"Ошибка при сборке модели для '{meta.name}': {e}"
+                    f"Error while building the model for '{meta.name}': {e}"
                 ) from e
 
         return None

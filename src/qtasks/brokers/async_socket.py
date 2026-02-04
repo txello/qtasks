@@ -55,73 +55,59 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется брокером.
+            Doc("""
+                    Project name. This name is also used by the broker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         url: Annotated[
             str,
-            Doc(
-                """
-                    URL для подключения к сокету.
+            Doc("""
+                    URL to connect to the socket.
 
-                    По умолчанию: `127.0.0.1`.
-                    """
-            ),
+                    Default: `127.0.0.1`.
+                    """),
         ] = "127.0.0.1",
         port: Annotated[
             int,
-            Doc(
-                """
-                    Порт для подключения к сокету.
+            Doc("""
+                    Port for connecting to a socket.
 
-                    По умолчанию: `6379`.
-                    """
-            ),
+                    Default: `6379`.
+                    """),
         ] = 6379,
         storage: Annotated[
             Optional[BaseStorage],
-            Doc(
-                """
-                    Хранилище.
+            Doc("""
+                    Storage.
 
-                    По умолчанию: `AsyncRedisStorage`.
-                    """
-            ),
+                    Default: `AsyncRedisStorage`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.AsyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.AsyncEvents`.
+                    """),
         ] = None,
     ):
         """
@@ -202,11 +188,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self,
         worker: Annotated[
             BaseWorker[Literal[True]],
-            Doc(
-                """
-                    Класс воркера.
-                    """
-            ),
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ):
         """
@@ -232,7 +216,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             task_name, uuid, priority = item
             model_get = await self.get(uuid=uuid)
             if not model_get:
-                raise KeyError(f"Задача не найдена: {uuid}")
+                raise KeyError(f"Task not found: {uuid}")
 
             args, kwargs, created_at = (
                 model_get.args or (),
@@ -278,51 +262,41 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         extra: Annotated[
             dict | None,
-            Doc(
-                """
-                    Дополнительные параметры задачи.
+            Doc("""
+                    Additional task parameters.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         args: Annotated[
             tuple | None,
-            Doc(
-                """
-                    Аргументы задачи типа args.
+            Doc("""
+                    Task arguments of type args.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ] = None,
         kwargs: Annotated[
             dict | None,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
+            Doc("""
+                    Task arguments of type kwargs.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ] = None,
     ) -> Task:
         """
@@ -339,7 +313,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             Task: `schemas.task.Task`
 
         Raises:
-            ValueError: Incorrect task status.
+            ValueError: Invalid task status.
         """
         loop = asyncio.get_running_loop()
         asyncio_atexit.register(self.stop, loop=loop)
@@ -368,7 +342,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             model = new_model.get("model", model)
 
         if not isinstance(model, TaskStatusNewSchema):
-            raise ValueError("Некорректный статус задачи.")
+            raise ValueError("Invalid task status.")
 
         await self.storage.add(uuid=uuid, task_status=model)
         reader, writer = await asyncio.open_connection(self.url, self.port)
@@ -397,11 +371,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None:
         """
@@ -427,11 +399,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
     ) -> None:
         """
@@ -451,11 +421,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self,
         worker: Annotated[
             BaseWorker,
-            Doc(
-                """
-                    Класс Воркера.
-                    """
-            ),
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ) -> None:
         """
@@ -512,19 +480,15 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusErrorSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None:
         """

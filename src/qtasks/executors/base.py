@@ -47,39 +47,31 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         self,
         task_func: Annotated[
             TaskExecSchema,
-            Doc(
-                """
-                    `TaskExecSchema` схема.
-                    """
-            ),
+            Doc("""
+                    `TaskExecSchema` schema.
+                    """),
         ],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    `TaskPrioritySchema` схема.
-                    """
-            ),
+            Doc("""
+                    `TaskPrioritySchema` schema.
+                    """),
         ],
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         plugins: Annotated[
             dict[str, list[BasePlugin]] | None,
-            Doc(
-                """
-                    Массив Плагинов.
+            Doc("""
+                    Array of Plugins.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
     ):
         """
@@ -260,21 +252,17 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
         self,
         plugin: Annotated[
             BasePlugin,
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
             list[str] | None,
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
         """

@@ -45,39 +45,31 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         self,
         task_func: Annotated[
             TaskExecSchema,
-            Doc(
-                """
-                    `TaskExecSchema` схема.
-                    """
-            ),
+            Doc("""
+                    `TaskExecSchema` schema.
+                    """),
         ],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    `TaskPrioritySchema` схема.
-                    """
-            ),
+            Doc("""
+                    `TaskPrioritySchema` schema.
+                    """),
         ],
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         plugins: Annotated[
             dict[str, list[BasePlugin]] | None,
-            Doc(
-                """
-                    Массив Плагинов.
+            Doc("""
+                    Array of Plugins.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
     ):
         """

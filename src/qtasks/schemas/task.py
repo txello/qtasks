@@ -55,11 +55,9 @@ class Task:
         self,
         timeout: Annotated[
             float,
-            Doc(
-                """
-                    Таймаут задачи.
-                    """
-            ),
+            Doc("""
+                    Task timeout.
+                    """),
         ] = 100.0,
     ) -> Union["Task", None]:
         """
@@ -74,11 +72,9 @@ class Task:
         self,
         timeout: Annotated[
             float,
-            Doc(
-                """
-                    Таймаут задачи.
-                    """
-            ),
+            Doc("""
+                    Task timeout.
+                    """),
         ] = 100.0,
     ) -> Union["Task", None]:
         """

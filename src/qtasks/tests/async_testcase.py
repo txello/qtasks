@@ -36,21 +36,17 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
         self,
         app: Annotated[
             "QueueTasks",
-            Doc(
-                """
-                    Основной экземпляр.
-                    """
-            ),
+            Doc("""
+                    Main copy.
+                    """),
         ],
         name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя проекта. Это имя может быть использовано для тестовых компонентов.
+            Doc("""
+                    Project name. This name can be used for test components.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
         """
@@ -69,33 +65,27 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
         self,
         starter: Annotated[
             Optional["BaseStarter"],
-            Doc(
-                """
-                    Стартер. Хранит в себе способы запуска компонентов.
+            Doc("""
+                    Starter. Stores methods for launching components.
 
-                    По умолчанию: `qtasks.starters.AsyncStarter`.
-                    """
-            ),
+                    Default: `qtasks.starters.AsyncStarter`.
+                    """),
         ] = None,
         num_workers: Annotated[
             int,
-            Doc(
-                """
-                    Количество запущенных воркеров.
+            Doc("""
+                    Number of running workers.
 
-                    По умолчанию: `4`.
-                    """
-            ),
+                    Default: `4`.
+                    """),
         ] = 4,
         reset_config: Annotated[
             bool,
-            Doc(
-                """
-                    Обновить config у воркера и брокера.
+            Doc("""
+                    Update the config of the worker and broker.
 
-                    По умолчанию: `True`.
-                    """
-            ),
+                    Default: `True`.
+                    """),
         ] = True,
     ):  # TODO: fix!
         """
@@ -122,43 +112,35 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
         self,
         loop: Annotated[
             asyncio.AbstractEventLoop | None,
-            Doc(
-                """
-                    Асинхронный loop.
+            Doc("""
+                    Asynchronous loop.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         starter: Annotated[
             Optional["BaseStarter"],
-            Doc(
-                """
-                    Стартер. Хранит в себе способы запуска компонентов.
+            Doc("""
+                    Starter. Stores methods for launching components.
 
-                    По умолчанию: `qtasks.starters.AsyncStarter`.
-                    """
-            ),
+                    Default: `qtasks.starters.AsyncStarter`.
+                    """),
         ] = None,
         num_workers: Annotated[
             int,
-            Doc(
-                """
-                    Количество запущенных воркеров.
+            Doc("""
+                    Number of running workers.
 
-                    По умолчанию: `4`.
-                    """
-            ),
+                    Default: `4`.
+                    """),
         ] = 4,
         reset_config: Annotated[
             bool,
-            Doc(
-                """
-                    Обновить config у воркера и брокера.
+            Doc("""
+                    Update the config of the worker and broker.
 
-                    По умолчанию: `True`.
-                    """
-            ),
+                    Default: `True`.
+                    """),
         ] = True,
     ) -> None:
         """
@@ -196,51 +178,41 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         *args: Annotated[
             Any,
-            Doc(
-                """
-                    args задачи.
+            Doc("""
+                    args of the task.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет у задачи.
+            Doc("""
+                    The task has priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         timeout: Annotated[
             float | None,
-            Doc(
-                """
-                    Таймаут задачи.
+            Doc("""
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    kwargs задачи.
+            Doc("""
+                    kwargs tasks.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Union["Task", None]:
         """
@@ -280,11 +252,9 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Union["Task", None]:
         """

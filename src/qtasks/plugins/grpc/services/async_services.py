@@ -74,7 +74,7 @@ class AsyncQTasksServiceServicer(qtasks_pb2_grpc.QTasksServiceServicer):
         try:
             task = await self.app.get(request.uuid)
             if not task:
-                return qtasks_pb2.GetTaskResponse(ok=False, error="Задача не найдена!")
+                return qtasks_pb2.GetTaskResponse(ok=False, error="Task not found!")
 
             status = task.status or ""
             result = None

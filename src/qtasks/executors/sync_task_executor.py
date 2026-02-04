@@ -40,39 +40,31 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         self,
         task_func: Annotated[
             TaskExecSchema,
-            Doc(
-                """
-                    `TaskExecSchema` схема.
-                    """
-            ),
+            Doc("""
+                    `TaskExecSchema` schema.
+                    """),
         ],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    `TaskPrioritySchema` схема.
-                    """
-            ),
+            Doc("""
+                    `TaskPrioritySchema` schema.
+                    """),
         ],
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         plugins: Annotated[
             dict[str, list[BasePlugin]] | None,
-            Doc(
-                """
-                    Массив Плагинов.
+            Doc("""
+                    Array of Plugins.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
     ):
         """
@@ -218,7 +210,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
         results = []
         if self.task_func.generating == "async":
             raise RuntimeError(
-                "Невозможно запустить асинхронный генератор задачи в синхронном виде!"
+                "Cannot run an async task generator in synchronous mode!"
             )
 
         elif self.task_func.generating == "sync":

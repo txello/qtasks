@@ -61,53 +61,43 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется воркером.
+            Doc("""
+                    Project name. This name is also used by the worker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         broker: Annotated[
             Optional[BaseBroker],
-            Doc(
-                """
-                    Брокер.
+            Doc("""
+                    Broker.
 
-                    По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
-                    """
-            ),
+                    Default: `qtasks.brokers.AsyncRedisBroker`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.AsyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.AsyncEvents`.
+                    """),
         ] = None,
     ):
         """
@@ -145,11 +135,9 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         self,
         number: Annotated[
             int,
-            Doc(
-                """
-                    Номер Воркера.
-                    """
-            ),
+            Doc("""
+                    Worker number.
+                    """),
         ],
     ) -> None:
         """
@@ -159,10 +147,10 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             number (int): Worker number.
 
         Raises:
-            RuntimeError: The worker is not running.
+            RuntimeError: Worker is not running.
         """
         if not self._stop_event or not self.condition:
-            raise RuntimeError("The worker is not running.")
+            raise RuntimeError("Worker is not running")
 
         await self.events.fire("worker_running", worker=self, number=number)
 
@@ -183,11 +171,9 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
     ) -> None:
         """
@@ -258,51 +244,39 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         uuid: Annotated[
             UUID,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
         created_at: Annotated[
             float,
-            Doc(
-                """
-                    Создание задачи в формате timestamp.
-                    """
-            ),
+            Doc("""
+                    Creating a task in timestamp format.
+                    """),
         ],
         args: Annotated[
             tuple,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ],
         kwargs: Annotated[
             dict,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ],
     ) -> Task:
         """
@@ -317,10 +291,10 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             kwargs (dict): Task arguments of type kwargs.
 
             Raises:
-                RuntimeError: The worker is not running.
+                RuntimeError: Worker is not running.
         """
         if not self.condition:
-            raise RuntimeError("The worker is not running.")
+            raise RuntimeError("Worker is not running.")
 
         new_data = await self._plugin_trigger(
             "worker_add",
@@ -368,13 +342,11 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         self,
         num_workers: Annotated[
             int,
-            Doc(
-                """
-                    Количество воркеров.
+            Doc("""
+                    Number of workers.
 
-                    По умолчанию: `4`.
-                    """
-            ),
+                    Default: `4`.
+                    """),
         ] = 4,
     ) -> None:
         """
@@ -413,11 +385,9 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
         """
@@ -602,27 +572,21 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         self,
         task_func: Annotated[
             TaskExecSchema | None,
-            Doc(
-                """
-                    Схема функции задачи.
-                    """
-            ),
+            Doc("""
+                    Diagram of the task function.
+                    """),
         ],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None:
         """

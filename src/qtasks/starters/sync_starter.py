@@ -45,63 +45,51 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
         self,
         name: Annotated[
             str | None,
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для Стартеров.
+            Doc("""
+                    Project name. This name can be used for tags for Starters.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         broker: Annotated[
             Optional[BaseBroker],
-            Doc(
-                """
-                    Брокер.
+            Doc("""
+                    Broker.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         worker: Annotated[
             Optional[BaseWorker],
-            Doc(
-                """
-                    Воркер.
+            Doc("""
+                    Worker.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.SyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.SyncEvents`.
+                    """),
         ] = None,
     ):
         """
@@ -133,33 +121,27 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
         self,
         num_workers: Annotated[
             int,
-            Doc(
-                """
-                    Количество запущенных воркеров.
+            Doc("""
+                    Number of running workers.
 
-                    По умолчанию: `4`.
-                    """
-            ),
+                    Default: `4`.
+                    """),
         ] = 4,
         reset_config: Annotated[
             bool,
-            Doc(
-                """
-                    Обновить config у воркера и брокера.
+            Doc("""
+                    Update the config of the worker and broker.
 
-                    По умолчанию: `True`.
-                    """
-            ),
+                    Default: `True`.
+                    """),
         ] = True,
         plugins: Annotated[
             dict[str, list[BasePlugin]] | None,
-            Doc(
-                """
-                    Плагины для воркера и брокера.
+            Doc("""
+                    Plugins for worker and broker.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> None:
         """Starter launch. This function is enabled by the main `QueueTasks` instance via `run_forever`.

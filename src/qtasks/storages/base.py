@@ -57,53 +57,43 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для Storage.
+            Doc("""
+                    Project name. This name can be used for tags for Storage.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         global_config: Annotated[
             Optional[BaseGlobalConfig[TAsyncFlag]],
-            Doc(
-                """
-                    Глобальный конфиг.
+            Doc("""
+                    Global config.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
             Logger | None,
-            Doc(
-                """
-                    Логгер.
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
             QueueConfig | None,
-            Doc(
-                """
-                    Конфиг.
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
             Optional[BaseEvents],
-            Doc(
-                """
-                    События.
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
         """
@@ -142,19 +132,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[False]],
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         task_status: Annotated[
             TaskStatusNewSchema,
-            Doc(
-                """
-                    Схема статуса новой задачи.
-                    """
-            ),
+            Doc("""
+                    New task status diagram.
+                    """),
         ],
     ) -> None: ...
 
@@ -163,19 +149,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[True]],
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         task_status: Annotated[
             TaskStatusNewSchema,
-            Doc(
-                """
-                    Схема статуса новой задачи.
-                    """
-            ),
+            Doc("""
+                    New task status diagram.
+                    """),
         ],
     ) -> None: ...
 
@@ -184,19 +166,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         task_status: Annotated[
             TaskStatusNewSchema,
-            Doc(
-                """
-                    Схема статуса новой задачи.
-                    """
-            ),
+            Doc("""
+                    New task status diagram.
+                    """),
         ],
     ) -> None | Awaitable[None]:
         """
@@ -213,11 +191,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[False]],
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None: ...
 
@@ -226,11 +202,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[True]],
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None: ...
 
@@ -239,11 +213,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self,
         uuid: Annotated[
             UUID | str,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Task | None | Awaitable[Task | None]:
         """
@@ -278,11 +250,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[False]],
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments of type kwargs.
+                    """),
         ],
     ) -> None: ...
 
@@ -291,11 +261,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[True]],
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments of type kwargs.
+                    """),
         ],
     ) -> None: ...
 
@@ -304,11 +272,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self,
         **kwargs: Annotated[
             Any,
-            Doc(
-                """
-                    Аргументы обновления типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Update arguments of type kwargs.
+                    """),
         ],
     ) -> None | Awaitable[None]:
         """
@@ -346,19 +312,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[False]],
         task_data: Annotated[
             str,
-            Doc(
-                """
-                    Данные задачи из брокера.
-                    """
-            ),
+            Doc("""
+                    Task data from the broker.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
     ) -> None: ...
 
@@ -367,19 +329,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[True]],
         task_data: Annotated[
             str,
-            Doc(
-                """
-                    Данные задачи из брокера.
-                    """
-            ),
+            Doc("""
+                    Task data from the broker.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
     ) -> None: ...
 
@@ -388,19 +346,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self,
         task_data: Annotated[
             str,
-            Doc(
-                """
-                    Данные задачи из брокера.
-                    """
-            ),
+            Doc("""
+                    Task data from the broker.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
     ) -> None | Awaitable[None]:
         """
@@ -416,21 +370,17 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self,
         plugin: Annotated[
             BasePlugin,
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
             list[str] | None,
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
         """
@@ -454,19 +404,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[False]],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusErrorSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None: ...
 
@@ -475,19 +421,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self: BaseStorage[Literal[True]],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusErrorSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None: ...
 
@@ -495,19 +437,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
             TaskStatusSuccessSchema | TaskStatusErrorSchema,
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None | Awaitable[None]:
         """
@@ -554,11 +492,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
         """
