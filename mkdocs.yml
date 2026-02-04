@@ -109,7 +109,7 @@ extra:
       lang: en
 
     - name: ru - Русский
-      link: /qtasks/ru/
+      link: /ru/
       lang: ru
   social:
     - icon: fontawesome/brands/python
