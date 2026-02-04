@@ -534,21 +534,21 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
                     """),
         ],
     ):
-        # Вычисляем имена стандартных полей
+        # Get the names of standard fields
         task_field_names = {f.name for f in fields(TaskStatusNewSchema)}
 
-        # Ищем дополнительные ключи
+        # We are looking for additional keys
         extra_fields = []
         extra_values = {}
 
         for key, value in extra.items():
             if key not in task_field_names:
-                # Типизация примитивная — можно улучшить
+                # Typing is primitive - can be improved
                 field_type = type(value)
                 extra_fields.append((key, field_type, field(default=None)))
                 extra_values[key] = value
 
-        # Создаем новый dataclass с дополнительными полями
+        # Create a new dataclass with additional fields
         if extra_fields:
             NewTask = make_dataclass(
                 "TaskStatusNewSchema", extra_fields, bases=(TaskStatusNewSchema,)
@@ -556,5 +556,5 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
         else:
             NewTask = TaskStatusNewSchema
 
-        # Объединяем все аргументы
+        # Let's combine all the arguments
         return NewTask(**asdict(model), **extra_values)

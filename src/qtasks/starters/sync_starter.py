@@ -152,7 +152,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             plugins (Dict[str, BasePlugin] | None, optional): Plugins. Default: None.
         """
         if self.log:
-            self.log.info("Запуск QueueTasks...")
+            self.log.info("Starting QueueTasks...")
 
         if plugins:
             self.plugins.update(plugins)
@@ -186,14 +186,14 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
 
         try:
             while True:
-                pass  # Бесконечный цикл выполнения
+                pass
         except KeyboardInterrupt:
             self.stop()
 
     def stop(self):
         """Stops all components."""
         if self.log:
-            self.log.info("Остановка QueueTasks...")
+            self.log.info("Stopping QueueTasks...")
         self._plugin_trigger("starter_stop", starter=self)
 
         if self.broker:

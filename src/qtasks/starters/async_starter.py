@@ -165,7 +165,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             plugins (Dict[str, List[BasePlugin]] | None, optional): Plugins. Default: None.
         """
         if self.log:
-            self.log.info("Запуск QueueTasks...")
+            self.log.info("Starting QueueTasks...")
 
         if plugins:
             self.plugins.update(plugins)
@@ -215,7 +215,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
     async def stop(self):
         """Stops all components."""
         if self.log:
-            self.log.info("Остановка QueueTasks...")
+            self.log.info("Stopping QueueTasks...")
         await self._plugin_trigger("starter_stop", starter=self)
 
         if self.broker:

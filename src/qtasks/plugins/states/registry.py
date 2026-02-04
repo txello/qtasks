@@ -68,7 +68,7 @@ class SyncStateRegistry:
         with self._lock:
             self._ensure(state_cls)
             self._buckets[state_cls].update(mapping)
-            # Возвращаем копию «на чтение», чтобы вне не мутировали напрямую
+            # We return the copy "readable" so that it is not directly mutated outside
             return dict(self._buckets[state_cls])
 
     def get_all(self, state_cls: type) -> dict[str, Any]:

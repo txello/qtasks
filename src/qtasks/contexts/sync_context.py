@@ -36,22 +36,22 @@ class SyncContext:
     def __init__(self, **kwargs):
         """Initializing the context."""
         self.task_name = kwargs.get("task_name")
-        """Имя задачи."""
+        """Task name."""
 
         self.task_uuid: UUID | str | None = kwargs.get("task_uuid")
-        """UUID задачи."""
+        """Task UUID."""
 
         self.generate_handler = kwargs.get("generate_handler")
-        """Функция-генератор для создания задач."""
+        """Generator function for creating tasks."""
 
         self._app: QueueTasks = kwargs.get("app", self._update_app())
-        """Приложение, к которому принадлежит задача."""
+        """The application the task belongs to."""
 
         self._log: Logger = kwargs.get("log", self._update_logger())
-        """Логгер."""
+        """Logger."""
 
         self._metadata: Task | None = None
-        """Метаданные задачи."""
+        """Task metadata."""
 
     def get_logger(self, name: str | None = None) -> Logger:
         """
@@ -86,7 +86,7 @@ class SyncContext:
             Task|None: Task metadata or None if not found.
 
         Raises:
-            ValueError: Если Task UUID is not set.
+            ValueError: Task UUID is not set.
         """
         if not self.task_uuid:
             raise ValueError("Task UUID is not set.")

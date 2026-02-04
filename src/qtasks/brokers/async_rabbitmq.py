@@ -191,7 +191,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
                         task_data["priority"],
                     )
                     if self.log:
-                        self.log.info(f"Получена новая задача: {task_data['uuid']}")
+                        self.log.info(f"Received new task: {task_data['uuid']}")
                     new_args = await self._plugin_trigger(
                         "broker_add_worker",
                         broker=self,

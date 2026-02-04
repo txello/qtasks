@@ -28,7 +28,7 @@ def autodiscover_tasks(app, modules: Optional[list[str]] = None):
         try:
             module = importlib.import_module(app_name)
         except Exception as e:
-            logger.warning(f"[QTasks] Не удалось импортировать {app_name}: {e}")
+            logger.warning(f"[QTasks] Failed to import {app_name}: {e}")
             continue
 
         try:
@@ -37,8 +37,8 @@ def autodiscover_tasks(app, modules: Optional[list[str]] = None):
                     f"{app_name}.{module_name}"
                 ):
                     importlib.import_module(f"{app_name}.{module_name}")
-                    logger.debug(f"[QTasks] Найден {module_name}.py в {app_name}")
+                    logger.debug(f"[QTasks] Found {module_name}.py in {app_name}")
         except Exception as e:
             logger.exception(
-                f"[QTasks] Ошибка при импорте {app_name}.{module_name}: {e}"
+                f"[QTasks] Error importing {app_name}.{module_name}: {e}"
             )

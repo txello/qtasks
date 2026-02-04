@@ -76,7 +76,6 @@ class UtilsInspectStats:
         if json:
             return self._parser_json(task_info)
 
-        # Форматируем словарь
         task_block = "\n".join(
             f"{label:<{self.label_width}}: {value}"
             for label, value in task_info.items()
@@ -137,13 +136,11 @@ class UtilsInspectStats:
             if task.middlewares_after:
                 task_info["Middlewares After"] = pformat(task.middlewares_after)
             if task.extra:
-                # Вставляем многострочное значение с отступом
                 extra_lines = "\n" + "\n".join(
                     f" * {k}: {v}" for k, v in task.extra.items()
                 )
                 task_info["Extra"] = extra_lines
 
-            # Форматируем словарь
             task_block = "\n".join(
                 f"{label:<{self.label_width}}: {value}"
                 for label, value in task_info.items()

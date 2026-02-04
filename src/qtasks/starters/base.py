@@ -195,7 +195,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
         Args:
             config (QueueConfig): Config.
         """
-        self.log.debug("Конфиг обновлен")
+        self.log.debug("The config has been updated")
         if self.worker:
             self.worker.update_config(config)
         if self.broker:

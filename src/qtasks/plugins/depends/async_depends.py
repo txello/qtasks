@@ -126,23 +126,23 @@ class AsyncDependsPlugin(BasePlugin):
         """Universally "expands" a dependency to a value. We don’t pass any arguments - if necessary, add them where you call them."""
         func = callable_obj
 
-        # 1) Функция, помеченная @asynccontextmanager
+        # 1) A function annotated with @asynccontextmanager
         if self._is_async_cm_function(func):
-            cm = func()  # создаём CM
-            # cm должен быть _AGCM или хотя бы иметь __aenter__/__aexit__
+            cm = func()  # create CM
+            # cm should be _AGCM or at least have __aenter__/__aexit__ methods
             if (_AGCM and isinstance(cm, _AGCM)) or (
                 hasattr(cm, "__aenter__") and hasattr(cm, "__aexit__")
             ):
                 return await self.contexts.enter(scope, cm)
             else:
-                # на всякий случай — падаем в общий разбор ниже
+                # Just in case, let's dive into the general analysis below.
                 func = cm
 
-        # 2) Чистая async-функция
+        # 2) Pure async function
         if inspect.iscoroutinefunction(func):
             return await func()
 
-        # 3) async-генератор-функция (берём первый yield и закрываем)
+        # 3) async generator function (take the first yield and close it)
         if inspect.isasyncgenfunction(func):
             agen: AsyncGenerator = func()
             try:
@@ -153,37 +153,37 @@ class AsyncDependsPlugin(BasePlugin):
                 await agen.aclose()
             return v
 
-        # 4) Синхронная функция
+        # 4) sync function
         if inspect.isfunction(func):
             res = func()
-            # результат ещё может оказаться awaitable/генератором/CM — разберём ниже
+            # the result may still turn out to be an awaitable/generator/CM - we'll discuss this below
         elif isinstance(func, partial) or callable(func):
-            # поддержка partial / callable-объектов
+            # support for partial/callable objects
             res = func()
         else:
-            # это уже готовый объект (вдруг передали созданный CM/генератор/корутину)
+            # This is a ready-made object (suddenly they passed a created CM/generator/coroutine)
             res = func
 
-        # === Разбор результата вызова ===
+        # === Parsing the call result ===
 
-        # 5) Уже созданный async context manager
+        # 5) An already created async context manager
         if _AGCM and isinstance(res, _AGCM):
             async with res as v:
                 return v
         if hasattr(res, "__aenter__") and hasattr(res, "__aexit__"):
-            # любой объект с async CM протоколом
+            # any object with the async CM protocol
             async with cast(Any, res) as v:
                 return v
-        # Проверка на наличие методов __aenter__ и __aexit__
+        # Checking for the presence of the __aenter__ and __aexit__ methods
         if hasattr(res, "__aenter__") and hasattr(res, "__aexit__"):
             async with cast(Any, res) as v:
                 return v
 
-        # 6) Короутина (awaitable)
+        # 6) Coroutine (awaitable)
         if inspect.isawaitable(res):
             return await res
 
-        # 7) Синхронный context manager
+        # 7) Synchronous context manager
         if _GCM and isinstance(res, _GCM):
             with res as v:
                 return v
@@ -191,7 +191,7 @@ class AsyncDependsPlugin(BasePlugin):
             with cast(Any, res) as v:
                 return v
 
-        # 8) Синхронный генератор: взять первый yield и закрыть
+        # 8) Sync generator: take the first yield and close
         if inspect.isgenerator(res):
             try:
                 v = next(res)
@@ -201,7 +201,7 @@ class AsyncDependsPlugin(BasePlugin):
                 res.close()
             return v
 
-        # 9) Обычное значение
+        # 9) Normal value
         return res
 
     async def task_close(

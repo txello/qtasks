@@ -44,7 +44,7 @@ class AsyncQTasksGRPCServer:
             maximum_concurrent_rpcs=self._max_concurrent_rpcs,
         )
 
-        # Сервис QTasks
+        # QTasks service
         qtasks_pb2_grpc.add_QTasksServiceServicer_to_server(
             AsyncQTasksServiceServicer(self._app), self._server
         )
@@ -66,7 +66,7 @@ class AsyncQTasksGRPCServer:
     async def _serve(self) -> None:
         await self._create_server()
         await self._server.start()
-        print("Сервер gRPC запущен")
+        print("The gRPC server has started")
         self._health.set("", health_pb2.HealthCheckResponse.SERVING)
         try:
             await self._server.wait_for_termination()

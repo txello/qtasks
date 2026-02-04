@@ -297,13 +297,13 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
 
         for name, param in sig.parameters.items():
             if param.default is not inspect.Parameter.empty:
-                # Именованный аргумент (имеет значение по умолчанию)
+                # Named argument (has a default value)
                 kwargs[name] = param.default
             elif param.kind in (
                 inspect.Parameter.POSITIONAL_ONLY,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
             ):
-                # Позиционный аргумент без значения по умолчанию (просто None)
+                # Positional argument without a default value (just None)
                 args.append(None)
 
         return args, kwargs
@@ -330,7 +330,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
 
         annotations = getattr(func, "__annotations__", {})
 
-        # Обработка позиционных аргументов
+        # Handling positional arguments
         for idx, value in enumerate(args):
             param_name = parameters[idx][0] if idx < len(parameters) else f"arg{idx}"
             annotation = annotations.get(param_name)
@@ -348,7 +348,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
                 )
             )
 
-        # Обработка именованных аргументов
+        # Handling named arguments
         for key, value in kwargs.items():
             annotation = annotations.get(key)
             origin = get_origin(annotation)

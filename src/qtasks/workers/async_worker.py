@@ -363,14 +363,12 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             self._stop_event = asyncio.Event()
         await self._plugin_trigger("worker_start", worker=self)
 
-        # Запускаем несколько воркеров
         loop = asyncio.get_event_loop()
         workers = [
             loop.create_task(self.worker(number)) for number in range(self.num_workers)
         ]
-        await self._stop_event.wait()  # Ожидание сигнала остановки
+        await self._stop_event.wait()
 
-        # Ожидаем завершения всех воркеров
         for worker_task in workers:
             worker_task.cancel()
         await asyncio.gather(*workers, return_exceptions=True)
@@ -533,7 +531,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             updated_at=time(),
         )
         if self.log:
-            self.log.error(f"Задача {task_broker.uuid} была отменена по причине: {e}")
+            self.log.error(f"Task {task_broker.uuid} was cancelled because: {e}")
         return model
 
     async def _task_exists(
