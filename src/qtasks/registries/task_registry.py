@@ -1,8 +1,11 @@
 """Task Registry."""
+from __future__ import annotations
 
 import inspect
-from typing import Callable, Dict, List, Optional, Type, Union
-from typing_extensions import Annotated, Doc
+from collections.abc import Callable
+from typing import Annotated
+
+from typing_extensions import Doc
 
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
@@ -12,172 +15,146 @@ from qtasks.schemas.task_exec import TaskExecSchema
 
 
 class TaskRegistry:
-    """Регистратор задач. Нужен для задач, зарегистрированных через `@shared_task`.
+    """
+    Task recorder. Needed for tasks registered via `@shared_task`.
 
-    Задачи регистрируются в `QueueTasks.__init__()`
+    Tasks are registered in `QueueTasks.__init__()`
     """
 
     _tasks: Annotated[
-        Dict[str, TaskExecSchema],
-        Doc(
-            """
-            Задачи.
+        dict[str, TaskExecSchema],
+        Doc("""
+            Tasks.
 
-            По умолчанию: `{}`.
-            """
-        ),
+            Default: `{}`.
+            """),
     ] = {}
 
     @classmethod
     def register(
         cls,
         name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя задачи.
+            str | None,
+            Doc("""
+                    Task name.
 
-                    По умолчанию: `func.__name__`.
-                    """
-            ),
+                    Default: `func.__name__`.
+                    """),
         ] = None,
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         awaiting: Annotated[
             bool,
-            Doc(
-                """
-                    Использовать ли AsyncTask вместо SyncTask
+            Doc("""
+                    Should I use AsyncTask instead of SyncTask
 
-                    По умолчанию: `False`.
-                    """
-            ),
+                    Default: `False`.
+                    """),
         ] = False,
         echo: Annotated[
             bool,
-            Doc(
-                """
-                    Добавить (A)syncTask первым параметром.
+            Doc("""
+                    Add (A)syncTask as the first parameter.
 
-                    По умолчанию: `False`.
-                    """
-            ),
+                    Default: `False`.
+                    """),
         ] = False,
         retry: Annotated[
-            Union[int, None],
-            Doc(
-                """
-                    Количество попыток повторного выполнения задачи.
+            int | None,
+            Doc("""
+                    The number of attempts to retry the task.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         retry_on_exc: Annotated[
-            Union[List[Type[Exception]], None],
-            Doc(
-                """
-                    Исключения, при которых задача будет повторно выполнена.
+            list[type[Exception]] | None,
+            Doc("""
+                    Exceptions under which the task will be re-executed.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         decode: Annotated[
-            Union[Callable, None],
-            Doc(
-                """
-                    Декодер результата задачи.
+            Callable | None,
+            Doc("""
+                    Task result decoder.
 
-                    По умолчанию: `None`.
-                    """
-            )
+                    Default: `None`.
+                    """),
         ] = None,
         tags: Annotated[
-            Union[List[str], None],
-            Doc(
-                """
-                    Теги задачи.
+            list[str] | None,
+            Doc("""
+                    Task tags.
 
-                    По умолчанию: `None`.
-                    """
-            )
+                    Default: `None`.
+                    """),
         ] = None,
         description: Annotated[
-            Union[str, None],
-            Doc(
-                """
-                    Описание задачи.
+            str | None,
+            Doc("""
+                    Description of the task.
 
-                    По умолчанию: `None`.
-                    """
-            )
+                    Default: `None`.
+                    """),
         ] = None,
         generate_handler: Annotated[
-            Union[Callable, None],
-            Doc(
-                """
-                    Генератор обработчика.
+            Callable | None,
+            Doc("""
+                    Handler generator.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         executor: Annotated[
-            Type["BaseTaskExecutor"],
-            Doc(
-                """
-                    Класс `BaseTaskExecutor`.
+            type[BaseTaskExecutor] | None,
+            Doc("""
+                    Class `BaseTaskExecutor`.
 
-                    По умолчанию: `SyncTaskExecutor`.
-                    """
-            ),
+                    Default: `SyncTaskExecutor`.
+                    """),
         ] = None,
         middlewares_before: Annotated[
-            List["TaskMiddleware"],
-            Doc(
-                """
-                    Мидлвари, которые будут выполнены перед задачей.
+            list[type[TaskMiddleware]] | None,
+            Doc("""
+                    Middleware that will be executed before the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
         middlewares_after: Annotated[
-            List["TaskMiddleware"],
-            Doc(
-                """
-                    Мидлвари, которые будут выполнены после задачи.
+            list[type[TaskMiddleware]] | None,
+            Doc("""
+                    Middleware that will be executed after the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
-        **kwargs
-    ) -> Callable[[Callable], Union[SyncTask, AsyncTask]]:
-        """Регистрация задачи.
+        **kwargs,
+    ) -> Callable[[Callable], SyncTask | AsyncTask]:
+        """
+        Register a task.
 
         Args:
-            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
-            echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
-            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
-            description (str, optional): Описание задачи. По умолчанию: `None`.
-            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
-            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
-            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+            name (str, optional): Name of the task. Default: `func.__name__`.
+            priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+            echo (bool, optional): Add (A)syncTask as the first parameter. Default: `False`.
+            retry (int, optional): Number of attempts to retry the task. Default: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+            decode (Callable, optional): Decoder of the task result. Default: `None`.
+            tags (List[str], optional): Task tags. Default: `None`.
+            description (str, optional): Description of the task. Default: `None`.
+            generate_handler (Callable, optional): Handler generator. Default: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
         """
 
         def wrapper(func: Callable):
@@ -210,7 +187,7 @@ class TaskRegistry:
                 executor=executor,
                 middlewares_before=middlewares_before,
                 middlewares_after=middlewares_after,
-                extra=kwargs
+                extra=kwargs,
             )
 
             cls._tasks[task_name] = model
@@ -238,30 +215,30 @@ class TaskRegistry:
         cls,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
+            Doc("""
+                    Task name.
 
-                    По умолчанию: `func.__name__`.
-                    """
-            ),
+                    Default: `func.__name__`.
+                    """),
         ],
-    ) -> TaskExecSchema:
-        """Получение задачи.
+    ) -> TaskExecSchema | None:
+        """
+        Receiving a task.
 
         Args:
-            name (str): Имя задачи.
+            name (str): Name of the task.
 
         Returns:
-            TaskExecSchema: Задача, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
+            TaskExecSchema: Task type `{task_name:qtasks.schemas.TaskExecSchema}`.
         """
         return cls._tasks.get(name)
 
     @classmethod
-    def all_tasks(cls) -> Dict[str, TaskExecSchema]:
-        """Получение всех задач.
+    def all_tasks(cls) -> dict[str, TaskExecSchema]:
+        """
+        Retrieving all tasks.
 
         Returns:
-            Dict[str, TaskExecSchema]: Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
+            Dict[str, TaskExecSchema]: Tasks, type `{task_name:qtasks.schemas.TaskExecSchema}`.
         """
         return cls._tasks

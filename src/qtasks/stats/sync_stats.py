@@ -1,28 +1,40 @@
 """Sync Stats."""
+from __future__ import annotations
 
-from qtasks.qtasks import QueueTasks
-from .inspect.inspect import InspectStats
+from typing import TYPE_CHECKING
+
+from qtasks.mixins.plugin import SyncPluginMixin
+
 from .base import BaseStats
+from .inspect.inspect import InspectStats
+
+if TYPE_CHECKING:
+    from qtasks.asyncio.qtasks import QueueTasks
+    from qtasks.plugins.base import BasePlugin
 
 
-class SyncStats(BaseStats):
-    """Класс для синхронных статистик."""
+class SyncStats(BaseStats, SyncPluginMixin):
+    """Class for synchronous statistics."""
 
-    def __init__(
-        self,
-        app: "QueueTasks"
-    ):
-        """Инициализация асинхронной статистики.
+    def __init__(self, app: QueueTasks, plugins: dict[str, list[BasePlugin]] | None = None):
+        """
+        Initializing asynchronous statistics.
 
         Args:
-            app (QueueTasks): Экземпляр приложения.
+            app (QueueTasks): Application instance.
+            plugins (Optional[Dict[str, List[BasePlugin]]]): Plugins. Default: `None`.
         """
-        super().__init__(app=app)
+        super().__init__(app=app, plugins=plugins)
 
     def inspect(self):
-        """Инспекция асинхронной статистики.
+        """
+        Inspection of asynchronous statistics.
 
         Returns:
-            AsyncStatsSchema: Схема асинхронной статистики.
+            InspectStats: Synchronous statistics schema.
         """
+        self._plugin_trigger(
+            "stats_inspect",
+            stats=self
+        )
         return InspectStats(self.app)

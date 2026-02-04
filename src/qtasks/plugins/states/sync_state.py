@@ -1,7 +1,8 @@
 """Async State."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Type, get_args, get_origin
+
+from typing import TYPE_CHECKING, Any, get_args, get_origin
 
 from qtasks.plugins.base import BasePlugin
 from qtasks.plugins.states.registry import SyncStateRegistry
@@ -14,47 +15,49 @@ if TYPE_CHECKING:
 
 
 class SyncStatePlugin(BasePlugin):
-    """Плагин для работы с синхронными состояниями."""
+    """Plugin for working with synchronous states."""
 
     def __init__(self, accept_annotated: bool = True):
-        """Инициализация плагина."""
+        """Initializing the plugin."""
+        super().__init__()
         self.accept_annotated = accept_annotated
         self._registry = SyncStateRegistry()
 
-        self.handlers = {
-            "task_executor_args_replace": self.task_executor_args_replace
-        }
+        self.handlers = {"task_executor_args_replace": self.task_executor_args_replace}
 
-    async def start(self, *args, **kwargs):
-        """Запуск плагина."""
+    def start(self, *args, **kwargs):
+        """Launch the plugin."""
         pass
 
-    async def stop(self, *args, **kwargs):
-        """Остановка плагина."""
+    def stop(self, *args, **kwargs):
+        """Stopping the plugin."""
         pass
 
-    async def trigger(self, name, **kwargs):
-        """Триггер для запуска обработчика."""
+    def trigger(self, name, **kwargs):
+        """Trigger to run the handler."""
         handler = self.handlers.get(name)
-        return await handler(**kwargs)
+        if not handler:
+            return
+        return handler(**kwargs)
 
-    async def task_executor_args_replace(
+    def task_executor_args_replace(
         self,
-        task_executor: "BaseTaskExecutor",
-        args: List[Any],
-        kw: Dict[str, Any],
-        args_info: List[ArgMeta],
-    ) -> Tuple[List[Any], Dict[str, Any]]:
-        """Заменяет аргументы и ключевые слова в задаче.
+        task_executor: BaseTaskExecutor,
+        args: list[Any],
+        kw: dict[str, Any],
+        args_info: list[ArgMeta],
+    ):
+        """
+        Replaces arguments and keywords in a task.
 
         Args:
-            task_executor (BaseTaskExecutor): Экземпляр исполнителя задач.
-            args (List[Any]): Позиционные аргументы задачи.
-            kw (Dict[str, Any]): Именованные аргументы задачи.
-            args_info (List[ArgMeta]): Метаданные аргументов.
+            task_executor (BaseTaskExecutor): A task executor instance.
+            args (List[Any]): Positional arguments to the task.
+            kw (Dict[str, Any]): Named task arguments.
+            args_info (List[ArgMeta]): Argument metadata.
 
         Returns:
-            Tuple[List[Any], Dict[str, Any]]: Замененные аргументы и ключевые слова.
+            Tuple[List[Any], Dict[str, Any]]: Replaced arguments and keywords.
         """
         new_args = list(args)
         new_kw = dict(kw)
@@ -73,7 +76,9 @@ class SyncStatePlugin(BasePlugin):
             if isinstance(existing, SyncState):
                 continue
 
-            bound = state_cls(self._registry, state_cls)  # сигнатура: (registry, state_cls)
+            bound = state_cls(
+                self._registry, state_cls
+            )  # сигнатура: (registry, state_cls)
 
             if meta.is_kwarg and meta.key is not None:
                 new_kw[meta.key] = bound
@@ -84,14 +89,15 @@ class SyncStatePlugin(BasePlugin):
 
         return {"args": new_args, "kw": new_kw}
 
-    def _extract_state_class(self, ann: Any) -> Type[SyncState] | None:
-        """Извлекает класс состояния из аннотации.
+    def _extract_state_class(self, ann: Any) -> type[SyncState] | None:
+        """
+        Retrieves the state class from the annotation.
 
         Args:
-            ann (Any): Аннотация.
+            ann (Any): Abstract.
 
         Returns:
-            Type[State] | None: Класс состояния или None.
+            Type[State] | None: State class or None.
         """
         if ann is None:
             return None
@@ -103,7 +109,11 @@ class SyncStatePlugin(BasePlugin):
             origin = get_origin(ann)
             if origin and getattr(origin, "__name__", "") == "Annotated":
                 args = get_args(ann)
-                if args and isinstance(args[0], type) and issubclass(args[0], SyncState):
+                if (
+                    args
+                    and isinstance(args[0], type)
+                    and issubclass(args[0], SyncState)
+                ):
                     return args[0]
 
         return None

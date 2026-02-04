@@ -1,44 +1,45 @@
 """Async Socket Broker."""
+from __future__ import annotations
 
 import asyncio
 import contextlib
-from dataclasses import asdict
 import json
-import asyncio_atexit
-from typing import Optional, Union
-from typing_extensions import Annotated, Doc
-from uuid import UUID, uuid4
+from dataclasses import asdict
+from datetime import datetime
 from time import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional
+from uuid import UUID, uuid4
 
-from qtasks.events.async_events import AsyncEvents
+import asyncio_atexit
+from typing_extensions import Doc
 
-from .base import BaseBroker
-from qtasks.storages.async_redis import AsyncRedisStorage
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
+from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import (
-    TaskStatusCancelSchema,
     TaskStatusErrorSchema,
     TaskStatusNewSchema,
-    TaskStatusProcessSchema,
+    TaskStatusSuccessSchema,
 )
+from qtasks.storages.async_redis import AsyncRedisStorage
+
+from .base import BaseBroker
 
 if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
-    from qtasks.storages.base import BaseStorage
     from qtasks.events.base import BaseEvents
+    from qtasks.storages.base import BaseStorage
+    from qtasks.workers.base import BaseWorker
 
 
 class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     """
-    Брокер, слушающий сокеты и добавляющий задачи в очередь.
+    A broker that listens to sockets and adds tasks to the queue.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -54,110 +55,104 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется брокером.
+            Doc("""
+                    Project name. This name is also used by the broker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         url: Annotated[
             str,
-            Doc(
-                """
-                    URL для подключения к сокету.
+            Doc("""
+                    URL to connect to the socket.
 
-                    По умолчанию: `127.0.0.1`.
-                    """
-            ),
-        ] = None,
+                    Default: `127.0.0.1`.
+                    """),
+        ] = "127.0.0.1",
         port: Annotated[
             int,
-            Doc(
-                """
-                    Порт для подключения к сокету.
+            Doc("""
+                    Port for connecting to a socket.
 
-                    По умолчанию: `6379`.
-                    """
-            ),
+                    Default: `6379`.
+                    """),
         ] = 6379,
         storage: Annotated[
-            Optional["BaseStorage"],
-            Doc(
-                """
-                    Хранилище.
+            Optional[BaseStorage],
+            Doc("""
+                    Storage.
 
-                    По умолчанию: `AsyncRedisStorage`.
-                    """
-            ),
+                    Default: `AsyncRedisStorage`.
+                    """),
         ] = None,
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
-            Doc(
-                """
-                    События.
+            Optional[BaseEvents],
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.AsyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.AsyncEvents`.
+                    """),
         ] = None,
     ):
-        """Инициализация AsyncSocketBroker.
+        """
+        Initializing AsyncSocketBroker.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: `QueueTasks`.
-            url (str, optional): URL для подключения к сокету. По умолчанию: `127.0.0.1`.
-            port (int, optional): Порт для подключения к сокету. По умолчанию: `8765`.
-            storage (BaseStorage, optional): Хранилище. По умолчанию: `None`.
-            log (Logger, optional): Логгер. По умолчанию: `None`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
+            name (str, optional): Project name. Default: `QueueTasks`.
+            url (str, optional): URL to connect to the socket. Default: `127.0.0.1`.
+            port (int, optional): Port to connect to the socket. Default: `6379`.
+            storage (BaseStorage, optional): Storage. Default: `None`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Config. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config, events=events)
-        self.url = url or "127.0.0.1"
+        self.url = url
         self.port = port
+        storage = storage or AsyncRedisStorage(
+            name=name, log=log, config=config, events=events
+        )
+
+        super().__init__(
+            name=name, log=log, config=config, events=events, storage=storage
+        )
+
+        self.storage: BaseStorage[Literal[True]]
+
         self.events = self.events or AsyncEvents()
 
         self.client = None
-        self.storage = storage or AsyncRedisStorage(
-            name=name,
-            log=self.log,
-            config=self.config,
-        )
         self.default_sleep = 0.01
         self.running = False
 
         self.queue = asyncio.Queue()
-        self._serve_task: Union[asyncio.Task, None] = None
-        self._listen_task: Union[asyncio.Task, None] = None
+        self._serve_task: asyncio.Task | None = None
+        self._listen_task: asyncio.Task | None = None
 
-    async def handle_connection(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        """Обрабатывает входящее соединение.
+    async def handle_connection(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ):
+        """
+        Handles an incoming connection.
 
         Args:
-            reader (asyncio.StreamReader): Читатель для входящих данных.
-            writer (asyncio.StreamWriter): Писатель для исходящих данных.
+            reader(asyncio.StreamReader): Reader for incoming data.
+            writer(asyncio.StreamWriter): Writer for outgoing data.
         """
         try:
             data = await reader.read(4096)
@@ -192,18 +187,20 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     async def listen(
         self,
         worker: Annotated[
-            "BaseWorker",
-            Doc(
-                """
-                    Класс воркера.
-                    """
-            ),
+            BaseWorker[Literal[True]],
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ):
-        """Слушает очередь сокета и передаёт задачи воркеру.
+        """
+        Listens to the socket queue and transfers tasks to the worker.
 
         Args:
-            worker (BaseWorker): Класс воркера.
+            worker (BaseWorker): Worker class.
+
+        Raises:
+            KeyError: Task not found.
         """
         await self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
@@ -217,30 +214,31 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                 break
 
             task_name, uuid, priority = item
-            task_data = await self.get(uuid)
-            args, kwargs, created_at = task_data.args, task_data.kwargs, task_data.created_at
-
-            await self.storage.add_process(f"{task_name}:{uuid}:{priority}", priority)
-
             model_get = await self.get(uuid=uuid)
+            if not model_get:
+                raise KeyError(f"Task not found: {uuid}")
+
             args, kwargs, created_at = (
                 model_get.args or (),
                 model_get.kwargs or {},
                 model_get.created_at.timestamp(),
             )
-            self.log.info(f"Получена новая задача: {uuid}")
+
+            await self.storage.add_process(f"{task_name}:{uuid}:{priority}", priority)
+
+            if self.log:
+                self.log.info(f"Получена новая задача: {uuid}")
             new_args = await self._plugin_trigger(
                 "broker_add_worker",
                 broker=self,
                 worker=worker,
-
                 task_name=task_name,
                 uuid=uuid,
                 priority=int(priority),
                 args=args,
                 kw=kwargs,
                 created_at=created_at,
-                return_last=True
+                return_last=True,
             )
             if new_args:
                 task_name = new_args.get("task_name", task_name)
@@ -249,6 +247,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                 args = new_args.get("args", args)
                 kwargs = new_args.get("kw", kwargs)
                 created_at = new_args.get("created_at", created_at)
+
             await worker.add(
                 name=task_name,
                 uuid=uuid,
@@ -257,99 +256,105 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
                 kwargs=kwargs,
                 created_at=created_at,
             )
+            return
 
     async def add(
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
-        extra: dict = None,
+        extra: Annotated[
+            dict | None,
+            Doc("""
+                    Additional task parameters.
+
+                    Default: `None`.
+                    """),
+        ] = None,
         args: Annotated[
-            tuple,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            tuple | None,
+            Doc("""
+                    Task arguments of type args.
+
+                    Default: `()`.
+                    """),
         ] = None,
         kwargs: Annotated[
-            dict,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            dict | None,
+            Doc("""
+                    Task arguments of type kwargs.
+
+                    Default: `{}`.
+                    """),
         ] = None,
     ) -> Task:
-        """Добавляет задачу в брокер.
+        """
+        Adds a task to the broker.
 
         Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи.
-            args (tuple, optional): Аргументы задачи типа args.
-            kwargs (dict, optional): Аргументы задачи типа kwargs.
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. By default: 0.
+            extra (dict, optional): Additional task parameters. Default: `None`.
+            args (tuple, optional): Task arguments of type args. Default: `()`.
+            kwargs (dict, optional): Task arguments of type kwargs. Default: `{}`.
 
         Returns:
             Task: `schemas.task.Task`
+
+        Raises:
+            ValueError: Invalid task status.
         """
         loop = asyncio.get_running_loop()
         asyncio_atexit.register(self.stop, loop=loop)
         asyncio_atexit.register(self.storage.stop, loop=loop)
 
         args, kwargs = args or (), kwargs or {}
-        uuid = str(uuid4())
+        uuid = uuid4()
+        uuid_str = str(uuid)
         created_at = time()
         model = TaskStatusNewSchema(
             task_name=task_name,
             priority=priority,
             created_at=created_at,
             updated_at=created_at,
-            args=args,
-            kwargs=kwargs
+            args=str(args),
+            kwargs=str(kwargs),
         )
 
         if extra:
             model = self._dynamic_model(model=model, extra=extra)
 
         new_model = await self._plugin_trigger(
-            "broker_add_before",
-            broker=self,
-            storage=self.storage,
-            model=model
+            "broker_add_before", broker=self, storage=self.storage, model=model
         )
         if new_model:
             model = new_model.get("model", model)
 
+        if not isinstance(model, TaskStatusNewSchema):
+            raise ValueError("Invalid task status.")
+
         await self.storage.add(uuid=uuid, task_status=model)
         reader, writer = await asyncio.open_connection(self.url, self.port)
         payload = asdict(model)
-        payload.update({"uuid": uuid})
+        payload.update({"uuid": uuid_str})
         writer.write(json.dumps(payload).encode())
         await writer.drain()
         with contextlib.suppress(Exception):
             writer.close()
 
         await self._plugin_trigger(
-            "broker_add_after",
-            broker=self,
-            storage=self.storage,
-            model=model
+            "broker_add_after", broker=self, storage=self.storage, model=model
         )
         return Task(
             status=TaskStatusEnum.NEW.value,
@@ -358,33 +363,34 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             priority=priority,
             args=args,
             kwargs=kwargs,
-            created_at=created_at,
-            updated_at=created_at,
+            created_at=datetime.fromtimestamp(created_at),
+            updated_at=datetime.fromtimestamp(created_at),
         )
 
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
-    ) -> Union[Task, None]:
-        """Получение информации о задаче.
+    ) -> Task | None:
+        """
+        Obtaining information about a task.
 
         Args:
-            uuid (UUID|str): UUID задачи.
+            uuid (UUID|str): UUID of the task.
 
         Returns:
-            Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         task = await self.storage.get(uuid=uuid)
-        new_task = await self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
+        new_task = await self._plugin_trigger(
+            "broker_get", broker=self, task=task, return_last=True
+        )
         if new_task:
             task = new_task.get("task", task)
         return task
@@ -392,20 +398,21 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     async def update(
         self,
         **kwargs: Annotated[
-            dict,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Any,
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
     ) -> None:
-        """Обновляет информацию о задаче.
+        """
+        Updates task information.
 
         Args:
-            kwargs (dict, optional): данные задачи типа kwargs.
+            kwargs (dict, optional): task data of type kwargs.
         """
-        new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
+        new_kw = await self._plugin_trigger(
+            "broker_update", broker=self, kw=kwargs, return_last=True
+        )
         if new_kw:
             kwargs = new_kw.get("kw", kwargs)
         return await self.storage.update(**kwargs)
@@ -413,18 +420,17 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     async def start(
         self,
         worker: Annotated[
-            "BaseWorker",
-            Doc(
-                """
-                    Класс Воркера.
-                    """
-            ),
+            BaseWorker,
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ) -> None:
-        """Запускает брокер.
+        """
+        Launches the broker.
 
         Args:
-            worker (BaseWorker): Класс Воркера.
+            worker (BaseWorker): Worker class.
         """
         await self._plugin_trigger("broker_start", broker=self, worker=worker)
         await self.storage.start()
@@ -435,15 +441,21 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         if self.config.running_older_tasks:
             await self.storage._running_older_tasks(worker)
 
-        self.client = await asyncio.start_server(self.handle_connection, self.url, self.port)
+        self.client = await asyncio.start_server(
+            self.handle_connection, self.url, self.port
+        )
 
-        self._listen_task = asyncio.create_task(self.listen(worker), name="broker-listen")
-        self._serve_task = asyncio.create_task(self.client.serve_forever(), name="broker-serve")
+        self._listen_task = asyncio.create_task(
+            self.listen(worker), name="broker-listen"
+        )
+        self._serve_task = asyncio.create_task(
+            self.client.serve_forever(), name="broker-serve"
+        )
         with contextlib.suppress(asyncio.CancelledError):
             await self._serve_task
 
     async def stop(self):
-        """Останавливает брокер."""
+        """The broker stops."""
         await self._plugin_trigger("broker_stop", broker=self)
         self.running = False
 
@@ -468,35 +480,30 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
-            Union[
-                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
-            ],
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None:
-        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
+        """
+        Updates storage data via the `self.storage.remove_finished_task` function.
 
         Args:
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         new_model = await self._plugin_trigger(
             "broker_remove_finished_task",
             broker=self,
             storage=self.storage,
             model=model,
-            return_last=True
+            return_last=True,
         )
         if new_model:
             model = new_model.get("model", model)
@@ -505,10 +512,12 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         return
 
     async def _running_older_tasks(self, worker):
-        await self._plugin_trigger("broker_running_older_tasks", broker=self, worker=worker)
+        await self._plugin_trigger(
+            "broker_running_older_tasks", broker=self, worker=worker
+        )
         return await self.storage._running_older_tasks(worker)
 
     async def flush_all(self) -> None:
-        """Удалить все данные."""
+        """Delete all data."""
         await self._plugin_trigger("broker_flush_all", broker=self)
         await self.storage.flush_all()

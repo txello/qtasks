@@ -1,9 +1,11 @@
 """Async Result."""
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union
-from typing_extensions import Annotated, Doc
-from uuid import UUID
 import asyncio
+from typing import TYPE_CHECKING, Annotated, Optional, Union
+from uuid import UUID
+
+from typing_extensions import Doc
 
 from qtasks.logs import Logger
 
@@ -13,9 +15,10 @@ if TYPE_CHECKING:
 
 
 class AsyncResult:
-    """`AsyncResult` - Асинхронный класс для ожидания результата задачи.
+    """
+    `AsyncResult` - Asynchronous class for waiting for the result of a task.
 
-    ## Пример
+    ## Example
 
     ```python
     import asyncio
@@ -36,45 +39,42 @@ class AsyncResult:
     def __init__(
         self,
         uuid: Annotated[
-            Union[UUID, str],
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            UUID | str | None,
+            Doc("""
+                    UUID of the task.
+                    """),
         ] = None,
         app: Annotated[
-            Optional["QueueTasks"],
-            Doc(
-                """
-                    `QueueTasks` экземпляр.
+            Optional[QueueTasks],
+            Doc("""
+                    `QueueTasks` instance.
 
-                    По умолчанию: `qtasks._state.app_main`.
-                    """
-            ),
+                    Default: `qtasks._state.app_main`.
+                    """),
         ] = None,
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
     ):
-        """Инициализация асинхронного результата.
+        """
+        Initializing an asynchronous result.
 
         Args:
-            uuid (UUID | str, optional): UUID задачи. По умолчанию: None.
-            app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: None.
+            uuid (UUID | str, optional): UUID of the task. Default: None.
+            app (QueueTasks, optional): `QueueTasks` instance. Default: None.
+            log (Logger, optional): Logger. Default: None.
         """
-        self._app = app
-        self._update_state()
+        self._app = app or self._update_state()
+
         self.log = (
-            log.with_subname("AsyncResult", default_level=self._app.config.logs_default_level_client)
+            log.with_subname(
+                "AsyncResult", default_level=self._app.config.logs_default_level_client
+            )
             if log
             else Logger(
                 name=self._app.name,
@@ -91,52 +91,61 @@ class AsyncResult:
         self,
         timeout: Annotated[
             float,
-            Doc(
-                """
-                    Таймаут задачи
+            Doc("""
+                    Task timeout
 
-                    По умолчанию: `100`.
-                    """
-            ),
+                    Default: `100`.
+                    """),
         ] = 100,
-    ) -> Union["Task", None]:
-        """Ожидание результата задачи.
+    ) -> Union[Task, None]:
+        """
+        Waiting for the task result.
 
         Args:
-            timeout (float, optional): Таймаут задачи. По умолчанию: `100`.
+            timeout (float, optional): Task timeout. Default: `100`.
 
         Returns:
-            Task | None: Задача или None.
+            Task | None: Task or None.
         """
         self._stop_event.clear()
         try:
             result = await asyncio.wait_for(self._execute_task(), timeout)
-            self.log.debug(f"Задача {result.uuid} выполнена!")
+            self.log.debug(f"Task {result.uuid if result else None} is completed!")
             return result
         except asyncio.TimeoutError:
-            self.log.warning(f"Функция выполнялась {timeout} секунд!")
+            self.log.warning(f"Task timed out after {timeout} seconds!")
             self._stop_event.set()
             return None
 
-    async def _execute_task(self) -> Union["Task", None]:
+    async def _execute_task(self) -> Union[Task, None]:
+        if not self.uuid:
+            raise ValueError("Task UUID is not set.")
+
         uuid = self.uuid
         while True:
             if self._stop_event.is_set():
                 break
 
             task = await self._app.get(uuid=uuid)
-            if hasattr(task, "retry") and task.retry > 0 and hasattr(task, "retry_child_uuid"):
+
+            if not task:
+                self.log.warning(f"Task {uuid} not found!")
+                return None
+
+            if task.retry and task.retry > 0 and task.retry_child_uuid:
                 uuid = task.retry_child_uuid
                 continue
+
             if not task or task.status not in self._app.config.result_statuses_end:
                 await asyncio.sleep(self._app.config.result_time_interval)
                 continue
+
             return task
 
-    def _update_state(self) -> "QueueTasks":
+    def _update_state(self) -> QueueTasks:
         import qtasks._state
 
-        if not self._app:
-            if qtasks._state.app_main is None:
-                raise ImportError("Невозможно получить app!")
-            self._app = qtasks._state.app_main
+        if qtasks._state.app_main is None:
+            raise ImportError("Unable to get app!")
+        app = qtasks._state.app_main
+        return app  # type: ignore

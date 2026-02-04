@@ -4,15 +4,15 @@ from enum import Enum
 
 
 class TaskStatusEnum(Enum):
-    """`TaskStatusEnum` - Статусы задач."""
+    """`TaskStatusEnum` - Task statuses."""
 
     NEW = "new"
-    """Новая задача"""
+    """New task."""
     PROCESS = "process"
-    """Задача в процессе"""
+    """Task is being processed."""
     SUCCESS = "success"
-    """Задача успешно выполнена"""
+    """Task successfully completed."""
     ERROR = "error"
-    """Задача выполнена с ошибкой"""
+    """Task completed with an error."""
     CANCEL = "cancel"
-    """Задача отменена"""
+    """Task cancelled."""

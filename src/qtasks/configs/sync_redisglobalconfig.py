@@ -1,28 +1,30 @@
 """Sync Redis Global Config."""
+from __future__ import annotations
 
-from threading import Thread
 import time
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
-from typing_extensions import Annotated, Doc
+from threading import Thread
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, cast
+
 import redis
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
+from qtasks.schemas.global_config import GlobalConfigSchema
 
 from .base import BaseGlobalConfig
-from qtasks.schemas.global_config import GlobalConfigSchema
 
 if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
 
 
-class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
+class SyncRedisGlobalConfig(BaseGlobalConfig[Literal[False]], SyncPluginMixin):
     """
-    Глобальный Конфиг, работающий через Redis и работает с глобальными значениями.
+    Global Config running through Redis and working with global values.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -44,85 +46,72 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется брокером.
+            Doc("""
+                    Project name. This name is also used by the broker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         url: Annotated[
             str,
-            Doc(
-                """
-                    URL для подключения к Redis.
+            Doc("""
+                    URL to connect to Redis.
 
-                    По умолчанию: `redis://localhost:6379/0`.
-                    """
-            ),
+                    Default: `redis://localhost:6379/0`.
+                    """),
         ] = "redis://localhost:6379/0",
         redis_connect: Annotated[
-            Optional[redis.Redis],
-            Doc(
-                """
-                    Внешний класс подключения к Redis.
+            redis.Redis | None,
+            Doc("""
+                    External connection class to Redis.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         config_name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя Папки с Hash. Название обновляется на: `name:queue_name`.
+            str | None,
+            Doc("""
+                    Folder name with Hash. The name is updated to: `name:queue_name`.
 
-                    По умолчанию: `name:GlobalConfig`.
-                    """
-            ),
+                    Default: `name:GlobalConfig`.
+                    """),
         ] = None,
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
-            Doc(
-                """
-                    События.
+            Optional[BaseEvents],
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.SyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.SyncEvents`.
+                    """),
         ] = None,
     ):
-        """Инициализация асинхронного Redis глобального конфига.
+        """
+        Initializing the Redis global config.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
-            url (str, optional): URL для подключения к Redis. По умолчанию: "redis://localhost:6379/0".
-            redis_connect (redis.Redis, optional): Внешний класс подключения к Redis. По умолчанию: None.
-            config_name (str, optional): Имя Папки с Hash. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: None.
-            config (QueueConfig, optional): Конфигурация. По умолчанию: None.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
+            name (str, optional): Project name. Default: `QueueTasks`.
+            url (str, optional): URL to connect to Redis. Default: `redis://localhost:6379/0`.
+            redis_connect (redis.Redis, optional): External Redis connection class. Default: None.
+            config_name (str, optional): Name of the Hash Folder. Default: `None`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Configuration. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.SyncEvents`.
         """
         super().__init__(name=name, log=log, config=config, events=events)
         self.name = name
@@ -136,20 +125,21 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         self.running = False
 
     def set(self, name: str, key: str, value: str) -> None:
-        """Добавить новое значение.
+        """
+        Add new value.
 
         Args:
-            name (str): Имя.
-            key (str): Ключ.
-            value (str): Значение.
+            name (str): Name.
+            key (str): Key.
+            value(str): Value.
         """
         new_data = self._plugin_trigger(
             "global_config_set",
             global_config=self,
-            name=name,
+            name_=name,
             key=key,
             value=value,
-            return_last=True
+            return_last=True,
         )
         if new_data:
             name = new_data.get("name", name)
@@ -160,68 +150,64 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         return
 
     def get(self, key: str, name: str) -> Any:
-        """Получить значение.
+        """
+        Get value.
 
         Args:
-            key (str): Ключ.
-            name (str): Имя.
+            key (str): Key.
+            name (str): Name.
 
         Returns:
-            Any: Значение.
+            Any: Value.
         """
         result = self.client.hget(name=f"{self.config_name}:{key}", key=name)
         new_result = self._plugin_trigger(
-            "global_config_get",
-            global_config=self,
-            get=result,
-            return_last=True
+            "global_config_get", global_config=self, get=result, return_last=True
         )
         if new_result:
             result = new_result.get("get", result)
         return result
 
-    def get_all(self, key: str) -> Dict[str, Any]:
-        """Получить все значения.
+    def get_all(self, key: str) -> dict[str, Any]:
+        """
+        Get all values.
 
         Args:
-            key (str): Ключ.
+            key (str): Key.
 
         Returns:
-            Dict[str, Any]: Значения.
+            Dict[str, Any]: Values.
         """
-        result = self.client.hgetall(name=f"{self.config_name}:{key}")
+        raw = self.client.hgetall(name=f"{self.config_name}:{key}")
+        result = cast(dict, raw)
         new_result = self._plugin_trigger(
-            "global_config_get_all",
-            global_config=self,
-            get=result,
-            return_last=True
+            "global_config_get_all", global_config=self, get=result, return_last=True
         )
         if new_result:
             result = new_result.get("get", result)
         return result
 
-    def get_match(self, match: str) -> Union[Any, dict]:
-        """Получить значения по паттерну.
+    def get_match(self, match: str) -> Any | dict:
+        """
+        Get value by pattern.
 
         Args:
-            match (str): Паттерн.
+            match (str): Pattern.
 
         Returns:
-            Any | Dict[str, Any]: Значение или Значения.
+            Any | Dict[str, Any]: Value or Values.
         """
-        result = self.client.hscan(key=self.config_name, match=match)
+        self.config_name: str
+        result = self.client.hscan(self.config_name, match=match)
         new_result = self._plugin_trigger(
-            "global_config_get_match",
-            global_config=self,
-            get=result,
-            return_last=True
+            "global_config_get_match", global_config=self, get=result, return_last=True
         )
         if new_result:
             result = new_result.get("get", result)
         return result
 
     def start(self) -> None:
-        """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
+        """Launching the Broker. This function is enabled by the main instance of `QueueTasks` via `run_forever."""
         self._plugin_trigger("global_config_start", global_config=self)
         self.running = True
         global_config = GlobalConfigSchema(name=self.name, status="running")
@@ -231,14 +217,14 @@ class SyncRedisGlobalConfig(BaseGlobalConfig, SyncPluginMixin):
         Thread(target=self._set_status, daemon=True).start()
 
     def stop(self) -> None:
-        """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+        """Stops Global Config. This function is invoked by the main `QueueTasks` instance after the `run_forever` function completes."""
         self._plugin_trigger("global_config_stop", global_config=self)
         self.running = False
         self.client.close()
         return
 
     def _set_status(self):
-        """Обновляет статус запуска глобального конфига."""
+        """Updates the startup status of the global config."""
         self._plugin_trigger("global_config_set_status", global_config=self)
         ttl = self.config.global_config_status_ttl
         interval = self.config.global_config_status_set_periodic

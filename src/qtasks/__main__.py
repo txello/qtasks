@@ -1,35 +1,35 @@
-"""Входная точка для запуска QTasks."""
+"""Entry point for running QTasks."""
+from __future__ import annotations
 
-from argparse import ArgumentParser
-from importlib import import_module
 import os
 import sys
+from argparse import ArgumentParser
+from importlib import import_module
 from types import FunctionType
 from typing import TYPE_CHECKING, Union
-
 
 from qtasks.stats.sync_stats import SyncStats
 
 if TYPE_CHECKING:
-    from qtasks.qtasks import QueueTasks
     from qtasks.asyncio.qtasks import QueueTasks as aioQueueTasks
+    from qtasks.qtasks import QueueTasks
 
 
 sys.path.append(os.path.abspath(os.getcwd()))
 
 
-def get_app(app_arg: str) -> Union["QueueTasks", "aioQueueTasks", None]:
-    """Получение экземпляра приложения.
+def get_app(app_arg: str) -> Union[QueueTasks, aioQueueTasks, None]:
+    """Get an application instance.
 
     Args:
-        app_arg (str): Аргумент приложения в формате "module:app".
+        app_arg (str): Application argument in the format "module:app".
 
     Returns:
-        QueueTasks: Экземпляр приложения.
+        QueueTasks: Application instance.
     """
     try:
         if not app_arg:
-            raise ValueError("Не указан аргумент приложения.")
+            raise ValueError("Application argument is not specified.")
         file_path, app_var = app_arg.split(":")[0], app_arg.split(":")[-1]
         file = import_module(file_path)
         app = getattr(file, app_var)
@@ -40,7 +40,7 @@ def get_app(app_arg: str) -> Union["QueueTasks", "aioQueueTasks", None]:
 
 
 def positional(args):
-    """Разбор позиционных аргументов."""
+    """Analysis of positional arguments."""
     positional_args = []
     keyword_args = {}
     for arg in args.extra:
@@ -62,7 +62,7 @@ def positional(args):
 
 
 def main():
-    """Главная функция."""
+    """Main function."""
     parser = ArgumentParser(
         prog="QTasks",
         description="QueueTasks framework",
@@ -73,21 +73,24 @@ def main():
     subparsers = parser.add_subparsers(dest="command")
 
     # subcommand: run
-    subparsers.add_parser("run", help="Запустить приложение")
+    subparsers.add_parser("run", help="Run the task queue app")
 
     # subcommand: web
-    subparsers.add_parser("web", help="Запустить WebView")
+    subparsers.add_parser("web", help="Run WebView")
 
     # subcommand: stats
-    stats_parser = subparsers.add_parser("stats", help="Инспекция статистики")
-    stats_parser.add_argument("--stats-app", help="Объявленное приложение для статистики")
+    stats_parser = subparsers.add_parser("stats", help="Inspect statistics")
+    stats_parser.add_argument(
+        "--stats-app", help="Declared application for statistics (module:app)"
+    )
     stats_subparsers = stats_parser.add_subparsers(dest="stats_command")
 
     # stats inspect <target> [*extra]
-    inspect_parser = stats_subparsers.add_parser("inspect", help="Инспектировать")
-    inspect_parser.add_argument("target", help="Метод инспекции (например: tasks, task, result)")
-    inspect_parser.add_argument("extra", nargs="*", help="Дополнительные аргументы")
-
+    inspect_parser = stats_subparsers.add_parser("inspect", help="Inspect statistics")
+    inspect_parser.add_argument(
+        "target", help="Target to inspect (e.g., tasks, task, result)"
+    )
+    inspect_parser.add_argument("extra", nargs="*", help="Extra arguments")
     args = parser.parse_args()
 
     app = get_app(args.A)
@@ -106,19 +109,21 @@ def main():
 
     elif args.command == "stats":
         if not app:
-            parser.error("Не удалось получить экземпляр приложения!")
+            parser.error("QTasks app is required for stats!")
 
-        stats = get_app(args.stats_app) if args.stats_app else SyncStats(app=app)
+        stats = get_app(args.stats_app) if args.stats_app else SyncStats(app=app)  # type: ignore
 
         if args.stats_command:
             handler = getattr(stats, args.stats_command, None)
             if handler is None or not callable(handler):
-                raise ValueError(f"Неизвестная команда stats: {args.stats_command}")
+                raise ValueError(f"Unknown stats command: {args.stats_command}")
 
             handler_obj = handler()
             target_func = getattr(handler_obj, args.target, None)
             if target_func is None or not callable(target_func):
-                raise ValueError(f"Неизвестная подкоманда {args.stats_command}.{args.target}")
+                raise ValueError(
+                    f"Unknown subcommand {args.stats_command}.{args.target}"
+                )
 
             positional_args, keyword_args = positional(args)
 

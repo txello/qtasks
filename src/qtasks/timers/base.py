@@ -1,22 +1,34 @@
 """Base timer class."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional, Union
-from typing_extensions import Annotated, Doc
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from collections.abc import Awaitable
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Generic,
+    Literal,
+    Union,
+    overload,
+)
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
-    from qtasks import QueueTasks
+    from qtasks.asyncio.qtasks import QueueTasks as aioQueueTasks
+    from qtasks.qtasks import QueueTasks
 
 
-class BaseTimer(ABC):
+class BaseTimer(Generic[TAsyncFlag], ABC):
     """
-    `BaseTimer` - Абстрактный класс, который является фундаментом для Таймеров.
+    `BaseTimer` - An abstract class that is the basis for Timers.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -32,42 +44,37 @@ class BaseTimer(ABC):
     def __init__(
         self,
         app: Annotated[
-            "QueueTasks",
-            Doc(
-                """
-                    Задача.
+            Union[QueueTasks, aioQueueTasks],
+            Doc("""
+                    Task.
 
-                    По умолчанию: `{qtasks.QueueTasks}` или `{qtasks.asyncio.QueueTasks}`.
-                    """
-            ),
+                    Default: `{qtasks.QueueTasks}` or `{qtasks.asyncio.QueueTasks}`.
+                    """),
         ],
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
     ):
-        """Инициализация таймера.
+        """
+        Timer initialization.
 
         Args:
-            app (QueueTasks): Приложение.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+            app (QueueTasks): Application.
+            log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
         """
         self.app = app
         self.config = config or self.app.config
@@ -81,82 +88,168 @@ class BaseTimer(ABC):
                 format=self.config.logs_format,
             )
         )
-        self.scheduler = AsyncIOScheduler()
+
+    @overload
+    def add_task(
+        self: BaseTimer[Literal[False]],
+        *args: Annotated[
+            Any,
+            Doc("""
+                    args of the task.
+
+                    Default: `()`.
+                    """),
+        ],
+        task_name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        priority: Annotated[
+            int | None,
+            Doc("""
+                    The task has priority.
+
+                    Default: Task priority value.
+                    """),
+        ] = None,
+        timeout: Annotated[
+            float | None,
+            Doc("""
+                    Task timeout.
+
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
+        ] = None,
+        trigger: Annotated[
+            Any,
+            Doc("""
+                    Task trigger.
+                    """),
+        ],
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    kwargs tasks.
+
+                    Default: `{}`.
+                    """),
+        ],
+    ) -> Any | None: ...
+
+    @overload
+    async def add_task(
+        self: BaseTimer[Literal[True]],
+        *args: Annotated[
+            Any,
+            Doc("""
+                    args of the task.
+
+                    Default: `()`.
+                    """),
+        ],
+        task_name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        priority: Annotated[
+            int | None,
+            Doc("""
+                    The task has priority.
+
+                    Default: Task priority value.
+                    """),
+        ] = None,
+        timeout: Annotated[
+            float | None,
+            Doc("""
+                    Task timeout.
+
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
+        ] = None,
+        trigger: Annotated[
+            Any,
+            Doc("""
+                    Task trigger.
+                    """),
+        ],
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    kwargs tasks.
+
+                    Default: `{}`.
+                    """),
+        ],
+    ) -> Any | None: ...
 
     @abstractmethod
     def add_task(
         self,
         *args: Annotated[
-            Optional[tuple],
-            Doc(
-                """
-                    args задачи.
+            Any,
+            Doc("""
+                    args of the task.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ],
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
-            Optional[int],
-            Doc(
-                """
-                    Приоритет у задачи.
+            int | None,
+            Doc("""
+                    The task has priority.
 
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
+                    Default: Task priority value.
+                    """),
         ] = None,
         timeout: Annotated[
-            Optional[float],
-            Doc(
-                """
-                    Таймаут задачи.
+            float | None,
+            Doc("""
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         trigger: Annotated[
             Any,
-            Doc(
-                """
-                    Триггер задачи.
-                    """
-            ),
+            Doc("""
+                    Task trigger.
+                    """),
         ],
         **kwargs: Annotated[
-            Optional[dict],
-            Doc(
-                """
-                    kwargs задачи.
+            Any,
+            Doc("""
+                    kwargs tasks.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
-    ) -> Union[Any, None]:
-        """Добавление задачи.
+    ) -> Any | None | Awaitable[Any | None]:
+        """
+        Adding a task.
 
         Args:
-            task_name (str): Имя задачи.
-            trigger (Any, optional): Значения триггера.
-            priority (int, optional): Приоритет задачи. По умолчанию `0`.
-            args (tuple, optional): args задачи. По умолчанию `()`.
-            kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
+            task_name (str): The name of the task.
+            trigger (Any, optional): Trigger values.
+            priority (int, optional): Task priority. Default is `0`.
+            args (tuple, optional): task args. Defaults to `()`.
+            kwargs (dict, optional): kwags tasks. Defaults to `{}`.
 
         Returns:
-            Any|None: Задача.
+            Any|None: Task.
         """
         pass
 
     def run_forever(self):
-        """Запуск Таймера."""
+        """Start Timer."""
         pass

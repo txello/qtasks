@@ -1,14 +1,9 @@
 """Async App."""
 
 from qtasks.asyncio import QueueTasks
-from qtasks.brokers import AsyncSocketBroker
-from qtasks.workers import AsyncWorker
 
-broker = AsyncSocketBroker(name="QueueTasks", port=8765)
-worker = AsyncWorker(name="QueueTasks", broker=broker)
-
-app = QueueTasks(name="QueueTasks", broker=broker, worker=worker)
-
+app = QueueTasks(name="QueueTasks")
+app.config.delete_finished_tasks = True
 
 @app.task(name="test")
 async def sample_task(id: int):

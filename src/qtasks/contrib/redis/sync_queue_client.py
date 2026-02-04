@@ -1,8 +1,8 @@
 """Sync Redis command queue."""
 
 import threading
-from queue import Queue, Empty
-from typing import Union
+from queue import Empty, Queue
+
 import redis
 
 from qtasks.logs import Logger
@@ -10,9 +10,9 @@ from qtasks.logs import Logger
 
 class SyncRedisCommandQueue:
     """
-    `SyncRedisCommandQueue` - Асинхронный класс для работы с `Redis`.
+    `SyncRedisCommandQueue` - Synchronous class for working with `Redis`.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -23,12 +23,13 @@ class SyncRedisCommandQueue:
     ```
     """
 
-    def __init__(self, redis: redis.Redis, log: Logger = None):
-        """Экземпляр класса.
+    def __init__(self, redis: redis.Redis, log: Logger | None = None):
+        """
+        An instance of a class.
 
         Args:
-            redis (redis.asyncio.Redis): класс `Redis`.
-            log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
+            redis (redis.Redis): class `Redis`.
+            log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
         """
         self.log = self._get_log(log)
         self.redis = redis
@@ -44,7 +45,9 @@ class SyncRedisCommandQueue:
                 try:
                     getattr(self.redis, cmd)(*args, **kwargs)
                 except Exception as e:
-                    self.log.error(f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}")
+                    self.log.error(
+                        f"Ошибка Redis команды {cmd}: {e}. Args: {args}, Kwargs: {kwargs}"
+                    )
                 self.queue.task_done()
             except Empty:
                 break
@@ -53,12 +56,13 @@ class SyncRedisCommandQueue:
             self.worker_thread = None
 
     def execute(self, cmd: str, *args, **kwargs):
-        """Запрос в `Redis`.
+        """
+        Query in `Redis`.
 
         Args:
-            cmd (str): Команда.
-            args(tuple, optional): Параметры к команде через *args.
-            kwargs(dict, optional): Параметры к команде через *args.
+            cmd (str): Command.
+            args(tuple, optional): Parameters to the command via *args.
+            kwargs(dict, optional): Parameters to the command via *args.
         """
         self.queue.put((cmd, args, kwargs))
         with self.lock:
@@ -66,7 +70,7 @@ class SyncRedisCommandQueue:
                 self.worker_thread = threading.Thread(target=self._worker, daemon=True)
                 self.worker_thread.start()
 
-    def _get_log(self, log: Union[Logger, None]):
+    def _get_log(self, log: Logger | None):
         if log is None:
             import qtasks._state
 

@@ -1,15 +1,19 @@
 """Base Plugin."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Union
-from typing_extensions import Annotated, Doc
+from collections.abc import Awaitable
+from typing import Annotated, Any, Generic, Literal, overload
+
+from typing_extensions import Doc
+
+from qtasks.types.typing import TAsyncFlag
 
 
-class BasePlugin(ABC):
+class BasePlugin(Generic[TAsyncFlag], ABC):
     """
-    `BasePlugin` - Абстрактный класс, который является фундаментом для Плагинов.
+    `BasePlugin` - An abstract class that is the foundation for Plugins.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -25,46 +29,81 @@ class BasePlugin(ABC):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для Плагинов.
+            str | None,
+            Doc("""
+                    Project name. This name can be used for tags for Plugins.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
+        *args,
+        **kwargs
     ):
-        """Инициализация плагина.
+        """
+        Initializing the plugin.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: `None`.
+            name (str, optional): Project name. Default: `None`.
         """
-        self.name: Union[str, None] = name
+        self.name: str | None = name
+
+        self.plugin_cache: dict[str, Any] = {}
         pass
 
+    @overload
+    def trigger(
+        self: "BasePlugin[Literal[False]]", name: str, *args, **kwargs
+    ) -> dict[str, Any] | None: ...
+
+    @overload
+    async def trigger(
+        self: "BasePlugin[Literal[True]]", name: str, *args, **kwargs
+    ) -> dict[str, Any] | None: ...
+
     @abstractmethod
-    def trigger(self, name: str, *args, **kwargs) -> Union[Dict[str, Any], None]:
-        """Триггер плагина.
+    def trigger(
+        self, name: str, *args, **kwargs
+    ) -> dict[str, Any] | None | Awaitable[dict[str, Any] | None]:
+        """
+        Plugin trigger.
 
         Args:
-            name (str): Имя триггера.
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+            name (str): Trigger name.
+            args (tuple, optional): Trigger arguments of type args.
+            kwargs (dict, optional): Trigger arguments of type kwargs.
         """
         pass
 
+    @overload
+    def start(self: "BasePlugin[Literal[False]]", *args, **kwargs) -> None: ...
+
+    @overload
+    async def start(self: "BasePlugin[Literal[True]]", *args, **kwargs) -> None: ...
+
     @abstractmethod
-    def start(self, *args, **kwargs):
-        """Запускает Плагин.
+    def start(self, *args, **kwargs) -> None | Awaitable[None]:
+        """
+        Launches the Plugin.
 
         Args:
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+            args (tuple, optional): Trigger arguments of type args.
+            kwargs (dict, optional): Trigger arguments of type kwargs.
         """
         pass
 
+    @overload
+    def stop(self: "BasePlugin[Literal[False]]", *args, **kwargs) -> None: ...
+
+    @overload
+    async def stop(self: "BasePlugin[Literal[True]]", *args, **kwargs) -> None: ...
+
     @abstractmethod
-    def stop(self, *args, **kwargs):
-        """Останавливает Плагин."""
+    def stop(self, *args, **kwargs) -> None | Awaitable[None]:
+        """
+        Stops the Plugin.
+
+        Args:
+            args (tuple, optional): Trigger arguments of type args.
+            kwargs (dict, optional): Trigger arguments of type kwargs.
+        """
         pass

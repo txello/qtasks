@@ -11,7 +11,7 @@ include = ["qtasks*"]
 
 [project]
 name = "qtasks"
-version = "1.6.0"
+version = "1.7.0"
 authors = [
   { name="txello", email="txello7@proton.me" },
 ]
@@ -32,7 +32,23 @@ dependencies = [
 
 license = { text = "Apache-2.0" }
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: System :: Networking",
+    "Topic :: Utilities",
+
+    "Framework :: AsyncIO",
+
     "Operating System :: OS Independent",
 ]
 
@@ -48,22 +64,33 @@ test = [
 ]
 
 [project.urls]
+Documentation = "https://txello.github.io/qtasks"
 Homepage = "https://github.com/txello/qtasks"
 Issues = "https://github.com/txello/qtasks/issues"
+
 
 [project.scripts]
 qtasks = "qtasks.__main__:main"
 
 [tool.ruff]
 line-length = 88
-ignore = ["E501"]
 
 [tool.ruff.lint]
-select = ["SIM"]
+select = [
+    "E",   # basic pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # errors from pyflakes (important!)
+    "B",   # flake8-bugbear
+    "I",   # isort (imports)
+    "UP",  # pyupgrade
+]
+
+ignore = ["E501", "UP045", "UP006", "UP007", "UP035"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"examples/*" = ["D100", "D101", "D102", "D103", "D107", "E226", "E402", "F401"]
+"examples/*" = ["D100", "D101", "D102", "D103", "D107", "E226", "E402", "F401", "I001"]
 "src/qtasks/tests/async_classes.py" = ["D101", "D102", "D107"]
 "src/qtasks/tests/sync_classes.py" = ["D101", "D102", "D107"]
 "tests/apps/*" = ["D103", "E226"]
+"tests/*" = ["E402"]

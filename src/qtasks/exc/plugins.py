@@ -2,12 +2,13 @@
 
 
 class TaskPluginTriggerError(Exception):
-    """Исключение, вызываемое при срабатывании триггера плагина.
+    """
+    The exception thrown when the plugin trigger fires.
 
-    Может быть перехвачено в Воркере для обработки срабатывания триггеров.
+        Can be intercepted in Worker to process triggers.
     """
 
     def __init__(self, *args, **kwargs):
-        """Инициализация исключения."""
+        """Initializing an exception."""
         super().__init__(*args)
         self.kwargs = kwargs

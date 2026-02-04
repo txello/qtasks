@@ -6,13 +6,14 @@ from types import FunctionType
 
 @dataclass
 class InitsExecSchema:
-    """`InitsExecSchema` схема.
+    """
+    `InitsExecSchema` schema.
 
     Args:
-        name (str): Имя события.
-        func (FunctionType): Функция инициализации.
+        name (str): Event name.
+        func (FunctionType): Initialization function.
 
-        awaiting (bool): Асинхронность инициализации. По умолчанию: False
+        awaiting (bool): Asynchronous initialization. Default: False
     """
 
     name: str

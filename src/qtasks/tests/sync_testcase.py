@@ -2,23 +2,24 @@
 
 import threading
 from time import time
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, Union
 from uuid import UUID, uuid4
-from typing_extensions import Annotated, Doc
+
+from typing_extensions import Doc
 
 from qtasks.tests.base import BaseTestCase
 
 if TYPE_CHECKING:
     from qtasks import QueueTasks
-    from qtasks.starters.base import BaseStarter
     from qtasks.schemas.task import Task
+    from qtasks.starters.base import BaseStarter
 
 
-class SyncTestCase(BaseTestCase):
+class SyncTestCase(BaseTestCase[Literal[False]]):
     """
-    Синхронный кейс тестирования.
+    Synchronous testing case.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -34,70 +35,63 @@ class SyncTestCase(BaseTestCase):
         self,
         app: Annotated[
             "QueueTasks",
-            Doc(
-                """
-                    Основной экземпляр.
-                    """
-            ),
+            Doc("""
+                    Main copy.
+                    """),
         ],
         name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя проекта. Это имя может быть использовано для тестовых компонентов.
+            str | None,
+            Doc("""
+                    Project name. This name can be used for test components.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
-        """Синхронный тестовый кейс.
+        """
+        Synchronous test case.
 
         Args:
-            app (QueueTasks): Основной экземпляр.
-            name (str, optional): Имя проекта. Это имя может быть использовано для тестовых компонентов. По умолчанию: `None`.
+            app(QueueTasks): Main instance.
+            name (str, optional): Project name. This name can be used for test components. Default: `None`.
         """
         super().__init__(app=app, name=name)
+        self.app: QueueTasks
 
     def start_in_background(
         self,
         starter: Annotated[
             Optional["BaseStarter"],
-            Doc(
-                """
-                    Стартер. Хранит в себе способы запуска компонентов.
+            Doc("""
+                    Starter. Stores methods for launching components.
 
-                    По умолчанию: `qtasks.starters.AsyncStarter`.
-                    """
-            ),
+                    Default: `qtasks.starters.AsyncStarter`.
+                    """),
         ] = None,
         num_workers: Annotated[
             int,
-            Doc(
-                """
-                    Количество запущенных воркеров.
+            Doc("""
+                    Number of running workers.
 
-                    По умолчанию: `4`.
-                    """
-            ),
+                    Default: `4`.
+                    """),
         ] = 4,
         reset_config: Annotated[
             bool,
-            Doc(
-                """
-                    Обновить config у воркера и брокера.
+            Doc("""
+                    Update the config of the worker and broker.
 
-                    По умолчанию: `True`.
-                    """
-            ),
+                    Default: `True`.
+                    """),
         ] = True,
     ):
-        """Запустить `app.run_forever()` в фоновом режиме.
+        """
+        Run `app.run_forever()` in the background.
 
         Args:
-            starter (BaseStarter, optional): Стартер. По умолчанию: `qtasks.starters.AsyncStarter`.
-            num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
-            reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
+            starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
+            num_workers (int, optional): Number of workers running. Default: 4.
+            reset_config (bool, optional): Update the config of the worker and broker. Default: True.
         """
 
         def run():
@@ -112,49 +106,44 @@ class SyncTestCase(BaseTestCase):
         self,
         starter: Annotated[
             Optional["BaseStarter"],
-            Doc(
-                """
-                    Стартер. Хранит в себе способы запуска компонентов.
+            Doc("""
+                    Starter. Stores methods for launching components.
 
-                    По умолчанию: `qtasks.starters.AsyncStarter`.
-                    """
-            ),
+                    Default: `qtasks.starters.AsyncStarter`.
+                    """),
         ] = None,
         num_workers: Annotated[
             int,
-            Doc(
-                """
-                    Количество запущенных воркеров.
+            Doc("""
+                    Number of running workers.
 
-                    По умолчанию: `4`.
-                    """
-            ),
+                    Default: `4`.
+                    """),
         ] = 4,
         reset_config: Annotated[
             bool,
-            Doc(
-                """
-                    Обновить config у воркера и брокера.
+            Doc("""
+                    Update the config of the worker and broker.
 
-                    По умолчанию: `True`.
-                    """
-            ),
+                    Default: `True`.
+                    """),
         ] = True,
     ) -> None:
-        """Запускает `app.run_forever()`.
+        """
+        Runs `app.run_forever()`.
 
         Args:
-            starter (BaseStarter, optional): Стартер. По умолчанию: `qtasks.starters.AsyncStarter`.
-            num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
-            reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
+            starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
+            num_workers (int, optional): Number of workers running. Default: 4.
+            reset_config (bool, optional): Update the config of the worker and broker. Default: True.
         """
         self.app.run_forever(
             starter=starter, num_workers=num_workers, reset_config=reset_config
         )
 
     def stop(self):
-        """Останавливает кейс тестирования."""
-        if self.test_config.global_config:
+        """Stops the test case."""
+        if self.test_config.global_config and self.app.broker.storage.global_config:
             self.app.broker.storage.global_config.stop()
 
         if self.test_config.storage:
@@ -170,74 +159,59 @@ class SyncTestCase(BaseTestCase):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         *args: Annotated[
-            Optional[tuple],
-            Doc(
-                """
-                    args задачи.
+            Any,
+            Doc("""
+                    args of the task.
 
-                    По умолчанию: `()`.
-                    """
-            ),
+                    Default: `()`.
+                    """),
         ],
         priority: Annotated[
-            Optional[int],
-            Doc(
-                """
-                    Приоритет у задачи.
+            int,
+            Doc("""
+                    The task has priority.
 
-                    По умолчанию: Значение приоритета у задачи.
-                    """
-            ),
-        ] = None,
+                    Default: `0`.
+                    """),
+        ] = 0,
         timeout: Annotated[
-            Optional[float],
-            Doc(
-                """
-                    Таймаут задачи.
+            float | None,
+            Doc("""
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
-                    """
-            ),
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
         ] = None,
         **kwargs: Annotated[
-            Optional[dict],
-            Doc(
-                """
-                    kwargs задачи.
+            Any,
+            Doc("""
+                    kwargs tasks.
 
-                    По умолчанию: `{}`.
-                    """
-            ),
+                    Default: `{}`.
+                    """),
         ],
     ) -> Union["Task", None]:
-        """Добавить задачу.
+        """
+        Add a task.
 
         Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умолчанию: `0`.
-            args (tuple, optional): args задачи. По умолчанию: `()`.
-            kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`
-
-            timeout (float, optional): Таймаут задачи. Если указан, задача вызывается через `qtasks.results.SyncResult`.
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: `0`.
+            args (tuple, optional): task args. Default: `()`.
+            kwargs (dict, optional): kwargs of tasks. Default: `{}`
+            timeout (float, optional): Task timeout. If specified, the task is called via `qtasks.results.SyncResult`.
 
         Returns:
-            Task|None: Данные задачи или None.
+            Task|None: Task data or None.
         """
         if self.test_config.broker:
-            args, kwargs = args or (), kwargs or {}
             return self.app.add_task(
-                *args,
-                task_name=task_name,
-                priority=priority,
-                timeout=timeout,
-                **kwargs
+                task_name, *args, priority=priority, timeout=timeout, **kwargs
             )
         elif self.test_config.worker:
             return self.app.worker.add(
@@ -245,8 +219,8 @@ class SyncTestCase(BaseTestCase):
                 uuid=uuid4(),
                 priority=priority,
                 created_at=time(),
-                args=args or (),
-                kwargs=kwargs or {},
+                args=args,
+                kwargs=kwargs,
             )
         else:
             print(
@@ -257,25 +231,24 @@ class SyncTestCase(BaseTestCase):
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
     ) -> Union["Task", None]:
-        """Получить задачу.
+        """
+        Get a task.
 
         Args:
-            uuid (UUID|str): UUID Задачи.
+            uuid (UUID|str): UUID of the Task.
 
         Returns:
-            Task|None: Данные задачи или None.
+            Task|None: Task data or None.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         if not self.test_config.broker:
-            print(f"[SyncTestCase: {self.name}] Обязательно включить Брокер!")
+            print(f"[SyncTestCase: {self.name}] Broker is not started!")
             return
         return self.app.broker.get(uuid=uuid)

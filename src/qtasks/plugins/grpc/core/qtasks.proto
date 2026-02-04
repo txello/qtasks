@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package qtasks.v1;
+
+service QTasksService {
+  // Добавить задачу
+  rpc AddTask (AddTaskRequest) returns (AddTaskResponse);
+
+  // Получить состояние/результат задачи
+  rpc GetTask (GetTaskRequest) returns (GetTaskResponse);
+}
+
+message AddTaskRequest {
+  string name = 1;           // имя задачи
+  string args_json = 2;      // JSON-список: []
+  string kwargs_json = 3;    // JSON-словарь: {}
+  double timeout = 4;        // секунд; 0 — не ждать завершения
+  int32 priority = 5;        // опционально
+}
+
+message AddTaskResponse {
+  bool ok = 1;
+  string uuid = 2;           // UUID задачи (если доступен сразу)
+  string result_json = 3;    // JSON результата (если есть)
+  string error = 4;          // текст ошибки, если ok=false
+}
+
+message GetTaskRequest {
+  string uuid = 1;
+  bool include_result = 2;   // вернуть result_json, если задача завершена
+}
+
+message GetTaskResponse {
+  bool ok = 1;
+  string status = 2;         // e.g. "new" | "process" | "success" | "error" | "cancel" | "retry" и т.п.
+  string result_json = 3;    // JSON результата (если есть)
+  string traceback = 4;      // если status="error"
+  string error = 5;          // ошибки самого RPC
+}

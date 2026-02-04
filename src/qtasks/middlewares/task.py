@@ -1,6 +1,7 @@
 """Base Task Middleware."""
+from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .base import BaseMiddleware
 
@@ -10,9 +11,9 @@ if TYPE_CHECKING:
 
 class TaskMiddleware(BaseMiddleware):
     """
-    `TaskMiddleware` - Абстрактный класс, который является фундаментом для классов Мидлварей задач для `TaskExecutor`.
+    `TaskMiddleware` - An abstract class that is the foundation for task Middleware classes for `TaskExecutor`.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks.middlewares import TaskMiddleware
@@ -25,11 +26,21 @@ class TaskMiddleware(BaseMiddleware):
     ```
     """
 
-    def __init__(self, task_executor: "BaseTaskExecutor"):
-        """Инициализация мидлвары задач.
+    def __init__(self, task_executor: BaseTaskExecutor):
+        """
+        Initializing the task middleware.
 
         Args:
-            task_executor (BaseTaskExecutor): Экземпляр исполнителя задач.
+            task_executor (BaseTaskExecutor): A task executor instance.
         """
         super().__init__(name="TaskMiddleware")
         self.task_executor = task_executor
+
+    def __call__(self, *args, **kwargs) -> Any:
+        """
+        Processing the task middleware call.
+
+        Returns:
+            Any: Processing result.
+        """
+        pass

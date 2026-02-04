@@ -1,139 +1,126 @@
 """Base QueueTasks."""
+from __future__ import annotations
 
 import inspect
+from collections.abc import Awaitable, Callable
 from typing import (
     TYPE_CHECKING,
-    Callable,
-    Dict,
-    List,
+    Annotated,
+    Any,
+    Generic,
+    Literal,
     Optional,
-    Type,
     Union,
     overload,
 )
-from typing_extensions import Annotated, Doc
 
-from qtasks.types.annotations import P, R
+from typing_extensions import Doc
+
 import qtasks._state
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.registries.task_registry import TaskRegistry
-from qtasks.routers.router import Router
+from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskExecSchema
+from qtasks.types.annotations import P, R
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
-    from qtasks.workers.base import BaseWorker
     from qtasks.brokers.base import BaseBroker
-    from qtasks.starters.base import BaseStarter
-    from qtasks.plugins.base import BasePlugin
-    from qtasks.executors.base import BaseTaskExecutor
     from qtasks.events.base import BaseEvents
+    from qtasks.executors.base import BaseTaskExecutor
     from qtasks.middlewares.base import BaseMiddleware
     from qtasks.middlewares.task import TaskMiddleware
+    from qtasks.plugins.base import BasePlugin
+    from qtasks.routers.async_router import AsyncRouter
+    from qtasks.routers.sync_router import SyncRouter
+    from qtasks.starters.base import BaseStarter
+    from qtasks.workers.base import BaseWorker
 
 
-class BaseQueueTasks:
-    """Base класс для QueueTasks. Хранит в себе общую логику для работы с задачами в очереди."""
+class BaseQueueTasks(Generic[TAsyncFlag]):
+    """Base class for QueueTasks. Stores the general logic for working with tasks in the queue."""
 
     def __init__(
         self,
+        broker: Annotated[
+            BaseBroker,
+            Doc("""
+                    Broker. Stores processing from task queues and data storage.
+                    """),
+        ],
+        worker: Annotated[
+            BaseWorker,
+            Doc("""
+                    Worker. Stores task processing.
+                    """),
+        ],
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется компонентами(Воркер, Брокер и т.п.)
+            Doc("""
+                    Project name. This name is also used by components (Worker, Broker, etc.)
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         broker_url: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    URL для Брокера. Используется Брокером по умолчанию через параметр url.
+            str | None,
+            Doc("""
+                    Broker URL. Used by the Broker by default via the url parameter.
 
-                    По умолчанию: `None`.
-                    """
-            ),
-        ] = None,
-        broker: Annotated[
-            Optional["BaseBroker"],
-            Doc(
-                """
-                    Брокер. Хранит в себе обработку из очередей задач и хранилище данных.
-
-                    По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
-                    """
-            ),
-        ] = None,
-        worker: Annotated[
-            Optional["BaseWorker"],
-            Doc(
-                """
-                    Воркер. Хранит в себе обработку задач.
-
-                    По умолчанию: `qtasks.workers.AsyncWorker`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
-            Doc(
-                """
-                    События.
+            Optional[BaseEvents],
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
-        """Инициализация базового класса для QueueTasks.
+        """
+        Initializing the base class for QueueTasks.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: `QueueTasks`.
-            broker_url (str, optional): URL для Брокера. По умолчанию: `None`.
-            broker (BaseBroker, optional): Брокер. По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
-            worker (BaseWorker, optional): Воркер. По умолчанию: `qtasks.workers.AsyncWorker`.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.QueueConfig`.
-            events (BaseEvents, optional): События. По умолчанию: `None`.
+            name (str, optional): Project name. Default: `QueueTasks`.
+            broker_url (str, optional): URL for the Broker. Default: `None`.
+            broker (BaseBroker, optional): Broker.
+            worker (BaseWorker, optional): Worker.
+            log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Config. Default: `qtasks.configs.QueueConfig`.
+            events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
 
-        self.version: Annotated[str, Doc("Версия проекта.")] = "1.6.0"
+        self.version: Annotated[str, Doc("Project version.")] = "1.7.0"
 
         self.config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                Конфиг, тип `qtasks.configs.QueueConfig`.
+            Doc("""
+                Config, type `qtasks.configs.QueueConfig`.
 
-                По умолчанию: `QueueConfig()`.
-                """
-            ),
+                Default: `QueueConfig()`.
+                """),
         ] = (
             config or QueueConfig()
         )
@@ -150,252 +137,354 @@ class BaseQueueTasks:
             )
         )
 
-        self.broker: "BaseBroker" = broker
-        self.worker: "BaseWorker" = worker
-        self.starter: Union["BaseStarter", None] = None
+        self.broker = broker
+        self.worker = worker
+        self.starter: BaseStarter | None = None
 
         self.routers: Annotated[
-            List[Router],
-            Doc(
-                """
-                Роутеры, тип `qtasks.routers.Router`.
+            list[SyncRouter | AsyncRouter],
+            Doc("""
+                Routers, type `qtasks.routers.SyncRouter | qtasks.routers.AsyncRouter`.
 
-                По умолчанию: `Пустой массив`.
-                """
-            ),
+                Default: `Empty array`.
+                """),
         ] = []
 
         self.tasks: Annotated[
-            Dict[str, TaskExecSchema],
-            Doc(
-                """
-                Задачи, тип `{task_name:qtasks.schemas.TaskExecSchema}`.
+            dict[str, TaskExecSchema],
+            Doc("""
+                Tasks, type `{task_name:qtasks.schemas.TaskExecSchema}`.
 
-                По умолчанию: `Пустой словарь`.
-                """
-            ),
+                Default: `Empty dictionary`.
+                """),
         ] = {}
 
         self.plugins: Annotated[
-            Dict[str, List["BasePlugin"]],
-            Doc(
-                """
-                Задачи, тип `{trigger_name:[qtasks.plugins.base.BasePlugin]}`.
+            dict[str, list[BasePlugin]],
+            Doc("""
+                Tasks, type `{trigger_name:[qtasks.plugins.base.BasePlugin]}`.
 
-                По умолчанию: `Пустой словарь`.
-                """
-            ),
+                Default: `Empty dictionary`.
+                """),
         ] = {}
 
         self.events = events
 
         self._method: Annotated[
-            Optional[str],
-            Doc(
-                """Метод использования QueueTasks.
+            str | None,
+            Doc("""Method for using QueueTasks.
 
-                По умолчанию: `None`.
-                """
-            ),
+                Default: `None`.
+                """),
         ] = None
 
     @overload
     def task(
-        self,
-        name: Union[str, None] = None,
+        self: BaseQueueTasks[Literal[False]],
+        name: str | None = None,
         *,
-        priority: Union[int, None] = None,
+        priority: int | None = None,
         echo: bool = False,
-        max_time: Union[float, None] = None,
-        retry: Union[int, None] = None,
-        retry_on_exc: Union[List[Type[Exception]], None] = None,
-        decode: Union[Callable, None] = None,
-        tags: Union[List[str], None] = None,
-        description: Union[str, None] = None,
-        generate_handler: Union[Callable, None] = None,
-        executor: Union[Type["BaseTaskExecutor"], None] = None,
-        middlewares_before: Union[List["TaskMiddleware"], None] = None,
-        middlewares_after: Union[List["TaskMiddleware"], None] = None,
-        **kwargs
-    ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
+        max_time: float | None = None,
+        retry: int | None = None,
+        retry_on_exc: list[type[Exception]] | None = None,
+        decode: Callable | None = None,
+        tags: list[str] | None = None,
+        description: str | None = None,
+        generate_handler: Callable | None = None,
+        executor: type[BaseTaskExecutor] | None = None,
+        middlewares_before: list[type[TaskMiddleware]] | None = None,
+        middlewares_after: list[type[TaskMiddleware]] | None = None,
+        **kwargs,
+    ) -> Callable[[Callable[P, R]], SyncTask[P, R]]:
+        """
+        Decorator for registering tasks.
+
+        Args:
+            name (str, optional): Name of the task. Default: `func.__name__`.
+            priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+            echo (bool, optional): Add SyncTask as the first parameter. Default: `False`.
+            max_time (float, optional): The maximum time the task will take to complete in seconds. Default: `None`.
+            retry (int, optional): Number of attempts to retry the task. Default: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+            decode (Callable, optional): Decoder of the task result. Default: `None`.
+            tags (List[str], optional): Task tags. Default: `None`.
+            description (str, optional): Description of the task. Default: `None`.
+            generate_handler (Callable, optional): Handler generator. Default: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
+
+        Raises:
+            ValueError: Если задача с таким именем уже зарегистрирована.
+            ValueError: Unknown method {self._method}.
+
+        Returns:
+            SyncTask: Decorator for registering a task.
+        """
+        ...
+
+    @overload
+    def task(
+        self: BaseQueueTasks[Literal[True]],
+        name: str | None = None,
+        *,
+        priority: int | None = None,
+        echo: bool = False,
+        max_time: float | None = None,
+        retry: int | None = None,
+        retry_on_exc: list[type[Exception]] | None = None,
+        decode: Callable | None = None,
+        tags: list[str] | None = None,
+        description: str | None = None,
+        generate_handler: Callable | None = None,
+        executor: type[BaseTaskExecutor] | None = None,
+        middlewares_before: list[type[TaskMiddleware]] | None = None,
+        middlewares_after: list[type[TaskMiddleware]] | None = None,
+        **kwargs,
+    ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
+        """
+        Decorator for registering tasks.
+
+        Args:
+            name (str, optional): Name of the task. Default: `func.__name__`.
+            priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+            echo (bool, optional): Add AsyncTask as the first parameter. Default: `False`.
+            max_time (float, optional): The maximum time the task will take to complete in seconds. Default: `None`.
+            retry (int, optional): Number of attempts to retry the task. Default: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+            decode (Callable, optional): Decoder of the task result. Default: `None`.
+            tags (List[str], optional): Task tags. Default: `None`.
+            description (str, optional): Description of the task. Default: `None`.
+            generate_handler (Callable, optional): Handler generator. Default: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `AsyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]],, optional): Middleware that will be executed before the task. Default: `Empty array`.
+            middlewares_after (List[Type["TaskMiddleware"]],, optional): Middleware that will be executed after the task. Default: `Empty array`.
+
+        Raises:
+            ValueError: Если задача с таким именем уже зарегистрирована.
+            ValueError: Unknown method {self._method}.
+
+        Returns:
+            AsyncTask: Decorator for registering a task.
+        """
+        ...
+
+    @overload
+    def task(
+        self: BaseQueueTasks[Literal[False]], name: Callable[P, R]
+    ) -> SyncTask[P, R]:
+        """
+        Decorator for registering tasks.
+
+        Args:
+            name (str, optional): Name of the task. Default: `func.__name__`.
+            priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+            echo (bool, optional): Add SyncTask as the first parameter. Default: `False`.
+            max_time (float, optional): The maximum time the task will take to complete in seconds. Default: `None`.
+            retry (int, optional): Number of attempts to retry the task. Default: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+            decode (Callable, optional): Decoder of the task result. Default: `None`.
+            tags (List[str], optional): Task tags. Default: `None`.
+            description (str, optional): Description of the task. Default: `None`.
+            generate_handler (Callable, optional): Handler generator. Default: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
+
+        Raises:
+            ValueError: If a task with the same name is already registered.
+            ValueError: Unknown method {self._method}.
+
+        Returns:
+            SyncTask: Decorator for registering a task.
+        """
+        ...
+
+    @overload
+    def task(
+        self: BaseQueueTasks[Literal[True]], name: Callable[P, R]
+    ) -> AsyncTask[P, R]:
+        """
+        Decorator for registering tasks.
+
+        Args:
+            name (str, optional): Name of the task. Default: `func.__name__`.
+            priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+            echo (bool, optional): Add AsyncTask as the first parameter. Default: `False`.
+            max_time (float, optional): The maximum time the task will take to complete in seconds. Default: `None`.
+            retry (int, optional): Number of attempts to retry the task. Default: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+            decode (Callable, optional): Decoder of the task result. Default: `None`.
+            tags (List[str], optional): Task tags. Default: `None`.
+            description (str, optional): Description of the task. Default: `None`.
+            generate_handler (Callable, optional): Handler generator. Default: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `AsyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]],, optional): Middleware that will be executed before the task. Default: `Empty array`.
+            middlewares_after (List[Type["TaskMiddleware"]],, optional): Middleware that will be executed after the task. Default: `Empty array`.
+
+        Raises:
+            ValueError: If a task with the same name is already registered.
+            ValueError: Unknown method {self._method}.
+
+        Returns:
+            AsyncTask: Decorator for registering a task.
+        """
         ...
 
     def task(
         self,
         name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя задачи.
+            Callable[P, R] | str | None,
+            Doc("""
+                    The name of the task or function.
 
-                    По умолчанию: `func.__name__`.
-                    """
-            ),
+                    Default: `func.__name__`.
+                    """),
         ] = None,
         *,
         priority: Annotated[
-            Optional[int],
-            Doc(
-                """
-                    Приоритет у задачи по умолчанию.
+            int | None,
+            Doc("""
+                    The task has priority by default.
 
-                    По умолчанию: `config.default_task_priority`.
-                    """
-            ),
+                    Default: `config.task_default_priority`.
+                    """),
         ] = None,
         echo: Annotated[
             bool,
-            Doc(
-                """
-                    Добавить (A)syncTask первым параметром.
+            Doc("""
+                    Add (A)syncTask as the first parameter.
 
-                    По умолчанию: `False`.
-                    """
-            ),
+                    Default: `False`.
+                    """),
         ] = False,
         max_time: Annotated[
-            Union[float, None],
-            Doc(
-                """
-                    Максимальное время выполнения задачи в секундах.
+            float | None,
+            Doc("""
+                    The maximum time it takes to complete a task in seconds.
 
-                    По умолчанию: `None`.
-                    """
-            )
+                    Default: `None`.
+                    """),
         ] = None,
         retry: Annotated[
-            Union[int, None],
-            Doc(
-                """
-                    Количество попыток повторного выполнения задачи.
+            int | None,
+            Doc("""
+                    The number of attempts to retry the task.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         retry_on_exc: Annotated[
-            Union[List[Type[Exception]], None],
-            Doc(
-                """
-                    Исключения, при которых задача будет повторно выполнена.
+            list[type[Exception]] | None,
+            Doc("""
+                    Exceptions under which the task will be re-executed.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         decode: Annotated[
-            Union[Callable, None],
-            Doc(
-                """
-                    Декодер результата задачи.
+            Callable | None,
+            Doc("""
+                    Task result decoder.
 
-                    По умолчанию: `None`.
-                """
-            )
+                    Default: `None`.
+                """),
         ] = None,
         tags: Annotated[
-            Union[List[str], None],
-            Doc(
-                """
-                    Теги задачи.
+            list[str] | None,
+            Doc("""
+                    Task tags.
 
-                    По умолчанию: `None`.
-                """
-            )
+                    Default: `None`.
+                """),
         ] = None,
         description: Annotated[
-            Union[str, None],
-            Doc(
-                """
-                    Описание задачи.
+            str | None,
+            Doc("""
+                    Description of the task.
 
-                    По умолчанию: `None`.
-                """
-            )
+                    Default: `None`.
+                """),
         ] = None,
         generate_handler: Annotated[
-            Union[Callable, None],
-            Doc(
-                """
-                    Генератор обработчика.
+            Callable | None,
+            Doc("""
+                    Handler generator.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         executor: Annotated[
-            Type["BaseTaskExecutor"],
-            Doc(
-                """
-                    Класс `BaseTaskExecutor`.
+            type[BaseTaskExecutor] | None,
+            Doc("""
+                    Class `BaseTaskExecutor`.
 
-                    По умолчанию: `SyncTaskExecutor`.
-                    """
-            ),
+                    Default: `SyncTaskExecutor`.
+                    """),
         ] = None,
         middlewares_before: Annotated[
-            List["TaskMiddleware"],
-            Doc(
-                """
-                    Мидлвари, которые будут выполнены до задачи.
+            list[type[TaskMiddleware]] | None,
+            Doc("""
+                    Middleware that will be completed before the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
         middlewares_after: Annotated[
-            List["TaskMiddleware"],
-            Doc(
-                """
-                    Мидлвари, которые будут выполнены после задачи.
+            list[type[TaskMiddleware]] | None,
+            Doc("""
+                    Middleware that will be executed after the task.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
-        **kwargs
-    ) -> Callable[[Callable[P, R]], Union[SyncTask[P, R], AsyncTask[P, R]]]:
-        """Декоратор для регистрации задач.
+        **kwargs,
+    ) -> SyncTask[P, R] | AsyncTask[P, R] | Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
+        """
+        Decorator for registering tasks.
 
         Args:
-            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.default_task_priority`.
-            echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
-            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
-            description (str, optional): Описание задачи. По умолчанию: `None`.
-            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
-            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares_before (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
-            middlewares_after (List["TaskMiddleware"], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
+            name (str, optional): Name of the task. Default: `func.__name__`.
+            priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+            echo (bool, optional): Add (A)syncTask as the first parameter. Default: `False`.
+            retry (int, optional): Number of attempts to retry the task. Default: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+            decode (Callable, optional): Decoder of the task result. Default: `None`.
+            tags (List[str], optional): Task tags. Default: `None`.
+            description (str, optional): Description of the task. Default: `None`.
+            generate_handler (Callable, optional): Handler generator. Default: `None`.
+            executor (Type["BaseTaskExecutor"], optional): `BaseTaskExecutor` class. Default: `SyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
 
         Raises:
             ValueError: Если задача с таким именем уже зарегистрирована.
-            ValueError: Неизвестный метод {self._method}.
+            ValueError: Unknown method {self._method}.
+            ValueError: Неподдерживаемый метод {self._method}.
 
         Returns:
-            SyncTask | AsyncTask: Декоратор для регистрации задачи.
+            SyncTask | AsyncTask: Decorator for registering a task.
         """
-        def wrapper(func):
-            nonlocal priority, middlewares_before, middlewares_after
 
-            task_name = name or func.__name__
-            priority = priority or self.config.default_task_priority
+        def wrapper(func: Callable[P, R]):
+            if not self._method:
+                raise ValueError(f"Unknown method {self._method}.")
+            nonlocal priority, middlewares_after, middlewares_before
+            task_name = name or func.__name__ if not callable(name) else name.__name__
 
-            task_name = name or func.__name__
             if task_name in self.tasks:
-                raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
+                raise ValueError(f"Task with name {task_name} is already registered!")
 
-            if priority is None:
-                priority = self.config.default_task_priority
+            priority = (
+                priority if priority is not None else self.config.task_default_priority
+            )
 
-            generating = False
-            if inspect.isgeneratorfunction(func):
-                generating = "sync"
-            if inspect.isasyncgenfunction(func):
-                generating = "async"
+            generating = (
+                "async"
+                if inspect.isasyncgenfunction(func)
+                else "sync" if inspect.isgeneratorfunction(func) else False
+            )
 
             middlewares_before = middlewares_before or []
             middlewares_after = middlewares_after or []
@@ -417,15 +506,18 @@ class BaseQueueTasks:
                 executor=executor,
                 middlewares_before=middlewares_before,
                 middlewares_after=middlewares_after,
-                extra=kwargs
+                extra=kwargs,
             )
 
-            self.tasks[task_name] = model
-            self.worker._tasks[task_name] = model
-            if self._method not in ["async", "sync"]:
-                raise ValueError(f"Неизвестный метод {self._method}")
+            for registry in (self.tasks, self.worker._tasks):
+                registry[task_name] = model
 
-            method = AsyncTask if self._method == "async" else SyncTask
+            method_map = {"async": AsyncTask, "sync": SyncTask}
+            try:
+                method = method_map[self._method]
+            except KeyError as exc:
+                raise ValueError(f"Unsupported method: {self._method}") from exc
+
             return method(
                 app=self,
                 task_name=model.name,
@@ -441,7 +533,7 @@ class BaseQueueTasks:
                 executor=model.executor,
                 middlewares_before=model.middlewares_before,
                 middlewares_after=model.middlewares_after,
-                extra=model.extra
+                extra=model.extra,
             )
 
         if callable(name):
@@ -453,18 +545,17 @@ class BaseQueueTasks:
     def include_router(
         self,
         router: Annotated[
-            Router,
-            Doc(
-                """
-                    Роутер `qtasks.routers.Router`.
-                    """
-            ),
+            SyncRouter | AsyncRouter,
+            Doc("""
+                    Router `qtasks.routers.SyncRouter` | `qtasks.routers.AsyncRouter`.
+                    """),
         ],
     ) -> None:
-        """Добавить Router.
+        """
+        Add Router.
 
         Args:
-            router (Router): Роутер `qtasks.routers.Router`.
+            router (Router): Router `qtasks.routers.SyncRouter` | `qtasks.routers.AsyncRouter`.
         """
         self.routers.append(router)
         self.tasks.update(router.tasks)
@@ -472,17 +563,45 @@ class BaseQueueTasks:
 
     def add_plugin(
         self,
-        plugin: "BasePlugin",
-        trigger_names: Optional[List[str]] = None,
-        component: Optional[str] = None,
+        plugin: Annotated[
+            BasePlugin,
+            Doc(
+                """
+                    Plugin class.
+                    """
+            ),
+        ],
+        trigger_names: Annotated[
+            list[str] | None,
+            Doc(
+                """
+                    The name of the triggers for the plugin.
+
+                    Default: will be added to `Globals`.
+                    """
+            ),
+        ] = None,
+        component: Annotated[
+            str | None,
+            Doc(
+                """
+                    Component name.
+
+                    Default: `None`.
+                    """
+            ),
+        ] = None,
     ) -> None:
         """
-        Добавить плагин.
+        Add a plugin.
 
         Args:
-            plugin (Type[BasePlugin]): Класс плагина.
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
-            component (str, optional): Имя компонента. По умолчанию: `None`.
+            plugin (Type[BasePlugin]): Plugin class.
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+            component (str, optional): Component name. Default: `None`.
+
+        Raises:
+            KeyError: Unable to get component {component}!
         """
         data = {
             "worker": self.worker,
@@ -503,26 +622,52 @@ class BaseQueueTasks:
 
         component_data = data.get(component)
         if not component_data:
-            raise KeyError(f"Невозможно получить компонент {component}!")
+            raise KeyError(f"Unable to get component {component}!")
         component_data.add_plugin(plugin, trigger_names)
         return
 
-    def add_middleware(self, middleware: Type["BaseMiddleware"], **kwargs) -> None:
-        """Добавить мидлварь.
+    def add_middleware(
+        self,
+        middleware: Annotated[
+            type[BaseMiddleware],
+            Doc(
+                """
+                    Middleware class.
+                    """
+            ),
+        ],
+        **kwargs: Annotated[
+            Any,
+            Doc(
+                """
+                    Kwargs.
+
+                    Default: `{}`.
+                    """
+            ),
+        ]
+        ) -> None:
+        """
+        Add middleware.
 
         Args:
-            middleware (Type[BaseMiddleware]): Мидлварь.
+            middleware (Type[BaseMiddleware]): Middleware.
+            **kwargs (Any): Kwargs.
 
         Raises:
-            ImportError: Невозможно подключить Middleware: Он не относится к классу BaseMiddleware!
+            ImportError: Unable to connect Middleware: It does not belong to the BaseMiddleware class!
         """
         if (
-            not middleware.__base__ or middleware.__base__.__base__.__name__ != "BaseMiddleware"
+            not middleware.__base__
+            or (middleware.__base__.__base__ and middleware.__base__.__base__.__name__)
+            != "BaseMiddleware"
         ):
             raise ImportError(
-                f"Невозможно подключить Middleware {middleware.__name__}: Он не относится к классу BaseMiddleware!"
+                f"Unable to attach middleware {middleware.__name__}: "
+                "it does not inherit from BaseMiddleware!"
             )
-        if middleware.__base__.__name__ == "TaskMiddleware":
+        if issubclass(middleware, "TaskMiddleware"):
+
             position = kwargs.get("position", "before")
             if position == "before":
                 self.worker.task_middlewares_before.append(middleware)
@@ -531,40 +676,35 @@ class BaseQueueTasks:
         self.log.debug(f"Мидлварь {middleware.__name__} добавлен.")
         return
 
-    def init_plugins(self):
-        """Инициализация плагинов."""
-        for plugin in self.plugins.values():
-            plugin.init(self)
-
     def _registry_tasks(self):
         """
-        Зарегистрировать задачи из реестра задач.
+        Register tasks from the task registry.
 
-        Обновляет `self.tasks` и `self.worker._tasks` всеми задачами,
-        зарегистрированными в `TaskRegistry`, устанавливая приоритет по умолчанию.
+        Updates `self.tasks` and `self.worker._tasks` with all tasks,
+        registered in the `TaskRegistry`, setting the default priority.
         """
         all_tasks = TaskRegistry.all_tasks()
 
         for task in all_tasks.values():
             if task.priority is None:
-                task.priority = self.config.default_task_priority
+                task.priority = self.config.task_default_priority
 
         self.tasks.update(all_tasks)
         self.worker._tasks.update(all_tasks)
 
     def _set_state(self):
-        """Установить параметры в `qtasks._state`."""
+        """Set parameters in `qtasks._state`."""
         qtasks._state.app_main = self
         qtasks._state.log_main = self.log
 
     def _update_configs(self, config: QueueConfig, key, value):
         """
-        Обновить конфигурацию.
+        Update configuration.
 
         Args:
-            config (QueueConfig): Конфигурация.
-            key (str): Ключ конфигурации.
-            value (Any): Значение конфигурации.
+            config (QueueConfig): Configuration.
+            key (str): Configuration key.
+            value (Any): Configuration value.
         """
         if key == "logs_default_level_server":
             self.log.default_level = value
@@ -572,7 +712,7 @@ class BaseQueueTasks:
             self._update_logs(default_level=value)
 
     def _update_logs(self, **kwargs):
-        """Обновить логи."""
+        """Update logs."""
         if self.worker:
             self.worker.log = self.worker.log.update_logger(**kwargs)
         if self.broker:
@@ -585,3 +725,234 @@ class BaseQueueTasks:
                     self.broker.storage.global_config.log = (
                         self.broker.storage.global_config.log.update_logger(**kwargs)
                     )
+
+    @overload
+    def add_task(
+        self,
+        *args: Annotated[
+            Any,
+            Doc("""
+                    args of the task.
+
+                    Default: `()`.
+                    """),
+        ],
+        task_name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        priority: Annotated[
+            int | None,
+            Doc("""
+                    The task has priority.
+
+                    Default: Task priority value.
+                    """),
+        ] = None,
+        timeout: Annotated[
+            float | None,
+            Doc("""
+                    Task timeout.
+
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
+        ] = None,
+        **kwargs: Annotated[
+            dict | None,
+            Doc("""
+                    kwargs tasks.
+
+                    Default: `{}`.
+                    """),
+        ],
+    ) -> Optional[Task]: ...
+
+    @overload
+    async def add_task(
+        self,
+        *args: Annotated[
+            Any,
+            Doc("""
+                    args of the task.
+
+                    Default: `()`.
+                    """),
+        ],
+        task_name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        priority: Annotated[
+            int | None,
+            Doc("""
+                    The task has priority.
+
+                    Default: Task priority value.
+                    """),
+        ] = None,
+        timeout: Annotated[
+            float | None,
+            Doc("""
+                    Task timeout.
+
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
+        ] = None,
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    kwargs tasks.
+
+                    Default: `{}`.
+                    """),
+        ],
+    ) -> Optional[Task]: ...
+
+    @overload
+    def add_task(
+        self,
+        *args: Annotated[
+            Any,
+            Doc("""
+                    args of the task.
+
+                    Default: `()`.
+                    """),
+        ],
+        task_name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        priority: Annotated[
+            int | None,
+            Doc("""
+                    The task has priority.
+
+                    Default: Task priority value.
+                    """),
+        ] = None,
+        timeout: Annotated[
+            None,
+            Doc("""
+                    Task timeout.
+
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
+        ] = None,
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    kwargs tasks.
+
+                    Default: `{}`.
+                    """),
+        ],
+    ) -> Task: ...
+
+    @overload
+    async def add_task(
+        self,
+        *args: Annotated[
+            Any,
+            Doc("""
+                    args of the task.
+
+                    Default: `()`.
+                    """),
+        ],
+        task_name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        priority: Annotated[
+            int | None,
+            Doc("""
+                    The task has priority.
+
+                    Default: Task priority value.
+                    """),
+        ] = None,
+        timeout: Annotated[
+            None,
+            Doc("""
+                    Task timeout.
+
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
+        ] = None,
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    kwargs tasks.
+
+                    Default: `{}`.
+                    """),
+        ],
+    ) -> Task: ...
+
+    def add_task(
+        self,
+        *args: Annotated[
+            Any,
+            Doc("""
+                    args of the task.
+
+                    Default: `()`.
+                    """),
+        ],
+        task_name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        priority: Annotated[
+            int | None,
+            Doc("""
+                    The task has priority.
+
+                    Default: Task priority value.
+                    """),
+        ] = None,
+        timeout: Annotated[
+            float | None,
+            Doc("""
+                    Task timeout.
+
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
+                    """),
+        ] = None,
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    kwargs tasks.
+
+                    Default: `{}`.
+                    """),
+        ],
+    ) -> Union[
+        Optional[Task], Awaitable[Optional[Task]], Task, Awaitable[Task]
+    ]:
+        """
+        Add a task.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: Task priority value.
+            args (tuple, optional): Task args. Default: `()`.
+            kwargs (dict, optional): Task kwargs. Default: `{}`.
+
+            timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.SyncResult` or `qtasks.results.AsyncResult`.
+
+        Returns:
+            Task|None: `schemas.task.Task` or `None`.
+        """
+        pass

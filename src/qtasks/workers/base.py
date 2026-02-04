@@ -1,25 +1,36 @@
 """Base worker class."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Dict, List, Optional, Type
+from collections.abc import Awaitable
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Generic,
+    Literal,
+    Optional,
+    overload,
+)
 from uuid import UUID
-from typing_extensions import Annotated, Doc
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.schemas.task_exec import TaskExecSchema
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
-    from qtasks.plugins.base import BasePlugin
-    from qtasks.executors.base import BaseTaskExecutor
     from qtasks.events.base import BaseEvents
+    from qtasks.executors.base import BaseTaskExecutor
+    from qtasks.plugins.base import BasePlugin
 
 
-class BaseWorker(ABC):
+class BaseWorker(Generic[TAsyncFlag], ABC):
     """
-    `BaseWorker` - Абстрактный класс, который является фундаментом для Воркеров.
+    `BaseWorker` - An abstract class that is the foundation for Workers.
 
     ## Example
 
@@ -37,63 +48,54 @@ class BaseWorker(ABC):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя проекта. Это имя может быть использовано Воркером.
+            str,
+            Doc("""
+                    Project name. This name can be used by Worker.
 
-                    По умолчанию: `None`.
-                    """
-            ),
-        ] = None,
+                    Default: `QueueTasks`.
+                    """),
+        ] = "QueueTasks",
         broker: Annotated[
-            Optional["BaseBroker"],
-            Doc(
-                """
-                    Брокер `qtasks.brokers.base.BaseBroker`.
+            Optional[BaseBroker],
+            Doc("""
+                    Broker `qtasks.brokers.base.BaseBroker`.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
-            Doc(
-                """
-                    События.
+            Optional[BaseEvents],
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
-        """Инициализация базового воркера.
+        """
+        Initializing the base worker.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: None.
-            broker (BaseBroker, optional): Брокер. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: None.
-            config (QueueConfig, optional): Конфиг. По умолчанию: None.
+            name (str, optional): Project name. Default: None.
+            broker (BaseBroker, optional): Broker. Default: None.
+            log (Logger, optional): Logger. Default: None.
+            config (QueueConfig, optional): Config. Default: None.
         """
         self.name = name
         self.broker = broker
@@ -103,131 +105,232 @@ class BaseWorker(ABC):
             log.with_subname("Worker")
             if log
             else Logger(
-                name=self.name,
+                name=self.name or "QueueTasks",
                 subname="Worker",
                 default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
             )
         )
 
-        self._tasks: Dict[str, TaskExecSchema] = {}
-        self.events: "BaseEvents" = events
-        self.task_middlewares_before: List[TaskMiddleware] = []
-        self.task_middlewares_after: List[TaskMiddleware] = []
+        self._tasks: dict[str, TaskExecSchema] = {}
+        self.events: BaseEvents | None = events
+        self.task_middlewares_before: list[type[TaskMiddleware]] = []
+        self.task_middlewares_after: list[type[TaskMiddleware]] = []
 
-        self.task_executor: Type["BaseTaskExecutor"] = None
+        self.task_executor: type[BaseTaskExecutor] | None = None
 
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
         self.num_workers = 0
 
         self.init_plugins()
+
+    @overload
+    def add(
+        self: BaseWorker[Literal[False]],
+        name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        uuid: Annotated[
+            UUID,
+            Doc("""
+                    UUID of the task.
+                    """),
+        ],
+        priority: Annotated[
+            int,
+            Doc("""
+                    Task priority.
+                    """),
+        ],
+        created_at: Annotated[
+            float,
+            Doc("""
+                    Creating a task in timestamp format.
+                    """),
+        ],
+        args: Annotated[
+            tuple,
+            Doc("""
+                    Task arguments of type args.
+                    """),
+        ],
+        kwargs: Annotated[
+            dict,
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
+        ],
+    ) -> None: ...
+
+    @overload
+    async def add(
+        self: BaseWorker[Literal[True]],
+        name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        uuid: Annotated[
+            UUID,
+            Doc("""
+                    UUID of the task.
+                    """),
+        ],
+        priority: Annotated[
+            int,
+            Doc("""
+                    Task priority.
+                    """),
+        ],
+        created_at: Annotated[
+            float,
+            Doc("""
+                    Creating a task in timestamp format.
+                    """),
+        ],
+        args: Annotated[
+            tuple,
+            Doc("""
+                    Task arguments of type args.
+                    """),
+        ],
+        kwargs: Annotated[
+            dict,
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
+        ],
+    ) -> None: ...
 
     @abstractmethod
     def add(
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         uuid: Annotated[
             UUID,
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
-                    """
-            ),
+            Doc("""
+                    Task priority.
+                    """),
         ],
         created_at: Annotated[
             float,
-            Doc(
-                """
-                    Создание задачи в формате timestamp.
-                    """
-            ),
+            Doc("""
+                    Creating a task in timestamp format.
+                    """),
         ],
         args: Annotated[
             tuple,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ],
         kwargs: Annotated[
             dict,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ],
-    ) -> None:
-        """Добавление задачи в очередь.
+    ) -> None | Awaitable[None]:
+        """
+        Adding a task to the queue.
 
         Args:
-            name (str): Имя задачи.
-            uuid (UUID): UUID задачи.
-            priority (int): Приоритет задачи.
-            created_at (float): Создание задачи в формате timestamp.
-            args (tuple): Аргументы задачи типа args.
-            kwargs (dict): Аргументы задачи типа kwargs.
+            name (str): Name of the task.
+            uuid (UUID): UUID of the task.
+            priority (int): Task priority.
+            created_at (float): Create a task in timestamp format.
+            args (tuple): Task arguments of type args.
+            kwargs (dict): Task arguments of type kwargs.
         """
         pass
+
+    @overload
+    def start(
+        self: BaseWorker[Literal[False]],
+        num_workers: Annotated[
+            int | None,
+            Doc("""
+                    Number of workers.
+
+                    Default: `None`.
+                    """),
+        ] = None,
+    ) -> None: ...
+
+    @overload
+    async def start(
+        self: BaseWorker[Literal[True]],
+        num_workers: Annotated[
+            int | None,
+            Doc("""
+                    Number of workers.
+
+                    Default: `None`.
+                    """),
+        ] = None,
+    ) -> None: ...
 
     @abstractmethod
     def start(
         self,
         num_workers: Annotated[
-            Optional[int],
-            Doc(
-                """
-                    Количество воркеров.
+            int | None,
+            Doc("""
+                    Number of workers.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
-    ):
-        """Запускает несколько обработчиков задач. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
+    ) -> None | Awaitable[None]:
+        """
+        Runs multiple task handlers. This function is enabled by the main `QueueTasks` instance via `run_forever`.
 
         Args:
-            num_workers (int, optional): Количество воркеров. По умолчанию: 4.
+            num_workers (int, optional): Number of workers. Default: 4.
         """
         pass
 
+    @overload
+    def stop(self: BaseWorker[Literal[False]]) -> None: ...
+
+    @overload
+    async def stop(self: BaseWorker[Literal[True]]) -> None: ...
+
     @abstractmethod
-    def stop(self):
-        """Останавливает воркеры. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+    def stop(self) -> None | Awaitable[None]:
+        """Stops workers. This function is invoked by the main `QueueTasks` instance after the `run_forever` function completes."""
         pass
 
     def update_config(
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
-        """Обновляет конфиг брокера.
+        """
+        Updates the broker config.
 
         Args:
-            config (QueueConfig): Конфиг.
+            config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -235,29 +338,26 @@ class BaseWorker(ABC):
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            BasePlugin,
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            list[str] | None,
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
+        """
+        Add a plugin to the class.
 
         Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -269,5 +369,5 @@ class BaseWorker(ABC):
         return
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
         pass

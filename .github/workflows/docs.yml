@@ -20,7 +20,7 @@ jobs:
         python-version: '3.11.5'
 
     - name: Install dependencies
-      run: pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-static-i18n
+      run: pip install mkdocs mkdocs-material mkdocs-material[insiders] mkdocs-material[imaging] mkdocstrings[python] mkdocs-static-i18n
 
     - name: Deploy to GitHub Pages
       run: mkdocs gh-deploy --force

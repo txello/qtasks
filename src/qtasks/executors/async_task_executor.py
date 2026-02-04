@@ -1,29 +1,34 @@
 """Async Task Executor."""
+from __future__ import annotations
 
 import asyncio
-import json
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Type, Union
-from typing_extensions import Annotated, Doc
+from collections.abc import AsyncGenerator, Generator
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+)
+
+from typing_extensions import Doc
 
 from qtasks.exc.plugins import TaskPluginTriggerError
+from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
-
-from .base import BaseTaskExecutor
-from qtasks.logs import Logger
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
+from .base import BaseTaskExecutor
+
 if TYPE_CHECKING:
-    from qtasks.middlewares.task import TaskMiddleware
     from qtasks.plugins.base import BasePlugin
 
 
 class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     """
-    `AsyncTaskExecutor` - Синхронный класс исполнителя задач. Используется по умолчанию в `AsyncWorker`.
+    `AsyncTaskExecutor` - Synchronous task executor class. Used by default in `AsyncWorker`.
 
-    ## Пример
+    ## Example
 
     ```python
     import asyncio
@@ -40,48 +45,41 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         self,
         task_func: Annotated[
             TaskExecSchema,
-            Doc(
-                """
-                    `TaskExecSchema` схема.
-                    """
-            ),
+            Doc("""
+                    `TaskExecSchema` schema.
+                    """),
         ],
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    `TaskPrioritySchema` схема.
-                    """
-            ),
+            Doc("""
+                    `TaskPrioritySchema` schema.
+                    """),
         ],
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         plugins: Annotated[
-            Optional[Dict[str, List[Type["BasePlugin"]]]],
-            Doc(
-                """
-                    Массив Плагинов.
+            dict[str, list[BasePlugin]] | None,
+            Doc("""
+                    Array of Plugins.
 
-                    По умолчанию: `Пустой массив`.
-                    """
-            ),
+                    Default: `Empty array`.
+                    """),
         ] = None,
     ):
-        """Инициализация класса. Происходит внутри `Worker` перед обработкой задачи.
+        """
+        Initializing the class. Occurs inside a `Worker` before a task is processed.
 
         Args:
-            task_func (TaskExecSchema): Схема `TaskExecSchema`.
-            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-            log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
-            plugins (Dict[str, List[Type[BasePlugin]]], optional): Массив плагинов. По умолчанию: `Пустой массив`.
+            task_func (TaskExecSchema): Schema `TaskExecSchema`.
+            task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
+            log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
+            plugins (Dict[str, List[BasePlugin]], optional): An array of plugins. Default: `Empty array`.
         """
         super().__init__(
             task_func=task_func,
@@ -91,9 +89,13 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         )
 
     async def before_execute(self):
-        """Вызывается перед выполнением задачи."""
+        """Called before a task is executed."""
         if self.task_func.echo:
-            task_cls = SyncTask if not self.task_func.awaiting or self.task_func.generating == "sync" else AsyncTask
+            task_cls = (
+                SyncTask
+                if not self.task_func.awaiting or self.task_func.generating == "sync"
+                else AsyncTask
+            )
             self.echo = task_cls(
                 task_name=self.task_broker.name,
                 priority=self.task_broker.priority,
@@ -106,7 +108,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 executor=self.task_func.executor,
                 middlewares_before=self.task_func.middlewares_before,
                 middlewares_after=self.task_func.middlewares_after,
-                extra=self.task_func.extra
+                extra=self.task_func.extra,
             )
             self.echo.ctx._update(task_uuid=self.task_broker.uuid)
             self._args.insert(0, self.echo)
@@ -121,56 +123,63 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 "kw": self._kwargs,
                 "args_info": args_info,
             },
-            return_last=True
+            return_last=True,
         )
         if new_args:
-            self._args, self._kwargs = new_args.get("args", self._args), new_args.get("kw", self._kwargs)
+            self._args = new_args.get("args", self._args)
+            self._kwargs = new_args.get("kw", self._kwargs)
 
         await self._plugin_trigger("task_executor_before_execute", task_executor=self)
 
     async def after_execute(self):
-        """Вызов после запуска задач."""
+        """Call after starting tasks."""
         await self._plugin_trigger("task_executor_after_execute", task_executor=self)
         result: Any = await self._plugin_trigger(
-            "task_executor_after_execute_result_replace", task_executor=self, result=self._result, return_last=True
+            "task_executor_after_execute_result_replace",
+            task_executor=self,
+            result=self._result,
+            return_last=True,
         )
         if result:
             self._result = result.get("result", self._result)
         return
 
     async def execute_middlewares_before(self):
-        """Вызов мидлварей до выполнения задачи."""
+        """Calling middleware before the task is completed."""
         await self._plugin_trigger(
             "task_executor_middlewares_execute",
             task_executor=self,
-            middlewares_before=self.task_func.middlewares_before
+            middlewares_before=self.task_func.middlewares_before,
         )
         for m in self.task_func.middlewares_before:
-            m: "TaskMiddleware" = m(self)
+            m = m(self)
             new_task_executor: BaseTaskExecutor = await m()
             if new_task_executor:
                 self = new_task_executor
-            self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+            if self.log:
+                self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
     async def execute_middlewares_after(self):
-        """Вызов мидлварей после выполнения задачи."""
+        """Calling middleware after completing a task."""
         await self._plugin_trigger(
             "task_executor_middlewares_execute",
             task_executor=self,
-            middlewares_after=self.task_func.middlewares_after
+            middlewares_after=self.task_func.middlewares_after,
         )
         for m in self.task_func.middlewares_after:
-            m: "TaskMiddleware" = m(self)
+            m = m(self)
             new_task_executor: BaseTaskExecutor = await m()
             if new_task_executor:
                 self = new_task_executor
-            self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
+            if self.log:
+                self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
     async def run_task(self) -> Any:
-        """Вызов задачи.
+        """
+        Calling a task.
 
         Returns:
-            Any: Результат задачи.
+            Any: Result of the task.
         """
         if self._args and self._kwargs:
             result = (
@@ -200,45 +209,52 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         if self.task_func.generating:
             return await self.run_task_gen(result)
 
-        new_result = await self._plugin_trigger("task_executor_run_task", task_executor=self, result=result)
+        new_result = await self._plugin_trigger(
+            "task_executor_run_task", task_executor=self, result=result
+        )
         if new_result:
             result = new_result.get("result", result)
 
         return result
 
-    async def run_task_gen(self, func: AsyncGenerator) -> List[Any]:
-        """Вызов генератора задачи.
+    async def run_task_gen(self, func: AsyncGenerator | Generator) -> list[Any]:
+        """
+        Calling the task generator.
 
         Args:
-            func (FunctionType): Функция.
+            func(AsyncGenerator, Generator): Function.
 
         Returns:
-            Any: Результат задачи.
+            Any: Result of the task.
         """
         if self.echo:
             self.echo.ctx._update(generate_handler=self.task_func.generate_handler)
 
         results = []
         if self.task_func.generating == "async":
-            async for result in func:
-                if self.task_func.generate_handler:
-                    result = await self._maybe_await(
-                        self.task_func.generate_handler(result)
-                    )
-                results.append(result)
-
-        elif self.task_func.generating == "sync":
-            try:
-                while True:
-                    result = next(func)
+            if isinstance(func, AsyncGenerator):
+                async for result in func:
                     if self.task_func.generate_handler:
                         result = await self._maybe_await(
                             self.task_func.generate_handler(result)
                         )
                     results.append(result)
-            except StopIteration:
-                pass
-        new_results = await self._plugin_trigger("task_executor_run_task_gen", task_executor=self, results=results)
+
+        elif self.task_func.generating == "sync":
+            if isinstance(func, Generator):
+                try:
+                    while True:
+                        result = next(func)
+                        if self.task_func.generate_handler:
+                            result = await self._maybe_await(
+                                self.task_func.generate_handler(result)
+                            )
+                        results.append(result)
+                except StopIteration:
+                    pass
+        new_results = await self._plugin_trigger(
+            "task_executor_run_task_gen", task_executor=self, results=results
+        )
         if new_results:
             results = new_results.get("results", results)
         return results
@@ -248,21 +264,26 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             return await value
         return value
 
-    async def execute(self, decode: bool = True) -> Union[Any, str]:
-        """Вызов задачи.
+    async def execute(self, decode: bool = True) -> Any | str:
+        """
+        Calling a task.
 
         Args:
-            decode (bool, optional): Декодирование результата задачи. По умолчанию: True.
+            decode (bool, optional): Decoding the result of the task. Default: True.
 
         Returns:
-            Any|str: Результат задачи.
+            Any|str: Result of the task.
         """
-        self.log.debug(f"Вызван execute для {self.task_func.name}")
+        if self.log:
+            self.log.debug(f"Вызван execute для {self.task_func.name}")
+
         await self.execute_middlewares_before()
         await self.before_execute()
         try:
             if self.task_func.max_time:
-                self._result = await asyncio.wait_for(self.run_task(), timeout=self.task_func.max_time)
+                self._result = await asyncio.wait_for(
+                    self.run_task(), timeout=self.task_func.max_time
+                )
             else:
                 self._result = await self.run_task()
         except TaskPluginTriggerError as e:
@@ -272,34 +293,46 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 task_func=self.task_func,
                 task_broker=self.task_broker,
                 e=e,
-                return_last=True
+                return_last=True,
             )
             if new_result:
                 self._result = new_result.get("result", self._result)
             else:
                 raise e
-        except asyncio.TimeoutError:
+        except asyncio.TimeoutError as exc:
             msg = f"Время выполнения задачи {self.task_func.name} превысило лимит {self.task_func.max_time} секунд"
-            self.log.error(msg)
-            raise asyncio.TimeoutError(msg)
+            if self.log:
+                self.log.error(msg)
+            raise asyncio.TimeoutError(msg) from exc
 
         await self.after_execute()
         await self.execute_middlewares_after()
         if decode:
             self._result = await self.decode()
+
+        await self._plugin_trigger(
+                "task_executor_task_close",
+                task_executor=self,
+                task_func=self.task_func,
+                task_broker=self.task_broker
+            )
         return self._result
 
     async def decode(self) -> Any:
-        """Декодирование задачи.
+        """
+        Decoding the task.
 
         Returns:
-            Any: Результат задачи.
+            Any: Result of the task.
         """
         if self.task_func.decode is not None:
             result = await self._maybe_await(self.task_func.decode(self._result))
         else:
-            result = json.dumps(self._result, ensure_ascii=False)
-        new_result = await self._plugin_trigger("task_executor_decode", task_executor=self, result=result)
+            result = self.decode_cls(self._result)
+
+        new_result = await self._plugin_trigger(
+            "task_executor_decode", task_executor=self, result=result
+        )
         if new_result:
             result = new_result.get("result", result)
         return result

@@ -1,3 +1,4 @@
 """Init Routers."""
 
-from .router import Router
+from .async_router import AsyncRouter
+from .sync_router import SyncRouter

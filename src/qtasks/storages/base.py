@@ -1,37 +1,47 @@
 """Base storage class."""
+from __future__ import annotations
 
-from abc import ABC, abstractmethod
-import contextlib
-from dataclasses import field, fields, make_dataclass
 import datetime
 import json
-from typing import Dict, List, Optional, Union
-from typing_extensions import Annotated, Doc
+from abc import ABC, abstractmethod
+from collections.abc import Awaitable
+from dataclasses import field, fields, make_dataclass
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Generic,
+    Literal,
+    Optional,
+    overload,
+)
 from uuid import UUID
-from typing import TYPE_CHECKING
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_exec import TaskPrioritySchema
 from qtasks.schemas.task_status import (
-    TaskStatusCancelSchema,
     TaskStatusErrorSchema,
     TaskStatusNewSchema,
-    TaskStatusProcessSchema
+    TaskStatusSuccessSchema,
 )
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
-    from qtasks.plugins.base import BasePlugin
     from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
+    from qtasks.workers.base import BaseWorker
 
 
-class BaseStorage(ABC):
+class BaseStorage(Generic[TAsyncFlag], ABC):
     """
-    `BaseStorage` - Абстрактный класс, который является фундаментом для Хранилищ.
+    `BaseStorage` - An abstract class that is the foundation for Storage.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks.storages.base import BaseStorage
@@ -46,74 +56,65 @@ class BaseStorage(ABC):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для Storage.
+            str,
+            Doc("""
+                    Project name. This name can be used for tags for Storage.
 
-                    По умолчанию: `None`.
-                    """
-            ),
-        ] = None,
+                    Default: `QueueTasks`.
+                    """),
+        ] = "QueueTasks",
         global_config: Annotated[
-            Optional["BaseGlobalConfig"],
-            Doc(
-                """
-                    Глобальный конфиг.
+            Optional[BaseGlobalConfig[TAsyncFlag]],
+            Doc("""
+                    Global config.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
-            Doc(
-                """
-                    События.
+            Optional[BaseEvents],
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
-        """Инициализация базового хранилища.
+        """
+        Initializing the underlying storage.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: `None`.
-            global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: `None`.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
-            events (BaseEvents, optional): События. По умолчанию: `None`.
+            name (str, optional): Project name. Default: `QueueTasks`.
+            global_config (BaseGlobalConfig, optional): Global config. Default: `None`.
+            log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
-        self.global_config: Union["BaseGlobalConfig", None] = global_config
+        self.global_config: BaseGlobalConfig[TAsyncFlag] | None = global_config
 
         self.config = config or QueueConfig()
         self.log = (
             log.with_subname("Storage")
             if log
             else Logger(
-                name=self.name,
+                name=self.name or "QueueTasks",
                 subname="Storage",
                 default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
@@ -122,124 +123,272 @@ class BaseStorage(ABC):
         self.events = events
 
         self.client = None
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
         self.init_plugins()
+
+    @overload
+    def add(
+        self: BaseStorage[Literal[False]],
+        uuid: Annotated[
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
+        ],
+        task_status: Annotated[
+            TaskStatusNewSchema,
+            Doc("""
+                    New task status diagram.
+                    """),
+        ],
+    ) -> None: ...
+
+    @overload
+    async def add(
+        self: BaseStorage[Literal[True]],
+        uuid: Annotated[
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
+        ],
+        task_status: Annotated[
+            TaskStatusNewSchema,
+            Doc("""
+                    New task status diagram.
+                    """),
+        ],
+    ) -> None: ...
 
     @abstractmethod
     def add(
         self,
         uuid: Annotated[
-            Union[UUID, str],
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
         task_status: Annotated[
             TaskStatusNewSchema,
-            Doc(
-                """
-                    Схема статуса новой задачи.
-                    """
-            ),
+            Doc("""
+                    New task status diagram.
+                    """),
         ],
-    ) -> None:
-        """Добавление задачи в хранилище.
+    ) -> None | Awaitable[None]:
+        """
+        Adding a task to the repository.
 
         Args:
-            uuid (UUID | str): UUID задачи.
-            task_status (TaskStatusNewSchema): Схема статуса новой задачи.
+            uuid (UUID | str): UUID of the task.
+            task_status (TaskStatusNewSchema): The new task's status schema.
         """
         pass
+
+    @overload
+    def get(
+        self: BaseStorage[Literal[False]],
+        uuid: Annotated[
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
+        ],
+    ) -> Task | None: ...
+
+    @overload
+    async def get(
+        self: BaseStorage[Literal[True]],
+        uuid: Annotated[
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
+        ],
+    ) -> Task | None: ...
 
     @abstractmethod
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
-    ) -> Union[Task, None]:
-        """Получение информации о задаче.
+    ) -> Task | None | Awaitable[Task | None]:
+        """
+        Obtaining information about a task.
 
         Args:
-            uuid (UUID|str): UUID задачи.
+            uuid (UUID|str): UUID of the task.
 
         Returns:
-            Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         pass
+
+    @overload
+    def get_all(self: BaseStorage[Literal[False]]) -> list[Task]: ...
+
+    @overload
+    async def get_all(self: BaseStorage[Literal[True]]) -> list[Task]: ...
 
     @abstractmethod
-    def get_all(self) -> List[Task]:
-        """Получить все задачи.
+    def get_all(self) -> list[Task] | Awaitable[list[Task]]:
+        """
+        Get all tasks.
 
         Returns:
-            List[Task]: Массив задач.
+            List[Task]: Array of tasks.
         """
         pass
+
+    @overload
+    def update(
+        self: BaseStorage[Literal[False]],
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    Update arguments of type kwargs.
+                    """),
+        ],
+    ) -> None: ...
+
+    @overload
+    async def update(
+        self: BaseStorage[Literal[True]],
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    Update arguments of type kwargs.
+                    """),
+        ],
+    ) -> None: ...
 
     @abstractmethod
     def update(
         self,
         **kwargs: Annotated[
-            dict,
-            Doc(
-                """
-                    Аргументы обновления типа kwargs.
-                    """
-            ),
+            Any,
+            Doc("""
+                    Update arguments of type kwargs.
+                    """),
         ],
-    ) -> None:
-        """Обновляет информацию о задаче.
+    ) -> None | Awaitable[None]:
+        """
+        Updates task information.
 
         Args:
-            kwargs (dict, optional): данные задачи типа kwargs.
+            kwargs (dict, optional): task data of type kwargs.
         """
         pass
 
-    @abstractmethod
-    def start(self):
-        """Запускает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после запуске функции `run_forever`."""
-        pass
+    @overload
+    def start(self: BaseStorage[Literal[False]]) -> None: ...
+
+    @overload
+    async def start(self: BaseStorage[Literal[True]]) -> None: ...
 
     @abstractmethod
-    def stop(self):
-        """Останавливает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+    def start(self) -> None | Awaitable[None]:
+        """Starts the repository. This function is invoked by the main `QueueTasks` instance after the `run_forever` function is run."""
+        pass
+
+    @overload
+    def stop(self: BaseStorage[Literal[False]]) -> None: ...
+
+    @overload
+    async def stop(self: BaseStorage[Literal[True]]) -> None: ...
+
+    @abstractmethod
+    def stop(self) -> None | Awaitable[None]:
+        """Stops storage. This function is invoked by the main `QueueTasks` instance after the `run_forever` function completes."""
+        pass
+
+    @overload
+    def add_process(
+        self: BaseStorage[Literal[False]],
+        task_data: Annotated[
+            str,
+            Doc("""
+                    Task data from the broker.
+                    """),
+        ],
+        priority: Annotated[
+            int,
+            Doc("""
+                    Task priority.
+                    """),
+        ],
+    ) -> None: ...
+
+    @overload
+    async def add_process(
+        self: BaseStorage[Literal[True]],
+        task_data: Annotated[
+            str,
+            Doc("""
+                    Task data from the broker.
+                    """),
+        ],
+        priority: Annotated[
+            int,
+            Doc("""
+                    Task priority.
+                    """),
+        ],
+    ) -> None: ...
+
+    @abstractmethod
+    def add_process(
+        self,
+        task_data: Annotated[
+            str,
+            Doc("""
+                    Task data from the broker.
+                    """),
+        ],
+        priority: Annotated[
+            int,
+            Doc("""
+                    Task priority.
+                    """),
+        ],
+    ) -> None | Awaitable[None]:
+        """
+        Adds a task to the list of tasks in a process.
+
+        Args:
+            task_data (str): Task data from the broker.
+            priority (int): Task priority.
+        """
         pass
 
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            BasePlugin,
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            list[str] | None,
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
+        """
+        Add a plugin to the class.
 
         Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -250,67 +399,125 @@ class BaseStorage(ABC):
                 self.plugins[name].append(plugin)
         return
 
+    @overload
+    def remove_finished_task(
+        self: BaseStorage[Literal[False]],
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc("""
+                    Priority task diagram.
+                    """),
+        ],
+        model: Annotated[
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
+            Doc("""
+                    Model of the task result.
+                    """),
+        ],
+    ) -> None: ...
+
+    @overload
+    async def remove_finished_task(
+        self: BaseStorage[Literal[True]],
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc("""
+                    Priority task diagram.
+                    """),
+        ],
+        model: Annotated[
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
+            Doc("""
+                    Model of the task result.
+                    """),
+        ],
+    ) -> None: ...
+
     def remove_finished_task(
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
-            Union[
-                TaskStatusProcessSchema, TaskStatusErrorSchema, TaskStatusCancelSchema
-            ],
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
-    ) -> None:
-        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
+    ) -> None | Awaitable[None]:
+        """
+        Updates storage data via the `self.storage.remove_finished_task` function.
 
         Args:
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusNewSchema | TaskStatusErrorSchema): Model of the task result.
         """
         pass
 
-    def _delete_finished_tasks(self, **kwargs) -> None:
+    @overload
+    def _delete_finished_tasks(self: BaseStorage[Literal[False]]) -> None: ...
+
+    @overload
+    async def _delete_finished_tasks(self: BaseStorage[Literal[True]]) -> None: ...
+
+    def _delete_finished_tasks(self) -> None | Awaitable[None]:
+        """Deletes all completed tasks."""
         pass
 
-    def _running_older_tasks(self, **kwargs) -> None:
+    @overload
+    def _running_older_tasks(
+        self: BaseStorage[Literal[False]], worker: BaseWorker
+    ) -> None: ...
+
+    @overload
+    async def _running_older_tasks(
+        self: BaseStorage[Literal[True]], worker: BaseWorker
+    ) -> None: ...
+
+    def _running_older_tasks(
+        self, worker: BaseWorker
+    ) -> None | Awaitable[None]:
+        """
+        Deletes all old tasks.
+
+        Args:
+            worker (BaseWorker): Worker component.
+        """
         pass
 
     def update_config(
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
-        """Обновляет конфиг брокера.
+        """
+        Updates the broker config.
 
         Args:
-            config (QueueConfig): Конфиг.
+            config (QueueConfig): Config.
         """
         self.config = config
         return
 
-    def flush_all(self) -> None:
-        """Удалить все данные."""
+    @overload
+    def flush_all(self: BaseStorage[Literal[False]]) -> None: ...
+
+    @overload
+    async def flush_all(self: BaseStorage[Literal[True]]) -> None: ...
+
+    def flush_all(self) -> None | Awaitable[None]:
+        """Delete all data."""
         pass
 
     def _build_task(self, uuid, result: dict) -> Task:
         # Сначала собираем стандартные аргументы Task
-
         base_kwargs = dict(
             status=result["status"],
             uuid=uuid,
@@ -321,21 +528,23 @@ class BaseStorage(ABC):
             created_at=datetime.datetime.fromtimestamp(float(result["created_at"])),
             updated_at=datetime.datetime.fromtimestamp(float(result["updated_at"])),
         )
+        if "returning" in result:
+            base_kwargs["returning"] = json.loads(result["returning"])
+        if "traceback" in result:
+            base_kwargs["traceback"] = result["traceback"]
 
-        # Вычисляем имена стандартных полей
+        # Get the names of standard fields
         task_field_names = {f.name for f in fields(Task)}
 
-        # Ищем дополнительные ключи
+        # Get extra fields and their types
         extra_fields = []
         extra_values = {}
 
         for key, value in result.items():
             if key not in task_field_names:
-                # Типизация примитивная — можно улучшить
                 field_type = self._infer_type(value)
                 extra_fields.append((key, field_type, field(default=None)))
 
-                # Можно привести значение к типу
                 if field_type is bool:
                     extra_values[key] = value.lower() == "true"
                 elif field_type is int:
@@ -345,21 +554,16 @@ class BaseStorage(ABC):
                 else:
                     extra_values[key] = value
 
-        # Создаем новый dataclass с дополнительными полями
         if extra_fields:
             NewTask = make_dataclass("Task", extra_fields, bases=(Task,))
         else:
             NewTask = Task
 
-        # Объединяем все аргументы
         task = NewTask(**base_kwargs, **extra_values)
-        if hasattr(task, "returning"):
-            with contextlib.suppress(BaseException):
-                task.returning = json.loads(task.returning)
         return task
 
     def _infer_type(self, value: str):
-        """Пытается определить реальный тип из строки."""
+        """Tries to determine the real type from a string."""
         if value.lower() in {"true", "false"}:
             return bool
         try:
@@ -375,5 +579,5 @@ class BaseStorage(ABC):
         return str
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
         pass

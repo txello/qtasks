@@ -24,7 +24,7 @@ def autodiscover_tasks(app, modules: List[str] = ["tasks"]):
     """
 ```
 
-📖 Подробное описание доступно в [API → autodiscover\_tasks](/qtasks/ru/api/libraries/django/).
+📖 Подробное описание доступно в [API → autodiscover\_tasks](../../api/libraries/django.md).
 
 ---
 

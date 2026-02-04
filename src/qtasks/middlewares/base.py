@@ -3,9 +3,9 @@
 
 class BaseMiddleware:
     """
-    `BaseMiddleware` - Абстрактный класс, который является фундаментом для классов Мидлварей.
+    `BaseMiddleware` - An abstract class that is the foundation for Middleware classes.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks.middlewares.base import BaseMiddleware
@@ -17,9 +17,10 @@ class BaseMiddleware:
     """
 
     def __init__(self, name: str):
-        """Экземпляр класса.
+        """
+        An instance of a class.
 
         Args:
-            name (str): Имя.
+            name (str): Name.
         """
         self.name = name

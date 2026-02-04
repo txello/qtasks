@@ -5,11 +5,12 @@ from dataclasses import dataclass
 
 @dataclass
 class GlobalConfigSchema:
-    """`GlobalConfigSchema` схема.
+    """
+    `GlobalConfigSchema` schema.
 
     Args:
-        name (str): Название `GlobalConfig.name`.
-        status (str): Название `GlobalConfig.status`.
+        name (str): Name `GlobalConfig.name`.
+        status (str): Name `GlobalConfig.status`.
     """
 
     name: str

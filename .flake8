@@ -1,8 +1,9 @@
 [flake8]
-ignore = E501, W503
+ignore = E501, W503, E704
 per-file-ignores = 
     __init__.py:F401
     examples/*: D100, D101, D102, D103, D107, E128, E226, E402, F401
     src/qtasks/tests/async_classes.py: D101, D102, D107
     src/qtasks/tests/sync_classes.py: D101, D102, D107
     tests/apps/* : D103, E226
+    tests/*: E402

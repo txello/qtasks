@@ -1,27 +1,29 @@
 """Sync Starter."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Annotated, Literal, Optional
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
-from typing import TYPE_CHECKING, Dict, Optional
-from typing_extensions import Annotated, Doc
-
 from qtasks.mixins.plugin import SyncPluginMixin
 
 from .base import BaseStarter
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
-    from qtasks.workers.base import BaseWorker
-    from qtasks.plugins.base import BasePlugin
     from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
+    from qtasks.workers.base import BaseWorker
 
 
-class SyncStarter(BaseStarter, SyncPluginMixin):
+class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
     """
-    Стартер, запускающий Компоненты.
+    Starter that starts the Components.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -42,124 +44,115 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для Стартеров.
+            str | None,
+            Doc("""
+                    Project name. This name can be used for tags for Starters.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         broker: Annotated[
-            Optional["BaseBroker"],
-            Doc(
-                """
-                    Брокер.
+            Optional[BaseBroker],
+            Doc("""
+                    Broker.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         worker: Annotated[
-            Optional["BaseWorker"],
-            Doc(
-                """
-                    Воркер.
+            Optional[BaseWorker],
+            Doc("""
+                    Worker.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
-            Doc(
-                """
-                    События.
+            Optional[BaseEvents],
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.SyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.SyncEvents`.
+                    """),
         ] = None,
     ):
-        """Инициализация асинхронного стартера.
+        """
+        Initialization of an synchronous starter.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: None.
-            broker (BaseBroker, optional): Брокер. По умолчанию: None.
-            worker (BaseWorker, optional): Воркер. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
+            name (str, optional): Project name. Default: None.
+            broker (BaseBroker, optional): Broker. Default: None.
+            worker (BaseWorker, optional): Worker. Default: None.
+            log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.SyncEvents`.
         """
         super().__init__(
-            name=name, broker=broker, worker=worker, log=log, config=config, events=events
+            name=name,
+            broker=broker,
+            worker=worker,
+            log=log,
+            config=config,
+            events=events,
         )
-        self.events = self.events or SyncEvents()
+        self.events: BaseEvents[Literal[False]] = self.events or SyncEvents()
+        self.worker: BaseWorker[Literal[False]]
+        self.broker: BaseBroker[Literal[False]]
 
-        self._started_plugins: set[int] = set()
+        self._started_plugins: set[BasePlugin] = set()
 
     def start(
         self,
         num_workers: Annotated[
             int,
-            Doc(
-                """
-                    Количество запущенных воркеров.
+            Doc("""
+                    Number of running workers.
 
-                    По умолчанию: `4`.
-                    """
-            ),
+                    Default: `4`.
+                    """),
         ] = 4,
         reset_config: Annotated[
             bool,
-            Doc(
-                """
-                    Обновить config у воркера и брокера.
+            Doc("""
+                    Update the config of the worker and broker.
 
-                    По умолчанию: `True`.
-                    """
-            ),
+                    Default: `True`.
+                    """),
         ] = True,
         plugins: Annotated[
-            Optional[Dict[str, "BasePlugin"]],
-            Doc(
-                """
-                    Плагины для воркера и брокера.
+            dict[str, list[BasePlugin]] | None,
+            Doc("""
+                    Plugins for worker and broker.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> None:
-        """Запуск Стартера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
+        """Starter launch. This function is enabled by the main `QueueTasks` instance via `run_forever`.
 
         Args:
-            num_workers (int, optional): Количество воркеров. По умолчанию: 4.
-            reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
-            plugins (Dict[str, BasePlugin] | None, optional): Плагины. По умолчанию: None.
+            num_workers (int, optional): Number of workers. Default: 4.
+            reset_config (bool, optional): Update the config of the worker and broker. Default: True.
+            plugins (Dict[str, BasePlugin] | None, optional): Plugins. Default: None.
         """
-        self.log.info("Запуск QueueTasks...")
+        if self.log:
+            self.log.info("Запуск QueueTasks...")
 
         if plugins:
             self.plugins.update(plugins)
@@ -173,10 +166,10 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
             self.stop()
 
     def _start(self, num_workers=4):
-        """Запуск Стартера синхронно.
+        """Starter starts synchronously.
 
         Args:
-            num_workers (int, optional): Количество воркеров. По умолчанию: 4.
+            num_workers (int, optional): Number of workers. Default: 4.
         """
         self._plugin_trigger("starter_start", starter=self)
         for plugin in [i for y in self.plugins.values() for i in y]:
@@ -184,7 +177,9 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
                 self._started_plugins.add(plugin)
                 plugin.start()
 
-        self.events.fire("starting", starter=self, worker=self.worker, broker=self.broker)
+        self.events.fire(
+            "starting", starter=self, worker=self.worker, broker=self.broker
+        )
 
         self.worker.start(num_workers)
         self.broker.start(self.worker)
@@ -196,8 +191,9 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
             self.stop()
 
     def stop(self):
-        """Останавливает все компоненты."""
-        self.log.info("Остановка QueueTasks...")
+        """Stops all components."""
+        if self.log:
+            self.log.info("Остановка QueueTasks...")
         self._plugin_trigger("starter_stop", starter=self)
 
         if self.broker:
@@ -209,7 +205,9 @@ class SyncStarter(BaseStarter, SyncPluginMixin):
         if self.broker.storage.global_config:
             self.broker.storage.global_config.stop()
 
-        self.events.fire("stopping", starter=self, worker=self.worker, broker=self.broker)
+        self.events.fire(
+            "stopping", starter=self, worker=self.worker, broker=self.broker
+        )
 
         for model_plugin in [i for y in self.plugins.values() for i in y]:
             model_plugin.stop()

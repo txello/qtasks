@@ -1,10 +1,11 @@
 """Web App Plugin for QTasks."""
 
 import asyncio
+from typing import TYPE_CHECKING, Any, Optional
+
 import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import TYPE_CHECKING, Optional, Any
 
 from qtasks.plugins.base import BasePlugin
 
@@ -27,7 +28,7 @@ class AsyncWebAppPlugin(BasePlugin):
     def __init__(self, app: "QueueTasks", host: str = "127.0.0.1", port: int = 8080):
         """Инициализация плагина."""
         super().__init__(name="AsyncWebAppPlugin")
-        self.app: "QueueTasks" = app
+        self.app: QueueTasks = app
         self.host = host
         self.port = port
         self._server = None
@@ -40,17 +41,18 @@ class AsyncWebAppPlugin(BasePlugin):
         async def run_task(req: TaskRequest):
             """Запуск задачи через HTTP."""
             result = await self.app.add_task(
-                task_name=req.name,
                 *req.args or (),
+                task_name=req.name,
                 **req.kwargs or {},
                 timeout=req.timeout
             )
-            return {
-                "task_id": result.uuid,
-                "status": result.status,
-                "returning": result.returning,
-                "error": result.traceback,
-            }
+            if result:
+                return {
+                    "task_id": result.uuid,
+                    "status": result.status,
+                    "returning": result.returning,
+                    "error": result.traceback,
+                }
 
         @self._api.get("/health")
         async def health():

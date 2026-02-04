@@ -1,13 +1,9 @@
 """Sync App."""
 
 from qtasks import QueueTasks
-from qtasks.brokers import SyncSocketBroker
-from qtasks.workers import SyncThreadWorker
 
-broker = SyncSocketBroker(name="QueueTasks", port=8766)
-worker = SyncThreadWorker(name="QueueTasks", broker=broker)
-
-app = QueueTasks(name="QueueTasks", broker=broker, worker=worker)
+app = QueueTasks(name="QueueTasks")
+app.config.delete_finished_tasks = True
 
 
 @app.task(name="test")

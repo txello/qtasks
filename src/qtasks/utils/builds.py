@@ -1,9 +1,9 @@
 """QTasks builds utilities."""
 
-from dataclasses import field, fields, is_dataclass, make_dataclass
-import json
-import datetime
 import ast
+import datetime
+import json
+from dataclasses import field, fields, is_dataclass, make_dataclass
 
 
 def _infer_type(value: str):
@@ -16,15 +16,15 @@ def _infer_type(value: str):
 
 def _convert_value(field_type, value):
     try:
-        if field_type == int:
+        if field_type is int:
             return int(value)
-        elif field_type == float:
+        elif field_type is float:
             return float(value)
-        elif field_type == bool:
+        elif field_type is bool:
             return str(value).lower() == "true"
         elif field_type in (list, dict):
             return json.loads(value)
-        elif field_type == datetime.datetime:
+        elif field_type is datetime.datetime:
             return datetime.datetime.fromtimestamp(float(value))
         else:
             return value
@@ -34,6 +34,8 @@ def _convert_value(field_type, value):
 
 def _build_task(cls, **kwargs):
     if not is_dataclass(cls):
+        raise TypeError("Expected a dataclass instance")
+    if isinstance(cls, type):
         raise TypeError("Expected a dataclass instance")
 
     base_cls = type(cls)

@@ -1,31 +1,36 @@
 """BaseInspectStats."""
+from __future__ import annotations
 
-from dataclasses import asdict, is_dataclass
-from inspect import signature, _empty
 import json
-from pprint import pformat
-from typing import TYPE_CHECKING, Any, Tuple, Union
 from collections.abc import ValuesView
+from dataclasses import asdict, is_dataclass
+from inspect import _empty, signature
+from pprint import pformat
+from typing import TYPE_CHECKING, Any, Union
 
 from qtasks.schemas.task_exec import TaskExecSchema
 
 if TYPE_CHECKING:
+    from qtasks.asyncio import QueueTasks as aioQueueTasks
     from qtasks.qtasks import QueueTasks
 
 
 class UtilsInspectStats:
-    """Утилиты для инспекции статистики."""
+    """Utilities for inspection of statistics."""
 
     label_width = 26
 
-    def _app_parser(self, app: "QueueTasks", json: bool = False):
-        """Парсер для информации о приложении.
+    def _app_parser(
+        self, app: Union[QueueTasks, aioQueueTasks], json: bool = False
+    ):
+        """
+        Parser for application information.
 
         Args:
-            app (QueueTasks): Экземпляр приложения.
+            app (QueueTasks): Application instance.
 
         Returns:
-            str: Информация о приложении.
+            str: Application information.
         """
         lines = []
         plugins_sum = (
@@ -34,100 +39,130 @@ class UtilsInspectStats:
             + len(app.worker.plugins)
             + (len(app.starter.plugins) if app.starter else 0)
             + (len(app.broker.storage.plugins) if app.broker.storage else 0)
-            + (len(app.broker.storage.global_config.plugins) if app.broker.storage.global_config else 0)
+            + (
+                len(app.broker.storage.global_config.plugins)
+                if app.broker.storage.global_config
+                else 0
+            )
         )
         task_info = {
-            "Имя": app.name,
-            "Метод": app._method,
-            "Версия": app.version,
-            "Конфигурация": str(app.config),
-            "Количество задач": len(app.tasks),
-            "Количество роутеров": len(app.routers),
-            "Количество плагинов": plugins_sum,
-            "Количество инициализаций": sum(len(inits) for inits in app.events.on._events.values()),
-            "Брокер": app.broker.__class__.__name__,
-            "Воркер": app.worker.__class__.__name__,
-            "Стартер": app.starter.__class__.__name__ if app.starter else "—",
-            "Хранилище": app.broker.storage.__class__.__name__,
-            "GlobalConfig": app.broker.storage.global_config.__class__.__name__ if app.broker.storage.global_config else "—",
-            "Лог": app.log.__class__.__name__,
+            "Name": app.name,
+            "Method": app._method,
+            "Version": app.version,
+            "Config": str(app.config),
+            "Tasks Count": len(app.tasks),
+            "Routers Count": len(app.routers),
+            "Plugins Count": plugins_sum,
+            "Broker": app.broker.__class__.__name__,
+            "Worker": app.worker.__class__.__name__,
+            "Starter": app.starter.__class__.__name__ if app.starter else "—",
+            "Storage": app.broker.storage.__class__.__name__,
+            "GlobalConfig": (
+                app.broker.storage.global_config.__class__.__name__
+                if app.broker.storage.global_config
+                else "—"
+            ),
+            "Log": app.log.__class__.__name__,
         }
+        if app.events:
+            task_info.update(
+                {
+                    "Init Count": sum(
+                        len(inits) for inits in app.events.on._events.values()
+                    ),
+                }
+            )
 
         if json:
             return self._parser_json(task_info)
 
         # Форматируем словарь
         task_block = "\n".join(
-            f"{label:<{self.label_width}}: {value}" for label, value in task_info.items()
+            f"{label:<{self.label_width}}: {value}"
+            for label, value in task_info.items()
         )
         lines.append(task_block)
         lines.append("-" * 50)
         return "\n".join(lines)
 
-    def _parser_json(self, data: Union[Any, Tuple[Any]]) -> str:
+    def _parser_json(self, data: Any | tuple[Any]) -> str:
         def formatter(d):
-            if is_dataclass(d):
+            if is_dataclass(d) and not isinstance(d, type):
                 return asdict(d)
             return d
-        data = [formatter(d) for d in data] if isinstance(data, (tuple, list, ValuesView)) else formatter(data)
+
+        data = (
+            [formatter(d) for d in data]
+            if isinstance(data, (tuple, list, ValuesView))
+            else formatter(data)
+        )
         return json.dumps(data, ensure_ascii=False, indent=2, default=str)
 
-    def _tasks_parser(self, tasks: Tuple[TaskExecSchema]) -> str:
-        """Форматированный вывод всех зарегистрированных задач."""
+    def _tasks_parser(
+        self,
+        tasks: tuple[TaskExecSchema] | list[TaskExecSchema] | ValuesView[TaskExecSchema],
+    ) -> str:
+        """Formatted output of all registered tasks."""
         lines = []
 
         for task in tasks:
             args, kwargs = self._task_get_args_kwargs(task.func)
 
             task_info = {
-                "Имя задачи": task.name,
-                "Приоритет": task.priority,
-                "Описание": task.description or "—",
-                "Теги": ', '.join(task.tags) if task.tags else "—",
-                "Асинхронность": task.awaiting,
-                "Генерация": task.generating,
-                "Self перед задачей": task.echo,
-                "Args": ', '.join(args) if args else "—",
-                "Kwargs": ', '.join(f"{k}={v}" for k, v in kwargs.items()) if kwargs else "—",
+                "Task nane": task.name,
+                "Priority": task.priority,
+                "Description": task.description or "—",
+                "Tags": ", ".join(task.tags) if task.tags else "—",
+                "Awaiting": task.awaiting,
+                "Generating": task.generating,
+                "Task Self": task.echo,
+                "Args": ", ".join(args) if args else "—",
+                "Kwargs": (
+                    ", ".join(f"{k}={v}" for k, v in kwargs.items()) if kwargs else "—"
+                ),
             }
 
             if task.retry is not None:
-                task_info["Повторов"] = task.retry
+                task_info["Retry Count"] = task.retry
             if task.retry_on_exc:
-                task_info["Искл. для повторов"] = pformat(task.retry_on_exc)
+                task_info["Retry on Exception"] = pformat(task.retry_on_exc)
             if task.decode:
-                task_info["Декодирование"] = str(task.decode)
+                task_info["Decode"] = str(task.decode)
             if task.generate_handler:
-                task_info["Генератор"] = str(task.generate_handler)
+                task_info["Generator"] = str(task.generate_handler)
             if task.executor:
-                task_info["Исполнитель"] = str(task.executor)
+                task_info["Executor"] = str(task.executor)
             if task.middlewares_before:
-                task_info["Мидлвари до"] = pformat(task.middlewares_before)
+                task_info["Middlewares Before"] = pformat(task.middlewares_before)
             if task.middlewares_after:
-                task_info["Мидлвари после"] = pformat(task.middlewares_after)
+                task_info["Middlewares After"] = pformat(task.middlewares_after)
             if task.extra:
                 # Вставляем многострочное значение с отступом
-                extra_lines = "\n" + "\n".join(f" * {k}: {v}" for k, v in task.extra.items())
-                task_info["Дополнительно"] = extra_lines
+                extra_lines = "\n" + "\n".join(
+                    f" * {k}: {v}" for k, v in task.extra.items()
+                )
+                task_info["Extra"] = extra_lines
 
             # Форматируем словарь
             task_block = "\n".join(
-                f"{label:<{self.label_width}}: {value}" for label, value in task_info.items()
+                f"{label:<{self.label_width}}: {value}"
+                for label, value in task_info.items()
             )
 
             lines.append(task_block)
             lines.append("-" * 50)
 
-        return "\n".join(lines) or "Нет зарегистрированных задач."
+        return "\n".join(lines) or "No registered tasks."
 
     def _task_get_args_kwargs(self, func):
-        """Получение позиционных и ключевых аргументов функции задачи.
+        """
+        Retrieving positional and key arguments of a task function.
 
         Args:
-            func (Callable): Функция задачи.
+            func (Callable): Task function.
 
         Returns:
-            tuple: Позиционные и ключевые аргументы.
+            tuple: Positional and key arguments.
         """
         sig = signature(func)
         positional_args = []
@@ -136,7 +171,11 @@ class UtilsInspectStats:
         for name, param in sig.parameters.items():
             annotation = param.annotation if param.annotation is not _empty else None
 
-            type_str = f": {annotation.__name__}" if isinstance(annotation, type) else f": {annotation}" if annotation else ""
+            type_str = (
+                f": {annotation.__name__}"
+                if isinstance(annotation, type)
+                else f": {annotation}" if annotation else ""
+            )
 
             if param.kind in (param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD):
                 if param.default is param.empty:
@@ -145,7 +184,9 @@ class UtilsInspectStats:
                     keyword_args[f"{name}{type_str}"] = param.default
             elif param.kind == param.KEYWORD_ONLY:
                 type_str = type_str or ""
-                keyword_args[f"{name}{type_str}"] = param.default if param.default is not param.empty else "required"
+                keyword_args[f"{name}{type_str}"] = (
+                    param.default if param.default is not param.empty else "required"
+                )
             elif param.kind == param.VAR_POSITIONAL:
                 positional_args.append(f"*{name}")
             elif param.kind == param.VAR_KEYWORD:

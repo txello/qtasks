@@ -1,7 +1,9 @@
 """Async RabbitMQ Broker."""
+from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Optional, Union
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 from qtasks.configs.config import QueueConfig
 from qtasks.enums.task_status import TaskStatusEnum
@@ -12,13 +14,15 @@ from qtasks.schemas.task_exec import TaskPrioritySchema
 
 try:
     import aio_pika
-except ImportError:
-    raise ImportError("Install with `pip install qtasks[rabbitmq]` to use this broker.")
+except ImportError as exc:
+    raise ImportError("Install with `pip install qtasks[rabbitmq]` to use this broker.") from exc
 
-from typing_extensions import Annotated, Doc
-from uuid import UUID, uuid4
 from time import time
-from .base import BaseBroker
+from typing import Annotated
+from uuid import UUID, uuid4
+
+from typing_extensions import Doc
+
 from qtasks.schemas.task import Task
 from qtasks.schemas.task_status import (
     TaskStatusErrorSchema,
@@ -27,17 +31,19 @@ from qtasks.schemas.task_status import (
 )
 from qtasks.storages import AsyncRedisStorage
 
+from .base import BaseBroker
+
 if TYPE_CHECKING:
+    from qtasks.events.base import BaseEvents
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
-    from qtasks.events.base import BaseEvents
 
 
 class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     """
-    Брокер, слушающий RabbitMQ и добавляющий задачи в очередь.
+    A broker that listens to RabbitMQ and adds tasks to the queue.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -46,108 +52,100 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     broker = AsyncRabbitMQBroker(name="QueueTasks", url="amqp://guest:guest@localhost/")
 
     app = QueueTasks(broker=broker)
-    ```
+        ```
     """
 
     def __init__(
         self,
         name: Annotated[
             str,
-            Doc(
-                """
-                    Имя проекта. Это имя также используется брокером.
+            Doc("""
+                    Project name. This name is also used by the broker.
 
-                    По умолчанию: `QueueTasks`.
-                    """
-            ),
+                    Default: `QueueTasks`.
+                    """),
         ] = "QueueTasks",
         url: Annotated[
             str,
-            Doc(
-                """
-                    URL для подключения к RabbitMQ.
+            Doc("""
+                    URL to connect to RabbitMQ.
 
-                    По умолчанию: `amqp://guest:guest@localhost/`.
-                    """
-            ),
-        ] = None,
+                    Default: `amqp://guest:guest@localhost/`.
+                    """),
+        ] = "amqp://guest:guest@localhost/",
         storage: Annotated[
-            Optional["BaseStorage"],
-            Doc(
-                """
-                    Хранилище.
+            Optional[BaseStorage],
+            Doc("""
+                    Storage.
 
-                    По умолчанию: `AsyncRedisStorage`.
-                    """
-            ),
+                    Default: `AsyncRedisStorage`.
+                    """),
         ] = None,
         queue_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя очереди задач для RabbitMQ. Название обновляется на: `name:queue_name`
+            Doc("""
+                    The name of the task queue for RabbitMQ. The title is updated to: `name:queue_name`
 
-                    По умолчанию: `task_queue`.
-                    """
-            ),
+                    Default: `task_queue`.
+                    """),
         ] = "task_queue",
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
-            Doc(
-                """
-                    События.
+            Optional[BaseEvents],
+            Doc("""
+                    Events.
 
-                    По умолчанию: `qtasks.events.AsyncEvents`.
-                    """
-            ),
+                    Default: `qtasks.events.AsyncEvents`.
+                    """),
         ] = None,
     ):
-        """Инициализация AsyncRabbitMQBroker.
+        """
+        Initializing AsyncRabbitMQBroker.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
-            url (str, optional): URL для подключения к RabbitMQ. По умолчанию: None.
-            storage (BaseStorage, optional): Хранилище. По умолчанию: None.
-            queue_name (str, optional): Имя очереди RabbitMQ. По умолчанию: "task_queue".
-            log (Logger, optional): Логгер. По умолчанию: None.
-            config (QueueConfig, optional): Конфиг. По умолчанию: None.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
+            name (str, optional): Project name. Default: `QueueTasks`.
+            url (str, optional): URL to connect to RabbitMQ. Default: `None`.
+            storage (BaseStorage, optional): Storage. Default: `None`.
+            queue_name (str, optional): RabbitMQ queue name. Default: `task_queue`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Config. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
-        super().__init__(name=name, log=log, config=config, events=events)
-        self.url = url or "amqp://guest:guest@localhost/"
+        self.url = url
+
+        storage = storage or AsyncRedisStorage(
+            name=name, log=log, config=config, events=events
+        )
+        super().__init__(
+            name=name, log=log, config=config, events=events, storage=storage
+        )
+
+        self.storage: BaseStorage[Literal[True]]
+
         self.queue_name = f"{self.name}:{queue_name}"
         self.events = self.events or AsyncEvents()
-
-        self.storage = storage or AsyncRedisStorage(
-            name=self.name, log=self.log, config=self.config
-        )
 
         self.connection = None
         self.channel = None
         self.running = False
 
     async def connect(self):
-        """Подключение к RabbitMQ асинхронно."""
+        """Connecting to RabbitMQ is asynchronous."""
         self.connection = await aio_pika.connect_robust(self.url)
         self.channel = await self.connection.channel()
         await self.channel.set_qos(prefetch_count=1)
@@ -157,18 +155,17 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     async def listen(
         self,
         worker: Annotated[
-            "BaseWorker",
-            Doc(
-                """
-                    Класс воркера.
-                    """
-            ),
+            BaseWorker[Literal[True]],
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ):
-        """Слушает очередь RabbitMQ и передаёт задачи воркеру.
+        """
+        Listens to the RabbitMQ queue and transfers tasks to the worker.
 
         Args:
-            worker (BaseWorker): Класс воркера.
+            worker (BaseWorker): Worker class.
         """
         await self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         if not self.channel:
@@ -179,27 +176,33 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             async for message in queue_iter:
                 async with message.process():
                     task_data = json.loads(message.body)
-                    task_name, uuid, priority = task_data["task_name"], task_data["uuid"], task_data["priority"]
-                    args, kwargs = task_data.get("args", ()), task_data.get("kwargs", {})
+                    task_name, uuid, priority = (
+                        task_data["task_name"],
+                        task_data["uuid"],
+                        task_data["priority"],
+                    )
+                    args, kwargs = task_data.get("args", ()), task_data.get(
+                        "kwargs", {}
+                    )
                     created_at = task_data.get("created_at", 0)
 
                     await self.storage.add_process(
                         f'{task_data["task_name"]}:{task_data["uuid"]}:{task_data["priority"]}',
                         task_data["priority"],
                     )
-                    self.log.info(f"Получена новая задача: {task_data['uuid']}")
+                    if self.log:
+                        self.log.info(f"Получена новая задача: {task_data['uuid']}")
                     new_args = await self._plugin_trigger(
                         "broker_add_worker",
                         broker=self,
                         worker=worker,
-
                         task_name=task_name,
                         uuid=uuid,
                         priority=int(priority),
                         args=args,
                         kw=kwargs,
                         created_at=created_at,
-                        return_last=True
+                        return_last=True,
                     )
                     if new_args:
                         task_name = new_args.get("task_name", task_name)
@@ -215,7 +218,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
                         priority=priority,
                         args=args,
                         kwargs=kwargs,
-                        created_at=created_at
+                        created_at=created_at,
                     )
                 if not self.running:
                     break
@@ -224,64 +227,68 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         extra: Annotated[
-            dict,
-            Doc(
-                """
-                    Дополнительные параметры задачи.
-                    """
-            ),
+            dict | None,
+            Doc("""
+                    Additional task parameters.
+
+                    Default: `None`.
+                    """),
         ] = None,
         args: Annotated[
-            tuple,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            tuple | None,
+            Doc("""
+                    Task arguments of type args.
+
+                    Default: `None`.
+                    """),
         ] = None,
         kwargs: Annotated[
-            dict,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            dict | None,
+            Doc("""
+                    Task arguments of type kwargs.
+
+                    Default: `None`.
+                    """),
         ] = None,
     ) -> Task:
-        """Добавляет задачу в брокер.
+        """
+        Adds a task to the broker.
 
         Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи.
-            args (tuple, optional): Аргументы задачи типа args.
-            kwargs (dict, optional): Аргументы задачи типа kwargs.
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: `0`.
+            extra (dict, optional): Additional task parameters. Default: `None`.
+            args (tuple, optional): Task arguments of type args. Default: `None`.
+            kwargs (dict, optional): Task arguments of type kwargs. Default: `None`.
 
         Returns:
             Task: `schemas.task.Task`
+
+        Raises:
+            RuntimeError: self.channel is not defined. The server is not running!
         """
         args, kwargs = args or (), kwargs or {}
         if not self.channel:
             await self.connect()
+        if not isinstance(self.channel, aio_pika.channel.Channel):
+            raise RuntimeError("self.channel is not defined. The server is not running!")
+        self.channel: aio_pika.channel.Channel
 
-        uuid = str(uuid4())
+        uuid = uuid4()
+        uuid_str = str(uuid)
         created_at = time()
 
         model = TaskStatusNewSchema(
@@ -289,8 +296,8 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             priority=priority,
             created_at=created_at,
             updated_at=created_at,
-            args=args,
-            kwargs=kwargs
+            args=str(args),
+            kwargs=str(kwargs),
         )
 
         if extra:
@@ -301,7 +308,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             broker=self,
             storage=self.storage,
             model=model,
-            return_last=True
+            return_last=True,
         )
         if new_model:
             model = new_model.get("model", model)
@@ -309,7 +316,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
         await self.storage.add(uuid=uuid, task_status=model)
 
         task_data = {
-            "uuid": uuid,
+            "uuid": uuid_str,
             "task_name": task_name,
             "priority": priority,
             "args": args,
@@ -326,10 +333,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
         )
 
         await self._plugin_trigger(
-            "broker_add_after",
-            broker=self,
-            storage=self.storage,
-            model=model
+            "broker_add_after", broker=self, storage=self.storage, model=model
         )
 
         return Task(
@@ -339,33 +343,34 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
             priority=priority,
             args=args,
             kwargs=kwargs,
-            created_at=created_at,
-            updated_at=created_at,
+            created_at=datetime.fromtimestamp(created_at),
+            updated_at=datetime.fromtimestamp(created_at),
         )
 
     async def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
-    ) -> Union[Task, None]:
-        """Получение информации о задаче.
+    ) -> Task | None:
+        """
+        Obtaining information about a task.
 
         Args:
-            uuid (UUID|str): UUID задачи.
+            uuid (UUID|str): UUID of the task.
 
         Returns:
-            Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         task = await self.storage.get(uuid=uuid)
-        new_task = await self._plugin_trigger("broker_get", broker=self, task=task, return_last=True)
+        new_task = await self._plugin_trigger(
+            "broker_get", broker=self, task=task, return_last=True
+        )
         if new_task:
             task = new_task.get("task", task)
         return task
@@ -373,20 +378,21 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     async def update(
         self,
         **kwargs: Annotated[
-            dict,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Any,
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
     ) -> None:
-        """Обновляет информацию о задаче.
+        """
+        Updates task information.
 
         Args:
-            kwargs (dict, optional): данные задачи типа kwargs.
+            kwargs (dict, optional): task data of type kwargs.
         """
-        new_kw = await self._plugin_trigger("broker_update", broker=self, kw=kwargs, return_last=True)
+        new_kw = await self._plugin_trigger(
+            "broker_update", broker=self, kw=kwargs, return_last=True
+        )
         if new_kw:
             kwargs = new_kw.get("kw", kwargs)
         return await self.storage.update(**kwargs)
@@ -394,18 +400,17 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     async def start(
         self,
         worker: Annotated[
-            "BaseWorker",
-            Doc(
-                """
-                    Класс Воркера.
-                    """
-            ),
+            BaseWorker,
+            Doc("""
+                    Worker class.
+                    """),
         ],
     ) -> None:
-        """Запускает брокер.
+        """
+        Launches the broker.
 
         Args:
-            worker (BaseWorker): Класс Воркера.
+            worker (BaseWorker): Worker class.
         """
         await self._plugin_trigger("broker_start", broker=self, worker=worker)
         await self.storage.start()
@@ -419,7 +424,7 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
         await self.listen(worker)
 
     async def stop(self):
-        """Останавливает брокер."""
+        """The broker stops."""
         await self._plugin_trigger("broker_stop", broker=self)
         self.running = False
         if self.connection:
@@ -431,33 +436,30 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
         self,
         task_broker: Annotated[
             TaskPrioritySchema,
-            Doc(
-                """
-                    Схема приоритетной задачи.
-                    """
-            ),
+            Doc("""
+                    Priority task diagram.
+                    """),
         ],
         model: Annotated[
-            Union[TaskStatusSuccessSchema, TaskStatusErrorSchema],
-            Doc(
-                """
-                    Модель результата задачи.
-                    """
-            ),
+            TaskStatusSuccessSchema | TaskStatusErrorSchema,
+            Doc("""
+                    Model of the task result.
+                    """),
         ],
     ) -> None:
-        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
+        """
+        Updates storage data via the `self.storage.remove_finished_task` function.
 
         Args:
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         new_model = await self._plugin_trigger(
             "broker_remove_finished_task",
             broker=self,
             storage=self.storage,
             model=model,
-            return_last=True
+            return_last=True,
         )
         if new_model:
             model = new_model.get("model", model)
@@ -465,10 +467,12 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
         return await self.storage.remove_finished_task(task_broker, model)
 
     async def _running_older_tasks(self, worker):
-        await self._plugin_trigger("broker_running_older_tasks", broker=self, worker=worker)
+        await self._plugin_trigger(
+            "broker_running_older_tasks", broker=self, worker=worker
+        )
         return await self.storage._running_older_tasks(worker)
 
     async def flush_all(self) -> None:
-        """Удалить все данные."""
+        """Delete all data."""
         await self._plugin_trigger("broker_flush_all", broker=self)
         await self.storage.flush_all()

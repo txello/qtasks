@@ -1,6 +1,6 @@
 """Locust load test for QTasks."""
 
-from locust import HttpUser, task, between
+from locust import HttpUser, between, task
 
 
 class QTasksUser(HttpUser):

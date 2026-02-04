@@ -1,22 +1,34 @@
 """Base Configurations."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-from typing_extensions import Annotated, Doc
+from collections.abc import Awaitable
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Generic,
+    Literal,
+    Optional,
+    overload,
+)
+
+from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
-    from qtasks.plugins.base import BasePlugin
     from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
 
 
-class BaseGlobalConfig(ABC):
+class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     """
-    `BaseGlobalConfig` - Абстрактный класс, который является фундаментом для Глобального Конфига.
+    `BaseGlobalConfig` - An abstract class that is the foundation for the Global Config.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -32,61 +44,56 @@ class BaseGlobalConfig(ABC):
     def __init__(
         self,
         name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для GlobalConfig.
+            str | None,
+            Doc("""
+                    Project name. This name can be used for tags for GlobalConfig.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
-            Doc(
-                """
-                    События.
+            Optional[BaseEvents],
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
-        """Инициализация контекста.
+        """
+        Initializing the context.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: `None`.
-            log (Logger, optional): Логгер. По умолчанию: `None`.
-            config (QueueConfig, optional): Конфигурация. По умолчанию: `None`.
-            events (BaseEvents, optional): События. По умолчанию: `None`.
+            name (str, optional): Project name. Default: `None`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Configuration. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
+        self.config_name: str | None = None
+
         self.config = config or QueueConfig()
         self.log = (
             log.with_subname("GlobalConfig")
             if log
             else Logger(
-                name=self.name,
+                name=self.name or "QueueTasks",
                 subname="GlobalConfig",
                 default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
@@ -94,81 +101,130 @@ class BaseGlobalConfig(ABC):
         )
         self.events = events
         self.client = None
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
         self.init_plugins()
 
+    @overload
+    def set(self: BaseGlobalConfig[Literal[False]], **kwargs) -> None: ...
+
+    @overload
+    async def set(self: BaseGlobalConfig[Literal[True]], **kwargs) -> None: ...
+
     @abstractmethod
-    def set(self, **kwargs) -> None:
-        """Добавить новое значение.
+    def set(self, **kwargs) -> None | Awaitable[None]:
+        """
+        Add new value.
 
         Args:
-            kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
+            kwargs (dict, optional): kwags tasks. Defaults to `{}`.
         """
         pass
 
+    @overload
+    def get(self: BaseGlobalConfig[Literal[False]], key: str, name: str) -> Any: ...
+
+    @overload
+    async def get(
+        self: BaseGlobalConfig[Literal[True]], key: str, name: str
+    ) -> Any: ...
+
     @abstractmethod
-    def get(self, key: str, name: str) -> Any:
-        """Получить значение.
+    def get(self, key: str, name: str) -> Any | Awaitable[Any]:
+        """
+        Get value.
 
         Args:
-            key (str): Ключ.
-            name (str): Имя.
+            key (str): Key.
+            name (str): Name.
 
         Returns:
-            Any: Значение.
+            Any: Value.
         """
         pass
 
+    @overload
+    def get_all(
+        self: BaseGlobalConfig[Literal[False]], key: str
+    ) -> dict | list | tuple: ...
+
+    @overload
+    async def get_all(
+        self: BaseGlobalConfig[Literal[True]], key: str
+    ) -> dict | list | tuple: ...
+
     @abstractmethod
-    def get_all(self, key: str) -> Union[dict, list, tuple]:
-        """Получить все значения.
+    def get_all(
+        self, key: str
+    ) -> dict | list | tuple | Awaitable[dict | list | tuple]:
+        """
+        Get all values.
 
         Args:
-            key (str): Ключ.
+            key (str): Key.
 
         Returns:
-            Dict[str, Any] | List[Any] | Tuple[Any]: Значения.
+            Dict[str, Any] | List[Any] | Tuple[Any]: Values.
         """
         pass
 
+    @overload
+    def get_match(self: BaseGlobalConfig[Literal[False]], match: str) -> Any: ...
+
+    @overload
+    async def get_match(self: BaseGlobalConfig[Literal[True]], match: str) -> Any: ...
+
     @abstractmethod
-    def get_match(self, match: str) -> Union[Any, dict, list, tuple]:
-        """Получить значения по паттерну.
+    def get_match(
+        self, match: str
+    ) -> dict | list | tuple | Awaitable[dict | list | tuple]:
+        """
+        Get values by pattern.
 
         Args:
-            match (str): Паттерн.
+            match (str): Pattern.
 
         Returns:
-            Any | Dict[str, Any] | List[Any] | Tuple[Any]: Значение или Значения.
+            Any | Dict[str, Any] | List[Any] | Tuple[Any]: Value or Values.
         """
         pass
 
-    @abstractmethod
-    def start(self) -> None:
-        """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
-        pass
+    @overload
+    def start(self: BaseGlobalConfig[Literal[False]]) -> None: ...
+
+    @overload
+    async def start(self: BaseGlobalConfig[Literal[True]]) -> None: ...
 
     @abstractmethod
-    def stop(self) -> None:
-        """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever."""
+    def start(self) -> None | Awaitable[None]:
+        """Launching the Broker. This function is enabled by the main instance of `QueueTasks` via `run_forever."""
+        pass
+
+    @overload
+    def stop(self: BaseGlobalConfig[Literal[False]]) -> None: ...
+
+    @overload
+    async def stop(self: BaseGlobalConfig[Literal[True]]) -> None: ...
+
+    @abstractmethod
+    def stop(self) -> None | Awaitable[None]:
+        """Stops Global Config. This function is invoked by the main instance of `QueueTasks` after the `run_forever' function completes."""
         pass
 
     def update_config(
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
-        """Обновляет конфиг брокера.
+        """
+        Updates the broker config.
 
         Args:
-            config (QueueConfig): Конфиг.
+            config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -176,29 +232,26 @@ class BaseGlobalConfig(ABC):
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            BasePlugin,
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            list[str] | None,
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
+        """
+        Add a plugin to the class.
 
         Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -210,5 +263,5 @@ class BaseGlobalConfig(ABC):
         return
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
         pass

@@ -1,29 +1,47 @@
 """Base Broker."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable
 from dataclasses import asdict, field, fields, make_dataclass
-from typing import Dict, List, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Generic,
+    Literal,
+    Optional,
+    overload,
+)
 from uuid import UUID
-from typing_extensions import Annotated, Doc
-from typing import TYPE_CHECKING
 
+from typing_extensions import Doc
+
+from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
 from qtasks.schemas.task import Task
-from qtasks.configs.config import QueueConfig
-from qtasks.schemas.task_status import TaskStatusNewSchema
+from qtasks.schemas.task_exec import TaskPrioritySchema
+from qtasks.schemas.task_status import (
+    TaskStatusCancelSchema,
+    TaskStatusErrorSchema,
+    TaskStatusNewSchema,
+    TaskStatusProcessSchema,
+    TaskStatusSuccessSchema,
+)
+from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
+    from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
     from qtasks.storages.base import BaseStorage
     from qtasks.workers.base import BaseWorker
-    from qtasks.plugins.base import BasePlugin
-    from qtasks.events.base import BaseEvents
 
 
-class BaseBroker(ABC):
+class BaseBroker(Generic[TAsyncFlag], ABC):
     """
-    `BaseBroker` - Абстрактный класс, который является фундаментом для Брокеров.
+    `BaseBroker` - An abstract class that is the foundation for Brokers.
 
-    ## Пример
+    ## Example
 
     ```python
     from qtasks import QueueTasks
@@ -38,65 +56,56 @@ class BaseBroker(ABC):
 
     def __init__(
         self,
-        name: Annotated[
-            Optional[str],
-            Doc(
-                """
-                    Имя проекта. Это имя можно использовать для тегов для Брокеров.
-
-                    По умолчанию: `None`.
-                    """
-            ),
-        ] = None,
         storage: Annotated[
-            Optional["BaseStorage"],
-            Doc(
-                """
-                    Хранилище `qtasks.storages.base.BaseStorage`.
+            BaseStorage[TAsyncFlag],
+            Doc("""
+                    Storage `qtasks.storages.base.BaseStorage`.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
+        ],
+        name: Annotated[
+            str | None,
+            Doc("""
+                    Project name. This name can be used for tags for Brokers.
+
+                    Default: `None`.
+                    """),
         ] = None,
         log: Annotated[
-            Optional[Logger],
-            Doc(
-                """
-                    Логгер.
+            Logger | None,
+            Doc("""
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
-                    """
-            ),
+                    Default: `qtasks.logs.Logger`.
+                    """),
         ] = None,
         config: Annotated[
-            Optional[QueueConfig],
-            Doc(
-                """
-                    Конфиг.
+            QueueConfig | None,
+            Doc("""
+                    Config.
 
-                    По умолчанию: `qtasks.configs.config.QueueConfig`.
-                    """
-            ),
+                    Default: `qtasks.configs.config.QueueConfig`.
+                    """),
         ] = None,
         events: Annotated[
-            Optional["BaseEvents"],
-            Doc(
-                """
-                    События.
+            Optional[BaseEvents],
+            Doc("""
+                    Events.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
     ):
-        """Инициализация BaseBroker.
+        """
+        BaseBroker initialization.
 
         Args:
-            name (str, optional): Имя проекта. По умолчанию: `None`.
-            storage (BaseStorage, optional): Хранилище. По умолчанию: `None`.
-            log (Logger, optional): Логгер. По умолчанию: `None`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
-            events (BaseEvents, optional): События. По умолчанию: `None`.
+            name (str, optional): Project name. Default: `None`.
+            storage (BaseStorage, optional): Storage. Default: `None`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Config. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
         self.config = config or QueueConfig()
@@ -104,7 +113,7 @@ class BaseBroker(ABC):
             log.with_subname("Broker")
             if log
             else Logger(
-                name=self.name,
+                name=self.name or "QueueTasks",
                 subname="Broker",
                 default_level=self.config.logs_default_level_server,
                 format=self.config.logs_format,
@@ -114,152 +123,293 @@ class BaseBroker(ABC):
 
         self.storage = storage
 
-        self.plugins: Dict[str, List["BasePlugin"]] = {}
+        self.plugins: dict[str, list[BasePlugin]] = {}
 
         self.init_plugins()
+
+    @overload
+    def add(
+        self: BaseBroker[Literal[False]],
+        task_name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        priority: Annotated[
+            int,
+            Doc("""
+                    Task priority.
+
+                    Default: `0`.
+                    """),
+        ] = 0,
+        extra: Annotated[
+            dict | None,
+            Doc("""
+                    Additional task parameters.
+                    """),
+        ] = None,
+        args: Annotated[
+            tuple | None,
+            Doc("""
+                    Task arguments of type args.
+                    """),
+        ] = None,
+        kwargs: Annotated[
+            dict | None,
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
+        ] = None,
+    ) -> Task: ...
+
+    @overload
+    async def add(
+        self: BaseBroker[Literal[True]],
+        task_name: Annotated[
+            str,
+            Doc("""
+                    Task name.
+                    """),
+        ],
+        priority: Annotated[
+            int,
+            Doc("""
+                    Task priority.
+
+                    Default: `0`.
+                    """),
+        ] = 0,
+        extra: Annotated[
+            dict | None,
+            Doc("""
+                    Additional task parameters.
+                    """),
+        ] = None,
+        args: Annotated[
+            tuple | None,
+            Doc("""
+                    Task arguments of type args.
+                    """),
+        ] = None,
+        kwargs: Annotated[
+            dict | None,
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
+        ] = None,
+    ) -> Task: ...
 
     @abstractmethod
     def add(
         self,
         task_name: Annotated[
             str,
-            Doc(
-                """
-                    Имя задачи.
-                    """
-            ),
+            Doc("""
+                    Task name.
+                    """),
         ],
         priority: Annotated[
             int,
-            Doc(
-                """
-                    Приоритет задачи.
+            Doc("""
+                    Task priority.
 
-                    По умолчанию: `0`.
-                    """
-            ),
+                    Default: `0`.
+                    """),
         ] = 0,
         extra: Annotated[
-            dict,
-            Doc(
-                """
-                    Дополнительные параметры задачи.
-                    """
-            ),
+            dict | None,
+            Doc("""
+                    Additional task parameters.
+                    """),
         ] = None,
         args: Annotated[
-            tuple,
-            Doc(
-                """
-                    Аргументы задачи типа args.
-                    """
-            ),
+            tuple | None,
+            Doc("""
+                    Task arguments of type args.
+                    """),
         ] = None,
         kwargs: Annotated[
-            dict,
-            Doc(
-                """
-                    Аргументы задачи типа kwargs.
-                    """
-            ),
+            dict | None,
+            Doc("""
+                    Task arguments of type kwargs.
+                    """),
         ] = None,
-    ) -> Task:
-        """Добавление задачи в брокер.
+    ) -> Task | Awaitable[Task]:
+        """
+        Adding a task to the broker.
 
         Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи.
-            args (tuple, optional): Аргументы задачи типа args.
-            kwargs (dict, optional): Аргументы задачи типа kwargs.
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: `0`.
+            extra (dict, optional): Additional task parameters. Default: `None`.
+            args (tuple, optional): Task arguments of type args. Default: `None`.
+            kwargs (dict, optional): Task arguments of type kwargs. Default: `None`.
 
         Returns:
             Task: `schemas.task.Task`
         """
         pass
 
+    @overload
+    def get(
+        self: BaseBroker[Literal[False]],
+        uuid: Annotated[
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
+        ],
+    ) -> Task | None: ...
+
+    @overload
+    async def get(
+        self: BaseBroker[Literal[True]],
+        uuid: Annotated[
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
+        ],
+    ) -> Task | None: ...
+
     @abstractmethod
     def get(
         self,
         uuid: Annotated[
-            Union[UUID, str],
-            Doc(
-                """
-                    UUID задачи.
-                    """
-            ),
+            UUID | str,
+            Doc("""
+                    UUID of the task.
+                    """),
         ],
-    ) -> Union[Task, None]:
-        """Получение информации о задаче.
+    ) -> Task | None | Awaitable[Task | None]:
+        """
+        Obtaining information about a task.
 
         Args:
-            uuid (UUID|str): UUID задачи.
+            uuid (UUID|str): UUID of the task.
 
         Returns:
-            Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         pass
+
+    @overload
+    def update(
+        self: BaseBroker[Literal[False]],
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
+        ],
+    ) -> None: ...
+
+    @overload
+    async def update(
+        self: BaseBroker[Literal[True]],
+        **kwargs: Annotated[
+            Any,
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
+        ],
+    ) -> None: ...
 
     @abstractmethod
     def update(
         self,
         **kwargs: Annotated[
-            dict,
-            Doc(
-                """
-                    Аргументы обновления для хранилища типа kwargs.
-                    """
-            ),
+            Any,
+            Doc("""
+                    Update arguments for storage type kwargs.
+                    """),
         ],
-    ) -> None:
-        """Обновляет информацию о задаче.
+    ) -> None | Awaitable[None]:
+        """
+        Updates task information.
 
         Args:
-            kwargs (dict, optional): данные задачи типа kwargs.
+            kwargs (dict, optional): task data of type kwargs.
         """
         pass
+
+    @overload
+    def start(
+        self: BaseBroker[Literal[False]],
+        worker: Annotated[
+            Optional[BaseWorker],
+            Doc("""
+                    Worker class.
+
+                    Default: `None`.
+                    """),
+        ] = None,
+    ) -> None: ...
+
+    @overload
+    async def start(
+        self: BaseBroker[Literal[True]],
+        worker: Annotated[
+            Optional[BaseWorker],
+            Doc("""
+                    Worker class.
+
+                    Default: `None`.
+                    """),
+        ] = None,
+    ) -> None: ...
 
     @abstractmethod
     def start(
         self,
         worker: Annotated[
-            "BaseWorker",
-            Doc(
-                """
-                    Класс Воркера.
+            Optional[BaseWorker],
+            Doc("""
+                    Worker class.
 
-                    По умолчанию: `None`.
-                    """
-            ),
+                    Default: `None`.
+                    """),
         ] = None,
-    ) -> None:
-        """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
+    ) -> None | Awaitable[None]:
+        """
+        Launching the Broker. This function is enabled by the main `QueueTasks` instance via `run_forever`.
 
         Args:
-            worker (BaseWorker, optional): класс Воркера. По умолчанию: `None`.
+            worker (BaseWorker, optional): Worker class. Default: `None`.
         """
         pass
 
+    @overload
+    def stop(
+        self: BaseBroker[Literal[False]],
+    ) -> None: ...
+
+    @overload
+    async def stop(
+        self: BaseBroker[Literal[True]],
+    ) -> None: ...
+
     @abstractmethod
-    def stop(self) -> None:
-        """Останавливает брокер. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+    def stop(self) -> None | Awaitable[None]:
+        """The broker stops. This function is invoked by the main `QueueTasks` instance after the `run_forever` function completes."""
         pass
 
     def update_config(
         self,
         config: Annotated[
             QueueConfig,
-            Doc(
-                """
-                    Конфиг.
-                    """
-            ),
+            Doc("""
+                    Config.
+                    """),
         ],
     ) -> None:
-        """Обновляет конфиг брокера.
+        """
+        Updates the broker config.
 
         Args:
-            config (QueueConfig): Конфиг.
+            config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -267,29 +417,26 @@ class BaseBroker(ABC):
     def add_plugin(
         self,
         plugin: Annotated[
-            "BasePlugin",
-            Doc(
-                """
-                    Плагин.
-                    """
-            ),
+            BasePlugin,
+            Doc("""
+                    Plugin.
+                    """),
         ],
         trigger_names: Annotated[
-            Optional[List[str]],
-            Doc(
-                """
-                    Имя триггеров для плагина.
+            list[str] | None,
+            Doc("""
+                    The name of the triggers for the plugin.
 
-                    По умолчанию: По умолчанию: будет добавлен в `Globals`.
-                    """
-            ),
+                    Default: Default: will be added to `Globals`.
+                    """),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
+        """
+        Add a plugin to the class.
 
         Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -300,31 +447,91 @@ class BaseBroker(ABC):
                 self.plugins[name].append(plugin)
         return
 
-    def flush_all(self) -> None:
-        """Удалить все данные."""
+    @overload
+    def flush_all(self: BaseBroker[Literal[False]]) -> None: ...
+
+    @overload
+    async def flush_all(self: BaseBroker[Literal[True]]) -> None: ...
+
+    def flush_all(self) -> None | Awaitable[None]:
+        """Delete all data."""
         pass
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
+        pass
+
+    @overload
+    def remove_finished_task(
+        self: BaseBroker[Literal[False]],
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc("""
+                    Priority task diagram.
+                    """),
+        ],
+        model: Annotated[
+            TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
+            Doc("""
+                    Model of the task result.
+                    """),
+        ],
+    ) -> None: ...
+
+    @overload
+    async def remove_finished_task(
+        self: BaseBroker[Literal[True]],
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc("""
+                    Priority task diagram.
+                    """),
+        ],
+        model: Annotated[
+            TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
+            Doc("""
+                    Model of the task result.
+                    """),
+        ],
+    ) -> None: ...
+
+    def remove_finished_task(
+        self,
+        task_broker: Annotated[
+            TaskPrioritySchema,
+            Doc("""
+                    Priority task diagram.
+                    """),
+        ],
+        model: Annotated[
+            TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema,
+            Doc("""
+                    Model of the task result.
+                    """),
+        ],
+    ) -> None | Awaitable[None]:
+        """
+        Updates storage data via the `self.storage.remove_finished_task` function.
+
+        Args:
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Model of the task result.
+        """
         pass
 
     def _dynamic_model(
         self,
         model: Annotated[
             TaskStatusNewSchema,
-            Doc(
-                """
-                    Модель задачи.
-                    """
-            ),
+            Doc("""
+                    Task model.
+                    """),
         ],
         extra: Annotated[
             dict,
-            Doc(
-                """
-                    Дополнительные поля.
-                    """
-            ),
+            Doc("""
+                    Additional fields.
+                    """),
         ],
     ):
         # Вычисляем имена стандартных полей
