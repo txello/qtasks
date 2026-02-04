@@ -1,0 +1,1501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>https://txello.github.io/qtasks/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/blog/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/blog/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/blog/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/changelog/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/changelog/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/components/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/components/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/components/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/console/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/console/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/console/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/getting_started/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/getting_started/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/getting_started/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/install/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/install/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/install/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/next/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/next/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/next/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/schemas/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/schemas/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/schemas/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/tests/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/tests/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/tests/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/exceptions/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/exceptions/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/exceptions/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/logs/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/logs/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/logs/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/queuetasks/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/queuetasks/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/queuetasks/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/router/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/router/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/router/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/states/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/states/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/states/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/webview/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/webview/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/webview/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/asyncio/queuetasks/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/asyncio/queuetasks/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/asyncio/queuetasks/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/brokers/async_kafkabroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/async_kafkabroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/async_kafkabroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/brokers/async_rabbitmqbroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/async_rabbitmqbroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/async_rabbitmqbroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/brokers/async_redisbroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/async_redisbroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/async_redisbroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/brokers/async_socket/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/async_socket/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/async_socket/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/brokers/basebroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/basebroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/basebroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/brokers/sync_kafkabroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/sync_kafkabroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/sync_kafkabroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/brokers/sync_rabbitmqbroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/sync_rabbitmqbroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/sync_rabbitmqbroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/brokers/sync_redisbroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/sync_redisbroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/sync_redisbroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/brokers/sync_socket/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/sync_socket/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/sync_socket/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/classes/async_redis_commands/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/classes/async_redis_commands/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/classes/async_redis_commands/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/classes/baseqtasks/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/classes/baseqtasks/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/classes/baseqtasks/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/classes/sync_redis_commands/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/classes/sync_redis_commands/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/classes/sync_redis_commands/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/contexts/async_context/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/contexts/async_context/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/contexts/async_context/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/contexts/sync_context/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/contexts/sync_context/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/contexts/sync_context/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/executors/async_task_executor/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/executors/async_task_executor/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/executors/async_task_executor/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/executors/basetask_executor/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/executors/basetask_executor/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/executors/basetask_executor/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/executors/sync_task_executor/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/executors/sync_task_executor/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/executors/sync_task_executor/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/globalconfig/async_redisglobalconfig/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/globalconfig/async_redisglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/globalconfig/async_redisglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/globalconfig/baseglobalconfig/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/globalconfig/baseglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/globalconfig/baseglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/globalconfig/sync_redisglobalconfig/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/globalconfig/sync_redisglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/globalconfig/sync_redisglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/libraries/django/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/libraries/django/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/libraries/django/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/middlewares/basemiddleware/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/middlewares/basemiddleware/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/middlewares/basemiddleware/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/middlewares/task_middleware/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/middlewares/task_middleware/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/middlewares/task_middleware/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/models/task/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/models/task/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/models/task/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/plugins/errors/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/plugins/errors/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/plugins/errors/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/plugins/triggers/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/plugins/triggers/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/plugins/triggers/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/registries/async_task_decorator/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/registries/async_task_decorator/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/registries/async_task_decorator/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/registries/sync_task_decorator/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/registries/sync_task_decorator/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/registries/sync_task_decorator/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/results/async_result/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/results/async_result/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/results/async_result/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/results/sync_result/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/results/sync_result/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/results/sync_result/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/schemas/global_config/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/global_config/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/global_config/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/schemas/inits/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/inits/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/inits/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/schemas/queueconfig/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/queueconfig/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/queueconfig/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/schemas/task_exec/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/task_exec/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/task_exec/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/schemas/task_status/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/task_status/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/task_status/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/schemas/task_status_enum/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/task_status_enum/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/task_status_enum/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/schemas/test_config/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/test_config/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/test_config/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/starters/async_starter/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/starters/async_starter/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/starters/async_starter/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/starters/basestarter/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/starters/basestarter/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/starters/basestarter/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/starters/sync_starter/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/starters/sync_starter/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/starters/sync_starter/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/stats/async_stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/async_stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/async_stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/stats/basestats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/basestats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/basestats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/stats/sync_stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/sync_stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/sync_stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/stats/inspect/inspect_stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/inspect/inspect_stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/inspect/inspect_stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/stats/inspect/utils_inspect_stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/inspect/utils_inspect_stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/inspect/utils_inspect_stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/storages/async_redisstorage/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/storages/async_redisstorage/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/storages/async_redisstorage/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/storages/basestorage/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/storages/basestorage/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/storages/basestorage/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/storages/sync_redisstorage/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/storages/sync_redisstorage/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/storages/sync_redisstorage/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/tests/async_testcase/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/tests/async_testcase/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/tests/async_testcase/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/tests/basetests/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/tests/basetests/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/tests/basetests/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/tests/sync_testcase/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/tests/sync_testcase/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/tests/sync_testcase/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/timers/async_timer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/timers/async_timer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/timers/async_timer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/timers/basetimer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/timers/basetimer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/timers/basetimer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/timers/sync_timer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/timers/sync_timer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/timers/sync_timer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/workers/async_worker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/workers/async_worker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/workers/async_worker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/workers/baseworker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/workers/baseworker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/workers/baseworker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/api/workers/sync_threadworker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/workers/sync_threadworker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/workers/sync_threadworker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/configuration/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/configuration/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/extensibility/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/extensibility/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/extensibility/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/task_flow/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/task_flow/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/task_flow/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/components/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/components/abstract_classes/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/abstract_classes/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/abstract_classes/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/components/plugin_system/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/plugin_system/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/plugin_system/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/components/schemas/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/schemas/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/schemas/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/components/threads_async/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/threads_async/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/threads_async/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/integrations/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/integrations/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/integrations/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/architecture/integrations/django/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/integrations/django/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/integrations/django/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/analytics/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/analytics/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/analytics/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/echo/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/echo/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/echo/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/features/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/features/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/features/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/plugins/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/plugins/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/plugins/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/variables/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/variables/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/variables/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/yield/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/yield/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/yield/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/integrations/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/integrations/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/integrations/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/integrations/django/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/integrations/django/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/integrations/django/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/practice/freelancer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/practice/freelancer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/practice/freelancer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/practice/large_business/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/practice/large_business/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/practice/large_business/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/examples/practice/small_business/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/practice/small_business/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/practice/small_business/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/contexts/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/contexts/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/contexts/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/depends/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/depends/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/depends/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/pydantic/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/pydantic/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/pydantic/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/states/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/states/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/states/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/task/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/task/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/task/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/timer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/timer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/timer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/uniqueness/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/uniqueness/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/uniqueness/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/features/yield/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/yield/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/yield/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/blog/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/blog/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/blog/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/changelog/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/changelog/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/components/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/components/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/components/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/console/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/console/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/console/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/getting_started/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/getting_started/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/getting_started/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/install/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/install/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/install/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/next/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/next/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/next/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/schemas/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/schemas/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/schemas/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/tests/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/tests/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/tests/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/exceptions/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/exceptions/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/exceptions/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/logs/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/logs/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/logs/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/queuetasks/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/queuetasks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/queuetasks/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/router/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/router/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/router/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/states/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/states/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/states/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/webview/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/webview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/webview/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/asyncio/queuetasks/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/asyncio/queuetasks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/asyncio/queuetasks/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/brokers/async_kafkabroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/async_kafkabroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/async_kafkabroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/brokers/async_rabbitmqbroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/async_rabbitmqbroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/async_rabbitmqbroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/brokers/async_redisbroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/async_redisbroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/async_redisbroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/brokers/async_socket/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/async_socket/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/async_socket/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/brokers/basebroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/basebroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/basebroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/brokers/sync_kafkabroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/sync_kafkabroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/sync_kafkabroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/brokers/sync_rabbitmqbroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/sync_rabbitmqbroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/sync_rabbitmqbroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/brokers/sync_redisbroker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/sync_redisbroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/sync_redisbroker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/brokers/sync_socket/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/brokers/sync_socket/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/brokers/sync_socket/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/classes/async_redis_commands/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/classes/async_redis_commands/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/classes/async_redis_commands/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/classes/baseqtasks/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/classes/baseqtasks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/classes/baseqtasks/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/classes/sync_redis_commands/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/classes/sync_redis_commands/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/classes/sync_redis_commands/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/contexts/async_context/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/contexts/async_context/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/contexts/async_context/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/contexts/sync_context/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/contexts/sync_context/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/contexts/sync_context/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/executors/async_task_executor/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/executors/async_task_executor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/executors/async_task_executor/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/executors/basetask_executor/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/executors/basetask_executor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/executors/basetask_executor/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/executors/sync_task_executor/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/executors/sync_task_executor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/executors/sync_task_executor/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/globalconfig/async_redisglobalconfig/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/globalconfig/async_redisglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/globalconfig/async_redisglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/globalconfig/baseglobalconfig/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/globalconfig/baseglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/globalconfig/baseglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/globalconfig/sync_redisglobalconfig/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/globalconfig/sync_redisglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/globalconfig/sync_redisglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/libraries/django/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/libraries/django/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/libraries/django/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/middlewares/basemiddleware/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/middlewares/basemiddleware/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/middlewares/basemiddleware/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/middlewares/task_middleware/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/middlewares/task_middleware/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/middlewares/task_middleware/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/models/task/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/models/task/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/models/task/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/plugins/errors/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/plugins/errors/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/plugins/errors/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/plugins/triggers/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/plugins/triggers/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/plugins/triggers/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/registries/async_task_decorator/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/registries/async_task_decorator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/registries/async_task_decorator/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/registries/sync_task_decorator/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/registries/sync_task_decorator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/registries/sync_task_decorator/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/results/async_result/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/results/async_result/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/results/async_result/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/results/sync_result/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/results/sync_result/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/results/sync_result/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/schemas/global_config/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/global_config/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/global_config/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/schemas/inits/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/inits/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/inits/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/schemas/queueconfig/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/queueconfig/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/queueconfig/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/schemas/task_exec/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/task_exec/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/task_exec/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/schemas/task_status/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/task_status/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/task_status/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/schemas/task_status_enum/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/task_status_enum/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/task_status_enum/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/schemas/test_config/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/schemas/test_config/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/schemas/test_config/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/starters/async_starter/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/starters/async_starter/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/starters/async_starter/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/starters/basestarter/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/starters/basestarter/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/starters/basestarter/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/starters/sync_starter/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/starters/sync_starter/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/starters/sync_starter/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/stats/async_stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/async_stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/async_stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/stats/basestats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/basestats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/basestats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/stats/sync_stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/sync_stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/sync_stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/stats/inspect/inspect_stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/inspect/inspect_stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/inspect/inspect_stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/stats/inspect/utils_inspect_stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/stats/inspect/utils_inspect_stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/stats/inspect/utils_inspect_stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/storages/async_redisstorage/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/storages/async_redisstorage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/storages/async_redisstorage/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/storages/basestorage/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/storages/basestorage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/storages/basestorage/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/storages/sync_redisstorage/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/storages/sync_redisstorage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/storages/sync_redisstorage/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/tests/async_testcase/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/tests/async_testcase/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/tests/async_testcase/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/tests/basetests/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/tests/basetests/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/tests/basetests/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/tests/sync_testcase/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/tests/sync_testcase/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/tests/sync_testcase/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/timers/async_timer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/timers/async_timer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/timers/async_timer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/timers/basetimer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/timers/basetimer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/timers/basetimer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/timers/sync_timer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/timers/sync_timer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/timers/sync_timer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/workers/async_worker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/workers/async_worker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/workers/async_worker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/workers/baseworker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/workers/baseworker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/workers/baseworker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/api/workers/sync_threadworker/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/api/workers/sync_threadworker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/api/workers/sync_threadworker/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/configuration/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/configuration/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/extensibility/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/extensibility/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/extensibility/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/task_flow/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/task_flow/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/task_flow/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/components/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/components/abstract_classes/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/abstract_classes/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/abstract_classes/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/components/plugin_system/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/plugin_system/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/plugin_system/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/components/schemas/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/schemas/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/schemas/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/components/threads_async/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/components/threads_async/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/components/threads_async/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/integrations/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/integrations/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/integrations/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/architecture/integrations/django/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/architecture/integrations/django/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/architecture/integrations/django/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/analytics/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/analytics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/analytics/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/echo/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/echo/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/echo/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/features/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/features/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/features/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/plugins/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/plugins/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/plugins/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/variables/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/variables/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/variables/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/yield/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/yield/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/yield/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/integrations/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/integrations/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/integrations/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/integrations/django/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/integrations/django/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/integrations/django/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/practice/freelancer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/practice/freelancer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/practice/freelancer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/practice/large_business/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/practice/large_business/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/practice/large_business/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/examples/practice/small_business/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/examples/practice/small_business/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/examples/practice/small_business/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/contexts/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/contexts/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/contexts/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/depends/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/depends/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/depends/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/pydantic/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/pydantic/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/pydantic/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/states/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/states/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/states/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/stats/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/stats/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/task/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/task/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/task/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/timer/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/timer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/timer/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/uniqueness/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/uniqueness/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/uniqueness/"/>
+    </url>
+    <url>
+        <loc>https://txello.github.io/qtasks/ru/features/yield/</loc>
+        <lastmod>2026-02-04</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://txello.github.io/qtasks/ru/features/yield/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://txello.github.io/qtasks/features/yield/"/>
+    </url>
+</urlset>
