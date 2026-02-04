@@ -11,7 +11,7 @@ include = ["qtasks*"]
 
 [project]
 name = "qtasks"
-version = "1.7.1"
+version = "1.7.2"
 authors = [
   { name="txello", email="txello7@proton.me" },
 ]
