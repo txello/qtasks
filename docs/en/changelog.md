@@ -1,6 +1,10 @@
 # Update History
 
-## v1.7.0 2026-02-04
+## v1.7.1 2026-02-05
+
+- The translation of the code from Russian to English has been corrected.
+
+## v1.7.0 2026-02-05
 
 - Added `(A)syncTaskUtils` and `(A)syncChain`.
 - Added the ability to get settings for `QueueConfig` from `os.environ`.
