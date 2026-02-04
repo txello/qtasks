@@ -116,6 +116,12 @@ If one of its parameters is `None`, then the logic above applies.
 | `worker_task_error_retry`     | `plugin_result` | Replaces TaskStatusErrorSchema on retry                                  |
 | `worker_remove_finished_task` | `new_data`      | Replaces TaskPrioritySchema and TaskStatus... for removal from the queue |
 
+### 🔹 Stats
+
+| Триггер         | Return | Назначение                                  |
+| --------------- | ------ | ------------------------------------------- |
+| `stats_inspect` | —      | Called before `InspectStats` is defined.    |
+
 ---
 
 This reference can be used when developing plugins, integrations, or

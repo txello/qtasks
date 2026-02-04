@@ -1,5 +1,33 @@
 # Update History
 
+## v1.7.0 2026-02-04
+
+- Added `(A)syncTaskUtils` and `(A)syncChain`.
+- Added the ability to get settings for `QueueConfig` from `os.environ`.
+- Added `(A)syncTaskCls`.
+- Added `(A)syncgRPCPlugin`.
+- Added plugin systems for `(A)syncStats`.
+- Added `stats_inspect` plugin trigger for `(A)syncStats`.
+- Added ExitStack support for `Depends` and the `scope=` parameter for it.
+- Added `plugin_cache=` for plugin triggers.
+- All code translated into English.
+- `Router` changed to `(A)syncRouter`.
+- Updated debug output.
+- Updated refactoring settings for E, W, F, B, I, and UP.
+- Fixed typing in `(A)syncRouter.task`.
+- Fixed parameter in the `autodiscover_tasks` function.
+- Fixed `Config` and `Task` models.
+- Fixed plugin calls.
+- Code refactoring.
+
+### Documentation
+
+- Added English as the default language.
+- Added the `Architecture` section.
+- Translated all pages into English.
+- Fixed support for `mermaid` diagrams.
+- Updated page texts.
+
 ## v1.6.0 2025-09-20
 
 - Added `(A)syncSocketBroker`.
