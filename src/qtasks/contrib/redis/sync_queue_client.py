@@ -10,26 +10,26 @@ from qtasks.logs import Logger
 
 class SyncRedisCommandQueue:
     """
-    `SyncRedisCommandQueue` - Asynchronous class for working with `Redis`.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.contrib.redis import SyncRedisCommandQueue
-    
-        redis_contrib = SyncRedisCommandQueue(redis)
-        redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
-        ```
+    `SyncRedisCommandQueue` - Synchronous class for working with `Redis`.
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.contrib.redis import SyncRedisCommandQueue
+
+    redis_contrib = SyncRedisCommandQueue(redis)
+    redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
+    ```
     """
 
     def __init__(self, redis: redis.Redis, log: Logger | None = None):
         """
         An instance of a class.
-        
-                Args:
-                    redis (redis.asyncio.Redis): class `Redis`.
-                    log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
+
+        Args:
+            redis (redis.Redis): class `Redis`.
+            log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
         """
         self.log = self._get_log(log)
         self.redis = redis
@@ -58,11 +58,11 @@ class SyncRedisCommandQueue:
     def execute(self, cmd: str, *args, **kwargs):
         """
         Query in `Redis`.
-        
-                Args:
-                    cmd (str): Command.
-                    args(tuple, optional): Parameters to the command via *args.
-                    kwargs(dict, optional): Parameters to the command via *args.
+
+        Args:
+            cmd (str): Command.
+            args(tuple, optional): Parameters to the command via *args.
+            kwargs(dict, optional): Parameters to the command via *args.
         """
         self.queue.put((cmd, args, kwargs))
         with self.lock:

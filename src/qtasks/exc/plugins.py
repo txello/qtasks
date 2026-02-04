@@ -4,7 +4,7 @@
 class TaskPluginTriggerError(Exception):
     """
     The exception thrown when the plugin trigger fires.
-    
+
         Can be intercepted in Worker to process triggers.
     """
 

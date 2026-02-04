@@ -15,21 +15,21 @@ from qtasks.results.sync_result import SyncResult
 class Task:
     """
     `Task` model.
-    
-        Args:
-            status (str): Status.
-            uuid (UUID): UUID.
-            priority (int): Priority.
-            task_name (str): Name.
-    
-            args (Tuple[str]): Arguments of type args.
-            kwargs (Dict[str, Any]): Arguments of type kwargs.
-    
-            created_at (datetime): Created date.
-            updated_at (datetime): Date of update.
-    
-            returning (str | None): Result. Default: `None`.
-            traceback (str | None): Trace errors. Default: `None`.
+
+    Args:
+        status (str): Status.
+        uuid (UUID): UUID.
+        priority (int): Priority.
+        task_name (str): Name.
+
+        args (Tuple[str]): Arguments of type args.
+        kwargs (Dict[str, Any]): Arguments of type kwargs.
+
+        created_at (datetime): Created date.
+        updated_at (datetime): Date of update.
+
+        returning (str | None): Result. Default: `None`.
+        traceback (str | None): Trace errors. Default: `None`.
     """
 
     status: str
@@ -64,9 +64,9 @@ class Task:
     ) -> Union["Task", None]:
         """
         Waiting for task result Synchronously.
-        
-                Args:
-                    timeout (Annotated[Optional[float], Doc], optional): Timeout for waiting for the result. Default: `100.0`.
+
+        Args:
+            timeout (Annotated[Optional[float], Doc], optional): Timeout for waiting for the result. Default: `100.0`.
         """
         return SyncResult(uuid=self.uuid).result(timeout=timeout)
 
@@ -83,8 +83,8 @@ class Task:
     ) -> Union["Task", None]:
         """
         Waiting for task result Asynchronously.
-        
-                Args:
-                    timeout (Annotated[Optional[float], Doc], optional): Timeout for waiting for the result. Default: `100.0`.
+
+        Args:
+            timeout (Annotated[Optional[float], Doc], optional): Timeout for waiting for the result. Default: `100.0`.
         """
         return await AsyncResult(uuid=self.uuid).result(timeout=timeout)

@@ -23,17 +23,17 @@ if TYPE_CHECKING:
 class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
     """
     `SyncTaskExecutor` - Synchronous task executor class. Used by default in `SyncThreadWorker`.
-    
-        ## Example
-    
-        ```python
-        from qtasks.executors import SyncTaskExecutor
-    
-        task_func = TaskExecSchema(...)
-        task_broker = TaskPrioritySchema(...)
-        executor = SyncTaskExecutor(task_func, task_broker)
-        result = executor.execute()
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks.executors import SyncTaskExecutor
+
+    task_func = TaskExecSchema(...)
+    task_broker = TaskPrioritySchema(...)
+    executor = SyncTaskExecutor(task_func, task_broker)
+    result = executor.execute()
+    ```
     """
 
     def __init__(
@@ -77,12 +77,12 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
     ):
         """
         Initializing the class. Occurs inside a `Worker` before a task is processed.
-        
-                Args:
-                    task_func (TaskExecSchema): Schema `TaskExecSchema`.
-                    task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
-                    log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
-                    plugins (Dict[str, List[BasePlugin]], optional): Plugin dictionary. Default: `Empty dictionary`.
+
+        Args:
+            task_func (TaskExecSchema): Schema `TaskExecSchema`.
+            task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
+            log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
+            plugins (Dict[str, List[BasePlugin]], optional): Plugin dictionary. Default: `Empty dictionary`.
         """
         super().__init__(
             task_func=task_func,
@@ -175,9 +175,9 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
     def run_task(self) -> Any | list:
         """
         Calling a task.
-        
-                Returns:
-                    Any: Result of the task.
+
+        Returns:
+            Any: Result of the task.
         """
         if self._args and self._kwargs:
             result = self.task_func.func(*self._args, **self._kwargs)
@@ -202,15 +202,15 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
     def run_task_gen(self, func: Generator) -> list[Any]:
         """
         Calling the task generator.
-        
-                Args:
-                    func(FunctionType): Function.
-        
-                Raises:
-                    RuntimeError: Unable to run asynchronous task generator in synchronous form!
-        
-                Returns:
-                    Any: Result of the task.
+
+        Args:
+            func(FunctionType): Function.
+
+        Raises:
+            RuntimeError: Unable to run synchronous task generator in synchronous form!
+
+        Returns:
+            Any: Result of the task.
         """
         if self.echo:
             self.echo.ctx._update(generate_handler=self.task_func.generate_handler)
@@ -241,12 +241,12 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
     def execute(self, decode: bool = True) -> Any | str:
         """
         Calling a task.
-        
-                Args:
-                    decode (bool, optional): Decoding the result of the task. Default: True.
-        
-                Returns:
-                    Any|str: Result of the task.
+
+        Args:
+            decode (bool, optional): Decoding the result of the task. Default: True.
+
+        Returns:
+            Any|str: Result of the task.
         """
         if self.log:
             self.log.debug(f"Вызван execute для {self.task_func.name}")
@@ -295,9 +295,9 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
     def decode(self) -> Any:
         """
         Decoding the task.
-        
-                Returns:
-                    Any: Result of the task.
+
+        Returns:
+            Any: Result of the task.
         """
         if self.task_func.decode is not None:
             result = self.task_func.decode(self._result)

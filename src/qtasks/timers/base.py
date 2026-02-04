@@ -27,18 +27,18 @@ if TYPE_CHECKING:
 class BaseTimer(Generic[TAsyncFlag], ABC):
     """
     `BaseTimer` - An abstract class that is the basis for Timers.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.timers.base import BaseTimer
-    
-        class MyTimer(BaseTimer):
-            def __init__(self, app: QueueTasks):
-                super().__init__(app=app)
-                pass
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.timers.base import BaseTimer
+
+    class MyTimer(BaseTimer):
+        def __init__(self, app: QueueTasks):
+            super().__init__(app=app)
+            pass
+    ```
     """
 
     def __init__(
@@ -76,11 +76,11 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
     ):
         """
         Timer initialization.
-        
-                Args:
-                    app (QueueTasks): Application.
-                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
-                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+
+        Args:
+            app (QueueTasks): Application.
+            log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
         """
         self.app = app
         self.config = config or self.app.config
@@ -279,16 +279,16 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
     ) -> Any | None | Awaitable[Any | None]:
         """
         Adding a task.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    trigger (Any, optional): Trigger values.
-                    priority (int, optional): Task priority. Default is `0`.
-                    args (tuple, optional): task args. Defaults to `()`.
-                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
-        
-                Returns:
-                    Any|None: Task.
+
+        Args:
+            task_name (str): The name of the task.
+            trigger (Any, optional): Trigger values.
+            priority (int, optional): Task priority. Default is `0`.
+            args (tuple, optional): task args. Defaults to `()`.
+            kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+
+        Returns:
+            Any|None: Task.
         """
         pass
 

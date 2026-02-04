@@ -30,17 +30,17 @@ if TYPE_CHECKING:
 class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
     """
     `QueueTasks` - Framework for task queues.
-    
-        Read more:
-        [First steps](https://txello.github.io/qtasks/getting_started/).
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-    
-        app = QueueTasks()
-        ```
+
+    Read more:
+    [First steps](https://txello.github.io/qtasks/getting_started/).
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+
+    app = QueueTasks()
+    ```
     """
 
     def __init__(
@@ -49,9 +49,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             str,
             Doc(
                 """
-                    Имя проекта. Это имя также используется компонентами(Воркер, Брокер и т.п.)
+                    Project name.
 
-                    По умолчанию: `QueueTasks`.
+                    Default: `QueueTasks`.
                     """
             ),
         ] = "QueueTasks",
@@ -59,9 +59,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             str | None,
             Doc(
                 """
-                    URL для Брокера. Используется Брокером по умолчанию через параметр url.
+                    URL for the Broker. Used by the Broker by default via the url parameter.
 
-                    По умолчанию: `None`.
+                    Default: `None`.
                     """
             ),
         ] = None,
@@ -69,9 +69,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Optional[BaseBroker],
             Doc(
                 """
-                    Брокер. Хранит в себе обработку из очередей задач и хранилище данных.
+                    Broker. Stores processing from task queues and data storage.
 
-                    По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
+                    Default: `qtasks.brokers.AsyncRedisBroker`.
                     """
             ),
         ] = None,
@@ -79,9 +79,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Optional[BaseWorker],
             Doc(
                 """
-                    Воркер. Хранит в себе обработку задач.
+                    Worker. Stores task processing.
 
-                    По умолчанию: `qtasks.workers.AsyncWorker`.
+                    Default: `qtasks.workers.AsyncWorker`.
                     """
             ),
         ] = None,
@@ -89,9 +89,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Logger | None,
             Doc(
                 """
-                    Логгер.
+                    Logger.
 
-                    По умолчанию: `qtasks.logs.Logger`.
+                    Default: `qtasks.logs.Logger`.
                     """
             ),
         ] = None,
@@ -99,9 +99,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             QueueConfig | None,
             Doc(
                 """
-                    Конфиг.
+                    Config.
 
-                    По умолчанию: `qtasks.configs.QueueConfig`.
+                    Default: `qtasks.configs.QueueConfig`.
                     """
             ),
         ] = None,
@@ -109,24 +109,24 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Optional[BaseEvents],
             Doc(
                 """
-                    События.
+                    Events.
 
-                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    Default: `qtasks.events.AsyncEvents`.
                     """
             ),
         ] = None,
     ):
         """
         Initializing QueueTasks.
-        
-                Args:
-                    name (str): Project name. Default: `QueueTasks`.
-                    broker_url (str, optional): URL for the Broker. Used by the Broker by default via the url parameter. Default: `None`.
-                    broker (Type[BaseBroker], optional): Broker. Stores processing from task queues and data storage. Default: `qtasks.brokers.AsyncRedisBroker`.
-                    worker (Type[BaseWorker], optional): Worker. Stores task processing. Default: `qtasks.workers.AsyncWorker`.
-                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
-                    config (QueueConfig, optional): Config. Default: `qtasks.configs.QueueConfig`.
-                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
+
+        Args:
+            name (str): Project name. Default: `QueueTasks`.
+            broker_url (str, optional): URL for the Broker. Used by the Broker by default via the url parameter. Default: `None`.
+            broker (Type[BaseBroker], optional): Broker. Stores processing from task queues and data storage. Default: `qtasks.brokers.AsyncRedisBroker`.
+            worker (Type[BaseWorker], optional): Worker. Stores task processing. Default: `qtasks.workers.AsyncWorker`.
+            log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Config. Default: `qtasks.configs.QueueConfig`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         broker = broker or AsyncRedisBroker(
             name=name, url=broker_url, log=log, config=config, events=events
@@ -157,9 +157,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             asyncio.AbstractEventLoop | None,
             Doc(
                 """
-                Асинхронный loop, может быть указан.
+                Async event loop, optional.
 
-                По умолчанию: `None`.
+                Default: `None`.
                 """
             ),
         ] = None
@@ -175,7 +175,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             str,
             Doc(
                 """
-                    Имя задачи.
+                    The name of the task.
                     """
             ),
         ],
@@ -183,9 +183,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Any,
             Doc(
                 """
-                    args задачи.
+                    Task args.
 
-                    По умолчанию: `()`.
+                    Default: `()`.
                     """
             ),
         ],
@@ -193,9 +193,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             int | None,
             Doc(
                 """
-                    Приоритет у задачи.
+                    Task priority.
 
-                    По умолчанию: Значение приоритета у задачи.
+                    Default: Task priority value.
                     """
             ),
         ] = None,
@@ -203,9 +203,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             float,
             Doc(
                 """
-                    Таймаут задачи.
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
                     """
             ),
         ] = 0.0,
@@ -213,9 +213,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Any,
             Doc(
                 """
-                    kwargs задачи.
+                    Task kwargs.
 
-                    По умолчанию: `{}`.
+                    Default: `{}`.
                     """
             ),
         ],
@@ -228,7 +228,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             str,
             Doc(
                 """
-                    Имя задачи.
+                    The name of the task.
                     """
             ),
         ],
@@ -236,9 +236,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Any,
             Doc(
                 """
-                    args задачи.
+                    Task args.
 
-                    По умолчанию: `()`.
+                    Default: `()`.
                     """
             ),
         ],
@@ -246,9 +246,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             int | None,
             Doc(
                 """
-                    Приоритет у задачи.
+                    Task priority.
 
-                    По умолчанию: Значение приоритета у задачи.
+                    Default: Task priority value.
                     """
             ),
         ] = None,
@@ -256,9 +256,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             None,
             Doc(
                 """
-                    Таймаут задачи.
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
                     """
             ),
         ] = None,
@@ -266,9 +266,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Any,
             Doc(
                 """
-                    kwargs задачи.
+                    Task kwargs.
 
-                    По умолчанию: `{}`.
+                    Default: `{}`.
                     """
             ),
         ],
@@ -281,7 +281,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             str,
             Doc(
                 """
-                    Имя задачи.
+                    The name of the task.
                     """
             ),
         ],
@@ -289,9 +289,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Any,
             Doc(
                 """
-                    args задачи.
+                    Task args.
 
-                    По умолчанию: `()`.
+                    Default: `()`.
                     """
             ),
         ],
@@ -299,9 +299,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             int | None,
             Doc(
                 """
-                    Приоритет у задачи.
+                    Task priority.
 
-                    По умолчанию: Значение приоритета у задачи.
+                    Default: Task priority value.
                     """
             ),
         ] = None,
@@ -309,9 +309,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             float | None,
             Doc(
                 """
-                    Таймаут задачи.
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
                     """
             ),
         ] = None,
@@ -319,9 +319,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Any,
             Doc(
                 """
-                    kwargs задачи.
+                    Task kwargs.
 
-                    По умолчанию: `{}`.
+                    Default: `{}`.
                     """
             ),
         ],
@@ -333,7 +333,7 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             str,
             Doc(
                 """
-                    Имя задачи.
+                    The name of the task.
                     """
             ),
         ],
@@ -341,9 +341,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Any,
             Doc(
                 """
-                    args задачи.
+                    Task args.
 
-                    По умолчанию: `()`.
+                    Default: `()`.
                     """
             ),
         ],
@@ -351,9 +351,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             int | None,
             Doc(
                 """
-                    Приоритет у задачи.
+                    Task priority.
 
-                    По умолчанию: Значение приоритета у задачи.
+                    Default: Task priority value.
                     """
             ),
         ] = None,
@@ -361,9 +361,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             float | None,
             Doc(
                 """
-                    Таймаут задачи.
+                    Task timeout.
 
-                    Если указан, задача возвращается через `qtasks.results.AsyncTask`.
+                    If specified, the task is returned via `qtasks.results.AsyncTask`.
                     """
             ),
         ] = None,
@@ -371,26 +371,26 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Any,
             Doc(
                 """
-                    kwargs задачи.
+                    Task kwargs.
 
-                    По умолчанию: `{}`.
+                    Default: `{}`.
                     """
             ),
         ],
     ) -> Union[Task, Optional[Task]]:
         """
         Add a task.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. Default: Task priority value.
-                    args (tuple, optional): task args. Defaults to `()`.
-                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
-        
-                    timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.AsyncResult`.
-        
-                Returns:
-                    Task|None: `schemas.task.Task` or `None`.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: Task priority value.
+            args (tuple, optional): Task args. Defaults to `()`.
+            kwargs (dict, optional): Kwargs tasks. Defaults to `{}`.
+
+            timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.AsyncResult`.
+
+        Returns:
+            Task|None: `schemas.task.Task` or `None`.
         """
         if priority is None:
             task_registry = self.tasks.get(task_name, 0)
@@ -453,19 +453,19 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             UUID | str,
             Doc(
                 """
-                    UUID задачи.
+                    UUID of the Task.
                     """
             ),
         ],
     ) -> Union[Task, None]:
         """
         Get a task.
-        
-                Args:
-                    uuid (UUID|str): UUID of the Task.
-        
-                Returns:
-                    Task|None: Task data or None.
+
+        Args:
+            uuid (UUID|str): UUID of the Task.
+
+        Returns:
+            Task|None: Task data or None.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
@@ -484,9 +484,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             asyncio.AbstractEventLoop | None,
             Doc(
                 """
-                    Асинхронный loop.
+                    Async Event loop.
 
-                    По умолчанию: `None`.
+                    Default: `None`.
                     """
             ),
         ] = None,
@@ -494,9 +494,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             Optional[BaseStarter],
             Doc(
                 """
-                    Стартер. Хранит в себе способы запуска компонентов.
+                    Starter.
 
-                    По умолчанию: `qtasks.starters.AsyncStarter`.
+                    Default: `qtasks.starters.AsyncStarter`.
                     """
             ),
         ] = None,
@@ -504,9 +504,9 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             int,
             Doc(
                 """
-                    Количество запущенных воркеров.
+                    Number of workers running.
 
-                    По умолчанию: `4`.
+                     Default: `4`.
                     """
             ),
         ] = 4,
@@ -514,21 +514,21 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             bool,
             Doc(
                 """
-                    Обновить config у воркера и брокера.
+                    Update the config of the worker and broker.
 
-                    По умолчанию: `True`.
+                     Default: `True`.
                     """
             ),
         ] = True,
     ) -> None:
         """
         Launch asynchronously Application.
-        
-                Args:
-                    loop (asyncio.AbstractEventLoop, optional): async loop. Default: None.
-                    starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
-                    num_workers (int, optional): Number of workers running. Default: 4.
-                    reset_config (bool, optional): Update the config of the worker and broker. Default: True.
+
+        Args:
+            loop (asyncio.AbstractEventLoop, optional): async loop. Default: `None`.
+            starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
+            num_workers (int, optional): Number of workers running. Default: `4`.
+            reset_config (bool, optional): Update the config of the worker and broker. Default: `True`.
         """
         self.starter = starter or AsyncStarter(
             name=self.name,
@@ -563,15 +563,27 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
         if self.starter:
             await self.starter.stop()
 
-    async def ping(self, server: bool = True) -> bool:
+    async def ping(
+        self,
+        server: Annotated[
+            bool,
+            Doc(
+                """
+                    Verification via server.
+
+                    Default: `True`.
+                    """
+            ),
+        ] = True,
+    ) -> bool:
         """
         Checking server startup.
-        
-                Args:
-                    server (bool, optional): Verification via server. Default is `True`.
-        
-                Returns:
-                    bool: True - Works, False - Doesn't work.
+
+        Args:
+            server (bool, optional): Verification via server. Default: `True`.
+
+        Returns:
+            bool: True - Works, False - Doesn't work.
         """
         await self._plugin_trigger(
             "qtasks_ping", qtasks=self, global_config=self.broker.storage.global_config

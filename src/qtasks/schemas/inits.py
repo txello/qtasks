@@ -8,12 +8,12 @@ from types import FunctionType
 class InitsExecSchema:
     """
     `InitsExecSchema` schema.
-    
-        Args:
-            name (str): Event name.
-            func (FunctionType): Initialization function.
-    
-            awaiting (bool): Asynchronous initialization. Default: False
+
+    Args:
+        name (str): Event name.
+        func (FunctionType): Initialization function.
+
+        awaiting (bool): Asynchronous initialization. Default: False
     """
 
     name: str

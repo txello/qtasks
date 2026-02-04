@@ -31,18 +31,18 @@ if TYPE_CHECKING:
 class BaseWorker(Generic[TAsyncFlag], ABC):
     """
     `BaseWorker` - An abstract class that is the foundation for Workers.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.workers.base import BaseWorker
-    
-        class MyWorker(BaseWorker):
-            def __init__(self, name: str = None, broker: BaseBroker = None):
-                super().__init__(name=name, broker=broker)
-                pass
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.workers.base import BaseWorker
+
+    class MyWorker(BaseWorker):
+        def __init__(self, name: str = None, broker: BaseBroker = None):
+            super().__init__(name=name, broker=broker)
+            pass
+    ```
     """
 
     def __init__(
@@ -100,12 +100,12 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     ):
         """
         Initializing the base worker.
-        
-                Args:
-                    name (str, optional): Project name. Default: None.
-                    broker (BaseBroker, optional): Broker. Default: None.
-                    log (Logger, optional): Logger. Default: None.
-                    config (QueueConfig, optional): Config. Default: None.
+
+        Args:
+            name (str, optional): Project name. Default: None.
+            broker (BaseBroker, optional): Broker. Default: None.
+            log (Logger, optional): Logger. Default: None.
+            config (QueueConfig, optional): Config. Default: None.
         """
         self.name = name
         self.broker = broker
@@ -295,14 +295,14 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Adding a task to the queue.
-        
-                Args:
-                    name (str): Name of the task.
-                    uuid (UUID): UUID of the task.
-                    priority (int): Task priority.
-                    created_at (float): Create a task in timestamp format.
-                    args (tuple): Task arguments of type args.
-                    kwargs (dict): Task arguments of type kwargs.
+
+        Args:
+            name (str): Name of the task.
+            uuid (UUID): UUID of the task.
+            priority (int): Task priority.
+            created_at (float): Create a task in timestamp format.
+            args (tuple): Task arguments of type args.
+            kwargs (dict): Task arguments of type kwargs.
         """
         pass
 
@@ -352,9 +352,9 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Runs multiple task handlers. This function is enabled by the main `QueueTasks` instance via `run_forever`.
-        
-                Args:
-                    num_workers (int, optional): Number of workers. Default: 4.
+
+        Args:
+            num_workers (int, optional): Number of workers. Default: 4.
         """
         pass
 
@@ -382,9 +382,9 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Updates the broker config.
-        
-                Args:
-                    config (QueueConfig): Config.
+
+        Args:
+            config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -412,10 +412,10 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Add a plugin to the class.
-        
-                Args:
-                    plugin (BasePlugin): Plugin
-                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+
+        Args:
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 

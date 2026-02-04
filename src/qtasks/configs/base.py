@@ -27,18 +27,18 @@ if TYPE_CHECKING:
 class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     """
     `BaseGlobalConfig` - An abstract class that is the foundation for the Global Config.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.configs.base import BaseGlobalConfig
-    
-        class MyGlobalConfig(BaseGlobalConfig):
-            def __init__(self, name: str = None):
-                super().__init__(name=name)
-                pass
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.configs.base import BaseGlobalConfig
+
+    class MyGlobalConfig(BaseGlobalConfig):
+        def __init__(self, name: str = None):
+            super().__init__(name=name)
+            pass
+    ```
     """
 
     def __init__(
@@ -86,12 +86,12 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     ):
         """
         Initializing the context.
-        
-                Args:
-                    name (str, optional): Project name. Default: `None`.
-                    log (Logger, optional): Logger. Default: `None`.
-                    config (QueueConfig, optional): Configuration. Default: `None`.
-                    events (BaseEvents, optional): Events. Default: `None`.
+
+        Args:
+            name (str, optional): Project name. Default: `None`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Configuration. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
         self.config_name: str | None = None
@@ -123,9 +123,9 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     def set(self, **kwargs) -> None | Awaitable[None]:
         """
         Add new value.
-        
-                Args:
-                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+
+        Args:
+            kwargs (dict, optional): kwags tasks. Defaults to `{}`.
         """
         pass
 
@@ -141,13 +141,13 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     def get(self, key: str, name: str) -> Any | Awaitable[Any]:
         """
         Get value.
-        
-                Args:
-                    key (str): Key.
-                    name (str): Name.
-        
-                Returns:
-                    Any: Meaning.
+
+        Args:
+            key (str): Key.
+            name (str): Name.
+
+        Returns:
+            Any: Value.
         """
         pass
 
@@ -167,12 +167,12 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     ) -> dict | list | tuple | Awaitable[dict | list | tuple]:
         """
         Get all values.
-        
-                Args:
-                    key (str): Key.
-        
-                Returns:
-                    Dict[str, Any] | List[Any] | Tuple[Any]: Values.
+
+        Args:
+            key (str): Key.
+
+        Returns:
+            Dict[str, Any] | List[Any] | Tuple[Any]: Values.
         """
         pass
 
@@ -187,13 +187,13 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         self, match: str
     ) -> dict | list | tuple | Awaitable[dict | list | tuple]:
         """
-        Get values ​​by pattern.
-        
-                Args:
-                    match (str): Pattern.
-        
-                Returns:
-                    Any | Dict[str, Any] | List[Any] | Tuple[Any]: Value or Values.
+        Get values by pattern.
+
+        Args:
+            match (str): Pattern.
+
+        Returns:
+            Any | Dict[str, Any] | List[Any] | Tuple[Any]: Value or Values.
         """
         pass
 
@@ -232,9 +232,9 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Updates the broker config.
-        
-                Args:
-                    config (QueueConfig): Config.
+
+        Args:
+            config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -262,10 +262,10 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Add a plugin to the class.
-        
-                Args:
-                    plugin (BasePlugin): Plugin
-                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+
+        Args:
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 

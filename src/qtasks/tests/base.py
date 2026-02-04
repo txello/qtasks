@@ -30,18 +30,18 @@ if TYPE_CHECKING:
 class BaseTestCase(Generic[TAsyncFlag], ABC):
     """
     `BaseTestCase` - An abstract class that is the foundation for TestCase.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.tests.base import BaseTestCase
-    
-        class MyTestCase(BaseTestCase):
-            def __init__(self, app: QueueTasks, name: str|None = None):
-                super().__init__(app=app, name=name)
-                pass
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.tests.base import BaseTestCase
+
+    class MyTestCase(BaseTestCase):
+        def __init__(self, app: QueueTasks, name: str|None = None):
+            super().__init__(app=app, name=name)
+            pass
+    ```
     """
 
     def __init__(
@@ -115,9 +115,9 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Updates the broker config.
-        
-                Args:
-                    config (QueueConfig): Config.
+
+        Args:
+            config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -127,10 +127,10 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Test settings.
-        
-                Args:
-                    test_config (TestConfig, optional): Test config. Default: `TestConfig()`.
-                    awaiting (bool, optional): Use Async components. Default: `False`.
+
+        Args:
+            test_config (TestConfig, optional): Test config. Default: `TestConfig()`.
+            awaiting (bool, optional): Use Async components. Default: `False`.
         """
         if test_config:
             self.test_config = test_config

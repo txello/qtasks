@@ -18,17 +18,17 @@ if TYPE_CHECKING:
 class SyncTestCase(BaseTestCase[Literal[False]]):
     """
     Synchronous testing case.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.tests import SyncTestCase
-    
-        app = QueueTasks()
-    
-        test_case = SyncTestCase(app=app)
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.tests import SyncTestCase
+
+    app = QueueTasks()
+
+    test_case = SyncTestCase(app=app)
+    ```
     """
 
     def __init__(
@@ -54,10 +54,10 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
     ):
         """
         Synchronous test case.
-        
-                Args:
-                    app(QueueTasks): Main instance.
-                    name (str, optional): Project name. This name can be used for test components. Default: `None`.
+
+        Args:
+            app(QueueTasks): Main instance.
+            name (str, optional): Project name. This name can be used for test components. Default: `None`.
         """
         super().__init__(app=app, name=name)
         self.app: QueueTasks
@@ -97,11 +97,11 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
     ):
         """
         Run `app.run_forever()` in the background.
-        
-                Args:
-                    starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
-                    num_workers (int, optional): Number of workers running. Default: 4.
-                    reset_config (bool, optional): Update the config of the worker and broker. Default: True.
+
+        Args:
+            starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
+            num_workers (int, optional): Number of workers running. Default: 4.
+            reset_config (bool, optional): Update the config of the worker and broker. Default: True.
         """
 
         def run():
@@ -147,11 +147,11 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
     ) -> None:
         """
         Runs `app.run_forever()`.
-        
-                Args:
-                    starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
-                    num_workers (int, optional): Number of workers running. Default: 4.
-                    reset_config (bool, optional): Update the config of the worker and broker. Default: True.
+
+        Args:
+            starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
+            num_workers (int, optional): Number of workers running. Default: 4.
+            reset_config (bool, optional): Update the config of the worker and broker. Default: True.
         """
         self.app.run_forever(
             starter=starter, num_workers=num_workers, reset_config=reset_config
@@ -224,16 +224,16 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
     ) -> Union["Task", None]:
         """
         Add a task.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. Default: `0`.
-                    args (tuple, optional): task args. Default: `()`.
-                    kwargs (dict, optional): kwargs of tasks. Default: `{}`
-                    timeout (float, optional): Task timeout. If specified, the task is called via `qtasks.results.SyncResult`.
-        
-                Returns:
-                    Task|None: Task data or None.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: `0`.
+            args (tuple, optional): task args. Default: `()`.
+            kwargs (dict, optional): kwargs of tasks. Default: `{}`
+            timeout (float, optional): Task timeout. If specified, the task is called via `qtasks.results.SyncResult`.
+
+        Returns:
+            Task|None: Task data or None.
         """
         if self.test_config.broker:
             return self.app.add_task(
@@ -267,16 +267,16 @@ class SyncTestCase(BaseTestCase[Literal[False]]):
     ) -> Union["Task", None]:
         """
         Get a task.
-        
-                Args:
-                    uuid (UUID|str): UUID of the Task.
-        
-                Returns:
-                    Task|None: Task data or None.
+
+        Args:
+            uuid (UUID|str): UUID of the Task.
+
+        Returns:
+            Task|None: Task data or None.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
         if not self.test_config.broker:
-            print(f"[SyncTestCase: {self.name}] Обязательно включить Брокер!")
+            print(f"[SyncTestCase: {self.name}] Broker is not started!")
             return
         return self.app.broker.get(uuid=uuid)

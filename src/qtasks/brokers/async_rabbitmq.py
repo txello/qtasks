@@ -42,16 +42,16 @@ if TYPE_CHECKING:
 class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     """
     A broker that listens to RabbitMQ and adds tasks to the queue.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.brokers import AsyncRabbitMQBroker
-    
-        broker = AsyncRabbitMQBroker(name="QueueTasks", url="amqp://guest:guest@localhost/")
-    
-        app = QueueTasks(broker=broker)
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.brokers import AsyncRabbitMQBroker
+
+    broker = AsyncRabbitMQBroker(name="QueueTasks", url="amqp://guest:guest@localhost/")
+
+    app = QueueTasks(broker=broker)
         ```
     """
 
@@ -130,15 +130,15 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     ):
         """
         Initializing AsyncRabbitMQBroker.
-        
-                Args:
-                    name (str, optional): Project name. Default: "QueueTasks".
-                    url (str, optional): URL to connect to RabbitMQ. Default: None.
-                    storage (BaseStorage, optional): Storage. Default: None.
-                    queue_name (str, optional): RabbitMQ queue name. Default: "task_queue".
-                    log (Logger, optional): Logger. Default: None.
-                    config (QueueConfig, optional): Config. Default: None.
-                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
+
+        Args:
+            name (str, optional): Project name. Default: `QueueTasks`.
+            url (str, optional): URL to connect to RabbitMQ. Default: `None`.
+            storage (BaseStorage, optional): Storage. Default: `None`.
+            queue_name (str, optional): RabbitMQ queue name. Default: `task_queue`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Config. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         self.url = url
 
@@ -179,9 +179,9 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     ):
         """
         Listens to the RabbitMQ queue and transfers tasks to the worker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
+
+        Args:
+            worker (BaseWorker): Worker class.
         """
         await self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         if not self.channel:
@@ -292,19 +292,19 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     ) -> Task:
         """
         Adds a task to the broker.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. Default: `0`.
-                    extra (dict, optional): Additional task parameters. Default: `None`.
-                    args (tuple, optional): Task arguments of type args. Default: `None`.
-                    kwargs (dict, optional): Task arguments of type kwargs. Default: `None`.
-        
-                Returns:
-                    Task: `schemas.task.Task`
-        
-                Raises:
-                    RuntimeError: self.channel is not declared. The server is not running!
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: `0`.
+            extra (dict, optional): Additional task parameters. Default: `None`.
+            args (tuple, optional): Task arguments of type args. Default: `None`.
+            kwargs (dict, optional): Task arguments of type kwargs. Default: `None`.
+
+        Returns:
+            Task: `schemas.task.Task`
+
+        Raises:
+            RuntimeError: self.channel is not declared. The server is not running!
         """
         args, kwargs = args or (), kwargs or {}
         if not self.channel:
@@ -386,12 +386,12 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     ) -> Task | None:
         """
         Obtaining information about a task.
-        
-                Args:
-                    uuid (UUID|str): UUID of the task.
-        
-                Returns:
-                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
+
+        Args:
+            uuid (UUID|str): UUID of the task.
+
+        Returns:
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
@@ -416,9 +416,9 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     ) -> None:
         """
         Updates task information.
-        
-                Args:
-                    kwargs (dict, optional): task data of type kwargs.
+
+        Args:
+            kwargs (dict, optional): task data of type kwargs.
         """
         new_kw = await self._plugin_trigger(
             "broker_update", broker=self, kw=kwargs, return_last=True
@@ -440,9 +440,9 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     ) -> None:
         """
         Launches the broker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
+
+        Args:
+            worker (BaseWorker): Worker class.
         """
         await self._plugin_trigger("broker_start", broker=self, worker=worker)
         await self.storage.start()
@@ -485,10 +485,10 @@ class AsyncRabbitMQBroker(BaseBroker, AsyncPluginMixin):
     ) -> None:
         """
         Updates storage data via the `self.storage.remove_finished_task` function.
-        
-                Args:
-                    task_broker (TaskPrioritySchema): The priority task schema.
-                    model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
+
+        Args:
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         new_model = await self._plugin_trigger(
             "broker_remove_finished_task",

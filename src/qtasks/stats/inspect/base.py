@@ -25,12 +25,12 @@ class UtilsInspectStats:
     ):
         """
         Parser for application information.
-        
-                Args:
-                    app (QueueTasks): Application instance.
-        
-                Returns:
-                    str: Application information.
+
+        Args:
+            app (QueueTasks): Application instance.
+
+        Returns:
+            str: Application information.
         """
         lines = []
         plugins_sum = (
@@ -46,28 +46,28 @@ class UtilsInspectStats:
             )
         )
         task_info = {
-            "Имя": app.name,
-            "Метод": app._method,
-            "Версия": app.version,
-            "Конфигурация": str(app.config),
-            "Количество задач": len(app.tasks),
-            "Количество роутеров": len(app.routers),
-            "Количество плагинов": plugins_sum,
-            "Брокер": app.broker.__class__.__name__,
-            "Воркер": app.worker.__class__.__name__,
-            "Стартер": app.starter.__class__.__name__ if app.starter else "—",
-            "Хранилище": app.broker.storage.__class__.__name__,
+            "Name": app.name,
+            "Method": app._method,
+            "Version": app.version,
+            "Config": str(app.config),
+            "Tasks Count": len(app.tasks),
+            "Routers Count": len(app.routers),
+            "Plugins Count": plugins_sum,
+            "Broker": app.broker.__class__.__name__,
+            "Worker": app.worker.__class__.__name__,
+            "Starter": app.starter.__class__.__name__ if app.starter else "—",
+            "Storage": app.broker.storage.__class__.__name__,
             "GlobalConfig": (
                 app.broker.storage.global_config.__class__.__name__
                 if app.broker.storage.global_config
                 else "—"
             ),
-            "Лог": app.log.__class__.__name__,
+            "Log": app.log.__class__.__name__,
         }
         if app.events:
             task_info.update(
                 {
-                    "Количество инициализаций": sum(
+                    "Init Count": sum(
                         len(inits) for inits in app.events.on._events.values()
                     ),
                 }
@@ -109,13 +109,13 @@ class UtilsInspectStats:
             args, kwargs = self._task_get_args_kwargs(task.func)
 
             task_info = {
-                "Имя задачи": task.name,
-                "Приоритет": task.priority,
-                "Описание": task.description or "—",
-                "Теги": ", ".join(task.tags) if task.tags else "—",
-                "Асинхронность": task.awaiting,
-                "Генерация": task.generating,
-                "Self перед задачей": task.echo,
+                "Task nane": task.name,
+                "Priority": task.priority,
+                "Description": task.description or "—",
+                "Tags": ", ".join(task.tags) if task.tags else "—",
+                "Awaiting": task.awaiting,
+                "Generating": task.generating,
+                "Task Self": task.echo,
                 "Args": ", ".join(args) if args else "—",
                 "Kwargs": (
                     ", ".join(f"{k}={v}" for k, v in kwargs.items()) if kwargs else "—"
@@ -123,25 +123,25 @@ class UtilsInspectStats:
             }
 
             if task.retry is not None:
-                task_info["Повторов"] = task.retry
+                task_info["Retry Count"] = task.retry
             if task.retry_on_exc:
-                task_info["Искл. для повторов"] = pformat(task.retry_on_exc)
+                task_info["Retry on Exception"] = pformat(task.retry_on_exc)
             if task.decode:
-                task_info["Декодирование"] = str(task.decode)
+                task_info["Decode"] = str(task.decode)
             if task.generate_handler:
-                task_info["Генератор"] = str(task.generate_handler)
+                task_info["Generator"] = str(task.generate_handler)
             if task.executor:
-                task_info["Исполнитель"] = str(task.executor)
+                task_info["Executor"] = str(task.executor)
             if task.middlewares_before:
-                task_info["Мидлвари до"] = pformat(task.middlewares_before)
+                task_info["Middlewares Before"] = pformat(task.middlewares_before)
             if task.middlewares_after:
-                task_info["Мидлвари после"] = pformat(task.middlewares_after)
+                task_info["Middlewares After"] = pformat(task.middlewares_after)
             if task.extra:
                 # Вставляем многострочное значение с отступом
                 extra_lines = "\n" + "\n".join(
                     f" * {k}: {v}" for k, v in task.extra.items()
                 )
-                task_info["Дополнительно"] = extra_lines
+                task_info["Extra"] = extra_lines
 
             # Форматируем словарь
             task_block = "\n".join(
@@ -152,17 +152,17 @@ class UtilsInspectStats:
             lines.append(task_block)
             lines.append("-" * 50)
 
-        return "\n".join(lines) or "Нет зарегистрированных задач."
+        return "\n".join(lines) or "No registered tasks."
 
     def _task_get_args_kwargs(self, func):
         """
         Retrieving positional and key arguments of a task function.
-        
-                Args:
-                    func (Callable): Task function.
-        
-                Returns:
-                    tuple: Positional and key arguments.
+
+        Args:
+            func (Callable): Task function.
+
+        Returns:
+            tuple: Positional and key arguments.
         """
         sig = signature(func)
         positional_args = []

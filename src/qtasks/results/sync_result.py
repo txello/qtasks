@@ -19,19 +19,19 @@ if TYPE_CHECKING:
 class SyncResult:
     """
     `SyncResult` - Synchronous class for waiting for the result of a task.
-    
-        ## Example
-    
-        ```python
-    
-        from qtasks import QueueTasks
-        from qtasks.results import SyncResult
-    
-        app = QueueTasks()
-    
-        task = app.add_task(task_name="test")
-        result = SyncResult(uuid=task.uuid).result(timeout=50)
-        ```
+
+    ## Example
+
+    ```python
+
+    from qtasks import QueueTasks
+    from qtasks.results import SyncResult
+
+    app = QueueTasks()
+
+    task = app.add_task(task_name="test")
+    result = SyncResult(uuid=task.uuid).result(timeout=50)
+    ```
     """
 
     def __init__(
@@ -67,11 +67,11 @@ class SyncResult:
     ):
         """
         Initializing a synchronous result.
-        
-                Args:
-                    uuid (UUID | str, optional): UUID of the task. Default: None.
-                    app (QueueTasks, optional): `QueueTasks` instance. Default: None.
-                    log (Logger, optional): Logger. Default: None.
+
+        Args:
+            uuid (UUID | str, optional): UUID of the task. Default: None.
+            app (QueueTasks, optional): `QueueTasks` instance. Default: None.
+            log (Logger, optional): Logger. Default: None.
         """
         self._app = app or self._update_state()
 
@@ -106,28 +106,28 @@ class SyncResult:
     ) -> Union[Task, None]:
         """
         Waiting for the task result.
-        
-                Args:
-                    timeout (float, optional): Task timeout. Default: `100`.
-        
-                Returns:
-                    Task | None: Task or None.
+
+        Args:
+            timeout (float, optional): Task timeout. Default: `100`.
+
+        Returns:
+            Task | None: Task or None.
         """
         self._stop_event.clear()
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(self._execute_task)
             try:
                 result = future.result(timeout=timeout)
-                self.log.debug(f"Задача {result.uuid if result else None} выполнена!")
+                self.log.debug(f"Task {result.uuid if result else None} is completed!")
                 return result
             except TimeoutError:
-                self.log.warning(f"Функция выполнялась {timeout} секунд!")
+                self.log.warning(f"Task timed out after {timeout} seconds!")
                 self._stop_event.set()
                 return None
 
     def _execute_task(self) -> Union[Task, None]:
         if not self.uuid:
-            raise ValueError("UUID задачи не задан.")
+            raise ValueError("Task UUID is not set.")
 
         uuid = self.uuid
         while True:
@@ -137,7 +137,7 @@ class SyncResult:
             task = self._app.get(uuid=uuid)
 
             if not task:
-                self.log.warning(f"Задача {uuid} не найдена!")
+                self.log.warning(f"Task {uuid} not found!")
                 return None
 
             if task.retry and task.retry > 0 and task.retry_child_uuid:
@@ -154,6 +154,6 @@ class SyncResult:
         import qtasks._state
 
         if qtasks._state.app_main is None:
-            raise ImportError("Невозможно получить app!")
+            raise ImportError("qtasks app is not initialized.")
         app = qtasks._state.app_main
         return app  # type: ignore

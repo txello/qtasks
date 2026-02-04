@@ -38,16 +38,16 @@ if TYPE_CHECKING:
 class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     """
     A broker that listens to Redis and adds tasks to the queue.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.brokers import AsyncRedisBroker
-    
-        broker = AsyncRedisBroker(name="QueueTasks", url="redis://localhost:6379/2")
-    
-        app = QueueTasks(broker=broker)
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.brokers import AsyncRedisBroker
+
+    broker = AsyncRedisBroker(name="QueueTasks", url="redis://localhost:6379/2")
+
+    app = QueueTasks(broker=broker)
         ```
     """
 
@@ -126,15 +126,15 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     ):
         """
         Initializing AsyncRedisBroker.
-        
-                Args:
-                    name (str, optional): Project name. Default: "QueueTasks".
-                    url (str, optional): URL to connect to Redis. Default: None.
-                    storage (BaseStorage, optional): Storage. Default: None.
-                    queue_name (str, optional): Name of the task queue array for Redis. Default: "task_queue".
-                    log (Logger, optional): Logger. Default: None.
-                    config (QueueConfig, optional): Config. Default: None.
-                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
+
+        Args:
+            name (str, optional): Project name. Default: `QueueTasks`.
+            url (str, optional): URL to connect to Redis. Default: `None`.
+            storage (BaseStorage, optional): Storage. Default: `None`.
+            queue_name (str, optional): Name of the task queue array for Redis. Default: `task_queue`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Config. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         self.url = url or "redis://localhost:6379/0"
         self.client = aioredis.Redis.from_url(
@@ -175,13 +175,13 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     ):
         """
         Listens to the Redis queue and passes tasks to the worker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
-        
-                Raises:
-                    ValueError: Unknown task data format.
-                    KeyError: Task not found.
+
+        Args:
+            worker (BaseWorker): Worker class.
+
+        Raises:
+            ValueError: Unknown task data format.
+            KeyError: Task not found.
         """
         await self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
@@ -296,19 +296,19 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     ) -> Task:
         """
         Adds a task to the broker.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. By default: 0.
-                    extra (dict, optional): Additional task parameters. Default: `None`.
-                    args (tuple, optional): Task arguments of type args. Default: `()`.
-                    kwargs (dict, optional): Task arguments of type kwargs. Default: `{}`.
-        
-                Returns:
-                    Task: `schemas.task.Task`
-        
-                Raises:
-                    ValueError: Incorrect task status.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. By default: 0.
+            extra (dict, optional): Additional task parameters. Default: `None`.
+            args (tuple, optional): Task arguments of type args. Default: `()`.
+            kwargs (dict, optional): Task arguments of type kwargs. Default: `{}`.
+
+        Returns:
+            Task: `schemas.task.Task`
+
+        Raises:
+            ValueError: Incorrect task status.
         """
         loop = asyncio.get_running_loop()
         asyncio_atexit.register(self.stop, loop=loop)
@@ -371,12 +371,12 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     ) -> Task | None:
         """
         Obtaining information about a task.
-        
-                Args:
-                    uuid (UUID|str): UUID of the task.
-        
-                Returns:
-                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
+
+        Args:
+            uuid (UUID|str): UUID of the task.
+
+        Returns:
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
@@ -401,9 +401,9 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     ) -> None:
         """
         Updates task information.
-        
-                Args:
-                    kwargs (dict, optional): task data of type kwargs.
+
+        Args:
+            kwargs (dict, optional): task data of type kwargs.
         """
         new_kw = await self._plugin_trigger(
             "broker_update", broker=self, kw=kwargs, return_last=True
@@ -425,9 +425,9 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     ) -> None:
         """
         Launches the broker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
+
+        Args:
+            worker (BaseWorker): Worker class.
         """
         await self._plugin_trigger("broker_start", broker=self, worker=worker)
         await self.storage.start()
@@ -467,10 +467,10 @@ class AsyncRedisBroker(BaseBroker[Literal[True]], AsyncPluginMixin):
     ) -> None:
         """
         Updates storage data via the `self.storage.remove_finished_task` function.
-        
-                Args:
-                    task_broker (TaskPrioritySchema): The priority task schema.
-                    model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
+
+        Args:
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         new_model = await self._plugin_trigger(
             "broker_remove_finished_task",

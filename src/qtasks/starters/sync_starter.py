@@ -22,23 +22,23 @@ if TYPE_CHECKING:
 class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
     """
     Starter that starts the Components.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.brokers import SyncRedisBroker
-        from qtasks.workers import SyncWorker
-        from qtasks.starters import SyncStarter
-    
-        broker = SyncRedisBroker(name="QueueTasks", url="redis://localhost:6379/2")
-        worker = SyncWorker(name="QueueTasks", broker=broker)
-    
-        app = QueueTasks(worker=worker, broker=broker)
-    
-        starter = SyncStarter(name="QueueTasks", worker=worker, broker=broker)
-        app.run_forever(starter=starter)
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.brokers import SyncRedisBroker
+    from qtasks.workers import SyncWorker
+    from qtasks.starters import SyncStarter
+
+    broker = SyncRedisBroker(name="QueueTasks", url="redis://localhost:6379/2")
+    worker = SyncWorker(name="QueueTasks", broker=broker)
+
+    app = QueueTasks(worker=worker, broker=broker)
+
+    starter = SyncStarter(name="QueueTasks", worker=worker, broker=broker)
+    app.run_forever(starter=starter)
+    ```
     """
 
     def __init__(
@@ -105,15 +105,15 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
         ] = None,
     ):
         """
-        Initialization of an asynchronous starter.
-        
-                Args:
-                    name (str, optional): Project name. Default: None.
-                    broker (BaseBroker, optional): Broker. Default: None.
-                    worker (BaseWorker, optional): Worker. Default: None.
-                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
-                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
-                    events (BaseEvents, optional): Events. Default: `qtasks.events.SyncEvents`.
+        Initialization of an synchronous starter.
+
+        Args:
+            name (str, optional): Project name. Default: None.
+            broker (BaseBroker, optional): Broker. Default: None.
+            worker (BaseWorker, optional): Worker. Default: None.
+            log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.SyncEvents`.
         """
         super().__init__(
             name=name,
@@ -162,13 +162,12 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             ),
         ] = None,
     ) -> None:
-        """
-        Starter launch. This function is enabled by the main `QueueTasks` instance via `run_forever`.
-        
-                Args:
-                    num_workers (int, optional): Number of workers. Default: 4.
-                    reset_config (bool, optional): Update the config of the worker and broker. Default: True.
-                    plugins (Dict[str, BasePlugin] | None, optional): Plugins. Default: None.
+        """Starter launch. This function is enabled by the main `QueueTasks` instance via `run_forever`.
+
+        Args:
+            num_workers (int, optional): Number of workers. Default: 4.
+            reset_config (bool, optional): Update the config of the worker and broker. Default: True.
+            plugins (Dict[str, BasePlugin] | None, optional): Plugins. Default: None.
         """
         if self.log:
             self.log.info("Запуск QueueTasks...")
@@ -185,11 +184,10 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             self.stop()
 
     def _start(self, num_workers=4):
-        """
-        Starter starts synchronously.
-        
-                Args:
-                    num_workers (int, optional): Number of workers. Default: 4.
+        """Starter starts synchronously.
+
+        Args:
+            num_workers (int, optional): Number of workers. Default: 4.
         """
         self._plugin_trigger("starter_start", starter=self)
         for plugin in [i for y in self.plugins.values() for i in y]:

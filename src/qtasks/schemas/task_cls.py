@@ -22,17 +22,16 @@ if TYPE_CHECKING:
 
 @dataclass
 class BaseTaskCls(Generic[TTask], ABC):
-    """
-    `Task` Cls model.
-    
-        Args:
-            task_name (str, optional): Task name. Default: `None`.
-    
-            priority (int, optional): Task priority. Default: `None`.
-            timeout (float, optional): Task timeout. Default: `None`.
-    
-            args (Tuple[str]): Arguments of type args. Default: `()`.
-            kwargs (Dict[str, Any]): Arguments of type kwargs. Default: `{}`.
+    """`Task` Cls model.
+
+    Args:
+        task_name (str, optional): Task name. Default: `None`.
+
+        priority (int, optional): Task priority. Default: `None`.
+        timeout (float, optional): Task timeout. Default: `None`.
+
+        args (Tuple[str]): Arguments of type args. Default: `()`.
+        kwargs (Dict[str, Any]): Arguments of type kwargs. Default: `{}`.
     """
     task_name: Optional[str] = None
 
@@ -57,19 +56,18 @@ class BaseTaskCls(Generic[TTask], ABC):
     def add_task(self) -> Union[
         Optional[Task], Awaitable[Optional[Task]]
     ]:
-        """
-        Add a task.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. Default: Task priority value.
-                    args (tuple, optional): task args. Defaults to `()`.
-                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
-        
-                    timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.SyncResult` or `qtasks.results.AsyncResult`.
-        
-                Returns:
-                    Task|None: `schemas.task.Task` or `None`.
+        """Add a task.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: Task priority value.
+            args (tuple, optional): task args. Defaults to `()`.
+            kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+
+            timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.SyncResult` or `qtasks.results.AsyncResult`.
+
+        Returns:
+            Task|None: `schemas.task.Task` or `None`.
         """
         pass
 
@@ -78,22 +76,21 @@ class AsyncTaskCls(BaseTaskCls["AsyncTask"]):
     async def add_task(self) -> Union[
         Optional[Task], Task
     ]:
-        """
-        Add a task.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. Default: Task priority value.
-                    args (tuple, optional): task args. Defaults to `()`.
-                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
-        
-                    timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.AsyncResult`.
-        
-                Returns:
-                    Task|None: `schemas.task.Task` or `None`.
-        
-                Raises:
-                    RuntimeError: If `AsyncTask` is not declared.
+        """Add a task.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: Task priority value.
+            args (tuple, optional): task args. Defaults to `()`.
+            kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+
+            timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.AsyncResult`.
+
+        Returns:
+            Task|None: `schemas.task.Task` or `None`.
+
+        Raises:
+            RuntimeError: If `AsyncTask` is not declared.
         """
         if not self._task_deco:
             raise RuntimeError("AsyncTask не объявлен!")
@@ -105,22 +102,21 @@ class SyncTaskCls(BaseTaskCls["SyncTask"]):
     def add_task(self) -> Union[
         Optional[Task], Task
     ]:
-        """
-        Add a task.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. Default: Task priority value.
-                    args (tuple, optional): task args. Defaults to `()`.
-                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
-        
-                    timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.SyncResult`.
-        
-                Returns:
-                    Task|None: `schemas.task.Task` or `None`.
-        
-                Raises:
-                    RuntimeError: If `SyncTask` is not declared.
+        """Add a task.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: Task priority value.
+            args (tuple, optional): task args. Defaults to `()`.
+            kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+
+            timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.SyncResult`.
+
+        Returns:
+            Task|None: `schemas.task.Task` or `None`.
+
+        Raises:
+            RuntimeError: If `SyncTask` is not declared.
         """
         if not self._task_deco:
             raise RuntimeError("SyncTask не объявлен!")

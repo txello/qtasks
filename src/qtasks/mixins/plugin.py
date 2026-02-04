@@ -62,15 +62,15 @@ class SyncPluginMixin:
     ) -> list[dict[str, Any]] | dict[str, Any]:
         """
         Trigger to run the plugin handler.
-        
-                Args:
-                    name (str): Handler name.
-                    return_last (bool): If True, return only the last result, if any.
-                    safe (bool): If True, do not ignore plugin errors.
-                    continue_on_fail (bool): If True, continue executing other plugins on error.
-        
-                Returns:
-                    List[Dict[str, Any]]: Results of executing handlers.
+
+        Args:
+            name (str): Handler name.
+            return_last (bool): If True, return only the last result, if any.
+            safe (bool): If True, do not ignore plugin errors.
+            continue_on_fail (bool): If True, continue executing other plugins on error.
+
+        Returns:
+            List[Dict[str, Any]]: Results of executing handlers.
         """
         results = []
         kwargs_copy = kwargs.copy()
@@ -151,10 +151,10 @@ class SyncPluginMixin:
     ) -> None:
         """
         Add a plugin to the class.
-        
-                Args:
-                    plugin (BasePlugin): Plugin
-                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+
+        Args:
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -186,15 +186,15 @@ class AsyncPluginMixin:
     ) -> dict[str, Any]:
         """
         Trigger to run the plugin handler.
-        
-                Args:
-                    name (str): Handler name.
-                    return_last (bool): If True, return only the last result, if any.
-                    safe (bool): If True, do not ignore plugin errors.
-                    continue_on_fail (bool): If True, continue executing other plugins on error.
-        
-                Returns:
-                    Dict[str, Any]: The last result of handler execution or an empty dictionary.
+
+        Args:
+            name (str): Handler name.
+            return_last (bool): If True, return only the last result, if any.
+            safe (bool): If True, do not ignore plugin errors.
+            continue_on_fail (bool): If True, continue executing other plugins on error.
+
+        Returns:
+            Dict[str, Any]: The last result of handler execution or an empty dictionary.
         """
         ...
 
@@ -210,15 +210,15 @@ class AsyncPluginMixin:
     ) -> list[dict[str, Any]]:
         """
         Trigger to run the plugin handler.
-        
-                Args:
-                    name (str): Handler name.
-                    return_last (bool): If True, return only the last result, if any.
-                    safe (bool): If True, do not ignore plugin errors.
-                    continue_on_fail (bool): If True, continue executing other plugins on error.
-        
-                Returns:
-                    List[Dict[str, Any]]: Results of executing handlers.
+
+        Args:
+            name (str): Handler name.
+            return_last (bool): If True, return only the last result, if any.
+            safe (bool): If True, do not ignore plugin errors.
+            continue_on_fail (bool): If True, continue executing other plugins on error.
+
+        Returns:
+            List[Dict[str, Any]]: Results of executing handlers.
         """
         ...
 
@@ -233,15 +233,15 @@ class AsyncPluginMixin:
     ) -> list[dict[str, Any]] | dict[str, Any]:
         """
         Trigger to run the plugin handler.
-        
-                Args:
-                    name (str): Handler name.
-                    return_last (bool): If True, return only the last result, if any.
-                    safe (bool): If True, do not ignore plugin errors.
-                    continue_on_fail (bool): If True, continue executing other plugins on error.
-        
-                Returns:
-                    List[Dict[str, Any]]: Results of executing handlers.
+
+        Args:
+            name (str): Handler name.
+            return_last (bool): If True, return only the last result, if any.
+            safe (bool): If True, do not ignore plugin errors.
+            continue_on_fail (bool): If True, continue executing other plugins on error.
+
+        Returns:
+            List[Dict[str, Any]]: Results of executing handlers.
         """
         results = []
         kwargs_copy = kwargs.copy()
@@ -322,10 +322,10 @@ class AsyncPluginMixin:
     ) -> None:
         """
         Add a plugin to the class.
-        
-                Args:
-                    plugin (BasePlugin): Plugin
-                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+
+        Args:
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 

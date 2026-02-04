@@ -38,17 +38,17 @@ if TYPE_CHECKING:
 class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     """
     A broker that listens to sockets and adds tasks to the queue.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.brokers import AsyncSocketBroker
-    
-        broker = AsyncSocketBroker(name="QueueTasks", url="127.0.0.1")
-    
-        app = QueueTasks(broker=broker)
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.brokers import AsyncSocketBroker
+
+    broker = AsyncSocketBroker(name="QueueTasks", url="127.0.0.1")
+
+    app = QueueTasks(broker=broker)
+    ```
     """
 
     def __init__(
@@ -126,15 +126,15 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     ):
         """
         Initializing AsyncSocketBroker.
-        
-                Args:
-                    name (str, optional): Project name. Default: `QueueTasks`.
-                    url (str, optional): URL to connect to the socket. Default: `127.0.0.1`.
-                    port (int, optional): Port to connect to the socket. Default: `8765`.
-                    storage (BaseStorage, optional): Storage. Default: `None`.
-                    log (Logger, optional): Logger. Default: `None`.
-                    config (QueueConfig, optional): Config. Default: `None`.
-                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
+
+        Args:
+            name (str, optional): Project name. Default: `QueueTasks`.
+            url (str, optional): URL to connect to the socket. Default: `127.0.0.1`.
+            port (int, optional): Port to connect to the socket. Default: `6379`.
+            storage (BaseStorage, optional): Storage. Default: `None`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Config. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         self.url = url
         self.port = port
@@ -163,10 +163,10 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     ):
         """
         Handles an incoming connection.
-        
-                Args:
-                    reader(asyncio.StreamReader): Reader for incoming data.
-                    writer(asyncio.StreamWriter): Writer for outgoing data.
+
+        Args:
+            reader(asyncio.StreamReader): Reader for incoming data.
+            writer(asyncio.StreamWriter): Writer for outgoing data.
         """
         try:
             data = await reader.read(4096)
@@ -211,12 +211,12 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     ):
         """
         Listens to the socket queue and transfers tasks to the worker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
-        
-                Raises:
-                    KeyError: Task not found.
+
+        Args:
+            worker (BaseWorker): Worker class.
+
+        Raises:
+            KeyError: Task not found.
         """
         await self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
@@ -327,19 +327,19 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     ) -> Task:
         """
         Adds a task to the broker.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. By default: 0.
-                    extra (dict, optional): Additional task parameters. Default: `None`.
-                    args (tuple, optional): Task arguments of type args. Default: `()`.
-                    kwargs (dict, optional): Task arguments of type kwargs. Default: `{}`.
-        
-                Returns:
-                    Task: `schemas.task.Task`
-        
-                Raises:
-                    ValueError: Incorrect task status.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. By default: 0.
+            extra (dict, optional): Additional task parameters. Default: `None`.
+            args (tuple, optional): Task arguments of type args. Default: `()`.
+            kwargs (dict, optional): Task arguments of type kwargs. Default: `{}`.
+
+        Returns:
+            Task: `schemas.task.Task`
+
+        Raises:
+            ValueError: Incorrect task status.
         """
         loop = asyncio.get_running_loop()
         asyncio_atexit.register(self.stop, loop=loop)
@@ -406,12 +406,12 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     ) -> Task | None:
         """
         Obtaining information about a task.
-        
-                Args:
-                    uuid (UUID|str): UUID of the task.
-        
-                Returns:
-                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
+
+        Args:
+            uuid (UUID|str): UUID of the task.
+
+        Returns:
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
@@ -436,9 +436,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     ) -> None:
         """
         Updates task information.
-        
-                Args:
-                    kwargs (dict, optional): task data of type kwargs.
+
+        Args:
+            kwargs (dict, optional): task data of type kwargs.
         """
         new_kw = await self._plugin_trigger(
             "broker_update", broker=self, kw=kwargs, return_last=True
@@ -460,9 +460,9 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     ) -> None:
         """
         Launches the broker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
+
+        Args:
+            worker (BaseWorker): Worker class.
         """
         await self._plugin_trigger("broker_start", broker=self, worker=worker)
         await self.storage.start()
@@ -529,10 +529,10 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     ) -> None:
         """
         Updates storage data via the `self.storage.remove_finished_task` function.
-        
-                Args:
-                    task_broker (TaskPrioritySchema): The priority task schema.
-                    model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
+
+        Args:
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         new_model = await self._plugin_trigger(
             "broker_remove_finished_task",

@@ -40,17 +40,17 @@ if TYPE_CHECKING:
 class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     """
     A broker that listens to sockets and adds tasks to the queue.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.brokers import SyncSocketBroker
-    
-        broker = SyncSocketBroker(name="QueueTasks", url="127.0.0.1")
-    
-        app = QueueTasks(broker=broker)
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.brokers import SyncSocketBroker
+
+    broker = SyncSocketBroker(name="QueueTasks", url="127.0.0.1")
+
+    app = QueueTasks(broker=broker)
+    ```
     """
 
     def __init__(
@@ -91,7 +91,7 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
                 """
                     Хранилище.
 
-                    По умолчанию: `AsyncRedisStorage`.
+                    По умолчанию: `SyncRedisStorage`.
                     """
             ),
         ] = None,
@@ -121,22 +121,22 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
                 """
                     События.
 
-                    По умолчанию: `qtasks.events.AsyncEvents`.
+                    По умолчанию: `qtasks.events.SyncEvents`.
                     """
             ),
         ] = None,
     ):
         """
         Initializing SyncSocketBroker.
-        
-                Args:
-                    name (str, optional): Project name. Default: `QueueTasks`.
-                    url (str, optional): URL to connect to the socket. Default: `AsyncRedisStorage`.
-                    port (int, optional): Port to connect to the socket. Default: `8765`.
-                    storage (BaseStorage, optional): Storage. Default: `None`.
-                    log (Logger, optional): Logger. Default: `None`.
-                    config (QueueConfig, optional): Config. Default: `None`.
-                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
+
+        Args:
+            name (str, optional): Project name. Default: `QueueTasks`.
+            url (str, optional): URL to connect to the socket. Default: `127.0.0.1`.
+            port (int, optional): Port to connect to the socket. Default: `6379`.
+            storage (BaseStorage, optional): Storage. Default: `None`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Config. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.SyncEvents`.
         """
         self.url = url
         self.port = port
@@ -162,10 +162,10 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     def handle_connection(self, reader, writer):
         """
         Handles an incoming connection.
-        
-                Args:
-                    reader: Reader for incoming data.
-                    writer: Writer for outgoing data.
+
+        Args:
+            reader: Reader for incoming data.
+            writer: Writer for outgoing data.
         """
         conn = reader
         try:
@@ -212,12 +212,12 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     ):
         """
         Listens to the socket queue and transfers tasks to the worker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
-        
-                Raises:
-                    KeyError: Task not found.
+
+        Args:
+            worker (BaseWorker): Worker class.
+
+        Raises:
+            KeyError: Task not found.
         """
         self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
@@ -326,19 +326,19 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     ) -> Task:
         """
         Adds a task to the broker.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. By default: 0.
-                    extra (dict, optional): Additional task parameters. Default: `None`.
-                    args (tuple, optional): Task arguments of type args. Default: `()`.
-                    kwargs (dict, optional): Task arguments of type kwargs. Default: `{}`.
-        
-                Returns:
-                    Task: `schemas.task.Task`
-        
-                Raises:
-                    ValueError: Incorrect task status.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. By default: 0.
+            extra (dict, optional): Additional task parameters. Default: `None`.
+            args (tuple, optional): Task arguments of type args. Default: `()`.
+            kwargs (dict, optional): Task arguments of type kwargs. Default: `{}`.
+
+        Returns:
+            Task: `schemas.task.Task`
+
+        Raises:
+            ValueError: Incorrect task status.
         """
         atexit.register(self.stop)
         atexit.register(self.storage.stop)
@@ -402,12 +402,12 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     ) -> Task | None:
         """
         Obtaining information about a task.
-        
-                Args:
-                    uuid (UUID|str): UUID of the task.
-        
-                Returns:
-                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
+
+        Args:
+            uuid (UUID|str): UUID of the task.
+
+        Returns:
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
@@ -432,9 +432,9 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     ) -> None:
         """
         Updates task information.
-        
-                Args:
-                    kwargs (dict, optional): task data of type kwargs.
+
+        Args:
+            kwargs (dict, optional): task data of type kwargs.
         """
         new_kw = self._plugin_trigger(
             "broker_update", broker=self, kw=kwargs, return_last=True
@@ -456,12 +456,12 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     ) -> None:
         """
         Launches the broker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
-        
-                Raises:
-                    RuntimeError: self.client is not initialized.
+
+        Args:
+            worker (BaseWorker): Worker class.
+
+        Raises:
+            RuntimeError: self.client is not initialized.
         """
         self._plugin_trigger("broker_start", broker=self, worker=worker)
         self.storage.start()
@@ -553,10 +553,10 @@ class SyncSocketBroker(BaseBroker, SyncPluginMixin):
     ) -> None:
         """
         Updates storage data via the `self.storage.remove_finished_task` function.
-        
-                Args:
-                    task_broker (TaskPrioritySchema): The priority task schema.
-                    model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
+
+        Args:
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         new_model = self._plugin_trigger(
             "broker_remove_finished_task",

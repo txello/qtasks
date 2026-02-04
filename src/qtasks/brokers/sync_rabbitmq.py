@@ -43,17 +43,17 @@ if TYPE_CHECKING:
 class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     """
     A broker that listens to RabbitMQ and adds tasks to the queue.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.brokers import SyncRabbitMQBroker
-    
-        broker = SyncRabbitMQBroker(name="QueueTasks", url="amqp://guest:guest@localhost/")
-    
-        app = QueueTasks(broker=broker)
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.brokers import SyncRabbitMQBroker
+
+    broker = SyncRabbitMQBroker(name="QueueTasks", url="amqp://guest:guest@localhost/")
+
+    app = QueueTasks(broker=broker)
+    ```
     """
 
     def __init__(
@@ -131,15 +131,15 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     ):
         """
         Initializing SyncRabbitMQBroker.
-        
-                Args:
-                    name (str, optional): Project name. Default: "QueueTasks".
-                    url (str, optional): URL to connect to RabbitMQ. Default: None.
-                    storage (BaseStorage, optional): Storage. Default: None.
-                    queue_name (str, optional): RabbitMQ queue name. Default: "task_queue".
-                    log (Logger, optional): Logger. Default: None.
-                    config (QueueConfig, optional): Config. Default: None.
-                    events (BaseEvents, optional): Events. Default: `qtasks.events.SyncEvents`.
+
+        Args:
+            name (str, optional): Project name. Default: `QueueTasks`.
+            url (str, optional): URL to connect to RabbitMQ. Default: `None`.
+            storage (BaseStorage, optional): Storage. Default: `None`.
+            queue_name (str, optional): RabbitMQ queue name. Default: `task_queue`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Config. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.SyncEvents`.
         """
         self.url = url
         storage = storage or SyncRedisStorage(
@@ -179,9 +179,9 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     ):
         """
         Listens to the RabbitMQ queue and transfers tasks to the worker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
+
+        Args:
+            worker (BaseWorker): Worker class.
         """
         self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         if not self.channel:
@@ -295,19 +295,19 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     ) -> Task:
         """
         Adds a task to the broker.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. Default: `0`.
-                    extra (dict, optional): Additional task parameters. Default: `None`.
-                    args (tuple, optional): Task arguments of type args. Default: `None`.
-                    kwargs (dict, optional): Task arguments of type kwargs. Default: `None`.
-        
-                Returns:
-                    Task: `schemas.task.Task`
-        
-                Raises:
-                    RuntimeError: self.channel is not declared. The server is not running!
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: `0`.
+            extra (dict, optional): Additional task parameters. Default: `None`.
+            args (tuple, optional): Task arguments of type args. Default: `None`.
+            kwargs (dict, optional): Task arguments of type kwargs. Default: `None`.
+
+        Returns:
+            Task: `schemas.task.Task`
+
+        Raises:
+            RuntimeError: self.channel is not declared. The server is not running!
         """
         args, kwargs = args or (), kwargs or {}
         if not self.channel:
@@ -390,12 +390,12 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     ) -> Task | None:
         """
         Obtaining information about a task.
-        
-                Args:
-                    uuid (UUID|str): UUID of the task.
-        
-                Returns:
-                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
+
+        Args:
+            uuid (UUID|str): UUID of the task.
+
+        Returns:
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
@@ -420,9 +420,9 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     ) -> None:
         """
         Updates task information.
-        
-                Args:
-                    kwargs (dict, optional): task data of type kwargs.
+
+        Args:
+            kwargs (dict, optional): task data of type kwargs.
         """
         new_kw = self._plugin_trigger(
             "broker_update", broker=self, kw=kwargs, return_last=True
@@ -444,9 +444,9 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     ) -> None:
         """
         Launches the broker.
-        
-                Args:
-                    worker (BaseWorker): Worker class.
+
+        Args:
+            worker (BaseWorker): Worker class.
         """
         self._plugin_trigger("broker_start", broker=self, worker=worker)
         self.storage.start()
@@ -490,10 +490,10 @@ class SyncRabbitMQBroker(BaseBroker, SyncPluginMixin):
     ) -> None:
         """
         Updates storage data via the `self.storage.remove_finished_task` function.
-        
-                Args:
-                    task_broker (TaskPrioritySchema): The priority task schema.
-                    model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
+
+        Args:
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         new_model = self._plugin_trigger(
             "broker_remove_finished_task",

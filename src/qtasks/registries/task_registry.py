@@ -17,8 +17,8 @@ from qtasks.schemas.task_exec import TaskExecSchema
 class TaskRegistry:
     """
     Task recorder. Needed for tasks registered via `@shared_task`.
-    
-        Tasks are registered in `QueueTasks.__init__()`
+
+    Tasks are registered in `QueueTasks.__init__()`
     """
 
     _tasks: Annotated[
@@ -169,20 +169,20 @@ class TaskRegistry:
     ) -> Callable[[Callable], SyncTask | AsyncTask]:
         """
         Register a task.
-        
-                Args:
-                    name (str, optional): Name of the task. Default: `func.__name__`.
-                    priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
-                    echo (bool, optional): Add (A)syncTask as the first parameter. Default: `False`.
-                    retry (int, optional): Number of attempts to retry the task. Default: `None`.
-                    retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
-                    decode (Callable, optional): Decoder of the task result. Default: `None`.
-                    tags (List[str], optional): Task tags. Default: `None`.
-                    description (str, optional): Description of the task. Default: `None`.
-                    generate_handler (Callable, optional): Handler generator. Default: `None`.
-                    executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
-                    middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
-                    middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
+
+        Args:
+            name (str, optional): Name of the task. Default: `func.__name__`.
+            priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+            echo (bool, optional): Add (A)syncTask as the first parameter. Default: `False`.
+            retry (int, optional): Number of attempts to retry the task. Default: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+            decode (Callable, optional): Decoder of the task result. Default: `None`.
+            tags (List[str], optional): Task tags. Default: `None`.
+            description (str, optional): Description of the task. Default: `None`.
+            generate_handler (Callable, optional): Handler generator. Default: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
         """
 
         def wrapper(func: Callable):
@@ -254,12 +254,12 @@ class TaskRegistry:
     ) -> TaskExecSchema | None:
         """
         Receiving a task.
-        
-                Args:
-                    name (str): Name of the task.
-        
-                Returns:
-                    TaskExecSchema: Task type `{task_name:qtasks.schemas.TaskExecSchema}`.
+
+        Args:
+            name (str): Name of the task.
+
+        Returns:
+            TaskExecSchema: Task type `{task_name:qtasks.schemas.TaskExecSchema}`.
         """
         return cls._tasks.get(name)
 
@@ -267,8 +267,8 @@ class TaskRegistry:
     def all_tasks(cls) -> dict[str, TaskExecSchema]:
         """
         Retrieving all tasks.
-        
-                Returns:
-                    Dict[str, TaskExecSchema]: Tasks, type `{task_name:qtasks.schemas.TaskExecSchema}`.
+
+        Returns:
+            Dict[str, TaskExecSchema]: Tasks, type `{task_name:qtasks.schemas.TaskExecSchema}`.
         """
         return cls._tasks

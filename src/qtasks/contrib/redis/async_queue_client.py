@@ -10,26 +10,26 @@ from qtasks.logs import Logger
 class AsyncRedisCommandQueue:
     """
     `AsyncRedisCommandQueue` - Asynchronous class for working with `Redis`.
-    
-        ## Example
-    
-        ```python
-        import asyncio
-        from qtasks import QueueTasks
-        from qtasks.contrib.redis import AsyncRedisCommandQueue
-    
-        redis_contrib = AsyncRedisCommandQueue(redis)
-        asyncio.run(redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"]))
-        ```
+
+    ## Example
+
+    ```python
+    import asyncio
+    from qtasks import QueueTasks
+    from qtasks.contrib.redis import AsyncRedisCommandQueue
+
+    redis_contrib = AsyncRedisCommandQueue(redis)
+    asyncio.run(redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"]))
+    ```
     """
 
     def __init__(self, redis: aioredis.Redis, log: Logger | None = None):
         """
         An instance of a class.
-        
-                Args:
-                    redis (redis.asyncio.Redis): class `Redis`.
-                    log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
+
+        Args:
+            redis (redis.asyncio.Redis): class `Redis`.
+            log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
         """
         self.log = self._get_log(log)
         self.redis = redis
@@ -55,11 +55,11 @@ class AsyncRedisCommandQueue:
     async def execute(self, cmd: str, *args, **kwargs):
         """
         Query in `Redis`.
-        
-                Args:
-                    cmd (str): Command.
-                    args(tuple, optional): Parameters to the command via *args.
-                    kwargs(dict, optional): Parameters to the command via *args.
+
+        Args:
+            cmd (str): Command.
+            args(tuple, optional): Parameters to the command via *args.
+            kwargs(dict, optional): Parameters to the command via *args.
         """
         await self.queue.put((cmd, args, kwargs))
         async with self.lock:

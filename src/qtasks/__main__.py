@@ -19,14 +19,13 @@ sys.path.append(os.path.abspath(os.getcwd()))
 
 
 def get_app(app_arg: str) -> Union[QueueTasks, aioQueueTasks, None]:
-    """
-    Get an application instance.
-    
-        Args:
-            app_arg (str): Application argument in the format "module:app".
-    
-        Returns:
-            QueueTasks: Application instance.
+    """Get an application instance.
+
+    Args:
+        app_arg (str): Application argument in the format "module:app".
+
+    Returns:
+        QueueTasks: Application instance.
     """
     try:
         if not app_arg:

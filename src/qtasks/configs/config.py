@@ -13,23 +13,23 @@ from qtasks.enums.task_status import TaskStatusEnum
 class QueueConfig:
     """
     Configuration of task queues.
-    
-        Attributes:
-            max_tasks_process (int): Maximum tasks in process. Default: `10`
-            running_older_tasks (bool): Run past tasks. Default: `False`
-            delete_finished_tasks (bool): Deleting completed tasks. Default: `False`
-    
-            task_default_priority (int): Default task priority. Default: `0`
-            task_default_decode (Callable | None): Default task result decoder. Default: `None`
-    
-            logs_default_level_server (int): Logging level for the server. Default: `logging.INFO(20)`
-            logs_default_level_client (int | None): Logging level for the client. Default: `logging.INFO(20)`
-            logs_format (str): Logging format. Default: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`
-    
-            result_time_interval (float): Time interval for results. Default: `1.0`
-            result_statuses_end (list[str]): Results end statuses. Default: `["success", "error", "cancel"]`
-    
-            environ_prefix (str): Prefix for environment variables. Default: `QTASKS_`
+
+    Attributes:
+        max_tasks_process (int): Maximum tasks in process. Default: `10`
+        running_older_tasks (bool): Run past tasks. Default: `False`
+        delete_finished_tasks (bool): Deleting completed tasks. Default: `False`
+
+        task_default_priority (int): Default task priority. Default: `0`
+        task_default_decode (Callable | None): Default task result decoder. Default: `None`
+
+        logs_default_level_server (int): Logging level for the server. Default: `logging.INFO(20)`
+        logs_default_level_client (int | None): Logging level for the client. Default: `logging.INFO(20)`
+        logs_format (str): Logging format. Default: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`
+
+        result_time_interval (float): Time interval for results. Default: `1.0`
+        result_statuses_end (list[str]): Results end statuses. Default: `["success", "error", "cancel"]`
+
+        environ_prefix (str): Prefix for environment variables. Default: `QTASKS_`
     """
 
     max_tasks_process: int = 10

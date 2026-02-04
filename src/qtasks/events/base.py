@@ -34,10 +34,10 @@ class BaseEvents(Generic[TAsyncFlag], ABC):
     def fire(self, event_name: str, *args, **kwargs) -> None | Awaitable[None]:
         """
         The event is fired.
-        
-                Args:
-                    event_name (str): Event name.
-                    *args: Positional arguments.
-                    **kwargs: Named arguments.
+
+        Args:
+            event_name (str): Event name.
+            *args: Positional arguments.
+            **kwargs: Named arguments.
         """
         pass

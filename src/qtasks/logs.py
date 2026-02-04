@@ -8,20 +8,19 @@ from typing_extensions import Doc
 
 
 class Logger:
-    """
-    `Logger` - Logging class, used by all components.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.logs import Logger
-    
-        logger = Logger(name="QueueTasks", subname="Global")
-        app = QueueTasks(log=logger)
-    
-        app.log.debug("Test") # asctime [QueueTasks: DEBUG] (QueueTasks) Test
-        ```
+    """`Logger` - Logging class, used by all components.
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.logs import Logger
+
+    logger = Logger(name="QueueTasks", subname="Global")
+    app = QueueTasks(log=logger)
+
+    app.log.debug("Test") # asctime [QueueTasks: DEBUG] (QueueTasks) Test
+    ```
     """
 
     def __init__(
@@ -30,7 +29,9 @@ class Logger:
             str,
             Doc(
                 """
-                    Имя. Используется в шаблоне `%(name)s`.
+                    Name.
+
+                    Used in the `%(name)s` pattern.
                     """
             ),
         ],
@@ -38,9 +39,9 @@ class Logger:
             str | None,
             Doc(
                 """
-                    Имя компонента.
+                    Component name.
 
-                    По умолчанию: None.
+                    Default: None.
                     """
             ),
         ] = None,
@@ -48,9 +49,9 @@ class Logger:
             int,
             Doc(
                 """
-                    Level по умолчанию.
+                    Default level.
 
-                    По умолчанию: `logging.INFO`.
+                    Default: `logging.INFO`.
                     """
             ),
         ] = logging.INFO,
@@ -58,21 +59,21 @@ class Logger:
             str | None,
             Doc(
                 """
-                    Формат логирования.
+                    Logging format.
 
-                    По умолчанию: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`.
+                    Default: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`.
                     """
             ),
         ] = None,
     ):
         """
         Logger instance.
-        
-                Args:
-                    name (str): Name. Used in the `%(name)s` pattern.
-                    subname (str, optional): Component name. Default: None.
-                    default_level (int, optional): Default level. Default: `logging.DEBUG`.
-                    format (str, optional): Logging format. Default: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`.
+
+        Args:
+            name (str): Name. Used in the `%(name)s` pattern.
+            subname (str, optional): Component name. Default: `None`.
+            default_level (int, optional): Default level. Default: `logging.DEBUG`.
+            format (str, optional): Logging format.
         """
         self.name = name
         self.name = name
@@ -121,14 +122,14 @@ class Logger:
     ) -> Logger:
         """
         Update `subname`.
-        
-                Args:
-                    new_subname (str): New `subname`.
-                    default_level (int, optional): New logging level. Default: `None`.
-                    format (str, optional): New logging format. Default: `None`.
-        
-                Returns:
-                    Logger: New `Logger`.
+
+        Args:
+            new_subname (str): New `subname`.
+            default_level (int, optional): New logging level. Default: `None`.
+            format (str, optional): New logging format. Default: `None`.
+
+        Returns:
+            Logger: New `Logger`.
         """
         return Logger(
             self.name,
@@ -140,12 +141,12 @@ class Logger:
     def update_logger(self, **kwargs) -> Logger:
         """
         Update `Logger`.
-        
-                Args:
-                    kwargs (dict): New task data.
-        
-                Returns:
-                    Logger: New `Logger`.
+
+        Args:
+            kwargs (dict): New task data.
+
+        Returns:
+            Logger: New `Logger`.
         """
         name = kwargs.get("name") or self.name
         subname = kwargs.get("subname") or self.subname

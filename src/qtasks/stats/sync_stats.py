@@ -19,19 +19,19 @@ class SyncStats(BaseStats, SyncPluginMixin):
     def __init__(self, app: QueueTasks, plugins: dict[str, list[BasePlugin]] | None = None):
         """
         Initializing asynchronous statistics.
-        
-                Args:
-                    app (QueueTasks): Application instance.
-                    plugins (Optional[Dict[str, List[BasePlugin]]]): Plugins. Default: `None`.
+
+        Args:
+            app (QueueTasks): Application instance.
+            plugins (Optional[Dict[str, List[BasePlugin]]]): Plugins. Default: `None`.
         """
         super().__init__(app=app, plugins=plugins)
 
     def inspect(self):
         """
         Inspection of asynchronous statistics.
-        
-                Returns:
-                    AsyncStatsSchema: Asynchronous statistics schema.
+
+        Returns:
+            InspectStats: Synchronous statistics schema.
         """
         self._plugin_trigger(
             "stats_inspect",

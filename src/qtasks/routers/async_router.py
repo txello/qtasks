@@ -24,22 +24,22 @@ if TYPE_CHECKING:
 class AsyncRouter(AsyncPluginMixin):
     """
     A router that stores tasks that the main `QueueTasks` connects to itself.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks, AsyncRouter
-    
-        app = QueueTasks()
-    
-        router = AsyncRouter()
-    
-        @router.task()
-        async def test():
-            pass
-    
-        app.include_router(router)
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks, AsyncRouter
+
+    app = QueueTasks()
+
+    router = AsyncRouter()
+
+    @router.task()
+    async def test():
+        pass
+
+    app.include_router(router)
+    ```
     """
 
     def __init__(self) -> None:
@@ -194,27 +194,27 @@ class AsyncRouter(AsyncPluginMixin):
     ) -> AsyncTask[P, R] | Callable[[Callable[P, R]], AsyncTask[P, R]]:
         """
         Decorator for registering tasks.
-        
-                Args:
-                    name (str, optional): Name of the task. Default: `func.__name__`.
-                    priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
-                    echo (bool, optional): Add (A)syncTask as the first parameter. Default: `False`.
-                    max_time (float, optional): The maximum time the task will take to complete in seconds. Default: `None`.
-                    retry (int, optional): Number of attempts to retry the task. Default: `None`.
-                    retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
-                    decode (Callable, optional): Decoder of the task result. Default: `None`.
-                    tags (List[str], optional): Task tags. Default: `None`.
-                    description (str, optional): Description of the task. Default: `None`.
-                    generate_handler (Callable, optional): Handler generator. Default: `None`.
-                    executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
-                    middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
-                    middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
-        
-                Raises:
-                    ValueError: If a task with the same name is already registered.
-        
-                Returns:
-                    SyncTask: Decorator for registering a task.
+
+        Args:
+            name (str, optional): Name of the task. Default: `func.__name__`.
+            priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+            echo (bool, optional): Add (A)syncTask as the first parameter. Default: `False`.
+            max_time (float, optional): The maximum time the task will take to complete in seconds. Default: `None`.
+            retry (int, optional): Number of attempts to retry the task. Default: `None`.
+            retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+            decode (Callable, optional): Decoder of the task result. Default: `None`.
+            tags (List[str], optional): Task tags. Default: `None`.
+            description (str, optional): Description of the task. Default: `None`.
+            generate_handler (Callable, optional): Handler generator. Default: `None`.
+            executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
+            middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
+            middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
+
+        Raises:
+            ValueError: If a task with the same name is already registered.
+
+        Returns:
+            SyncTask: Decorator for registering a task.
         """
 
         def wrapper(func: Callable[P, R]):
@@ -222,7 +222,7 @@ class AsyncRouter(AsyncPluginMixin):
 
             task_name = name or func.__name__ if not callable(name) else name.__name__
             if task_name in self.tasks:
-                raise ValueError(f"Задача с именем {task_name} уже зарегистрирована!")
+                raise ValueError(f"Task with name {task_name} is already registered!")
 
             if priority is None:
                 priority = 0

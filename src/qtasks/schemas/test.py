@@ -7,13 +7,13 @@ from dataclasses import dataclass
 class TestConfig:
     """
     Configuration for testing task queues.
-    
-        Attributes:
-            worker (bool): Worker.
-            broker (bool): Broker.
-            storage (bool): Storage.
-            global_config (bool): Global config.
-            plugins (bool): Plugins.
+
+    Attributes:
+        worker (bool): Worker.
+        broker (bool): Broker.
+        storage (bool): Storage.
+        global_config (bool): Global config.
+        plugins (bool): Plugins.
     """
 
     __test__ = False

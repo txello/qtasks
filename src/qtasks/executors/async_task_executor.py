@@ -27,18 +27,18 @@ if TYPE_CHECKING:
 class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     """
     `AsyncTaskExecutor` - Synchronous task executor class. Used by default in `AsyncWorker`.
-    
-        ## Example
-    
-        ```python
-        import asyncio
-        from qtasks.executors import AsyncTaskExecutor
-    
-        task_func = TaskExecSchema(...)
-        task_broker = TaskPrioritySchema(...)
-        executor = AsyncTaskExecutor(task_func, task_broker)
-        result = asyncio.run(executor.execute())
-        ```
+
+    ## Example
+
+    ```python
+    import asyncio
+    from qtasks.executors import AsyncTaskExecutor
+
+    task_func = TaskExecSchema(...)
+    task_broker = TaskPrioritySchema(...)
+    executor = AsyncTaskExecutor(task_func, task_broker)
+    result = asyncio.run(executor.execute())
+    ```
     """
 
     def __init__(
@@ -82,12 +82,12 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     ):
         """
         Initializing the class. Occurs inside a `Worker` before a task is processed.
-        
-                Args:
-                    task_func (TaskExecSchema): Schema `TaskExecSchema`.
-                    task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
-                    log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
-                    plugins (Dict[str, List[BasePlugin]], optional): An array of plugins. Default: `Empty array`.
+
+        Args:
+            task_func (TaskExecSchema): Schema `TaskExecSchema`.
+            task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
+            log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
+            plugins (Dict[str, List[BasePlugin]], optional): An array of plugins. Default: `Empty array`.
         """
         super().__init__(
             task_func=task_func,
@@ -185,9 +185,9 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     async def run_task(self) -> Any:
         """
         Calling a task.
-        
-                Returns:
-                    Any: Result of the task.
+
+        Returns:
+            Any: Result of the task.
         """
         if self._args and self._kwargs:
             result = (
@@ -228,12 +228,12 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     async def run_task_gen(self, func: AsyncGenerator | Generator) -> list[Any]:
         """
         Calling the task generator.
-        
-                Args:
-                    func(AsyncGenerator, Generator): Function.
-        
-                Returns:
-                    Any: Result of the task.
+
+        Args:
+            func(AsyncGenerator, Generator): Function.
+
+        Returns:
+            Any: Result of the task.
         """
         if self.echo:
             self.echo.ctx._update(generate_handler=self.task_func.generate_handler)
@@ -275,12 +275,12 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     async def execute(self, decode: bool = True) -> Any | str:
         """
         Calling a task.
-        
-                Args:
-                    decode (bool, optional): Decoding the result of the task. Default: True.
-        
-                Returns:
-                    Any|str: Result of the task.
+
+        Args:
+            decode (bool, optional): Decoding the result of the task. Default: True.
+
+        Returns:
+            Any|str: Result of the task.
         """
         if self.log:
             self.log.debug(f"Вызван execute для {self.task_func.name}")
@@ -329,9 +329,9 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     async def decode(self) -> Any:
         """
         Decoding the task.
-        
-                Returns:
-                    Any: Result of the task.
+
+        Returns:
+            Any: Result of the task.
         """
         if self.task_func.decode is not None:
             result = await self._maybe_await(self.task_func.decode(self._result))

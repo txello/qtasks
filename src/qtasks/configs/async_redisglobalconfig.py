@@ -23,23 +23,23 @@ if TYPE_CHECKING:
 class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
     """
     Global Config running through Redis and working with global values.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.configs import AsyncRedisGlobalConfig
-        from qtasks.storage import AsyncRedisStorage
-        from qtasks.brokers import AsyncRedisBroker
-    
-        global_config = AsyncRedisGlobalConfig(name="QueueTasks", url="redis://localhost:6379/2")
-    
-        storage = AsyncRedisStorage(name="QueueTasks", global_config=global_config, url="redis://localhost:6379/2")
-    
-        broker = AsyncRedisBroker(name="QueueTasks", storage=storage, url="redis://localhost:6379/2")
-    
-        app = QueueTasks(broker=broker)
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.configs import AsyncRedisGlobalConfig
+    from qtasks.storage import AsyncRedisStorage
+    from qtasks.brokers import AsyncRedisBroker
+
+    global_config = AsyncRedisGlobalConfig(name="QueueTasks", url="redis://localhost:6379/2")
+
+    storage = AsyncRedisStorage(name="QueueTasks", global_config=global_config, url="redis://localhost:6379/2")
+
+    broker = AsyncRedisBroker(name="QueueTasks", storage=storage, url="redis://localhost:6379/2")
+
+    app = QueueTasks(broker=broker)
+    ```
     """
 
     def __init__(
@@ -117,15 +117,15 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
     ):
         """
         Initializing the asynchronous Redis global config.
-        
-                Args:
-                    name (str, optional): Project name. Default: "QueueTasks".
-                    url (str, optional): URL to connect to Redis. Default: "redis://localhost:6379/0".
-                    redis_connect (aioredis.Redis, optional): External Redis connection class. Default: None.
-                    config_name (str, optional): Name of the Hash Folder. Default: None.
-                    log (Logger, optional): Logger. Default: None.
-                    config (QueueConfig, optional): Configuration. Default: None.
-                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
+
+        Args:
+            name (str, optional): Project name. Default: "QueueTasks".
+            url (str, optional): URL to connect to Redis. Default: "redis://localhost:6379/0".
+            redis_connect (aioredis.Redis, optional): External Redis connection class. Default: None.
+            config_name (str, optional): Name of the Hash Folder. Default: None.
+            log (Logger, optional): Logger. Default: None.
+            config (QueueConfig, optional): Configuration. Default: None.
+            events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         super().__init__(name=name, log=log, config=config, events=events)
         self.name = name
@@ -143,11 +143,11 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
     async def set(self, name: str, key: str, value: str) -> None:
         """
         Add new value.
-        
-                Args:
-                    name (str): Name.
-                    key (str): Key.
-                    value(str): Value.
+
+        Args:
+            name (str): Name.
+            key (str): Key.
+            value(str): Value.
         """
         new_data = await self._plugin_trigger(
             "global_config_set",
@@ -169,13 +169,13 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
     async def get(self, key: str, name: str) -> Any:
         """
         Get value.
-        
-                Args:
-                    key (str): Key.
-                    name (str): Name.
-        
-                Returns:
-                    Any: Meaning.
+
+        Args:
+            key (str): Key.
+            name (str): Name.
+
+        Returns:
+            Any: Value.
         """
         raw = self.client.hget(name=f"{self.config_name}:{key}", key=name)
         result = await cast(Awaitable[str | None], raw)
@@ -190,12 +190,12 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
     async def get_all(self, key: str) -> dict[str, Any]:
         """
         Get all values.
-        
-                Args:
-                    key (str): Key.
-        
-                Returns:
-                    Dict[str, Any]: Values.
+
+        Args:
+            key (str): Key.
+
+        Returns:
+            Dict[str, Any]: Values.
         """
         raw = self.client.hgetall(name=f"{self.config_name}:{key}")
         result = await cast(Awaitable[dict], raw)
@@ -209,12 +209,12 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
     async def get_match(self, match: str) -> Any | dict:
         """
         Get values ​​by pattern.
-        
-                Args:
-                    match (str): Pattern.
-        
-                Returns:
-                    Any | Dict[str, Any]: Value or Values.
+
+        Args:
+            match (str): Pattern.
+
+        Returns:
+            Any | Dict[str, Any]: Value or Values.
         """
         self.config_name: str
         raw = self.client.hscan(self.config_name, match=match)

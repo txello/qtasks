@@ -30,17 +30,17 @@ if TYPE_CHECKING:
 class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     """
     `BaseTaskExecutor` - An abstract class that is the foundation for task executor classes.
-    
-        ## Example
-    
-        ```python
-        from qtasks.executors.base import BaseTaskExecutor
-    
-        class MyTaskExecutor(BaseTaskExecutor):
-            def __init__(self, name: str):
-                super().__init__(name=name)
-                pass
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks.executors.base import BaseTaskExecutor
+
+    class MyTaskExecutor(BaseTaskExecutor):
+        def __init__(self, name: str):
+            super().__init__(name=name)
+            pass
+    ```
     """
 
     def __init__(
@@ -84,12 +84,12 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     ):
         """
         Initializing the class. Occurs inside a `Worker` before a task is processed.
-        
-                Args:
-                    task_func (TaskExecSchema): Schema `TaskExecSchema`.
-                    task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
-                    log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
-                    plugins (Dict[str, List[BasePlugin]], optional): Plugin dictionary. Default: `Empty dictionary`.
+
+        Args:
+            task_func (TaskExecSchema): Schema `TaskExecSchema`.
+            task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
+            log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
+            plugins (Dict[str, List[BasePlugin]], optional): Plugin dictionary. Default: `Empty dictionary`.
         """
         self.task_func = task_func
         self.task_broker = task_broker
@@ -164,9 +164,9 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     def run_task(self) -> Any | Awaitable[Any]:
         """
         Calling a task.
-        
-                Returns:
-                    Any: Result of the task.
+
+        Returns:
+            Any: Result of the task.
         """
         pass
 
@@ -174,12 +174,12 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     def execute(self: BaseTaskExecutor[Literal[False]], decode: bool = True) -> str:
         """
         Task processing.
-        
-                Args:
-                    decode (bool, optional): Decoding. Default: `True`.
-        
-                Returns:
-                    str: Result of the task.
+
+        Args:
+            decode (bool, optional): Decoding. Default: `True`.
+
+        Returns:
+            str: Result of the task.
         """
         ...
 
@@ -187,12 +187,12 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     def execute(self: BaseTaskExecutor[Literal[False]], decode: bool = False) -> Any:
         """
         Task processing.
-        
-                Args:
-                    decode (bool, optional): Decoding. Default: `True`.
-        
-                Returns:
-                    Any: Result of the task.
+
+        Args:
+            decode (bool, optional): Decoding. Default: `True`.
+
+        Returns:
+            Any: Result of the task.
         """
         ...
 
@@ -202,12 +202,12 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     ) -> str:
         """
         Task processing.
-        
-                Args:
-                    decode (bool, optional): Decoding. Default: `True`.
-        
-                Returns:
-                    str: Result of the task.
+
+        Args:
+            decode (bool, optional): Decoding. Default: `True`.
+
+        Returns:
+            str: Result of the task.
         """
         ...
 
@@ -217,12 +217,12 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     ) -> Any:
         """
         Task processing.
-        
-                Args:
-                    decode (bool, optional): Decoding. Default: `True`.
-        
-                Returns:
-                    Any: Result of the task.
+
+        Args:
+            decode (bool, optional): Decoding. Default: `True`.
+
+        Returns:
+            Any: Result of the task.
         """
         ...
 
@@ -232,12 +232,12 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     ) -> Any | str | Awaitable[Any | str]:
         """
         Task processing.
-        
-                Args:
-                    decode (bool, optional): Decoding. Default: `True`.
-        
-                Returns:
-                    Any|str: Result of the task.
+
+        Args:
+            decode (bool, optional): Decoding. Default: `True`.
+
+        Returns:
+            Any|str: Result of the task.
         """
         pass
 
@@ -250,9 +250,9 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     def decode(self) -> str | Awaitable[str]:
         """
         Decoding the task.
-        
-                Returns:
-                    str: Result of the task.
+
+        Returns:
+            str: Result of the task.
         """
         return ""
 
@@ -279,10 +279,10 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Add a plugin to the class.
-        
-                Args:
-                    plugin (BasePlugin): Plugin
-                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+
+        Args:
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -295,13 +295,13 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
 
     def _extract_args_kwargs_from_func(self, func: Any) -> tuple[list, dict]:
         """
-        Retrieves the values ​​of the arguments from a function if they are given as default values.
-        
-                Args:
-                    func (Callable): The function from which args and kwargs are retrieved.
-        
-                Returns:
-                    Tuple[list, dict]: args and kwargs ready to be passed to `_build_args_info`.
+        Retrieves the values of the arguments from a function if they are given as default values.
+
+        Args:
+            func (Callable): The function from which args and kwargs are retrieved.
+
+        Returns:
+            Tuple[list, dict]: args and kwargs ready to be passed to `_build_args_info`.
         """
         sig = inspect.signature(func)
         args = []
@@ -323,13 +323,13 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
     def _build_args_info(self, args: list, kwargs: dict) -> list[ArgMeta]:
         """
         Constructs an ArgMeta list of args and kwargs based on function annotations.
-        
-                Args:
-                    args (list): Positional arguments.
-                    kwargs (dict): Named arguments.
-        
-                Returns:
-                    List[ArgMeta]: List of argument metadata.
+
+        Args:
+            args (list): Positional arguments.
+            kwargs (dict): Named arguments.
+
+        Returns:
+            List[ArgMeta]: List of argument metadata.
         """
         args_info: list[ArgMeta] = []
         func = self.task_func.func

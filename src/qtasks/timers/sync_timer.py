@@ -20,21 +20,21 @@ if TYPE_CHECKING:
 class SyncTimer(BaseTimer[Literal[False]]):
     """
     A timer running through apscheduler that starts tasks.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.timers import SyncTimer
-    
-        app = QueueTasks()
-        timer = SyncTimer(app=app)
-    
-        trigger = CronTrigger(second="*/10") # Trigger every 10 seconds
-        timer.add_task(task_name="test", trigger=trigger)
-    
-        timer.run_forever()
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.timers import SyncTimer
+
+    app = QueueTasks()
+    timer = SyncTimer(app=app)
+
+    trigger = CronTrigger(second="*/10") # Trigger every 10 seconds
+    timer.add_task(task_name="test", trigger=trigger)
+
+    timer.run_forever()
+    ```
     """
 
     def __init__(
@@ -70,11 +70,11 @@ class SyncTimer(BaseTimer[Literal[False]]):
     ):
         """
         Timer initialization.
-        
-                Args:
-                    app (QueueTasks): Application.
-                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
-                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+
+        Args:
+            app (QueueTasks): Application.
+            log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
         """
         super().__init__(app=app, log=log, config=config)
         self.app: QueueTasks
@@ -142,15 +142,15 @@ class SyncTimer(BaseTimer[Literal[False]]):
     ) -> Job:
         """
         Adding a task.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. Default is `0`.
-                    args (tuple, optional): task args. Defaults to `()`.
-                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
-        
-                Returns:
-                    Any|None: Task.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default is `0`.
+            args (tuple, optional): task args. Defaults to `()`.
+            kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+
+        Returns:
+            Any|None: Task.
         """
         self.tasks[task_name] = trigger
 
@@ -204,12 +204,12 @@ class SyncTimer(BaseTimer[Literal[False]]):
     ):
         """
         Run the added task synchronously.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. Default is `0`.
-                    args (tuple, optional): task args. Defaults to `()`.
-                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default is `0`.
+            args (tuple, optional): task args. Defaults to `()`.
+            kwargs (dict, optional): kwags tasks. Defaults to `{}`.
         """
         args, kwargs = args or (), kwargs or {}
         task = self.app.add_task(

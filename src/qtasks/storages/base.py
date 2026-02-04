@@ -40,17 +40,17 @@ if TYPE_CHECKING:
 class BaseStorage(Generic[TAsyncFlag], ABC):
     """
     `BaseStorage` - An abstract class that is the foundation for Storage.
-    
-        ## Example
-    
-        ```python
-        from qtasks.storages.base import BaseStorage
-    
-        class MyStorage(BaseStorage):
-            def __init__(self, name: str = None):
-                super().__init__(name=name)
-                pass
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks.storages.base import BaseStorage
+
+    class MyStorage(BaseStorage):
+        def __init__(self, name: str = None):
+            super().__init__(name=name)
+            pass
+    ```
     """
 
     def __init__(
@@ -108,13 +108,13 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     ):
         """
         Initializing the underlying storage.
-        
-                Args:
-                    name (str, optional): Project name. Default: `QueueTasks`.
-                    global_config (BaseGlobalConfig, optional): Global config. Default: `None`.
-                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
-                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
-                    events (BaseEvents, optional): Events. Default: `None`.
+
+        Args:
+            name (str, optional): Project name. Default: `QueueTasks`.
+            global_config (BaseGlobalConfig, optional): Global config. Default: `None`.
+            log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+            config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+            events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
         self.global_config: BaseGlobalConfig[TAsyncFlag] | None = global_config
@@ -201,10 +201,10 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Adding a task to the repository.
-        
-                Args:
-                    uuid (UUID | str): UUID of the task.
-                    task_status (TaskStatusNewSchema): The new task's status schema.
+
+        Args:
+            uuid (UUID | str): UUID of the task.
+            task_status (TaskStatusNewSchema): The new task's status schema.
         """
         pass
 
@@ -248,12 +248,12 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     ) -> Task | None | Awaitable[Task | None]:
         """
         Obtaining information about a task.
-        
-                Args:
-                    uuid (UUID|str): UUID of the task.
-        
-                Returns:
-                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
+
+        Args:
+            uuid (UUID|str): UUID of the task.
+
+        Returns:
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         pass
 
@@ -267,9 +267,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     def get_all(self) -> list[Task] | Awaitable[list[Task]]:
         """
         Get all tasks.
-        
-                Returns:
-                    List[Task]: Array of tasks.
+
+        Returns:
+            List[Task]: Array of tasks.
         """
         pass
 
@@ -313,9 +313,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Updates task information.
-        
-                Args:
-                    kwargs (dict, optional): task data of type kwargs.
+
+        Args:
+            kwargs (dict, optional): task data of type kwargs.
         """
         pass
 
@@ -405,10 +405,10 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Adds a task to the list of tasks in a process.
-        
-                Args:
-                    task_data (str): Task data from the broker.
-                    priority (int): Task priority.
+
+        Args:
+            task_data (str): Task data from the broker.
+            priority (int): Task priority.
         """
         pass
 
@@ -435,10 +435,10 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Add a plugin to the class.
-        
-                Args:
-                    plugin (BasePlugin): Plugin
-                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+
+        Args:
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -512,10 +512,10 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Updates storage data via the `self.storage.remove_finished_task` function.
-        
-                Args:
-                    task_broker (TaskPrioritySchema): The priority task schema.
-                    model (TaskStatusNewSchema | TaskStatusErrorSchema): Model of the task result.
+
+        Args:
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusNewSchema | TaskStatusErrorSchema): Model of the task result.
         """
         pass
 
@@ -544,9 +544,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Deletes all old tasks.
-        
-                Args:
-                    worker (BaseWorker): Worker component.
+
+        Args:
+            worker (BaseWorker): Worker component.
         """
         pass
 
@@ -563,9 +563,9 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Updates the broker config.
-        
-                Args:
-                    config (QueueConfig): Config.
+
+        Args:
+            config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -597,20 +597,18 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         if "traceback" in result:
             base_kwargs["traceback"] = result["traceback"]
 
-        # Вычисляем имена стандартных полей
+        # Get the names of standard fields
         task_field_names = {f.name for f in fields(Task)}
 
-        # Ищем дополнительные ключи
+        # Get extra fields and their types
         extra_fields = []
         extra_values = {}
 
         for key, value in result.items():
             if key not in task_field_names:
-                # Типизация примитивная — можно улучшить
                 field_type = self._infer_type(value)
                 extra_fields.append((key, field_type, field(default=None)))
 
-                # Можно привести значение к типу
                 if field_type is bool:
                     extra_values[key] = value.lower() == "true"
                 elif field_type is int:
@@ -620,13 +618,11 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
                 else:
                     extra_values[key] = value
 
-        # Создаем новый dataclass с дополнительными полями
         if extra_fields:
             NewTask = make_dataclass("Task", extra_fields, bases=(Task,))
         else:
             NewTask = Task
 
-        # Объединяем все аргументы
         task = NewTask(**base_kwargs, **extra_values)
         return task
 

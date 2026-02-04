@@ -12,18 +12,18 @@ from qtasks.enums.task_status import TaskStatusEnum
 class BaseTaskStatusSchema:
     """
     `BaseTaskStatusSchema` schema.
-    
-        Args:
-            status (str): Status.
-            task_name (str): Name.
-            priority (int): Priority.
-            args (Tuple[str]): Arguments of type args.
-            kwargs (Dict[str, str]): Arguments of type kwargs.
-    
-            created_at (float): Created date in `timestamp` format.
-            updated_at (float): Update date in `timestamp` format.
-            returning (str | None): Result. Default: `None`.
-            traceback (str | None): Trace errors. Default: `None`.
+
+    Args:
+        status (str): Status.
+        task_name (str): Name.
+        priority (int): Priority.
+        args (Tuple[str]): Arguments of type args.
+        kwargs (Dict[str, str]): Arguments of type kwargs.
+
+        created_at (float): Created date in `timestamp` format.
+        updated_at (float): Update date in `timestamp` format.
+        returning (str | None): Result. Default: `None`.
+        traceback (str | None): Trace errors. Default: `None`.
     """
 
     task_name: str = ""
@@ -47,9 +47,9 @@ class BaseTaskStatusSchema:
 class TaskStatusNewSchema(BaseTaskStatusSchema):
     """
     `TaskStatusNewSchema` schema.
-    
-        Args:
-            status (str): Status.
+
+    Args:
+        status (str): Status.
     """
 
     status: str = TaskStatusEnum.NEW.value
@@ -59,9 +59,9 @@ class TaskStatusNewSchema(BaseTaskStatusSchema):
 class TaskStatusProcessSchema(BaseTaskStatusSchema):
     """
     `TaskStatusProcessSchema` schema.
-    
-        Args:
-            status (str): Status.
+
+    Args:
+        status (str): Status.
     """
 
     status: str = TaskStatusEnum.PROCESS.value
@@ -71,10 +71,10 @@ class TaskStatusProcessSchema(BaseTaskStatusSchema):
 class TaskStatusSuccessSchema(BaseTaskStatusSchema):
     """
     `TaskStatusSuccessSchema` schema.
-    
-        Args:
-            status (str): Status.
-            returning (str): Result.
+
+    Args:
+        status (str): Status.
+        returning (str): Result.
     """
 
     status: str = TaskStatusEnum.SUCCESS.value
@@ -85,10 +85,10 @@ class TaskStatusSuccessSchema(BaseTaskStatusSchema):
 class TaskStatusErrorSchema(BaseTaskStatusSchema):
     """
     `TaskStatusErrorSchema` schema.
-    
-        Args:
-            status (str): Status.
-            traceback (str): Error tracing.
+
+    Args:
+        status (str): Status.
+        traceback (str): Error tracing.
     """
 
     status: str = TaskStatusEnum.ERROR.value
@@ -104,10 +104,10 @@ class TaskStatusErrorSchema(BaseTaskStatusSchema):
 class TaskStatusCancelSchema(BaseTaskStatusSchema):
     """
     `TaskStatusCancelSchema` schema.
-    
-        Args:
-            status (str): Status.
-            cancel_reason (str): Reason for canceling the task.
+
+    Args:
+        status (str): Status.
+        cancel_reason (str): Reason for canceling the task.
     """
 
     status: str = TaskStatusEnum.CANCEL.value

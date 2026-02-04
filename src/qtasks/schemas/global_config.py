@@ -7,10 +7,10 @@ from dataclasses import dataclass
 class GlobalConfigSchema:
     """
     `GlobalConfigSchema` schema.
-    
-        Args:
-            name (str): Name `GlobalConfig.name`.
-            status (str): Name `GlobalConfig.status`.
+
+    Args:
+        name (str): Name `GlobalConfig.name`.
+        status (str): Name `GlobalConfig.status`.
     """
 
     name: str

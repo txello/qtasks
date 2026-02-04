@@ -40,18 +40,18 @@ if TYPE_CHECKING:
 class BaseBroker(Generic[TAsyncFlag], ABC):
     """
     `BaseBroker` - An abstract class that is the foundation for Brokers.
-    
-        ## Example
-    
-        ```python
-        from qtasks import QueueTasks
-        from qtasks.brokers.base import BaseBroker
-    
-        class MyBroker(BaseBroker):
-            def __init__(self, name: str = None, storage: BaseStorage = None):
-                super().__init__(name=name, storage=storage)
-                pass
-        ```
+
+    ## Example
+
+    ```python
+    from qtasks import QueueTasks
+    from qtasks.brokers.base import BaseBroker
+
+    class MyBroker(BaseBroker):
+        def __init__(self, name: str = None, storage: BaseStorage = None):
+            super().__init__(name=name, storage=storage)
+            pass
+    ```
     """
 
     def __init__(
@@ -109,13 +109,13 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     ):
         """
         BaseBroker initialization.
-        
-                Args:
-                    name (str, optional): Project name. Default: `None`.
-                    storage (BaseStorage, optional): Storage. Default: `None`.
-                    log (Logger, optional): Logger. Default: `None`.
-                    config (QueueConfig, optional): Config. Default: `None`.
-                    events (BaseEvents, optional): Events. Default: `None`.
+
+        Args:
+            name (str, optional): Project name. Default: `None`.
+            storage (BaseStorage, optional): Storage. Default: `None`.
+            log (Logger, optional): Logger. Default: `None`.
+            config (QueueConfig, optional): Config. Default: `None`.
+            events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
         self.config = config or QueueConfig()
@@ -279,16 +279,16 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     ) -> Task | Awaitable[Task]:
         """
         Adding a task to the broker.
-        
-                Args:
-                    task_name (str): The name of the task.
-                    priority (int, optional): Task priority. By default: 0.
-                    extra (dict, optional): Additional task parameters.
-                    args (tuple, optional): Task arguments of type args.
-                    kwargs (dict, optional): Task arguments of type kwargs.
-        
-                Returns:
-                    Task: `schemas.task.Task`
+
+        Args:
+            task_name (str): The name of the task.
+            priority (int, optional): Task priority. Default: `0`.
+            extra (dict, optional): Additional task parameters. Default: `None`.
+            args (tuple, optional): Task arguments of type args. Default: `None`.
+            kwargs (dict, optional): Task arguments of type kwargs. Default: `None`.
+
+        Returns:
+            Task: `schemas.task.Task`
         """
         pass
 
@@ -332,12 +332,12 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     ) -> Task | None | Awaitable[Task | None]:
         """
         Obtaining information about a task.
-        
-                Args:
-                    uuid (UUID|str): UUID of the task.
-        
-                Returns:
-                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
+
+        Args:
+            uuid (UUID|str): UUID of the task.
+
+        Returns:
+            Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         pass
 
@@ -381,9 +381,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Updates task information.
-        
-                Args:
-                    kwargs (dict, optional): task data of type kwargs.
+
+        Args:
+            kwargs (dict, optional): task data of type kwargs.
         """
         pass
 
@@ -433,9 +433,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Launching the Broker. This function is enabled by the main `QueueTasks` instance via `run_forever`.
-        
-                Args:
-                    worker (BaseWorker, optional): Worker class. Default: `None`.
+
+        Args:
+            worker (BaseWorker, optional): Worker class. Default: `None`.
         """
         pass
 
@@ -467,9 +467,9 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Updates the broker config.
-        
-                Args:
-                    config (QueueConfig): Config.
+
+        Args:
+            config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -497,10 +497,10 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     ) -> None:
         """
         Add a plugin to the class.
-        
-                Args:
-                    plugin (BasePlugin): Plugin
-                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+
+        Args:
+            plugin (BasePlugin): Plugin
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -588,10 +588,10 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     ) -> None | Awaitable[None]:
         """
         Updates storage data via the `self.storage.remove_finished_task` function.
-        
-                Args:
-                    task_broker (TaskPrioritySchema): The priority task schema.
-                    model (TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Model of the task result.
+
+        Args:
+            task_broker (TaskPrioritySchema): The priority task schema.
+            model (TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Model of the task result.
         """
         pass
 
