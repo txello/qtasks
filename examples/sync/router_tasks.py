@@ -1,10 +1,10 @@
-from qtasks import Router
+from qtasks import SyncRouter
 
-router = Router(method="sync")
+router = SyncRouter()
 
 
 @router.task(
-    description="Тестовая задача маршрутизатора."
+    description="Test router task."
 )
 def router_test():
     print("router_test")

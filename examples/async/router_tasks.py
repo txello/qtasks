@@ -4,7 +4,7 @@ router = AsyncRouter()
 
 
 @router.task(
-    description="Тестовая задача маршрутизатора."
+    description="Router test task."
 )
 async def router_test():
     print("router_test")

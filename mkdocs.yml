@@ -434,4 +434,4 @@ nav:
 
 
 watch:
-  - src/qtasks  # Следить за изменениями в коде
+  - src/qtasks

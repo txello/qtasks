@@ -12,7 +12,7 @@ class MyState(AsyncState):
 @app.task
 async def step1(state: MyState):
     await state.set("state", "await_phone")
-    await state.update(step=1, prompt="Введите телефон")
+    await state.update(step=1, prompt="Enter your phone number")
     return "ok"
 
 

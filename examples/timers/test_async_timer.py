@@ -13,10 +13,10 @@ app.config.result_time_interval = 0.1
 
 @app.task(
     name="test",
-    description="Тестовая задача."
+    description="Test task"
 )
 async def test(num: int):
-    print(f"Число: {num}")
+    print(f"Number: {num}")
 
 
 timer = AsyncTimer(app=app)

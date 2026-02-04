@@ -11,7 +11,7 @@ app.config.delete_finished_tasks = True
 app.config.result_time_interval = 0.1
 
 @app.task(
-    description="Задача для тестирования нагрузки."
+    description="Task for load testing"
 )
 async def load_test_job(num: int):
     end_time = time.time()
@@ -37,14 +37,14 @@ async def main(num):
             result = await load_test_job.add_task(args=(i,))
             return result
         except asyncio.TimeoutError:
-            return f"Истекло время ожидания задачи {i}"
+            return f"Timeout for task {i}"
 
     tasks = [run_single_task(i) for i in range(num)]
 
     start = time.perf_counter()
     await asyncio.gather(*tasks)
     duration = time.perf_counter() - start
-    print(f"Выполнено {num} задач за {duration:.2f} секунд")
+    print(f"Completed {num} tasks in {duration:.2f} seconds")
 
 
 async def main2(num):
@@ -52,7 +52,7 @@ async def main2(num):
     for i in range(num):
         await load_test_job.add_task(args=(i,))
     end_time = time.time()
-    print(f"Выполнено: {num} задач за {(end_time - start_time):.2f} секунд")
+    print(f"Completed: {num} tasks in {(end_time - start_time):.2f} seconds")
 
 
 async def run():

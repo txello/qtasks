@@ -11,7 +11,7 @@ async def main():
     ]
     print(task_cls_list)
 
-    chain = await AsyncTaskUtils.chain(*task_cls_list)
+    chain = AsyncTaskUtils.chain(*task_cls_list)
     print(await chain.get(timeout=100)) # По умолчанию: 50
 
 

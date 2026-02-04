@@ -20,7 +20,7 @@ app.include_router(router_tasks.router)
 
 
 @app.task(
-    description="Задача для тестирования нагрузки."
+    description="Task for load testing"
 )
 async def load_test_job(num: int):
     end_time = time.time()
@@ -30,15 +30,15 @@ async def load_test_job(num: int):
 
 @app.task(
     name="test",
-    description="Тестовая задача."
+    description="Test Task."
 )
 async def test():
-    print("Это тестовая задача!")
+    print("It's a test task!")
 
 
 @app.task(
     name="test_num",
-    description="Тестовая задача с числом."
+    description="Test task with a number"
 )
 def test_num(number: int):
     print(f"Number: {number}")
@@ -47,18 +47,18 @@ def test_num(number: int):
 
 @app.task(
     name="test_echo",
-    description="Тестовая задача с выводом в консоль.",
+    description="Test task with console output",
     echo=True
 )
 async def test_echo(self: AsyncTask):
     task = await self.add_task(5, task_name="test_num", timeout=50)
     if task:
-        print(f"Задача {task.task_name}, результат: {task.returning}")
+        print(f"Task {task.task_name}, result: {task.returning}")
         return str(task)
 
 
 @app.task(
-    description="Тестовая задача с обработкой исключения ZeroDivisionError.",
+    description="Test task with exception handling",
     retry=5,
     retry_on_exc=[ZeroDivisionError]
 )
@@ -73,7 +73,7 @@ async def yield_func(result):
 
 
 @app.task(
-    description="Тестовая задача с генератором.",
+    description="Test task with generator",
     echo=True,
     generate_handler=yield_func
 )
@@ -85,12 +85,12 @@ async def test_yield(self: AsyncTask, n: int):
 
 
 @app.task(
-    description="Тестовая задача с повтором.",
+    description="Test task with retry",
     echo=True,
     retry=2
 )
 async def test_retry(self: AsyncTask):
-    self.ctx.get_logger().info("Повтор...")
+    self.ctx.get_logger().info("Retry...")
     raise KeyError("Test error")
 
 
@@ -100,7 +100,7 @@ class Item(pydantic.BaseModel):
 
 
 @app.task(
-    description="Тестовая задача с использованием Pydantic.",
+    description="Test task with Pydantic",
     tags=["example"],
     # echo=True,
     decode=json.dumps,
@@ -110,7 +110,7 @@ async def example_pydantic(item: Item):
 
 
 @app.task(
-    description="Тестовая задача для демонстрации работы с контекстом.",
+    description="Test task for demonstrating context usage",
     echo=True, tags=["test"], priority=1,
     retry=3, retry_on_exc=[KeyError], decode=json.dumps,
     # generate_handler=yield_func, executor=MyTaskExecutor,
@@ -120,7 +120,7 @@ async def example_pydantic(item: Item):
 async def test_echo_ctx(self: AsyncTask):
     # app = self.ctx._app - экземпляр QueueTasks
     # self.ctx.get_logger(name="NewName" или имя задачи)
-    self.ctx.get_logger().info("Это тестовая задача!")
+    self.ctx.get_logger().info("This is a test task!")
     await self.ctx.sleep(5)
     # task = await self.add_task(task_name="test", timeout=50)
     # worker = self.ctx.get_component("worker")
@@ -130,26 +130,26 @@ async def test_echo_ctx(self: AsyncTask):
     self.ctx.get_logger().info(
         f"""
             UUID: {self.ctx.task_uuid}
-            Имя: {self.task_name}
-            Теги: {self.tags}
-            Приоритет: {self.priority}
-            Дополнительные параметры: {self.extra}
+            Name: {self.task_name}
+            Tags: {self.tags}
+            Priority: {self.priority}
+            Additional parameters: {self.extra}
 
-            Повторений через параметр: {self.retry}
-            Исключения для повтора: {self.retry_on_exc}
-            Функция для декоратора: {self.ctx.generate_handler}
+            Retry count of the task: {self.retry}
+            Exceptions for repetition: {self.retry_on_exc}
+            Function for decorator: {self.ctx.generate_handler}
 
-            Вызван ли self: {self.echo}
-            Декордирование через параметр: {self.decode}
+            Is self caused: {self.echo}
+            Decoding via parameter: {self.decode}
 
-            TaskExecutor через параметр: {self.executor}
-            Миддлвари до: {self.middlewares_before}
-            Миддлвари после: {self.middlewares_after}
+            TaskExecutor via parameter: {self.executor}
+            Middleware before: {self.middlewares_before}
+            Middleware after: {self.middlewares_after}
             """
     )
-    self.ctx.cancel("Тестовая задача отменена")
-    # raise KeyError - вызовет повторное выполнение задачи. Если не указано retry_on_exc - реагирует на все.
-    # retry=3 - повторит ещё 3 раза.
+    self.ctx.cancel("Test task cancelled")
+    # raise KeyError - will cause the task to be executed again. If retry_on_exc is not specified, it will respond to all.
+    # retry=3 - repeat 3 more times.
     return "Hello, world!"
 
 

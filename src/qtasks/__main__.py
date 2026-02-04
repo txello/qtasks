@@ -73,25 +73,24 @@ def main():
     subparsers = parser.add_subparsers(dest="command")
 
     # subcommand: run
-    subparsers.add_parser("run", help="Запустить приложение")
+    subparsers.add_parser("run", help="Run the task queue app")
 
     # subcommand: web
-    subparsers.add_parser("web", help="Запустить WebView")
+    subparsers.add_parser("web", help="Run WebView")
 
     # subcommand: stats
-    stats_parser = subparsers.add_parser("stats", help="Инспекция статистики")
+    stats_parser = subparsers.add_parser("stats", help="Inspect statistics")
     stats_parser.add_argument(
-        "--stats-app", help="Объявленное приложение для статистики"
+        "--stats-app", help="Declared application for statistics (module:app)"
     )
     stats_subparsers = stats_parser.add_subparsers(dest="stats_command")
 
     # stats inspect <target> [*extra]
-    inspect_parser = stats_subparsers.add_parser("inspect", help="Инспектировать")
+    inspect_parser = stats_subparsers.add_parser("inspect", help="Inspect statistics")
     inspect_parser.add_argument(
-        "target", help="Метод инспекции (например: tasks, task, result)"
+        "target", help="Target to inspect (e.g., tasks, task, result)"
     )
-    inspect_parser.add_argument("extra", nargs="*", help="Дополнительные аргументы")
-
+    inspect_parser.add_argument("extra", nargs="*", help="Extra arguments")
     args = parser.parse_args()
 
     app = get_app(args.A)
@@ -110,7 +109,7 @@ def main():
 
     elif args.command == "stats":
         if not app:
-            parser.error("Не удалось получить экземпляр приложения!")
+            parser.error("QTasks app is required for stats!")
 
         stats = get_app(args.stats_app) if args.stats_app else SyncStats(app=app)  # type: ignore
 

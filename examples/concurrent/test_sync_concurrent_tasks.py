@@ -11,7 +11,7 @@ app.config.delete_finished_tasks = True
 app.config.result_time_interval = 0.1
 
 @app.task(
-    description="Задача для тестирования нагрузки."
+    description="Task for load testing"
 )
 def load_test_job(num: int):
     end_time = time.time()
@@ -37,7 +37,7 @@ def main(num):
             result = load_test_job.add_task(i)
             return result
         except TimeoutError:
-            return f"Истекло время ожидания задачи {i}"
+            return f"Timeout for task {i}"
 
     start = time.perf_counter()
     with ThreadPoolExecutor(max_workers=4) as executor:
@@ -45,7 +45,7 @@ def main(num):
         [f.result() for f in as_completed(futures)]
 
     duration = time.perf_counter() - start
-    print(f"Выполнено {num} задач за {duration:.2f} секунд")
+    print(f"Completed {num} tasks in {duration:.2f} seconds")
 
 
 def main2(num):
@@ -53,7 +53,7 @@ def main2(num):
     for i in range(num):
         load_test_job.add_task(i)
     end_time = time.time()
-    print(f"Выполнено: {num} задач за {(end_time - start_time):.2f} секунд")
+    print(f"Completed: {num} tasks in {(end_time - start_time):.2f} seconds")
 
 
 def run():

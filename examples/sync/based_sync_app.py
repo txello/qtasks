@@ -18,7 +18,7 @@ app.add_plugin(SyncTestPlugin(), trigger_names=["worker_execute_before", "worker
 
 @app.task(name="test")
 def test():
-    print("Это тестовая задача!")
+    print("It's a test task!")
 
 
 @app.task(name="test_num")
@@ -31,7 +31,7 @@ def test_num(number: int):
 def test_echo(self: SyncTask):
     task = self.add_task(task_name="test_num", args=(5,), timeout=50)
     if task:
-        print(f"Задача {task.task_name}, результат: {task.returning}")
+        print(f"Task {task.task_name}, Result: {task.returning}")
         return str(task)
 
 
