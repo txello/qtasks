@@ -23,10 +23,10 @@ if TYPE_CHECKING:
 
 
 class SyncPydanticWrapperPlugin(BasePlugin):
-    """Плагин для оборачивания аргументов в Pydantic-модель."""
+    """Plugin for wrapping arguments in a Pydantic model."""
 
     def __init__(self, *args, **kwargs):
-        """Инициализация плагина Pydantic."""
+        """Initializing the Pydantic plugin."""
         super().__init__(*args, **kwargs)
 
         self.handlers = {
@@ -35,15 +35,15 @@ class SyncPydanticWrapperPlugin(BasePlugin):
         }
 
     def start(self, *args, **kwargs):
-        """Запуск плагина Pydantic."""
+        """Launching the Pydantic plugin."""
         pass
 
     def stop(self, *args, **kwargs):
-        """Остановка плагина Pydantic."""
+        """Stopping the Pydantic plugin."""
         pass
 
     def trigger(self, name, task_executor, **kwargs):
-        """Триггер плагина."""
+        """Plugin trigger."""
         if name in self.handlers:
             return self.handlers[name](task_executor, **kwargs)
         return None
@@ -55,7 +55,7 @@ class SyncPydanticWrapperPlugin(BasePlugin):
         kw: dict,
         args_info: list[ArgMeta],
     ) -> dict | None:
-        """Заменяет аргументы на Pydantic-модели."""
+        """Replaces arguments with Pydantic models."""
         new_args, new_kwargs = args.copy(), kw.copy()
         echo = (
             new_args[0]
@@ -103,13 +103,13 @@ class SyncPydanticWrapperPlugin(BasePlugin):
         return None
 
     def replace_result(self, task_executor, result: Any) -> Any:
-        """Оборачивает результат в словарь, если это Pydantic-модель."""
+        """Wraps the result in a dictionary if it is a Pydantic model."""
         if isinstance(result, BaseModel):
             return {"result": result.model_dump()}
         return None
 
     def _model_class_from_meta(self, meta_or_ann, *, globalns=None, localns=None):
-        """Возвращает класс Pydantic-модели из аннотации ArgMeta или самой аннотации."""
+        """Returns the Pydantic model class from the ArgMeta annotation or the annotation itself."""
         ann = getattr(meta_or_ann, "annotation", meta_or_ann)
         if ann in (None, Any):
             return None
@@ -140,7 +140,7 @@ class SyncPydanticWrapperPlugin(BasePlugin):
         )
 
     def _add_missing_from_args(self, model_cls, data_kw, args: list):
-        """Добавляет недостающие значения из args по порядку."""
+        """Adds missing values ​​from args in order."""
         q = deque(args)
         for f in self._fields_order(model_cls):
             if f not in data_kw and q:

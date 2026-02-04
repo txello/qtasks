@@ -27,19 +27,19 @@ if TYPE_CHECKING:
 
 class BaseStarter(Generic[TAsyncFlag], ABC):
     """
-    `BaseStarter` - Абстрактный класс, который является фундаментом для Стартеров.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.starters.base import BaseStarter
-
-    class MyStarter(BaseStarter):
-        def __init__(self, name: str = None, broker = None, worker = None):
-            super().__init__(name=name, broker = None, worker = None)
-            pass
-    ```
+    `BaseStarter` - An abstract class that is the foundation for Starters.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.starters.base import BaseStarter
+    
+        class MyStarter(BaseStarter):
+            def __init__(self, name: str = None, broker = None, worker = None):
+                super().__init__(name=name, broker = None, worker = None)
+                pass
+        ```
     """
 
     def __init__(
@@ -105,15 +105,16 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ):
-        """Инициализация базового стартера.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: None.
-            broker (BaseBroker, optional): Брокер. По умолчанию: None.
-            worker (BaseWorker, optional): Воркер. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
-            events (BaseEvents, optional): События. По умолчанию: `None`.
+        """
+        Basic starter initialization.
+        
+                Args:
+                    name (str, optional): Project name. Default: None.
+                    broker (BaseBroker, optional): Broker. Default: None.
+                    worker (BaseWorker, optional): Worker. Default: None.
+                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+                    events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
         self.config = config or QueueConfig()
@@ -144,7 +145,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def start(self, *args, **kwargs) -> None:
-        """Запуск Стартера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`."""
+        """Starter launch. This function is enabled by the main `QueueTasks` instance via `run_forever`."""
         pass
 
     @overload
@@ -155,7 +156,7 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def stop(self) -> None | Awaitable[None]:
-        """Останавливает Стартер. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+        """Stops the Starter. This function is invoked by the main `QueueTasks` instance after the `run_forever` function completes."""
         pass
 
     def add_plugin(
@@ -179,11 +180,12 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
-
-        Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        Add a plugin to the class.
+        
+                Args:
+                    plugin (BasePlugin): Plugin
+                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -205,10 +207,11 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
             ),
         ],
     ):
-        """Обновить конфиги всем компонентам.
-
-        Args:
-            config (QueueConfig): Конфиг.
+        """
+        Update configs for all components.
+        
+                Args:
+                    config (QueueConfig): Config.
         """
         self.log.debug("Конфиг обновлен")
         if self.worker:
@@ -221,5 +224,5 @@ class BaseStarter(Generic[TAsyncFlag], ABC):
                     self.broker.storage.global_config.update_config(config)
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
         pass

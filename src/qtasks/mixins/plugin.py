@@ -1,4 +1,4 @@
-"""Миксин для работы с плагинами."""
+"""Mixin for working with plugins."""
 from __future__ import annotations
 
 import traceback
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 class SyncPluginMixin:
-    """Миксин для синхронной работы с плагинами."""
+    """Mixin for synchronous work with plugins."""
 
     plugins: dict[str, list[BasePlugin]]
     log: Optional[Logger] = None
@@ -60,16 +60,17 @@ class SyncPluginMixin:
         continue_on_fail: bool = False,
         **kwargs,
     ) -> list[dict[str, Any]] | dict[str, Any]:
-        """Триггер для запуска обработчика плагина.
-
-        Args:
-            name (str): Имя обработчика.
-            return_last (bool): Если True — вернуть только последний результат, если есть.
-            safe (bool): Если True — не игнорировать ошибки плагинов.
-            continue_on_fail (bool): Если True — продолжить выполнение других плагинов при ошибке.
-
-        Returns:
-            List[Dict[str, Any]]: Результаты выполнения обработчиков.
+        """
+        Trigger to run the plugin handler.
+        
+                Args:
+                    name (str): Handler name.
+                    return_last (bool): If True, return only the last result, if any.
+                    safe (bool): If True, do not ignore plugin errors.
+                    continue_on_fail (bool): If True, continue executing other plugins on error.
+        
+                Returns:
+                    List[Dict[str, Any]]: Results of executing handlers.
         """
         results = []
         kwargs_copy = kwargs.copy()
@@ -148,11 +149,12 @@ class SyncPluginMixin:
             ),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
-
-        Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        Add a plugin to the class.
+        
+                Args:
+                    plugin (BasePlugin): Plugin
+                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -165,7 +167,7 @@ class SyncPluginMixin:
 
 
 class AsyncPluginMixin:
-    """Миксин для асинхронной работы с плагинами."""
+    """Mixin for asynchronous work with plugins."""
 
     plugins: dict[str, list[BasePlugin[Literal[True]]]]
     log: Optional[Logger] = None
@@ -182,16 +184,17 @@ class AsyncPluginMixin:
         continue_on_fail: bool = False,
         **kwargs,
     ) -> dict[str, Any]:
-        """Триггер для запуска обработчика плагина.
-
-        Args:
-            name (str): Имя обработчика.
-            return_last (bool): Если True — вернуть только последний результат, если есть.
-            safe (bool): Если True — не игнорировать ошибки плагинов.
-            continue_on_fail (bool): Если True — продолжить выполнение других плагинов при ошибке.
-
-        Returns:
-            Dict[str, Any]: Последний результат выполнения обработчиков или пустой словарь.
+        """
+        Trigger to run the plugin handler.
+        
+                Args:
+                    name (str): Handler name.
+                    return_last (bool): If True, return only the last result, if any.
+                    safe (bool): If True, do not ignore plugin errors.
+                    continue_on_fail (bool): If True, continue executing other plugins on error.
+        
+                Returns:
+                    Dict[str, Any]: The last result of handler execution or an empty dictionary.
         """
         ...
 
@@ -205,16 +208,17 @@ class AsyncPluginMixin:
         continue_on_fail: bool = False,
         **kwargs,
     ) -> list[dict[str, Any]]:
-        """Триггер для запуска обработчика плагина.
-
-        Args:
-            name (str): Имя обработчика.
-            return_last (bool): Если True — вернуть только последний результат, если есть.
-            safe (bool): Если True — не игнорировать ошибки плагинов.
-            continue_on_fail (bool): Если True — продолжить выполнение других плагинов при ошибке.
-
-        Returns:
-            List[Dict[str, Any]]: Результаты выполнения обработчиков.
+        """
+        Trigger to run the plugin handler.
+        
+                Args:
+                    name (str): Handler name.
+                    return_last (bool): If True, return only the last result, if any.
+                    safe (bool): If True, do not ignore plugin errors.
+                    continue_on_fail (bool): If True, continue executing other plugins on error.
+        
+                Returns:
+                    List[Dict[str, Any]]: Results of executing handlers.
         """
         ...
 
@@ -227,16 +231,17 @@ class AsyncPluginMixin:
         continue_on_fail: bool = False,
         **kwargs,
     ) -> list[dict[str, Any]] | dict[str, Any]:
-        """Триггер для запуска обработчика плагина.
-
-        Args:
-            name (str): Имя обработчика.
-            return_last (bool): Если True — вернуть только последний результат, если есть.
-            safe (bool): Если True — не игнорировать ошибки плагинов.
-            continue_on_fail (bool): Если True — продолжить выполнение других плагинов при ошибке.
-
-        Returns:
-            List[Dict[str, Any]]: Результаты выполнения обработчиков.
+        """
+        Trigger to run the plugin handler.
+        
+                Args:
+                    name (str): Handler name.
+                    return_last (bool): If True, return only the last result, if any.
+                    safe (bool): If True, do not ignore plugin errors.
+                    continue_on_fail (bool): If True, continue executing other plugins on error.
+        
+                Returns:
+                    List[Dict[str, Any]]: Results of executing handlers.
         """
         results = []
         kwargs_copy = kwargs.copy()
@@ -315,11 +320,12 @@ class AsyncPluginMixin:
             ),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
-
-        Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        Add a plugin to the class.
+        
+                Args:
+                    plugin (BasePlugin): Plugin
+                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 

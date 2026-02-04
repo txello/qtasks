@@ -29,19 +29,19 @@ if TYPE_CHECKING:
 
 class BaseTestCase(Generic[TAsyncFlag], ABC):
     """
-    `BaseTestCase` - Абстрактный класс, который является фундаментом для TestCase.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.tests.base import BaseTestCase
-
-    class MyTestCase(BaseTestCase):
-        def __init__(self, app: QueueTasks, name: str|None = None):
-            super().__init__(app=app, name=name)
-            pass
-    ```
+    `BaseTestCase` - An abstract class that is the foundation for TestCase.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.tests.base import BaseTestCase
+    
+        class MyTestCase(BaseTestCase):
+            def __init__(self, app: QueueTasks, name: str|None = None):
+                super().__init__(app=app, name=name)
+                pass
+        ```
     """
 
     def __init__(
@@ -65,7 +65,7 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ):
-        """Инициализация тестового кейса."""
+        """Test case initialization."""
         self.app = app
 
         self.name = name
@@ -74,32 +74,32 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
 
     @overload
     def start(self: "BaseTestCase[Literal[False]]", **kwargs) -> None:
-        """Запускает кейс тестирования."""
+        """Launches a test case."""
         pass
 
     @overload
     async def start(self: "BaseTestCase[Literal[True]]", **kwargs) -> None:
-        """Запускает кейс тестирования."""
+        """Launches a test case."""
         pass
 
     @abstractmethod
     def start(self, **kwargs) -> None | Awaitable[None]:
-        """Запускает кейс тестирования."""
+        """Launches a test case."""
         pass
 
     @overload
     def stop(self: "BaseTestCase[Literal[False]]", **kwargs) -> None:
-        """Запускает кейс тестирования."""
+        """Launches a test case."""
         pass
 
     @overload
     async def stop(self: "BaseTestCase[Literal[True]]", **kwargs) -> None:
-        """Запускает кейс тестирования."""
+        """Launches a test case."""
         pass
 
     @abstractmethod
     def stop(self, **kwargs) -> None | Awaitable[None]:
-        """Останавливает кейс тестирования."""
+        """Stops the test case."""
         pass
 
     def update_config(
@@ -113,10 +113,11 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None:
-        """Обновляет конфиг брокера.
-
-        Args:
-            config (QueueConfig): Конфиг.
+        """
+        Updates the broker config.
+        
+                Args:
+                    config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -124,11 +125,12 @@ class BaseTestCase(Generic[TAsyncFlag], ABC):
     def settings(
         self, test_config: TestConfig | None = None, awaiting: bool | None = False
     ) -> None:
-        """Настройки тестирования.
-
-        Args:
-            test_config (TestConfig, optional): Конфиг тестирования. По умолчанию: `TestConfig()`.
-            awaiting (bool, optional): Использовать Async компоненты. По умолчанию: `False`.
+        """
+        Test settings.
+        
+                Args:
+                    test_config (TestConfig, optional): Test config. Default: `TestConfig()`.
+                    awaiting (bool, optional): Use Async components. Default: `False`.
         """
         if test_config:
             self.test_config = test_config

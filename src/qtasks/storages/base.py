@@ -39,18 +39,18 @@ if TYPE_CHECKING:
 
 class BaseStorage(Generic[TAsyncFlag], ABC):
     """
-    `BaseStorage` - Абстрактный класс, который является фундаментом для Хранилищ.
-
-    ## Пример
-
-    ```python
-    from qtasks.storages.base import BaseStorage
-
-    class MyStorage(BaseStorage):
-        def __init__(self, name: str = None):
-            super().__init__(name=name)
-            pass
-    ```
+    `BaseStorage` - An abstract class that is the foundation for Storage.
+    
+        ## Example
+    
+        ```python
+        from qtasks.storages.base import BaseStorage
+    
+        class MyStorage(BaseStorage):
+            def __init__(self, name: str = None):
+                super().__init__(name=name)
+                pass
+        ```
     """
 
     def __init__(
@@ -106,14 +106,15 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ):
-        """Инициализация базового хранилища.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: `QueueTasks`.
-            global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: `None`.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
-            events (BaseEvents, optional): События. По умолчанию: `None`.
+        """
+        Initializing the underlying storage.
+        
+                Args:
+                    name (str, optional): Project name. Default: `QueueTasks`.
+                    global_config (BaseGlobalConfig, optional): Global config. Default: `None`.
+                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+                    events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
         self.global_config: BaseGlobalConfig[TAsyncFlag] | None = global_config
@@ -198,11 +199,12 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None | Awaitable[None]:
-        """Добавление задачи в хранилище.
-
-        Args:
-            uuid (UUID | str): UUID задачи.
-            task_status (TaskStatusNewSchema): Схема статуса новой задачи.
+        """
+        Adding a task to the repository.
+        
+                Args:
+                    uuid (UUID | str): UUID of the task.
+                    task_status (TaskStatusNewSchema): The new task's status schema.
         """
         pass
 
@@ -244,13 +246,14 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> Task | None | Awaitable[Task | None]:
-        """Получение информации о задаче.
-
-        Args:
-            uuid (UUID|str): UUID задачи.
-
-        Returns:
-            Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
+        """
+        Obtaining information about a task.
+        
+                Args:
+                    uuid (UUID|str): UUID of the task.
+        
+                Returns:
+                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         pass
 
@@ -262,10 +265,11 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def get_all(self) -> list[Task] | Awaitable[list[Task]]:
-        """Получить все задачи.
-
-        Returns:
-            List[Task]: Массив задач.
+        """
+        Get all tasks.
+        
+                Returns:
+                    List[Task]: Array of tasks.
         """
         pass
 
@@ -307,10 +311,11 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None | Awaitable[None]:
-        """Обновляет информацию о задаче.
-
-        Args:
-            kwargs (dict, optional): данные задачи типа kwargs.
+        """
+        Updates task information.
+        
+                Args:
+                    kwargs (dict, optional): task data of type kwargs.
         """
         pass
 
@@ -322,7 +327,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def start(self) -> None | Awaitable[None]:
-        """Запускает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после запуске функции `run_forever`."""
+        """Starts the repository. This function is invoked by the main `QueueTasks` instance after the `run_forever` function is run."""
         pass
 
     @overload
@@ -333,7 +338,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def stop(self) -> None | Awaitable[None]:
-        """Останавливает хранилище. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+        """Stops storage. This function is invoked by the main `QueueTasks` instance after the `run_forever` function completes."""
         pass
 
     @overload
@@ -398,11 +403,12 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None | Awaitable[None]:
-        """Добавляет задачу в список задач в процессе.
-
-        Args:
-            task_data (str): Данные задачи из брокера.
-            priority (int): Приоритет задачи.
+        """
+        Adds a task to the list of tasks in a process.
+        
+                Args:
+                    task_data (str): Task data from the broker.
+                    priority (int): Task priority.
         """
         pass
 
@@ -427,11 +433,12 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
-
-        Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        Add a plugin to the class.
+        
+                Args:
+                    plugin (BasePlugin): Plugin
+                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -503,11 +510,12 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None | Awaitable[None]:
-        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
-
-        Args:
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusNewSchema | TaskStatusErrorSchema): Модель результата задачи.
+        """
+        Updates storage data via the `self.storage.remove_finished_task` function.
+        
+                Args:
+                    task_broker (TaskPrioritySchema): The priority task schema.
+                    model (TaskStatusNewSchema | TaskStatusErrorSchema): Model of the task result.
         """
         pass
 
@@ -518,7 +526,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     async def _delete_finished_tasks(self: BaseStorage[Literal[True]]) -> None: ...
 
     def _delete_finished_tasks(self) -> None | Awaitable[None]:
-        """Удаляет все завершенные задачи."""
+        """Deletes all completed tasks."""
         pass
 
     @overload
@@ -534,10 +542,11 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     def _running_older_tasks(
         self, worker: BaseWorker
     ) -> None | Awaitable[None]:
-        """Удаляет все старые задачи.
-
-        Args:
-            worker (BaseWorker): Компонент Worker.
+        """
+        Deletes all old tasks.
+        
+                Args:
+                    worker (BaseWorker): Worker component.
         """
         pass
 
@@ -552,10 +561,11 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None:
-        """Обновляет конфиг брокера.
-
-        Args:
-            config (QueueConfig): Конфиг.
+        """
+        Updates the broker config.
+        
+                Args:
+                    config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -567,7 +577,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
     async def flush_all(self: BaseStorage[Literal[True]]) -> None: ...
 
     def flush_all(self) -> None | Awaitable[None]:
-        """Удалить все данные."""
+        """Delete all data."""
         pass
 
     def _build_task(self, uuid, result: dict) -> Task:
@@ -621,7 +631,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         return task
 
     def _infer_type(self, value: str):
-        """Пытается определить реальный тип из строки."""
+        """Tries to determine the real type from a string."""
         if value.lower() in {"true", "false"}:
             return bool
         try:
@@ -637,5 +647,5 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         return str
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
         pass

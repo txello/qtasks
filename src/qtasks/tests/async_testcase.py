@@ -18,18 +18,18 @@ if TYPE_CHECKING:
 
 class AsyncTestCase(BaseTestCase[Literal[True]]):
     """
-    Асинхронный кейс тестирования.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.tests import AsyncTestCase
-
-    app = QueueTasks()
-
-    test_case = AsyncTestCase(app=app)
-    ```
+    Asynchronous testing case.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.tests import AsyncTestCase
+    
+        app = QueueTasks()
+    
+        test_case = AsyncTestCase(app=app)
+        ```
     """
 
     def __init__(
@@ -53,11 +53,12 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             ),
         ] = None,
     ):
-        """Асинхронный тестовый кейс.
-
-        Args:
-            app (QueueTasks, Doc): Основной экземпляр.
-            name (str, optional): Имя проекта. Это имя может быть использовано для тестовых компонентов. По умолчанию: `None`.
+        """
+        Asynchronous test case.
+        
+                Args:
+                    app(QueueTasks, Doc): Main instance.
+                    name (str, optional): Project name. This name can be used for test components. Default: `None`.
         """
         super().__init__(app=app, name=name)
         self.app: QueueTasks
@@ -97,12 +98,13 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             ),
         ] = True,
     ):  # TODO: fix!
-        """Запустить `app.run_forever()` в фоновом режиме.
-
-        Args:
-            starter (BaseStarter, optional): Стартер. По умолчанию: `qtasks.starters.AsyncStarter`.
-            num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
-            reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
+        """
+        Run `app.run_forever()` in the background.
+        
+                Args:
+                    starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
+                    num_workers (int, optional): Number of workers running. Default: 4.
+                    reset_config (bool, optional): Update the config of the worker and broker. Default: True.
         """
 
         def run_loop():
@@ -159,13 +161,14 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             ),
         ] = True,
     ) -> None:
-        """Запускает `app.run_forever()`.
-
-        Args:
-            loop (asyncio.AbstractEventLoop, optional): асинхронный loop. По умолчанию: None.
-            starter (BaseStarter, optional): Стартер. По умолчанию: `qtasks.starters.AsyncStarter`.
-            num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
-            reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
+        """
+        Runs `app.run_forever()`.
+        
+                Args:
+                    loop (asyncio.AbstractEventLoop, optional): async loop. Default: None.
+                    starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
+                    num_workers (int, optional): Number of workers running. Default: 4.
+                    reset_config (bool, optional): Update the config of the worker and broker. Default: True.
         """
         self.app.run_forever(
             loop=loop,
@@ -175,7 +178,7 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
         )
 
     async def stop(self):
-        """Останавливает кейс тестирования."""
+        """Stops the test case."""
         if self.test_config.global_config and self.app.broker.storage.global_config:
             await self.app.broker.storage.global_config.stop()
 
@@ -240,18 +243,19 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             ),
         ],
     ) -> Union["Task", None]:
-        """Добавить задачу.
-
-        Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умолчанию: `0`.
-            args (tuple, optional): args задачи. По умолчанию: `()`.
-            kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`
-
-            timeout (float, optional): Таймаут задачи. Если указан, задача вызывается через `qtasks.results.AsyncResult`.
-
-        Returns:
-            Task|None: Данные задачи или None.
+        """
+        Add a task.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    priority (int, optional): Task priority. Default: `0`.
+                    args (tuple, optional): task args. Default: `()`.
+                    kwargs (dict, optional): kwargs of tasks. Default: `{}`
+        
+                    timeout (float, optional): Task timeout. If specified, the task is called via `qtasks.results.AsyncResult`.
+        
+                Returns:
+                    Task|None: Task data or None.
         """
         if self.test_config.broker:
             return await self.app.add_task(
@@ -283,13 +287,14 @@ class AsyncTestCase(BaseTestCase[Literal[True]]):
             ),
         ],
     ) -> Union["Task", None]:
-        """Получить задачу.
-
-        Args:
-            uuid (UUID|str): UUID Задачи.
-
-        Returns:
-            Task|None: Данные задачи или None.
+        """
+        Get a task.
+        
+                Args:
+                    uuid (UUID|str): UUID of the Task.
+        
+                Returns:
+                    Task|None: Task data or None.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)

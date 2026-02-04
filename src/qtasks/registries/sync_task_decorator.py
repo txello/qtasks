@@ -25,21 +25,22 @@ if TYPE_CHECKING:
 
 
 class SyncTask(Generic[P, R]):
-    """`SyncTask` - класс для замены функции декоратором `@app.task` и `@shared_task`.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-
-    app = QueueTasks()
-
-    @app.task("test")
-    def test():
-        print("Это тест!")
-
-    test.add_task()
-    ```
+    """
+    `SyncTask` - a class for replacing a function with a `@app.task` and `@shared_task` decorator.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+    
+        app = QueueTasks()
+    
+        @app.task("test")
+        def test():
+            print("This is a test!")
+    
+        test.add_task()
+        ```
     """
 
     def __init__(
@@ -193,24 +194,25 @@ class SyncTask(Generic[P, R]):
             ),
         ] = None,
     ):
-        """Инициализация синхронной задачи.
-
-        Args:
-            task_name (str, optional): Имя задачи. По умолчанию: `None`.
-            priority (int, optional): Приоритет задачи. По умолчанию: `None`.
-            echo (bool, optional): Добавить SyncTask первым параметром. По умолчанию: `False`.
-            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
-            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
-            description (str, optional): Описание задачи. По умолчанию: `None`.
-            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
-            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `None`.
-            middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены перед задачей. По умолчанию: `Пустой массив`.
-            middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
-            extra (Dict[str, Any], optional): Дополнительные параметры. По умолчанию: `Пустой словарь`.
-            app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: `None`.
+        """
+        Initializing a synchronous task.
+        
+                Args:
+                    task_name (str, optional): Task name. Default: `None`.
+                    priority (int, optional): Task priority. Default: `None`.
+                    echo (bool, optional): Add SyncTask as the first parameter. Default: `False`.
+                    max_time (float, optional): The maximum time the task will take to complete in seconds. Default: `None`.
+                    retry (int, optional): Number of attempts to retry the task. Default: `None`.
+                    retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+                    decode (Callable, optional): Decoder of the task result. Default: `None`.
+                    tags (List[str], optional): Task tags. Default: `None`.
+                    description (str, optional): Description of the task. Default: `None`.
+                    generate_handler (Callable, optional): Handler generator. Default: `None`.
+                    executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `None`.
+                    middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
+                    middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
+                    extra (Dict[str, Any], optional): Additional parameters. Default: `Empty dictionary`.
+                    app (QueueTasks, optional): `QueueTasks` instance. Default: `None`.
         """
         self.task_name = task_name
         self.priority = priority
@@ -294,20 +296,21 @@ class SyncTask(Generic[P, R]):
             ),
         ],
     ) -> Union[Task, None]:
-        """Добавить задачу.
-
-        Args:
-            priority (int, optional): Приоритет задачи. По умолчанию: Значение приоритета у задачи.
-            args (tuple, optional): args задачи. По умолчанию: `()`.
-            kwargs (dict, optional): kwargs задачи. По умолчанию: `{}`.
-            timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.SyncTask`.
-            task_name (str, optional): Имя задачи. По умолчанию: Значение имени у задачи.
-
-        Returns:
-            Task|None: Результат задачи или `None`.
-
-        Raises:
-            ValueError: Не указано имя задачи.
+        """
+        Add a task.
+        
+                Args:
+                    priority (int, optional): Task priority. Default: Task priority value.
+                    args (tuple, optional): task args. Default: `()`.
+                    kwargs (dict, optional): kwargs of tasks. Default: `{}`.
+                    timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.SyncTask`.
+                    task_name (str, optional): Task name. Default: The value of the task name.
+        
+                Returns:
+                    Task|None: Result of the task or `None`.
+        
+                Raises:
+                    ValueError: Task name not specified.
         """
         if not task_name and not self.task_name:
             raise ValueError("Не указано имя задачи.")

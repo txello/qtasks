@@ -10,25 +10,26 @@ from qtasks.logs import Logger
 
 class SyncRedisCommandQueue:
     """
-    `SyncRedisCommandQueue` - Асинхронный класс для работы с `Redis`.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.contrib.redis import SyncRedisCommandQueue
-
-    redis_contrib = SyncRedisCommandQueue(redis)
-    redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
-    ```
+    `SyncRedisCommandQueue` - Asynchronous class for working with `Redis`.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.contrib.redis import SyncRedisCommandQueue
+    
+        redis_contrib = SyncRedisCommandQueue(redis)
+        redis_contrib.execute("hset", kwargs["name"], mapping=kwargs["mapping"])
+        ```
     """
 
     def __init__(self, redis: redis.Redis, log: Logger | None = None):
-        """Экземпляр класса.
-
-        Args:
-            redis (redis.asyncio.Redis): класс `Redis`.
-            log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
+        """
+        An instance of a class.
+        
+                Args:
+                    redis (redis.asyncio.Redis): class `Redis`.
+                    log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
         """
         self.log = self._get_log(log)
         self.redis = redis
@@ -55,12 +56,13 @@ class SyncRedisCommandQueue:
             self.worker_thread = None
 
     def execute(self, cmd: str, *args, **kwargs):
-        """Запрос в `Redis`.
-
-        Args:
-            cmd (str): Команда.
-            args(tuple, optional): Параметры к команде через *args.
-            kwargs(dict, optional): Параметры к команде через *args.
+        """
+        Query in `Redis`.
+        
+                Args:
+                    cmd (str): Command.
+                    args(tuple, optional): Parameters to the command via *args.
+                    kwargs(dict, optional): Parameters to the command via *args.
         """
         self.queue.put((cmd, args, kwargs))
         with self.lock:

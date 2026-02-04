@@ -26,19 +26,19 @@ if TYPE_CHECKING:
 
 class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     """
-    `BaseGlobalConfig` - Абстрактный класс, который является фундаментом для Глобального Конфига.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.configs.base import BaseGlobalConfig
-
-    class MyGlobalConfig(BaseGlobalConfig):
-        def __init__(self, name: str = None):
-            super().__init__(name=name)
-            pass
-    ```
+    `BaseGlobalConfig` - An abstract class that is the foundation for the Global Config.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.configs.base import BaseGlobalConfig
+    
+        class MyGlobalConfig(BaseGlobalConfig):
+            def __init__(self, name: str = None):
+                super().__init__(name=name)
+                pass
+        ```
     """
 
     def __init__(
@@ -84,13 +84,14 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ):
-        """Инициализация контекста.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: `None`.
-            log (Logger, optional): Логгер. По умолчанию: `None`.
-            config (QueueConfig, optional): Конфигурация. По умолчанию: `None`.
-            events (BaseEvents, optional): События. По умолчанию: `None`.
+        """
+        Initializing the context.
+        
+                Args:
+                    name (str, optional): Project name. Default: `None`.
+                    log (Logger, optional): Logger. Default: `None`.
+                    config (QueueConfig, optional): Configuration. Default: `None`.
+                    events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
         self.config_name: str | None = None
@@ -120,10 +121,11 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def set(self, **kwargs) -> None | Awaitable[None]:
-        """Добавить новое значение.
-
-        Args:
-            kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
+        """
+        Add new value.
+        
+                Args:
+                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
         """
         pass
 
@@ -137,14 +139,15 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def get(self, key: str, name: str) -> Any | Awaitable[Any]:
-        """Получить значение.
-
-        Args:
-            key (str): Ключ.
-            name (str): Имя.
-
-        Returns:
-            Any: Значение.
+        """
+        Get value.
+        
+                Args:
+                    key (str): Key.
+                    name (str): Name.
+        
+                Returns:
+                    Any: Meaning.
         """
         pass
 
@@ -162,13 +165,14 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     def get_all(
         self, key: str
     ) -> dict | list | tuple | Awaitable[dict | list | tuple]:
-        """Получить все значения.
-
-        Args:
-            key (str): Ключ.
-
-        Returns:
-            Dict[str, Any] | List[Any] | Tuple[Any]: Значения.
+        """
+        Get all values.
+        
+                Args:
+                    key (str): Key.
+        
+                Returns:
+                    Dict[str, Any] | List[Any] | Tuple[Any]: Values.
         """
         pass
 
@@ -182,13 +186,14 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
     def get_match(
         self, match: str
     ) -> dict | list | tuple | Awaitable[dict | list | tuple]:
-        """Получить значения по паттерну.
-
-        Args:
-            match (str): Паттерн.
-
-        Returns:
-            Any | Dict[str, Any] | List[Any] | Tuple[Any]: Значение или Значения.
+        """
+        Get values ​​by pattern.
+        
+                Args:
+                    match (str): Pattern.
+        
+                Returns:
+                    Any | Dict[str, Any] | List[Any] | Tuple[Any]: Value or Values.
         """
         pass
 
@@ -200,7 +205,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def start(self) -> None | Awaitable[None]:
-        """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
+        """Launching the Broker. This function is enabled by the main instance of `QueueTasks` via `run_forever."""
         pass
 
     @overload
@@ -211,7 +216,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def stop(self) -> None | Awaitable[None]:
-        """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever."""
+        """Stops Global Config. This function is invoked by the main instance of `QueueTasks` after the `run_forever' function completes."""
         pass
 
     def update_config(
@@ -225,10 +230,11 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None:
-        """Обновляет конфиг брокера.
-
-        Args:
-            config (QueueConfig): Конфиг.
+        """
+        Updates the broker config.
+        
+                Args:
+                    config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -254,11 +260,12 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
-
-        Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        Add a plugin to the class.
+        
+                Args:
+                    plugin (BasePlugin): Plugin
+                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -270,5 +277,5 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         return
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
         pass

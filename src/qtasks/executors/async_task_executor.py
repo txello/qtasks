@@ -26,19 +26,19 @@ if TYPE_CHECKING:
 
 class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
     """
-    `AsyncTaskExecutor` - Синхронный класс исполнителя задач. Используется по умолчанию в `AsyncWorker`.
-
-    ## Пример
-
-    ```python
-    import asyncio
-    from qtasks.executors import AsyncTaskExecutor
-
-    task_func = TaskExecSchema(...)
-    task_broker = TaskPrioritySchema(...)
-    executor = AsyncTaskExecutor(task_func, task_broker)
-    result = asyncio.run(executor.execute())
-    ```
+    `AsyncTaskExecutor` - Synchronous task executor class. Used by default in `AsyncWorker`.
+    
+        ## Example
+    
+        ```python
+        import asyncio
+        from qtasks.executors import AsyncTaskExecutor
+    
+        task_func = TaskExecSchema(...)
+        task_broker = TaskPrioritySchema(...)
+        executor = AsyncTaskExecutor(task_func, task_broker)
+        result = asyncio.run(executor.execute())
+        ```
     """
 
     def __init__(
@@ -80,13 +80,14 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             ),
         ] = None,
     ):
-        """Инициализация класса. Происходит внутри `Worker` перед обработкой задачи.
-
-        Args:
-            task_func (TaskExecSchema): Схема `TaskExecSchema`.
-            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-            log (Logger, optional): класс `qtasks.logs.Logger`. По умолчанию: `qtasks._state.log_main`.
-            plugins (Dict[str, List[BasePlugin]], optional): Массив плагинов. По умолчанию: `Пустой массив`.
+        """
+        Initializing the class. Occurs inside a `Worker` before a task is processed.
+        
+                Args:
+                    task_func (TaskExecSchema): Schema `TaskExecSchema`.
+                    task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
+                    log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
+                    plugins (Dict[str, List[BasePlugin]], optional): An array of plugins. Default: `Empty array`.
         """
         super().__init__(
             task_func=task_func,
@@ -96,7 +97,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         )
 
     async def before_execute(self):
-        """Вызывается перед выполнением задачи."""
+        """Called before a task is executed."""
         if self.task_func.echo:
             task_cls = (
                 SyncTask
@@ -139,7 +140,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         await self._plugin_trigger("task_executor_before_execute", task_executor=self)
 
     async def after_execute(self):
-        """Вызов после запуска задач."""
+        """Call after starting tasks."""
         await self._plugin_trigger("task_executor_after_execute", task_executor=self)
         result: Any = await self._plugin_trigger(
             "task_executor_after_execute_result_replace",
@@ -152,7 +153,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         return
 
     async def execute_middlewares_before(self):
-        """Вызов мидлварей до выполнения задачи."""
+        """Calling middleware before the task is completed."""
         await self._plugin_trigger(
             "task_executor_middlewares_execute",
             task_executor=self,
@@ -167,7 +168,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
     async def execute_middlewares_after(self):
-        """Вызов мидлварей после выполнения задачи."""
+        """Calling middleware after completing a task."""
         await self._plugin_trigger(
             "task_executor_middlewares_execute",
             task_executor=self,
@@ -182,10 +183,11 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                 self.log.debug(f"Middleware {m.name} для {self.task_func.name} был вызван.")
 
     async def run_task(self) -> Any:
-        """Вызов задачи.
-
-        Returns:
-            Any: Результат задачи.
+        """
+        Calling a task.
+        
+                Returns:
+                    Any: Result of the task.
         """
         if self._args and self._kwargs:
             result = (
@@ -224,13 +226,14 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         return result
 
     async def run_task_gen(self, func: AsyncGenerator | Generator) -> list[Any]:
-        """Вызов генератора задачи.
-
-        Args:
-            func (AsyncGenerator, Generator): Функция.
-
-        Returns:
-            Any: Результат задачи.
+        """
+        Calling the task generator.
+        
+                Args:
+                    func(AsyncGenerator, Generator): Function.
+        
+                Returns:
+                    Any: Result of the task.
         """
         if self.echo:
             self.echo.ctx._update(generate_handler=self.task_func.generate_handler)
@@ -270,13 +273,14 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         return value
 
     async def execute(self, decode: bool = True) -> Any | str:
-        """Вызов задачи.
-
-        Args:
-            decode (bool, optional): Декодирование результата задачи. По умолчанию: True.
-
-        Returns:
-            Any|str: Результат задачи.
+        """
+        Calling a task.
+        
+                Args:
+                    decode (bool, optional): Decoding the result of the task. Default: True.
+        
+                Returns:
+                    Any|str: Result of the task.
         """
         if self.log:
             self.log.debug(f"Вызван execute для {self.task_func.name}")
@@ -323,10 +327,11 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
         return self._result
 
     async def decode(self) -> Any:
-        """Декодирование задачи.
-
-        Returns:
-            Any: Результат задачи.
+        """
+        Decoding the task.
+        
+                Returns:
+                    Any: Result of the task.
         """
         if self.task_func.decode is not None:
             result = await self._maybe_await(self.task_func.decode(self._result))

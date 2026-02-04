@@ -1,4 +1,4 @@
-"""Логирование."""
+"""Logging."""
 from __future__ import annotations
 
 import logging
@@ -9,19 +9,19 @@ from typing_extensions import Doc
 
 class Logger:
     """
-    `Logger` - Класс логирования, используется всеми компонентами.
-
-    ## Example
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.logs import Logger
-
-    logger = Logger(name="QueueTasks", subname="Global")
-    app = QueueTasks(log=logger)
-
-    app.log.debug("Тест") # asctime [QueueTasks: DEBUG] (QueueTasks) Тест
-    ```
+    `Logger` - Logging class, used by all components.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.logs import Logger
+    
+        logger = Logger(name="QueueTasks", subname="Global")
+        app = QueueTasks(log=logger)
+    
+        app.log.debug("Test") # asctime [QueueTasks: DEBUG] (QueueTasks) Test
+        ```
     """
 
     def __init__(
@@ -65,13 +65,14 @@ class Logger:
             ),
         ] = None,
     ):
-        """Экземпляр Logger.
-
-        Args:
-            name (str): Имя. Используется в шаблоне `%(name)s`.
-            subname (str, optional): Имя компонента. По умолчанию: None.
-            default_level (int, optional): Level по умолчанию. По умолчанию: `logging.DEBUG`.
-            format (str, optional): Формат логирования. По умолчанию: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`.
+        """
+        Logger instance.
+        
+                Args:
+                    name (str): Name. Used in the `%(name)s` pattern.
+                    subname (str, optional): Component name. Default: None.
+                    default_level (int, optional): Default level. Default: `logging.DEBUG`.
+                    format (str, optional): Logging format. Default: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`.
         """
         self.name = name
         self.name = name
@@ -118,15 +119,16 @@ class Logger:
         default_level: int | None = None,
         format: str | None = None,
     ) -> Logger:
-        """Обновляем `subname`.
-
-        Args:
-            new_subname (str): Новый `subname`.
-            default_level (int, optional): Новый уровень логирования. По умолчанию: `None`.
-            format (str, optional): Новый формат логирования. По умолчанию: `None`.
-
-        Returns:
-            Logger: Новый `Logger`.
+        """
+        Update `subname`.
+        
+                Args:
+                    new_subname (str): New `subname`.
+                    default_level (int, optional): New logging level. Default: `None`.
+                    format (str, optional): New logging format. Default: `None`.
+        
+                Returns:
+                    Logger: New `Logger`.
         """
         return Logger(
             self.name,
@@ -136,13 +138,14 @@ class Logger:
         )
 
     def update_logger(self, **kwargs) -> Logger:
-        """Обновляем `Logger`.
-
-        Args:
-            kwargs (dict): Новые данные задачи.
-
-        Returns:
-            Logger: Новый `Logger`.
+        """
+        Update `Logger`.
+        
+                Args:
+                    kwargs (dict): New task data.
+        
+                Returns:
+                    Logger: New `Logger`.
         """
         name = kwargs.get("name") or self.name
         subname = kwargs.get("subname") or self.subname

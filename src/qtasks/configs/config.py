@@ -12,24 +12,24 @@ from qtasks.enums.task_status import TaskStatusEnum
 @dataclass
 class QueueConfig:
     """
-    Конфигурация очередей задач.
-
-    Attributes:
-        max_tasks_process (int): Максимум задач в процессе. По умолчанию: `10`
-        running_older_tasks (bool): Запустить прошлые задачи. По умолчанию: `False`
-        delete_finished_tasks (bool): Удаление выполненных задач. По умолчанию: `False`
-
-        task_default_priority (int): Приоритет задач по умолчанию. По умолчанию: `0`
-        task_default_decode (Callable | None): Декодер результата задачи по умолчанию. По умолчанию: `None`
-
-        logs_default_level_server (int): Уровень логирования для сервера. По умолчанию: `logging.INFO (20)`
-        logs_default_level_client (int | None): Уровень логирования для клиента. По умолчанию: `logging.INFO (20)`
-        logs_format (str): Формат логирования. По умолчанию: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`
-
-        result_time_interval (float): Интервал времени для результатов. По умолчанию: `1.0`
-        result_statuses_end (list[str]): Статусы завершения результатов. По умолчанию: `["success", "error", "cancel"]`
-
-        environ_prefix (str): Префикс для переменных окружения. По умолчанию: `QTASKS_`
+    Configuration of task queues.
+    
+        Attributes:
+            max_tasks_process (int): Maximum tasks in process. Default: `10`
+            running_older_tasks (bool): Run past tasks. Default: `False`
+            delete_finished_tasks (bool): Deleting completed tasks. Default: `False`
+    
+            task_default_priority (int): Default task priority. Default: `0`
+            task_default_decode (Callable | None): Default task result decoder. Default: `None`
+    
+            logs_default_level_server (int): Logging level for the server. Default: `logging.INFO(20)`
+            logs_default_level_client (int | None): Logging level for the client. Default: `logging.INFO(20)`
+            logs_format (str): Logging format. Default: `%(asctime)s [%(name)s: %(levelname)s] (%(subname)s) %(message)s`
+    
+            result_time_interval (float): Time interval for results. Default: `1.0`
+            result_statuses_end (list[str]): Results end statuses. Default: `["success", "error", "cancel"]`
+    
+            environ_prefix (str): Prefix for environment variables. Default: `QTASKS_`
     """
 
     max_tasks_process: int = 10
@@ -65,7 +65,7 @@ class QueueConfig:
     )
 
     def subscribe(self, callback: Callable[["QueueConfig", str, Any], None]):
-        """Подписка на изменение."""
+        """Subscribe to change."""
         self._callbacks.append(callback)
 
     def _notify(self, key: str, value: Any):
@@ -73,7 +73,7 @@ class QueueConfig:
             callback(self, key, value)
 
     def __getattr__(self, item):
-        """Получение атрибута."""
+        """Getting an attribute."""
         # Проверяем динамические поля
         if item in self._dynamic_fields:
             return self._dynamic_fields[item]
@@ -81,7 +81,7 @@ class QueueConfig:
         raise AttributeError(f"{type(self).__name__} has no attribute '{item}'")
 
     def __setattr__(self, key, value):
-        """Установка атрибута."""
+        """Setting the attribute."""
         # Для полей dataclass
         if key in self.__annotations__:
             object.__setattr__(self, key, value)
@@ -99,7 +99,7 @@ class QueueConfig:
             self._notify(key, value)
 
     def __post_init__(self):
-        """Инициализация после создания."""
+        """Initialization after creation."""
         env_vars = self._get_env_all()
         for key, value in env_vars.items():
             attr_key = key[len(self.environ_prefix) :].lower()
@@ -116,5 +116,5 @@ class QueueConfig:
 
 
     def _get_env_all(self) -> dict[str, Any]:
-        """Получение переменных окружения с префиксом."""
+        """Getting environment variables with prefix."""
         return {k: v for k, v in os.environ.items() if k.startswith(self.environ_prefix)}

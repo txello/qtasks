@@ -11,14 +11,14 @@ if TYPE_CHECKING:
 
 
 class BaseStats(ABC): # noqa: B024
-    """Base класс для всех статистик."""
+    """Base class for all statistics."""
 
     def __init__(
             self,
             app: Union[QueueTasks, aioQueueTasks],
             plugins: dict[str, list[BasePlugin]] | None = None
         ):
-        """Инициализация базовой статистики."""
+        """Initialize basic statistics."""
         self.app = app
 
         self.plugins: dict[str, list[BasePlugin]] = plugins or {}

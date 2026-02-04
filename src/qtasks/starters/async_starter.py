@@ -23,24 +23,24 @@ if TYPE_CHECKING:
 
 class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
     """
-    Стартер, запускающий Компоненты.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.brokers import AsyncRedisBroker
-    from qtasks.workers import AsyncWorker
-    from qtasks.starters import AsyncStarter
-
-    broker = AsyncRedisBroker(name="QueueTasks", url="redis://localhost:6379/2")
-    worker = AsyncWorker(name="QueueTasks", broker=broker)
-
-    app = QueueTasks(worker=worker, broker=broker)
-
-    starter = AsyncStarter(name="QueueTasks", worker=worker, broker=broker)
-    app.run_forever(starter=starter)
-    ```
+    Starter that starts the Components.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.brokers import AsyncRedisBroker
+        from qtasks.workers import AsyncWorker
+        from qtasks.starters import AsyncStarter
+    
+        broker = AsyncRedisBroker(name="QueueTasks", url="redis://localhost:6379/2")
+        worker = AsyncWorker(name="QueueTasks", broker=broker)
+    
+        app = QueueTasks(worker=worker, broker=broker)
+    
+        starter = AsyncStarter(name="QueueTasks", worker=worker, broker=broker)
+        app.run_forever(starter=starter)
+        ```
     """
 
     def __init__(
@@ -106,15 +106,16 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
     ):
-        """Инициализация асинхронного стартера.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: None.
-            broker (BaseBroker, optional): Брокер. По умолчанию: None.
-            worker (BaseWorker, optional): Воркер. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
+        """
+        Initialization of an asynchronous starter.
+        
+                Args:
+                    name (str, optional): Project name. Default: None.
+                    broker (BaseBroker, optional): Broker. Default: None.
+                    worker (BaseWorker, optional): Worker. Default: None.
+                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         super().__init__(
             name=name,
@@ -174,13 +175,14 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
     ) -> None:
-        """Запуск Стартера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
-
-        Args:
-            loop (asyncio.AbstractEventLoop, optional): Асинхронный loop. По умолчанию: None.
-            num_workers (int, optional): Количество воркеров. По умолчанию: 4.
-            reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
-            plugins (Dict[str, List[BasePlugin]] | None, optional): Плагины. По умолчанию: None.
+        """
+        Starter launch. This function is enabled by the main `QueueTasks` instance via `run_forever`.
+        
+                Args:
+                    loop (asyncio.AbstractEventLoop, optional): Asynchronous loop. Default: None.
+                    num_workers (int, optional): Number of workers. Default: 4.
+                    reset_config (bool, optional): Update the config of the worker and broker. Default: True.
+                    plugins (Dict[str, List[BasePlugin]] | None, optional): Plugins. Default: None.
         """
         if self.log:
             self.log.info("Запуск QueueTasks...")
@@ -207,10 +209,11 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
                 self._global_loop.run_until_complete(self.stop())
 
     async def _start(self, num_workers=4):
-        """Запуск Стартера асинхронно.
-
-        Args:
-            num_workers (int, optional): Количество воркеров. По умолчанию: 4.
+        """
+        Launching the Starter asynchronously.
+        
+                Args:
+                    num_workers (int, optional): Number of workers. Default: 4.
         """
         await self._plugin_trigger("starter_start", starter=self)
         for plugin in [i for y in self.plugins.values() for i in y]:
@@ -230,7 +233,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             await asyncio.gather(broker_task, worker_task)
 
     async def stop(self):
-        """Останавливает все компоненты."""
+        """Stops all components."""
         if self.log:
             self.log.info("Остановка QueueTasks...")
         await self._plugin_trigger("starter_stop", starter=self)

@@ -2,11 +2,12 @@
 
 
 class TaskCancelError(RuntimeError):
-    """Исключение, вызываемое при отмене задачи.
-
-    Может быть перехвачено в Воркере для обработки отмены задач.
+    """
+    The exception thrown when a task is canceled.
+    
+        Can be intercepted in Worker to handle task cancellations.
     """
 
     def __init__(self, *args):
-        """Инициализация исключения."""
+        """Initializing an exception."""
         super().__init__(*args)

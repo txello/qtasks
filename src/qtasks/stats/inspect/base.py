@@ -16,20 +16,21 @@ if TYPE_CHECKING:
 
 
 class UtilsInspectStats:
-    """Утилиты для инспекции статистики."""
+    """Utilities for inspection of statistics."""
 
     label_width = 26
 
     def _app_parser(
         self, app: Union[QueueTasks, aioQueueTasks], json: bool = False
     ):
-        """Парсер для информации о приложении.
-
-        Args:
-            app (QueueTasks): Экземпляр приложения.
-
-        Returns:
-            str: Информация о приложении.
+        """
+        Parser for application information.
+        
+                Args:
+                    app (QueueTasks): Application instance.
+        
+                Returns:
+                    str: Application information.
         """
         lines = []
         plugins_sum = (
@@ -101,7 +102,7 @@ class UtilsInspectStats:
         self,
         tasks: tuple[TaskExecSchema] | list[TaskExecSchema] | ValuesView[TaskExecSchema],
     ) -> str:
-        """Форматированный вывод всех зарегистрированных задач."""
+        """Formatted output of all registered tasks."""
         lines = []
 
         for task in tasks:
@@ -154,13 +155,14 @@ class UtilsInspectStats:
         return "\n".join(lines) or "Нет зарегистрированных задач."
 
     def _task_get_args_kwargs(self, func):
-        """Получение позиционных и ключевых аргументов функции задачи.
-
-        Args:
-            func (Callable): Функция задачи.
-
-        Returns:
-            tuple: Позиционные и ключевые аргументы.
+        """
+        Retrieving positional and key arguments of a task function.
+        
+                Args:
+                    func (Callable): Task function.
+        
+                Returns:
+                    tuple: Positional and key arguments.
         """
         sig = signature(func)
         positional_args = []

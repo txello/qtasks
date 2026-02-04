@@ -34,7 +34,7 @@ class SyncDependsPlugin(BasePlugin):
     """Depends plugin."""
 
     def __init__(self, name="AsyncDependsPlugin"):
-        """Инициализация плагина Pydantic."""
+        """Initializing the Pydantic plugin."""
         super().__init__(name=name)
 
         self.contexts = SyncContextPool()
@@ -49,15 +49,15 @@ class SyncDependsPlugin(BasePlugin):
         }
 
     def start(self, *args, **kwargs):
-        """Запуск плагина Pydantic."""
+        """Launching the Pydantic plugin."""
         pass
 
     def stop(self, *args, **kwargs):
-        """Остановка плагина Pydantic."""
+        """Stopping the Pydantic plugin."""
         pass
 
     def trigger(self, name, *args, **kwargs):
-        """Триггер плагина."""
+        """Plugin trigger."""
         if name in self.handlers:
             return self.handlers[name](**kwargs)
         return None
@@ -70,7 +70,7 @@ class SyncDependsPlugin(BasePlugin):
         args_info: list[ArgMeta],
         plugin_cache: Optional[dict] = None
     ):
-        """Заменяет аргументы задачи."""
+        """Replaces task arguments."""
         result = {}
 
         for args_meta in args_info:
@@ -97,7 +97,7 @@ class SyncDependsPlugin(BasePlugin):
         return result
 
     def _eval_dep_callable(self, callable_obj, scope):
-        """Универсально "разворачивает" зависимость до значения. Никаких аргументов не прокидываем — если нужно, добавьте их где вызываете."""
+        """Universally "expands" a dependency to a value. We don’t pass any arguments - if necessary, add them where you call them."""
         func = callable_obj
 
         res = func() if inspect.isfunction(func) else func

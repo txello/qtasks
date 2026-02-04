@@ -10,47 +10,51 @@ if TYPE_CHECKING:
 
 
 class InspectStats(UtilsInspectStats):
-    """Класс для инспекции статистики."""
+    """Class for inspection of statistics."""
 
     def __init__(self, app: Union["QueueTasks", "aioQueueTasks"]):
-        """Инициализация инспекции статистики.
-
-        Args:
-            app (QueueTasks): Экземпляр приложения.
+        """
+        Initializing the statistics inspection.
+        
+                Args:
+                    app (QueueTasks): Application instance.
         """
         self._app = app
 
     def app(self, json: bool = False):
-        """Получение информации о приложении.
-
-        Args:
-            json (bool, optional): Флаг для возврата в формате JSON. По умолчанию: `False`.
-
-        Returns:
-            str: Информация о приложении.
+        """
+        Getting information about the application.
+        
+                Args:
+                    json (bool, optional): Flag to return in JSON format. Default: `False`.
+        
+                Returns:
+                    str: Application information.
         """
         return self._app_parser(self._app, json=json)
 
     def task(self, task_name: str, json: bool = False):
-        """Получение информации о задаче.
-
-        Args:
-            task_name (str): Имя задачи.
-            json (bool, optional): Флаг для возврата в формате JSON. По умолчанию: `False`.
-
-        Returns:
-            TaskExecSchema: Схема функции задачи.
+        """
+        Obtaining information about a task.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    json (bool, optional): Flag to return in JSON format. Default: `False`.
+        
+                Returns:
+                    TaskExecSchema: Schema of the task function.
         """
         if json:
             return self._parser_json(self._app.tasks[task_name])
         return self._tasks_parser((self._app.tasks[task_name],))
 
     def tasks(self, *tasks: tuple[str], json: bool = False):
-        """Получение информации о задачах.
-
-        Returns:
-            List[TaskExecSchema]: Схемы функции задач.
-            json (bool, optional): Флаг для возврата в формате JSON. По умолчанию: `False`.
+        """
+        Obtaining information about tasks.
+        
+                Returns:
+                    List[TaskExecSchema]: Task function schemas.
+                    json (bool, optional): Flag to return in JSON format. Default: `False`.
         """
         if not tasks:
             result = self._app.tasks.values()

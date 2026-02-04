@@ -34,20 +34,20 @@ if TYPE_CHECKING:
 
 class SyncRedisStorage(BaseStorage, SyncPluginMixin):
     """
-    Хранилище, работающий с Redis, сохраняя информацию о задачах.
-
-    ## Example
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.brokers import SyncRedisBroker
-    from qtasks.storages import SyncRedisStorage
-
-    storage = SyncRedisStorage(name="QueueTasks")
-    broker = SyncRedisBroker(name="QueueTasks", storage=storage)
-
-    app = QueueTasks(broker=broker)
-    ```
+    A repository that works with Redis, storing information about tasks.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.brokers import SyncRedisBroker
+        from qtasks.storages import SyncRedisStorage
+    
+        storage = SyncRedisStorage(name="QueueTasks")
+        broker = SyncRedisBroker(name="QueueTasks", storage=storage)
+    
+        app = QueueTasks(broker=broker)
+        ```
     """
 
     def __init__(
@@ -133,17 +133,18 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ] = None,
     ):
-        """Инициализация хранилища.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
-            url (str, optional): URL для подключения к Redis. По умолчанию: "redis://localhost:6379/0".
-            queue_process (str, optional): Имя канала для задач в процессе. По умолчанию: "task_process".
-            redis_connect (redis.Redis, optional): Внешний класс подключения к Redis. По умолчанию: None.
-            global_config (BaseGlobalConfig, optional): Глобальный конфиг. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
+        """
+        Initializing the storage.
+        
+                Args:
+                    name (str, optional): Project name. Default: "QueueTasks".
+                    url (str, optional): URL to connect to Redis. Default: "redis://localhost:6379/0".
+                    queue_process (str, optional): Channel name for tasks in the process. Default: "task_process".
+                    redis_connect (redis.Redis, optional): External Redis connection class. Default: None.
+                    global_config (BaseGlobalConfig, optional): Global config. Default: None.
+                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
+                    events (BaseEvents, optional): Events. Default: `qtasks.events.SyncEvents`.
         """
         self.url = url
         super().__init__(name=name, log=log, config=config, events=events)
@@ -184,11 +185,12 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Добавление задачи в хранилище.
-
-        Args:
-            uuid (UUID | str): UUID задачи.
-            task_status (TaskStatusNewSchema): Схема статуса новой задачи.
+        """
+        Adding a task to the repository.
+        
+                Args:
+                    uuid (UUID | str): UUID of the task.
+                    task_status (TaskStatusNewSchema): The new task's status schema.
         """
         uuid = str(uuid)
 
@@ -207,13 +209,14 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         return
 
     def get(self, uuid: UUID | str) -> Union[Task, None]:
-        """Получение информации о задаче.
-
-        Args:
-            uuid (UUID|str): UUID задачи.
-
-        Returns:
-            Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
+        """
+        Obtaining information about a task.
+        
+                Args:
+                    uuid (UUID|str): UUID of the task.
+        
+                Returns:
+                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         key = f"{self.name}:{uuid}"
         result = cast(dict, self.client.hgetall(key))
@@ -229,10 +232,11 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         return result
 
     def get_all(self) -> list[Task]:
-        """Получить все задачи.
-
-        Returns:
-            List[Task]: Массив задач.
+        """
+        Get all tasks.
+        
+                Returns:
+                    List[Task]: Array of tasks.
         """
         pattern = f"{self.name}:*"
 
@@ -273,10 +277,11 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Обновляет информацию о задаче.
-
-        Args:
-            kwargs (dict, optional): данные задачи типа kwargs.
+        """
+        Updates task information.
+        
+                Args:
+                    kwargs (dict, optional): task data of type kwargs.
         """
         new_kw = self._plugin_trigger(
             "storage_update", storage=self, kw=kwargs, return_last=True
@@ -307,11 +312,12 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Обновляет данные завершенной задачи.
-
-        Args:
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
+        """
+        Updates data for a completed task.
+        
+                Args:
+                    task_broker (TaskPrioritySchema): The priority task schema.
+                    model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         if isinstance(model, TaskStatusSuccessSchema) and not isinstance(
             model.returning, (bytes, str, int, float)
@@ -347,13 +353,13 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         return
 
     def start(self):
-        """Запускает хранилище."""
+        """Starts the repository."""
         self._plugin_trigger("storage_start", storage=self)
         if self.global_config:
             self.global_config.start()
 
     def stop(self) -> None:
-        """Останавливает хранилище."""
+        """Stops storage."""
         self._plugin_trigger("storage_stop", storage=self)
         self.client.close()
 
@@ -376,11 +382,12 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Добавляет задачу в список задач в процессе.
-
-        Args:
-            task_data (str): Данные задачи из брокера.
-            priority (int): Приоритет задачи.
+        """
+        Adds a task to the list of tasks in a process.
+        
+                Args:
+                    task_data (str): Task data from the broker.
+                    priority (int): Task priority.
         """
         new_data = self._plugin_trigger(
             "storage_add_process", storage=self, return_last=True
@@ -451,7 +458,7 @@ class SyncRedisStorage(BaseStorage, SyncPluginMixin):
         return
 
     def flush_all(self) -> None:
-        """Удалить все данные."""
+        """Delete all data."""
         self._plugin_trigger("storage_flush_all", storage=self)
 
         pipe = self.client.pipeline()

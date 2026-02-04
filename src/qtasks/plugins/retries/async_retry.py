@@ -11,27 +11,28 @@ from qtasks.schemas.task_status import TaskStatusErrorSchema
 
 
 class AsyncRetryPlugin(BasePlugin):
-    """Плагин для асинхронной обработки повторных попыток."""
+    """Plugin for asynchronously processing retries."""
 
     def __init__(self, name: str = "AsyncRetryPlugin"):
-        """Инициализация плагина.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: "AsyncRetryPlugin".
+        """
+        Initializing the plugin.
+        
+                Args:
+                    name (str, optional): Project name. Default: "AsyncRetryPlugin".
         """
         super().__init__(name=name)
         self.handlers = {"worker_task_error_retry": self._execute}
 
     async def start(self, *args, **kwargs):
-        """Запуск плагина."""
+        """Launch the plugin."""
         pass
 
     async def stop(self, *args, **kwargs):
-        """Остановка плагина."""
+        """Stopping the plugin."""
         pass
 
     async def trigger(self, name, **kwargs):
-        """Триггер для запуска обработчика."""
+        """Trigger to run the handler."""
         handler = self.handlers.get(name)
         return await handler(**kwargs) if handler else None
 

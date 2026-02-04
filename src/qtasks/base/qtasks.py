@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
 
 class BaseQueueTasks(Generic[TAsyncFlag]):
-    """Base класс для QueueTasks. Хранит в себе общую логику для работы с задачами в очереди."""
+    """Base class for QueueTasks. Stores the general logic for working with tasks in the queue."""
 
     def __init__(
         self,
@@ -112,16 +112,17 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ] = None,
     ):
-        """Инициализация базового класса для QueueTasks.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: `QueueTasks`.
-            broker_url (str, optional): URL для Брокера. По умолчанию: `None`.
-            broker (BaseBroker, optional): Брокер. По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
-            worker (BaseWorker, optional): Воркер. По умолчанию: `qtasks.workers.AsyncWorker`.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.QueueConfig`.
-            events (BaseEvents, optional): События. По умолчанию: `None`.
+        """
+        Initializing the base class for QueueTasks.
+        
+                Args:
+                    name (str, optional): Project name. Default: `QueueTasks`.
+                    broker_url (str, optional): URL for the Broker. Default: `None`.
+                    broker (BaseBroker, optional): Broker. Default: `qtasks.brokers.AsyncRedisBroker`.
+                    worker (BaseWorker, optional): Worker. Default: `qtasks.workers.AsyncWorker`.
+                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+                    config (QueueConfig, optional): Config. Default: `qtasks.configs.QueueConfig`.
+                    events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
 
@@ -220,29 +221,30 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         middlewares_after: list[type[TaskMiddleware]] | None = None,
         **kwargs,
     ) -> Callable[[Callable[P, R]], SyncTask[P, R]]:
-        """Декоратор для регистрации задач.
-
-        Args:
-            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
-            echo (bool, optional): Добавить SyncTask первым параметром. По умолчанию: `False`.
-            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
-            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
-            description (str, optional): Описание задачи. По умолчанию: `None`.
-            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
-            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
-            middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
-
-        Raises:
-            ValueError: Если задача с таким именем уже зарегистрирована.
-            ValueError: Неизвестный метод {self._method}.
-
-        Returns:
-            SyncTask: Декоратор для регистрации задачи.
+        """
+        Decorator for registering tasks.
+        
+                Args:
+                    name (str, optional): Name of the task. Default: `func.__name__`.
+                    priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+                    echo (bool, optional): Add SyncTask as the first parameter. Default: `False`.
+                    max_time (float, optional): The maximum time the task will take to complete in seconds. Default: `None`.
+                    retry (int, optional): Number of attempts to retry the task. Default: `None`.
+                    retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+                    decode (Callable, optional): Decoder of the task result. Default: `None`.
+                    tags (List[str], optional): Task tags. Default: `None`.
+                    description (str, optional): Description of the task. Default: `None`.
+                    generate_handler (Callable, optional): Handler generator. Default: `None`.
+                    executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
+                    middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
+                    middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
+        
+                Raises:
+                    ValueError: If a task with the same name is already registered.
+                    ValueError: Unknown method {self._method}.
+        
+                Returns:
+                    SyncTask: Decorator for registering a task.
         """
         ...
 
@@ -265,29 +267,30 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         middlewares_after: list[type[TaskMiddleware]] | None = None,
         **kwargs,
     ) -> Callable[[Callable[P, R]], AsyncTask[P, R]]:
-        """Декоратор для регистрации задач.
-
-        Args:
-            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
-            echo (bool, optional): Добавить AsyncTask первым параметром. По умолчанию: `False`.
-            max_time (float, optional): Максимальное время выполнения задачи в секундах. По умолчанию: `None`.
-            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
-            description (str, optional): Описание задачи. По умолчанию: `None`.
-            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
-            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `AsyncTaskExecutor`.
-            middlewares_before (List[Type["TaskMiddleware"]],, optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
-            middlewares_after (List[Type["TaskMiddleware"]],, optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
-
-        Raises:
-            ValueError: Если задача с таким именем уже зарегистрирована.
-            ValueError: Неизвестный метод {self._method}.
-
-        Returns:
-            AsyncTask: Декоратор для регистрации задачи.
+        """
+        Decorator for registering tasks.
+        
+                Args:
+                    name (str, optional): Name of the task. Default: `func.__name__`.
+                    priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+                    echo (bool, optional): Add AsyncTask as the first parameter. Default: `False`.
+                    max_time (float, optional): The maximum time the task will take to complete in seconds. Default: `None`.
+                    retry (int, optional): Number of attempts to retry the task. Default: `None`.
+                    retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+                    decode (Callable, optional): Decoder of the task result. Default: `None`.
+                    tags (List[str], optional): Task tags. Default: `None`.
+                    description (str, optional): Description of the task. Default: `None`.
+                    generate_handler (Callable, optional): Handler generator. Default: `None`.
+                    executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `AsyncTaskExecutor`.
+                    middlewares_before (List[Type["TaskMiddleware"]],, optional): Middleware that will be executed before the task. Default: `Empty array`.
+                    middlewares_after (List[Type["TaskMiddleware"]],, optional): Middleware that will be executed after the task. Default: `Empty array`.
+        
+                Raises:
+                    ValueError: If a task with the same name is already registered.
+                    ValueError: Unknown method {self._method}.
+        
+                Returns:
+                    AsyncTask: Decorator for registering a task.
         """
         ...
 
@@ -436,29 +439,30 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         ] = None,
         **kwargs,
     ) -> SyncTask[P, R] | AsyncTask[P, R] | Callable[[Callable[P, R]], SyncTask[P, R] | AsyncTask[P, R]]:
-        """Декоратор для регистрации задач.
-
-        Args:
-            name (str, optional): Имя задачи. По умолчанию: `func.__name__`.
-            priority (int, optional): Приоритет у задачи по умолчанию. По умолчанию: `config.task_default_priority`.
-            echo (bool, optional): Добавить (A)syncTask первым параметром. По умолчанию: `False`.
-            retry (int, optional): Количество попыток повторного выполнения задачи. По умолчанию: `None`.
-            retry_on_exc (List[Type[Exception]], optional): Исключения, при которых задача будет повторно выполнена. По умолчанию: `None`.
-            decode (Callable, optional): Декодер результата задачи. По умолчанию: `None`.
-            tags (List[str], optional): Теги задачи. По умолчанию: `None`.
-            description (str, optional): Описание задачи. По умолчанию: `None`.
-            generate_handler (Callable, optional): Генератор обработчика. По умолчанию: `None`.
-            executor (Type["BaseTaskExecutor"], optional): Класс `BaseTaskExecutor`. По умолчанию: `SyncTaskExecutor`.
-            middlewares_before (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены до задачи. По умолчанию: `Пустой массив`.
-            middlewares_after (List[Type["TaskMiddleware"]], optional): Мидлвари, которые будут выполнены после задачи. По умолчанию: `Пустой массив`.
-
-        Raises:
-            ValueError: Если задача с таким именем уже зарегистрирована.
-            ValueError: Неизвестный метод {self._method}.
-            ValueError: Неподдерживаемый метод {self._method}.
-
-        Returns:
-            SyncTask | AsyncTask: Декоратор для регистрации задачи.
+        """
+        Decorator for registering tasks.
+        
+                Args:
+                    name (str, optional): Name of the task. Default: `func.__name__`.
+                    priority (int, optional): The task's default priority. Default: `config.task_default_priority`.
+                    echo (bool, optional): Add (A)syncTask as the first parameter. Default: `False`.
+                    retry (int, optional): Number of attempts to retry the task. Default: `None`.
+                    retry_on_exc (List[Type[Exception]], optional): Exceptions under which the task will be re-executed. Default: `None`.
+                    decode (Callable, optional): Decoder of the task result. Default: `None`.
+                    tags (List[str], optional): Task tags. Default: `None`.
+                    description (str, optional): Description of the task. Default: `None`.
+                    generate_handler (Callable, optional): Handler generator. Default: `None`.
+                    executor (Type["BaseTaskExecutor"], optional): Class `BaseTaskExecutor`. Default: `SyncTaskExecutor`.
+                    middlewares_before (List[Type["TaskMiddleware"]], optional): Middleware that will be executed before the task. Default: `Empty array`.
+                    middlewares_after (List[Type["TaskMiddleware"]], optional): Middleware that will be executed after the task. Default: `Empty array`.
+        
+                Raises:
+                    ValueError: If a task with the same name is already registered.
+                    ValueError: Unknown method {self._method}.
+                    ValueError: Unsupported method {self._method}.
+        
+                Returns:
+                    SyncTask | AsyncTask: Decorator for registering a task.
         """
 
         def wrapper(func: Callable[P, R]):
@@ -547,10 +551,11 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             ),
         ],
     ) -> None:
-        """Добавить Router.
-
-        Args:
-            router (Router): Роутер `qtasks.routers.SyncRouter` | `qtasks.routers.AsyncRouter`.
+        """
+        Add Router.
+        
+                Args:
+                    router (Router): Router `qtasks.routers.SyncRouter` | `qtasks.routers.AsyncRouter`.
         """
         self.routers.append(router)
         self.tasks.update(router.tasks)
@@ -563,12 +568,12 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         component: str | None = None,
     ) -> None:
         """
-        Добавить плагин.
-
-        Args:
-            plugin (Type[BasePlugin]): Класс плагина.
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
-            component (str, optional): Имя компонента. По умолчанию: `None`.
+        Add a plugin.
+        
+                Args:
+                    plugin (Type[BasePlugin]): Plugin class.
+                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+                    component (str, optional): Component name. Default: `None`.
         """
         data = {
             "worker": self.worker,
@@ -594,13 +599,14 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         return
 
     def add_middleware(self, middleware: type[BaseMiddleware], **kwargs) -> None:
-        """Добавить мидлварь.
-
-        Args:
-            middleware (Type[BaseMiddleware]): Мидлварь.
-
-        Raises:
-            ImportError: Невозможно подключить Middleware: Он не относится к классу BaseMiddleware!
+        """
+        Add middleware.
+        
+                Args:
+                    middleware (Type[BaseMiddleware]): Middleware.
+        
+                Raises:
+                    ImportError: Unable to connect Middleware: It does not belong to the BaseMiddleware class!
         """
         if (
             not middleware.__base__
@@ -622,10 +628,10 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
 
     def _registry_tasks(self):
         """
-        Зарегистрировать задачи из реестра задач.
-
-        Обновляет `self.tasks` и `self.worker._tasks` всеми задачами,
-        зарегистрированными в `TaskRegistry`, устанавливая приоритет по умолчанию.
+        Register tasks from the task registry.
+        
+                Updates `self.tasks` and `self.worker._tasks` with all tasks,
+                registered in the `TaskRegistry`, setting the default priority.
         """
         all_tasks = TaskRegistry.all_tasks()
 
@@ -637,18 +643,18 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         self.worker._tasks.update(all_tasks)
 
     def _set_state(self):
-        """Установить параметры в `qtasks._state`."""
+        """Set parameters in `qtasks._state`."""
         qtasks._state.app_main = self
         qtasks._state.log_main = self.log
 
     def _update_configs(self, config: QueueConfig, key, value):
         """
-        Обновить конфигурацию.
-
-        Args:
-            config (QueueConfig): Конфигурация.
-            key (str): Ключ конфигурации.
-            value (Any): Значение конфигурации.
+        Update configuration.
+        
+                Args:
+                    config (QueueConfig): Configuration.
+                    key (str): Configuration key.
+                    value (Any): Configuration value.
         """
         if key == "logs_default_level_server":
             self.log.default_level = value
@@ -656,7 +662,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
             self._update_logs(default_level=value)
 
     def _update_logs(self, **kwargs):
-        """Обновить логи."""
+        """Update logs."""
         if self.worker:
             self.worker.log = self.worker.log.update_logger(**kwargs)
         if self.broker:
@@ -935,17 +941,18 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
     ) -> Union[
         Optional[Task], Awaitable[Optional[Task]], Task, Awaitable[Task]
     ]:
-        """Добавить задачу.
-
-        Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умолчанию: Значение приоритета у задачи.
-            args (tuple, optional): args задачи. По умолчанию `()`.
-            kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
-
-            timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.SyncResult` или `qtasks.results.AsyncResult`.
-
-        Returns:
-            Task|None: `schemas.task.Task` или `None`.
+        """
+        Add a task.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    priority (int, optional): Task priority. Default: Task priority value.
+                    args (tuple, optional): task args. Defaults to `()`.
+                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+        
+                    timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.SyncResult` or `qtasks.results.AsyncResult`.
+        
+                Returns:
+                    Task|None: `schemas.task.Task` or `None`.
         """
         pass

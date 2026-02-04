@@ -9,15 +9,15 @@ from qtasks.types.typing import TAsyncFlag
 
 
 class BaseEvents(Generic[TAsyncFlag], ABC):
-    """Базовый класс для событий."""
+    """Base class for events."""
 
     def __init__(self, on: "OnEvents"):
-        """Инициализация базового класса событий."""
+        """Initialize the base event class."""
         self._on = on
 
     @property
     def on(self):
-        """Событие задачи."""
+        """Task event."""
         return self._on
 
     @overload
@@ -32,11 +32,12 @@ class BaseEvents(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def fire(self, event_name: str, *args, **kwargs) -> None | Awaitable[None]:
-        """Срабатывает событие.
-
-        Args:
-            event_name (str): Имя события.
-            *args: Позиционные аргументы.
-            **kwargs: Именованные аргументы.
+        """
+        The event is fired.
+        
+                Args:
+                    event_name (str): Event name.
+                    *args: Positional arguments.
+                    **kwargs: Named arguments.
         """
         pass

@@ -26,19 +26,19 @@ if TYPE_CHECKING:
 
 class BaseTimer(Generic[TAsyncFlag], ABC):
     """
-    `BaseTimer` - Абстрактный класс, который является фундаментом для Таймеров.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.timers.base import BaseTimer
-
-    class MyTimer(BaseTimer):
-        def __init__(self, app: QueueTasks):
-            super().__init__(app=app)
-            pass
-    ```
+    `BaseTimer` - An abstract class that is the basis for Timers.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.timers.base import BaseTimer
+    
+        class MyTimer(BaseTimer):
+            def __init__(self, app: QueueTasks):
+                super().__init__(app=app)
+                pass
+        ```
     """
 
     def __init__(
@@ -74,12 +74,13 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ):
-        """Инициализация таймера.
-
-        Args:
-            app (QueueTasks): Приложение.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+        """
+        Timer initialization.
+        
+                Args:
+                    app (QueueTasks): Application.
+                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
         """
         self.app = app
         self.config = config or self.app.config
@@ -276,20 +277,21 @@ class BaseTimer(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> Any | None | Awaitable[Any | None]:
-        """Добавление задачи.
-
-        Args:
-            task_name (str): Имя задачи.
-            trigger (Any, optional): Значения триггера.
-            priority (int, optional): Приоритет задачи. По умолчанию `0`.
-            args (tuple, optional): args задачи. По умолчанию `()`.
-            kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
-
-        Returns:
-            Any|None: Задача.
+        """
+        Adding a task.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    trigger (Any, optional): Trigger values.
+                    priority (int, optional): Task priority. Default is `0`.
+                    args (tuple, optional): task args. Defaults to `()`.
+                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+        
+                Returns:
+                    Any|None: Task.
         """
         pass
 
     def run_forever(self):
-        """Запуск Таймера."""
+        """Start Timer."""
         pass

@@ -15,24 +15,25 @@ if TYPE_CHECKING:
 
 
 class AsyncResult:
-    """`AsyncResult` - Асинхронный класс для ожидания результата задачи.
-
-    ## Пример
-
-    ```python
-    import asyncio
-
-    from qtasks import QueueTasks
-    from qtasks.results import AsyncResult
-
-    app = QueueTasks()
-
-    async def main():
-        task = await app.add_task(task_name="test")
-        result = await AsyncResult(uuid=task.uuid).result(timeout=50)
-
-    asyncio.run(main())
-    ```
+    """
+    `AsyncResult` - Asynchronous class for waiting for the result of a task.
+    
+        ## Example
+    
+        ```python
+        import asyncio
+    
+        from qtasks import QueueTasks
+        from qtasks.results import AsyncResult
+    
+        app = QueueTasks()
+    
+        async def main():
+            task = await app.add_task(task_name="test")
+            result = await AsyncResult(uuid=task.uuid).result(timeout=50)
+    
+        asyncio.run(main())
+        ```
     """
 
     def __init__(
@@ -66,12 +67,13 @@ class AsyncResult:
             ),
         ] = None,
     ):
-        """Инициализация асинхронного результата.
-
-        Args:
-            uuid (UUID | str, optional): UUID задачи. По умолчанию: None.
-            app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: None.
+        """
+        Initializing an asynchronous result.
+        
+                Args:
+                    uuid (UUID | str, optional): UUID of the task. Default: None.
+                    app (QueueTasks, optional): `QueueTasks` instance. Default: None.
+                    log (Logger, optional): Logger. Default: None.
         """
         self._app = app or self._update_state()
 
@@ -104,13 +106,14 @@ class AsyncResult:
             ),
         ] = 100,
     ) -> Union[Task, None]:
-        """Ожидание результата задачи.
-
-        Args:
-            timeout (float, optional): Таймаут задачи. По умолчанию: `100`.
-
-        Returns:
-            Task | None: Задача или None.
+        """
+        Waiting for the task result.
+        
+                Args:
+                    timeout (float, optional): Task timeout. Default: `100`.
+        
+                Returns:
+                    Task | None: Task or None.
         """
         self._stop_event.clear()
         try:

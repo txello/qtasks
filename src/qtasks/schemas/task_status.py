@@ -10,19 +10,20 @@ from qtasks.enums.task_status import TaskStatusEnum
 
 @dataclass
 class BaseTaskStatusSchema:
-    """`BaseTaskStatusSchema` схема.
-
-    Args:
-        status (str): Статус.
-        task_name (str): Название.
-        priority (int): Приоритет.
-        args (Tuple[str]): Аргументы типа args.
-        kwargs (Dict[str, str]): Аргументы типа kwargs.
-
-        created_at (float): Дата создания в формате `timestamp`.
-        updated_at (float): Дата обновления в формате `timestamp`.
-        returning (str | None): Результат. По умолчанию: `None`.
-        traceback (str | None): Трассировка ошибок. По умолчанию: `None`.
+    """
+    `BaseTaskStatusSchema` schema.
+    
+        Args:
+            status (str): Status.
+            task_name (str): Name.
+            priority (int): Priority.
+            args (Tuple[str]): Arguments of type args.
+            kwargs (Dict[str, str]): Arguments of type kwargs.
+    
+            created_at (float): Created date in `timestamp` format.
+            updated_at (float): Update date in `timestamp` format.
+            returning (str | None): Result. Default: `None`.
+            traceback (str | None): Trace errors. Default: `None`.
     """
 
     task_name: str = ""
@@ -35,7 +36,7 @@ class BaseTaskStatusSchema:
     updated_at: float = field(default_factory=time)
 
     def __post_init__(self):
-        """Преобразовать аргументы в формат JSON."""
+        """Convert arguments to JSON format."""
         if not isinstance(self.args, str):
             self.args = json.dumps(self.args)
         if not isinstance(self.kwargs, str):
@@ -44,10 +45,11 @@ class BaseTaskStatusSchema:
 
 @dataclass
 class TaskStatusNewSchema(BaseTaskStatusSchema):
-    """`TaskStatusNewSchema` схема.
-
-    Args:
-        status (str): Статус.
+    """
+    `TaskStatusNewSchema` schema.
+    
+        Args:
+            status (str): Status.
     """
 
     status: str = TaskStatusEnum.NEW.value
@@ -55,10 +57,11 @@ class TaskStatusNewSchema(BaseTaskStatusSchema):
 
 @dataclass
 class TaskStatusProcessSchema(BaseTaskStatusSchema):
-    """`TaskStatusProcessSchema` схема.
-
-    Args:
-        status (str): Статус.
+    """
+    `TaskStatusProcessSchema` schema.
+    
+        Args:
+            status (str): Status.
     """
 
     status: str = TaskStatusEnum.PROCESS.value
@@ -66,11 +69,12 @@ class TaskStatusProcessSchema(BaseTaskStatusSchema):
 
 @dataclass
 class TaskStatusSuccessSchema(BaseTaskStatusSchema):
-    """`TaskStatusSuccessSchema` схема.
-
-    Args:
-        status (str): Статус.
-        returning (str): Результат.
+    """
+    `TaskStatusSuccessSchema` schema.
+    
+        Args:
+            status (str): Status.
+            returning (str): Result.
     """
 
     status: str = TaskStatusEnum.SUCCESS.value
@@ -79,11 +83,12 @@ class TaskStatusSuccessSchema(BaseTaskStatusSchema):
 
 @dataclass
 class TaskStatusErrorSchema(BaseTaskStatusSchema):
-    """`TaskStatusErrorSchema` схема.
-
-    Args:
-        status (str): Статус.
-        traceback (str): Трассировка ошибок.
+    """
+    `TaskStatusErrorSchema` schema.
+    
+        Args:
+            status (str): Status.
+            traceback (str): Error tracing.
     """
 
     status: str = TaskStatusEnum.ERROR.value
@@ -97,11 +102,12 @@ class TaskStatusErrorSchema(BaseTaskStatusSchema):
 
 @dataclass
 class TaskStatusCancelSchema(BaseTaskStatusSchema):
-    """`TaskStatusCancelSchema` схема.
-
-    Args:
-        status (str): Статус.
-        cancel_reason (str): Причина отмены задачи.
+    """
+    `TaskStatusCancelSchema` schema.
+    
+        Args:
+            status (str): Status.
+            cancel_reason (str): Reason for canceling the task.
     """
 
     status: str = TaskStatusEnum.CANCEL.value

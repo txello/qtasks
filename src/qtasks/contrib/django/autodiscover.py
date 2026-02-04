@@ -15,11 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 def autodiscover_tasks(app, modules: Optional[list[str]] = None):
-    """Автоматически импортирует указанные модули из всех INSTALLED_APPS, чтобы зарегистрировать задачи в QTasks.
-
-    Args:
-        app (QueueTasks): приложение.
-        modules (List[str]): Модули для автодискавери. По умолчанию: `["tasks"]`.
+    """
+    Automatically imports the specified modules from all INSTALLED_APPS to register tasks with QTasks.
+    
+        Args:
+            app(QueueTasks): application.
+            modules (List[str]): Modules for auto-discovery. Default: `["tasks"]`.
     """
     modules = modules or ["tasks"]
 

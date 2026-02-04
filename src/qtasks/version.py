@@ -1,3 +1,3 @@
-"""Версия пакета qtasks."""
+"""Version of the qtasks package."""
 
 __version__ = "1.7.0"

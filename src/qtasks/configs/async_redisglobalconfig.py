@@ -22,24 +22,24 @@ if TYPE_CHECKING:
 
 class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
     """
-    Глобальный Конфиг, работающий через Redis и работает с глобальными значениями.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.configs import AsyncRedisGlobalConfig
-    from qtasks.storage import AsyncRedisStorage
-    from qtasks.brokers import AsyncRedisBroker
-
-    global_config = AsyncRedisGlobalConfig(name="QueueTasks", url="redis://localhost:6379/2")
-
-    storage = AsyncRedisStorage(name="QueueTasks", global_config=global_config, url="redis://localhost:6379/2")
-
-    broker = AsyncRedisBroker(name="QueueTasks", storage=storage, url="redis://localhost:6379/2")
-
-    app = QueueTasks(broker=broker)
-    ```
+    Global Config running through Redis and working with global values.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.configs import AsyncRedisGlobalConfig
+        from qtasks.storage import AsyncRedisStorage
+        from qtasks.brokers import AsyncRedisBroker
+    
+        global_config = AsyncRedisGlobalConfig(name="QueueTasks", url="redis://localhost:6379/2")
+    
+        storage = AsyncRedisStorage(name="QueueTasks", global_config=global_config, url="redis://localhost:6379/2")
+    
+        broker = AsyncRedisBroker(name="QueueTasks", storage=storage, url="redis://localhost:6379/2")
+    
+        app = QueueTasks(broker=broker)
+        ```
     """
 
     def __init__(
@@ -115,16 +115,17 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
             ),
         ] = None,
     ):
-        """Инициализация асинхронного Redis глобального конфига.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
-            url (str, optional): URL для подключения к Redis. По умолчанию: "redis://localhost:6379/0".
-            redis_connect (aioredis.Redis, optional): Внешний класс подключения к Redis. По умолчанию: None.
-            config_name (str, optional): Имя Папки с Hash. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: None.
-            config (QueueConfig, optional): Конфигурация. По умолчанию: None.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
+        """
+        Initializing the asynchronous Redis global config.
+        
+                Args:
+                    name (str, optional): Project name. Default: "QueueTasks".
+                    url (str, optional): URL to connect to Redis. Default: "redis://localhost:6379/0".
+                    redis_connect (aioredis.Redis, optional): External Redis connection class. Default: None.
+                    config_name (str, optional): Name of the Hash Folder. Default: None.
+                    log (Logger, optional): Logger. Default: None.
+                    config (QueueConfig, optional): Configuration. Default: None.
+                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         super().__init__(name=name, log=log, config=config, events=events)
         self.name = name
@@ -140,12 +141,13 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
         self.running = False
 
     async def set(self, name: str, key: str, value: str) -> None:
-        """Добавить новое значение.
-
-        Args:
-            name (str): Имя.
-            key (str): Ключ.
-            value (str): Значение.
+        """
+        Add new value.
+        
+                Args:
+                    name (str): Name.
+                    key (str): Key.
+                    value(str): Value.
         """
         new_data = await self._plugin_trigger(
             "global_config_set",
@@ -165,14 +167,15 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
         return
 
     async def get(self, key: str, name: str) -> Any:
-        """Получить значение.
-
-        Args:
-            key (str): Ключ.
-            name (str): Имя.
-
-        Returns:
-            Any: Значение.
+        """
+        Get value.
+        
+                Args:
+                    key (str): Key.
+                    name (str): Name.
+        
+                Returns:
+                    Any: Meaning.
         """
         raw = self.client.hget(name=f"{self.config_name}:{key}", key=name)
         result = await cast(Awaitable[str | None], raw)
@@ -185,13 +188,14 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
         return result
 
     async def get_all(self, key: str) -> dict[str, Any]:
-        """Получить все значения.
-
-        Args:
-            key (str): Ключ.
-
-        Returns:
-            Dict[str, Any]: Значения.
+        """
+        Get all values.
+        
+                Args:
+                    key (str): Key.
+        
+                Returns:
+                    Dict[str, Any]: Values.
         """
         raw = self.client.hgetall(name=f"{self.config_name}:{key}")
         result = await cast(Awaitable[dict], raw)
@@ -203,13 +207,14 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
         return result
 
     async def get_match(self, match: str) -> Any | dict:
-        """Получить значения по паттерну.
-
-        Args:
-            match (str): Паттерн.
-
-        Returns:
-            Any | Dict[str, Any]: Значение или Значения.
+        """
+        Get values ​​by pattern.
+        
+                Args:
+                    match (str): Pattern.
+        
+                Returns:
+                    Any | Dict[str, Any]: Value or Values.
         """
         self.config_name: str
         raw = self.client.hscan(self.config_name, match=match)
@@ -222,7 +227,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
         return result
 
     async def start(self) -> None:
-        """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever."""
+        """Launching the Broker. This function is enabled by the main instance of `QueueTasks` via `run_forever."""
         await self._plugin_trigger("global_config_start", global_config=self)
         self.running = True
         loop = asyncio.get_running_loop()
@@ -234,7 +239,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
         await cast(Awaitable[int], raw)
 
     async def stop(self) -> None:
-        """Останавливает Глобальный Конфиг. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+        """Stops Global Config. This function is invoked by the main `QueueTasks` instance after the `run_forever` function completes."""
         await self._plugin_trigger("global_config_stop", global_config=self)
         self.running = False
         if self.status_event:
@@ -242,7 +247,7 @@ class AsyncRedisGlobalConfig(BaseGlobalConfig[Literal[True]], AsyncPluginMixin):
         await self.client.aclose()
 
     async def _set_status(self):
-        """Обновляет статус запуска глобального конфига."""
+        """Updates the startup status of the global config."""
         await self._plugin_trigger("global_config_set_status", global_config=self)
         ttl = self.config.global_config_status_ttl
         interval = self.config.global_config_status_set_periodic

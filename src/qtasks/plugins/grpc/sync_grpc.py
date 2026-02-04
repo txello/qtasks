@@ -20,14 +20,15 @@ class SyncgRPCPlugin(BasePlugin):
         max_concurrent_rpcs: int | None = None,
         grpc_options: list[tuple[str, Any]] | None = None,
     ) -> None:
-        """Инициализация плагина gRPC.
-
-        Args:
-            app (QueueTasks): Приложение `QueueTasks`.
-            host (str, optional): Хост gRPC-сервера. По умолчанию: `0.0.0.0`.
-            port (int, optional): Порт gRPC-сервера. По умолчанию: `50051`.
-            max_concurrent_rpcs (Optional[int], optional): Максимальное количество одновременно обрабатываемых RPC. По умолчанию: `None`.
-            grpc_options (Optional[List[tuple[str, Any]]], optional): Дополнительные параметры gRPC. По умолчанию: `None`.
+        """
+        Initializing the gRPC plugin.
+        
+                Args:
+                    app(QueueTasks): Application `QueueTasks`.
+                    host (str, optional): Host of the gRPC server. Default: `0.0.0.0`.
+                    port (int, optional): Port of the gRPC server. Default: `50051`.
+                    max_concurrent_rpcs (Optional[int], optional): Maximum number of concurrent RPCs processed. Default: `None`.
+                    grpc_options (Optional[List[tuple[str, Any]]], optional: Additional gRPC options. Default: `None`.
         """
         super().__init__()
         self.app = app
@@ -40,13 +41,13 @@ class SyncgRPCPlugin(BasePlugin):
         )
 
     def start(self) -> None:
-        """Запуск плагина gRPC."""
+        """Launching the gRPC plugin."""
         self._server.start()
 
     def stop(self) -> None:
-        """Остановка плагина gRPC."""
+        """Stopping the gRPC plugin."""
         self._server.stop()
 
     def trigger(self, *args, **kwargs) -> None:
-        """Триггер плагина gRPC."""
+        """gRPC plugin trigger."""
         pass

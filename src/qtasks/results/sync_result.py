@@ -17,20 +17,21 @@ if TYPE_CHECKING:
 
 
 class SyncResult:
-    """`SyncResult` - Синхронный класс для ожидания результата задачи.
-
-    ## Пример
-
-    ```python
-
-    from qtasks import QueueTasks
-    from qtasks.results import SyncResult
-
-    app = QueueTasks()
-
-    task = app.add_task(task_name="test")
-    result = SyncResult(uuid=task.uuid).result(timeout=50)
-    ```
+    """
+    `SyncResult` - Synchronous class for waiting for the result of a task.
+    
+        ## Example
+    
+        ```python
+    
+        from qtasks import QueueTasks
+        from qtasks.results import SyncResult
+    
+        app = QueueTasks()
+    
+        task = app.add_task(task_name="test")
+        result = SyncResult(uuid=task.uuid).result(timeout=50)
+        ```
     """
 
     def __init__(
@@ -64,12 +65,13 @@ class SyncResult:
             ),
         ] = None,
     ):
-        """Инициализация синхронного результата.
-
-        Args:
-            uuid (UUID | str, optional): UUID задачи. По умолчанию: None.
-            app (QueueTasks, optional): `QueueTasks` экземпляр. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: None.
+        """
+        Initializing a synchronous result.
+        
+                Args:
+                    uuid (UUID | str, optional): UUID of the task. Default: None.
+                    app (QueueTasks, optional): `QueueTasks` instance. Default: None.
+                    log (Logger, optional): Logger. Default: None.
         """
         self._app = app or self._update_state()
 
@@ -102,13 +104,14 @@ class SyncResult:
             ),
         ] = 100,
     ) -> Union[Task, None]:
-        """Ожидание результата задачи.
-
-        Args:
-            timeout (float, optional): Таймаут задачи. По умолчанию: `100`.
-
-        Returns:
-            Task | None: Задача или None.
+        """
+        Waiting for the task result.
+        
+                Args:
+                    timeout (float, optional): Task timeout. Default: `100`.
+        
+                Returns:
+                    Task | None: Task or None.
         """
         self._stop_event.clear()
         with ThreadPoolExecutor(max_workers=1) as executor:

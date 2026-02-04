@@ -19,22 +19,22 @@ if TYPE_CHECKING:
 
 class SyncTimer(BaseTimer[Literal[False]]):
     """
-    Таймер, работающий через apscheduler, запускающий задачи.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.timers import SyncTimer
-
-    app = QueueTasks()
-    timer = SyncTimer(app=app)
-
-    trigger = CronTrigger(second="*/10") # Запуск каждые 10 секунд
-    timer.add_task(task_name="test", trigger=trigger)
-
-    timer.run_forever()
-    ```
+    A timer running through apscheduler that starts tasks.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.timers import SyncTimer
+    
+        app = QueueTasks()
+        timer = SyncTimer(app=app)
+    
+        trigger = CronTrigger(second="*/10") # Trigger every 10 seconds
+        timer.add_task(task_name="test", trigger=trigger)
+    
+        timer.run_forever()
+        ```
     """
 
     def __init__(
@@ -68,12 +68,13 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ] = None,
     ):
-        """Инициализация таймера.
-
-        Args:
-            app (QueueTasks): Приложение.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.config.QueueConfig`.
+        """
+        Timer initialization.
+        
+                Args:
+                    app (QueueTasks): Application.
+                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+                    config (QueueConfig, optional): Config. Default: `qtasks.configs.config.QueueConfig`.
         """
         super().__init__(app=app, log=log, config=config)
         self.app: QueueTasks
@@ -139,16 +140,17 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ],
     ) -> Job:
-        """Добавление задачи.
-
-        Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умолчанию `0`.
-            args (tuple, optional): args задачи. По умолчанию `()`.
-            kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
-
-        Returns:
-            Any|None: Задача.
+        """
+        Adding a task.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    priority (int, optional): Task priority. Default is `0`.
+                    args (tuple, optional): task args. Defaults to `()`.
+                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+        
+                Returns:
+                    Any|None: Task.
         """
         self.tasks[task_name] = trigger
 
@@ -200,13 +202,14 @@ class SyncTimer(BaseTimer[Literal[False]]):
             ),
         ] = None,
     ):
-        """Запуск добавленной задачи синхронно.
-
-        Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умолчанию `0`.
-            args (tuple, optional): args задачи. По умолчанию `()`.
-            kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
+        """
+        Run the added task synchronously.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    priority (int, optional): Task priority. Default is `0`.
+                    args (tuple, optional): task args. Defaults to `()`.
+                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
         """
         args, kwargs = args or (), kwargs or {}
         task = self.app.add_task(
@@ -215,7 +218,7 @@ class SyncTimer(BaseTimer[Literal[False]]):
         self.log.info(f"Отправлена задача {task_name}: {task.uuid}...")
 
     def run_forever(self):
-        """Запуск Таймера."""
+        """Start Timer."""
         self.log.info("Запуск...")
 
         try:

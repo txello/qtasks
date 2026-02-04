@@ -8,9 +8,9 @@ from qtasks.types.annotations import P, R
 
 
 class Depends:
-    """Класс для управления зависимостями."""
+    """Dependency management class."""
 
     def __init__(self, func: Callable[P, R], scope: Union[ScopeEnum, str] = ScopeEnum.TASK):
-        """Инициализация класса Depends."""
+        """Initializing the Depends class."""
         self.func = func
         self.scope = scope.value if isinstance(scope, ScopeEnum) else scope

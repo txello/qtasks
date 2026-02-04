@@ -4,7 +4,7 @@ from enum import Enum
 
 
 class TaskStatusEnum(Enum):
-    """`TaskStatusEnum` - Статусы задач."""
+    """`TaskStatusEnum` - Task statuses."""
 
     NEW = "new"
     """Новая задача"""

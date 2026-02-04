@@ -44,17 +44,17 @@ if TYPE_CHECKING:
 
 class AsyncWorker(BaseWorker, AsyncPluginMixin):
     """
-    Воркер, Получающий из Брокера задачи и обрабатывающий их.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.workers import AsyncWorker
-
-    worker = AsyncWorker()
-    app = QueueTasks(worker=worker)
-    ```
+    Worker, Receiving tasks from the Broker and processing them.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.workers import AsyncWorker
+    
+        worker = AsyncWorker()
+        app = QueueTasks(worker=worker)
+        ```
     """
 
     def __init__(
@@ -110,14 +110,15 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ] = None,
     ):
-        """Инициализация асинхронного воркера.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
-            broker (BaseBroker, optional): Брокер. По умолчанию: `None`.
-            log (Logger, optional): Логгер. По умолчанию: `None`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
+        """
+        Initializing an asynchronous worker.
+        
+                Args:
+                    name (str, optional): Project name. Default: "QueueTasks".
+                    broker (BaseBroker, optional): Broker. Default: `None`.
+                    log (Logger, optional): Logger. Default: `None`.
+                    config (QueueConfig, optional): Config. Default: `None`.
+                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         super().__init__(
             name=name, broker=broker, log=log, config=config, events=events
@@ -151,13 +152,14 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Обработчик задач.
-
-        Args:
-            number (int): Номер Воркера.
-
-        Raises:
-            RuntimeError: Воркер не запущен.
+        """
+        Task processor.
+        
+                Args:
+                    number (int): Worker number.
+        
+                Raises:
+                    RuntimeError: The worker is not running.
         """
         if not self._stop_event or not self.condition:
             raise RuntimeError("Воркер не запущен")
@@ -188,10 +190,11 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Выполняет задачу независимо.
-
-        Args:
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
+        """
+        Performs task independently.
+        
+                Args:
+                    task_broker (TaskPrioritySchema): The priority task schema.
         """
         async with self.semaphore:
             model = TaskStatusProcessSchema(
@@ -302,18 +305,19 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ],
     ) -> Task:
-        """Добавление задачи в очередь.
-
-        Args:
-            name (str): Имя задачи.
-            uuid (UUID): UUID задачи.
-            priority (int): Приоритет задачи.
-            created_at (float): Создание задачи в формате timestamp.
-            args (tuple): Аргументы задачи типа args.
-            kwargs (dict): Аргументы задачи типа kwargs.
-
-            Raises:
-                RuntimeError: Воркер не запущен.
+        """
+        Adding a task to the queue.
+        
+                Args:
+                    name (str): Name of the task.
+                    uuid (UUID): UUID of the task.
+                    priority (int): Task priority.
+                    created_at (float): Create a task in timestamp format.
+                    args (tuple): Task arguments of type args.
+                    kwargs (dict): Task arguments of type kwargs.
+        
+                    Raises:
+                        RuntimeError: The worker is not running.
         """
         if not self.condition:
             raise RuntimeError("Воркер не запущен.")
@@ -373,10 +377,11 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ] = 4,
     ) -> None:
-        """Запускает несколько обработчиков задач.
-
-        Args:
-            num_workers (int, optional): Количество воркеров. По умолчанию: 4.
+        """
+        Runs multiple task handlers.
+        
+                Args:
+                    num_workers (int, optional): Number of workers. Default: 4.
         """
         self.num_workers = num_workers
 
@@ -399,7 +404,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         await asyncio.gather(*workers, return_exceptions=True)
 
     async def stop(self):
-        """Останавливает воркеры."""
+        """Stops workers."""
         await self._plugin_trigger("worker_stop", worker=self)
         if self._stop_event:
             self._stop_event.set()
@@ -415,10 +420,11 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Обновляет конфиг брокера и семафору.
-
-        Args:
-            config (QueueConfig): Конфиг.
+        """
+        Updates the broker config and semaphore.
+        
+                Args:
+                    config (QueueConfig): Config.
         """
         self.config = config
         self.semaphore = Semaphore(config.max_tasks_process)
@@ -426,17 +432,18 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
     async def _run_task(
         self, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
     ) -> TaskStatusSuccessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema:
-        """Запуск функции задачи.
-
-        Args:
-            task_func (TaskExecSchema): Схема `qtasks.schemas.TaskExecSchema`.
-            task_broker (TaskPrioritySchema): Схема `qtasks.schemas.TaskPrioritySchema`.
-
-        Returns:
-            Any: Результат функции задачи.
-
-        Raises:
-            RuntimeError: task_executor не определен.
+        """
+        Run the task function.
+        
+                Args:
+                    task_func (TaskExecSchema): Schema `qtasks.schemas.TaskExecSchema`.
+                    task_broker(TaskPrioritySchema): Schema `qtasks.schemas.TaskPrioritySchema`.
+        
+                Returns:
+                    Any: The result of the task function.
+        
+                Raises:
+                    RuntimeError: task_executor is not defined.
         """
         if not self.task_executor:
             raise RuntimeError("task_executor не определен.")
@@ -484,7 +491,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
     async def _task_success(
         self, result: Any, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
     ) -> TaskStatusSuccessSchema:
-        """Событие успешного завершения задачи."""
+        """Event of successful completion of a task."""
         model = TaskStatusSuccessSchema(
             task_name=task_func.name,
             priority=task_func.priority,
@@ -503,7 +510,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
     async def _task_error(
         self, e, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
     ) -> TaskStatusErrorSchema:
-        """Событие завершения задачи с ошибкой."""
+        """Event of task completion with an error."""
         trace = traceback.format_exc()
 
         # plugin: retry
@@ -547,7 +554,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
     async def _task_cancel(
         self, e, task_func: TaskExecSchema, task_broker: TaskPrioritySchema
     ) -> TaskStatusCancelSchema:
-        """Событие отмены задачи."""
+        """Task cancellation event."""
         model = TaskStatusCancelSchema(
             task_name=task_func.name,
             priority=task_func.priority,
@@ -562,13 +569,14 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
     async def _task_exists(
         self, task_broker: TaskPrioritySchema
     ) -> TaskExecSchema | None:
-        """Проверка существования задачи.
-
-        Args:
-            task_broker (TaskPrioritySchema): Схема `TaskPrioritySchema`.
-
-        Returns:
-            TaskExecSchema|None: Схема `TaskExecSchema` или `None`.
+        """
+        Checking the existence of a task.
+        
+                Args:
+                    task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
+        
+                Returns:
+                    TaskExecSchema|None: Schema `TaskExecSchema` or `None`.
         """
         try:
             return self._tasks[task_broker.name]
@@ -617,12 +625,13 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
-
-        Args:
-            task_func (TaskExecSchema, optional): Схема функции задачи. По умолчанию: `None`.
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Модель результата задачи.
+        """
+        Updates storage data via the `self.storage.remove_finished_task` function.
+        
+                Args:
+                    task_func (TaskExecSchema, optional): Task function schema. Default: `None`.
+                    task_broker (TaskPrioritySchema): The priority task schema.
+                    model (TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Model of the task result.
         """
         new_data = await self._plugin_trigger(
             "worker_remove_finished_task",
@@ -640,7 +649,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
         await self.broker.remove_finished_task(task_broker, model)
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
         self.add_plugin(AsyncRetryPlugin(), trigger_names=["worker_task_error_retry"])
         self.add_plugin(
             AsyncPydanticWrapperPlugin(),

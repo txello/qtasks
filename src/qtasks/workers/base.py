@@ -30,19 +30,19 @@ if TYPE_CHECKING:
 
 class BaseWorker(Generic[TAsyncFlag], ABC):
     """
-    `BaseWorker` - Абстрактный класс, который является фундаментом для Воркеров.
-
-    ## Example
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.workers.base import BaseWorker
-
-    class MyWorker(BaseWorker):
-        def __init__(self, name: str = None, broker: BaseBroker = None):
-            super().__init__(name=name, broker=broker)
-            pass
-    ```
+    `BaseWorker` - An abstract class that is the foundation for Workers.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.workers.base import BaseWorker
+    
+        class MyWorker(BaseWorker):
+            def __init__(self, name: str = None, broker: BaseBroker = None):
+                super().__init__(name=name, broker=broker)
+                pass
+        ```
     """
 
     def __init__(
@@ -98,13 +98,14 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ):
-        """Инициализация базового воркера.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: None.
-            broker (BaseBroker, optional): Брокер. По умолчанию: None.
-            log (Logger, optional): Логгер. По умолчанию: None.
-            config (QueueConfig, optional): Конфиг. По умолчанию: None.
+        """
+        Initializing the base worker.
+        
+                Args:
+                    name (str, optional): Project name. Default: None.
+                    broker (BaseBroker, optional): Broker. Default: None.
+                    log (Logger, optional): Logger. Default: None.
+                    config (QueueConfig, optional): Config. Default: None.
         """
         self.name = name
         self.broker = broker
@@ -292,15 +293,16 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None | Awaitable[None]:
-        """Добавление задачи в очередь.
-
-        Args:
-            name (str): Имя задачи.
-            uuid (UUID): UUID задачи.
-            priority (int): Приоритет задачи.
-            created_at (float): Создание задачи в формате timestamp.
-            args (tuple): Аргументы задачи типа args.
-            kwargs (dict): Аргументы задачи типа kwargs.
+        """
+        Adding a task to the queue.
+        
+                Args:
+                    name (str): Name of the task.
+                    uuid (UUID): UUID of the task.
+                    priority (int): Task priority.
+                    created_at (float): Create a task in timestamp format.
+                    args (tuple): Task arguments of type args.
+                    kwargs (dict): Task arguments of type kwargs.
         """
         pass
 
@@ -348,10 +350,11 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ) -> None | Awaitable[None]:
-        """Запускает несколько обработчиков задач. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
-
-        Args:
-            num_workers (int, optional): Количество воркеров. По умолчанию: 4.
+        """
+        Runs multiple task handlers. This function is enabled by the main `QueueTasks` instance via `run_forever`.
+        
+                Args:
+                    num_workers (int, optional): Number of workers. Default: 4.
         """
         pass
 
@@ -363,7 +366,7 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def stop(self) -> None | Awaitable[None]:
-        """Останавливает воркеры. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+        """Stops workers. This function is invoked by the main `QueueTasks` instance after the `run_forever` function completes."""
         pass
 
     def update_config(
@@ -377,10 +380,11 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None:
-        """Обновляет конфиг брокера.
-
-        Args:
-            config (QueueConfig): Конфиг.
+        """
+        Updates the broker config.
+        
+                Args:
+                    config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -406,11 +410,12 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
-
-        Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        Add a plugin to the class.
+        
+                Args:
+                    plugin (BasePlugin): Plugin
+                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -422,5 +427,5 @@ class BaseWorker(Generic[TAsyncFlag], ABC):
         return
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
         pass

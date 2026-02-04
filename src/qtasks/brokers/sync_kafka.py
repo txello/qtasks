@@ -38,18 +38,18 @@ from qtasks.schemas.task_status import (
 
 class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
     """
-    Брокер, слушающий Kafka и добавляющий задачи в очередь.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.brokers import SyncKafkaBroker
-
-    broker = SyncKafkaBroker(name="QueueTasks", url="localhost:9092")
-
-    app = QueueTasks(broker=broker)
-    ```
+    A broker that listens to Kafka and adds tasks to the queue.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.brokers import SyncKafkaBroker
+    
+        broker = SyncKafkaBroker(name="QueueTasks", url="localhost:9092")
+    
+        app = QueueTasks(broker=broker)
+        ```
     """
 
     def __init__(
@@ -125,16 +125,17 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
     ):
-        """Инициализация SyncKafkaBroker.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: "QueueTasks".
-            url (str, optional): URL для подключения к Kafka. По умолчанию: None.
-            storage (BaseStorage, optional): Хранилище. По умолчанию: None.
-            topic (str, optional): Топик Kafka. По умолчанию: "task_queue".
-            log (Logger, optional): Логгер. По умолчанию: None.
-            config (QueueConfig, optional): Конфиг. По умолчанию: None.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.SyncEvents`.
+        """
+        Initializing SyncKafkaBroker.
+        
+                Args:
+                    name (str, optional): Project name. Default: "QueueTasks".
+                    url (str, optional): URL to connect to Kafka. Default: None.
+                    storage (BaseStorage, optional): Storage. Default: None.
+                    topic (str, optional): Kafka topic. Default: "task_queue".
+                    log (Logger, optional): Logger. Default: None.
+                    config (QueueConfig, optional): Config. Default: None.
+                    events (BaseEvents, optional): Events. Default: `qtasks.events.SyncEvents`.
         """
         self.url = url
         storage = storage or SyncRedisStorage(
@@ -177,10 +178,11 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
     ):
-        """Слушает Kafka и передаёт задачи воркеру.
-
-        Args:
-            worker (BaseWorker): Класс воркера.
+        """
+        Listens to Kafka and transfers tasks to the worker.
+        
+                Args:
+                    worker (BaseWorker): Worker class.
         """
         self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
@@ -282,20 +284,21 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             ),
         ] = None,
     ) -> Task:
-        """Добавляет задачу в брокер.
-
-        Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи. По умолчанию: `None`.
-            args (tuple, optional): Аргументы задачи типа args. По умолчанию: `()`.
-            kwargs (dict, optional): Аргументы задачи типа kwargs. По умолчанию: `{}`.
-
-        Returns:
-            Task: `schemas.task.Task`
-
-        Raises:
-            ValueError: Некорректный статус задачи.
+        """
+        Adds a task to the broker.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    priority (int, optional): Task priority. By default: 0.
+                    extra (dict, optional): Additional task parameters. Default: `None`.
+                    args (tuple, optional): Task arguments of type args. Default: `()`.
+                    kwargs (dict, optional): Task arguments of type kwargs. Default: `{}`.
+        
+                Returns:
+                    Task: `schemas.task.Task`
+        
+                Raises:
+                    ValueError: Incorrect task status.
         """
         args, kwargs = args or (), kwargs or {}
         uuid = uuid4()
@@ -356,13 +359,14 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
     ) -> Task | None:
-        """Получение информации о задаче.
-
-        Args:
-            uuid (UUID|str): UUID задачи.
-
-        Returns:
-            Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
+        """
+        Obtaining information about a task.
+        
+                Args:
+                    uuid (UUID|str): UUID of the task.
+        
+                Returns:
+                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
@@ -385,10 +389,11 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Обновляет информацию о задаче.
-
-        Args:
-            kwargs (dict, optional): данные задачи типа kwargs.
+        """
+        Updates task information.
+        
+                Args:
+                    kwargs (dict, optional): task data of type kwargs.
         """
         new_kw = self._plugin_trigger(
             "broker_update", broker=self, kw=kwargs, return_last=True
@@ -408,10 +413,11 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Запускает брокер.
-
-        Args:
-            worker (BaseWorker): Класс Воркера.
+        """
+        Launches the broker.
+        
+                Args:
+                    worker (BaseWorker): Worker class.
         """
         self._plugin_trigger("broker_start", broker=self, worker=worker)
         self.storage.start()
@@ -425,7 +431,7 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
         self.listen(worker)
 
     def stop(self):
-        """Останавливает брокер."""
+        """The broker stops."""
         self._plugin_trigger("broker_stop", broker=self)
         self.running = False
         self.consumer.stop()
@@ -450,11 +456,12 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
-
-        Args:
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
+        """
+        Updates storage data via the `self.storage.remove_finished_task` function.
+        
+                Args:
+                    task_broker (TaskPrioritySchema): The priority task schema.
+                    model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         new_model = self._plugin_trigger(
             "broker_remove_finished_task",
@@ -473,6 +480,6 @@ class SyncKafkaBroker(BaseBroker, SyncPluginMixin):
         return self.storage._running_older_tasks(worker)
 
     def flush_all(self) -> None:
-        """Удалить все данные."""
+        """Delete all data."""
         self._plugin_trigger("broker_flush_all", broker=self)
         self.storage.flush_all()

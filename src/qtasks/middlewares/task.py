@@ -11,34 +11,36 @@ if TYPE_CHECKING:
 
 class TaskMiddleware(BaseMiddleware):
     """
-    `TaskMiddleware` - Абстрактный класс, который является фундаментом для классов Мидлварей задач для `TaskExecutor`.
-
-    ## Пример
-
-    ```python
-    from qtasks.middlewares import TaskMiddleware
-    from qtasks.executors.base import BaseTaskExecutor
-
-    class MyTaskMiddleware(TaskMiddleware):
-        def __init__(self, task_executor: BaseTaskExecutor):
-            super().__init__(name="MyTaskMiddleware")
-            self.task_executor = task_executor
-    ```
+    `TaskMiddleware` - An abstract class that is the foundation for task Middleware classes for `TaskExecutor`.
+    
+        ## Example
+    
+        ```python
+        from qtasks.middlewares import TaskMiddleware
+        from qtasks.executors.base import BaseTaskExecutor
+    
+        class MyTaskMiddleware(TaskMiddleware):
+            def __init__(self, task_executor: BaseTaskExecutor):
+                super().__init__(name="MyTaskMiddleware")
+                self.task_executor = task_executor
+        ```
     """
 
     def __init__(self, task_executor: BaseTaskExecutor):
-        """Инициализация мидлвары задач.
-
-        Args:
-            task_executor (BaseTaskExecutor): Экземпляр исполнителя задач.
+        """
+        Initializing the task middleware.
+        
+                Args:
+                    task_executor (BaseTaskExecutor): A task executor instance.
         """
         super().__init__(name="TaskMiddleware")
         self.task_executor = task_executor
 
     def __call__(self, *args, **kwargs) -> Any:
-        """Обработка вызова мидлвары задач.
-
-        Returns:
-            Any: Результат обработки.
+        """
+        Processing the task middleware call.
+        
+                Returns:
+                    Any: Processing result.
         """
         pass

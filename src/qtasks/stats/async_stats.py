@@ -14,22 +14,24 @@ if TYPE_CHECKING:
 
 
 class AsyncStats(BaseStats, AsyncPluginMixin):
-    """Класс для асинхронных статистик."""
+    """Class for asynchronous statistics."""
 
     def __init__(self, app: QueueTasks, plugins: dict[str, list[BasePlugin]] | None = None):
-        """Инициализация асинхронной статистики.
-
-        Args:
-            app (QueueTasks): Экземпляр приложения. z
-            plugins (Optional[Dict[str, List[BasePlugin]]]): Плагины. По умолчанию: `None`.
+        """
+        Initializing asynchronous statistics.
+        
+                Args:
+                    app (QueueTasks): Application instance. z
+                    plugins (Optional[Dict[str, List[BasePlugin]]]): Plugins. Default: `None`.
         """
         super().__init__(app=app, plugins=plugins)
 
     async def inspect(self):
-        """Инспекция асинхронной статистики.
-
-        Returns:
-            AsyncStatsSchema: Схема асинхронной статистики.
+        """
+        Inspection of asynchronous statistics.
+        
+                Returns:
+                    AsyncStatsSchema: Asynchronous statistics schema.
         """
         await self._plugin_trigger(
             "stats_inspect",

@@ -39,19 +39,19 @@ if TYPE_CHECKING:
 
 class BaseBroker(Generic[TAsyncFlag], ABC):
     """
-    `BaseBroker` - Абстрактный класс, который является фундаментом для Брокеров.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.brokers.base import BaseBroker
-
-    class MyBroker(BaseBroker):
-        def __init__(self, name: str = None, storage: BaseStorage = None):
-            super().__init__(name=name, storage=storage)
-            pass
-    ```
+    `BaseBroker` - An abstract class that is the foundation for Brokers.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.brokers.base import BaseBroker
+    
+        class MyBroker(BaseBroker):
+            def __init__(self, name: str = None, storage: BaseStorage = None):
+                super().__init__(name=name, storage=storage)
+                pass
+        ```
     """
 
     def __init__(
@@ -107,14 +107,15 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ):
-        """Инициализация BaseBroker.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: `None`.
-            storage (BaseStorage, optional): Хранилище. По умолчанию: `None`.
-            log (Logger, optional): Логгер. По умолчанию: `None`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
-            events (BaseEvents, optional): События. По умолчанию: `None`.
+        """
+        BaseBroker initialization.
+        
+                Args:
+                    name (str, optional): Project name. Default: `None`.
+                    storage (BaseStorage, optional): Storage. Default: `None`.
+                    log (Logger, optional): Logger. Default: `None`.
+                    config (QueueConfig, optional): Config. Default: `None`.
+                    events (BaseEvents, optional): Events. Default: `None`.
         """
         self.name = name
         self.config = config or QueueConfig()
@@ -276,17 +277,18 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ) -> Task | Awaitable[Task]:
-        """Добавление задачи в брокер.
-
-        Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи.
-            args (tuple, optional): Аргументы задачи типа args.
-            kwargs (dict, optional): Аргументы задачи типа kwargs.
-
-        Returns:
-            Task: `schemas.task.Task`
+        """
+        Adding a task to the broker.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    priority (int, optional): Task priority. By default: 0.
+                    extra (dict, optional): Additional task parameters.
+                    args (tuple, optional): Task arguments of type args.
+                    kwargs (dict, optional): Task arguments of type kwargs.
+        
+                Returns:
+                    Task: `schemas.task.Task`
         """
         pass
 
@@ -328,13 +330,14 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> Task | None | Awaitable[Task | None]:
-        """Получение информации о задаче.
-
-        Args:
-            uuid (UUID|str): UUID задачи.
-
-        Returns:
-            Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
+        """
+        Obtaining information about a task.
+        
+                Args:
+                    uuid (UUID|str): UUID of the task.
+        
+                Returns:
+                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         pass
 
@@ -376,10 +379,11 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None | Awaitable[None]:
-        """Обновляет информацию о задаче.
-
-        Args:
-            kwargs (dict, optional): данные задачи типа kwargs.
+        """
+        Updates task information.
+        
+                Args:
+                    kwargs (dict, optional): task data of type kwargs.
         """
         pass
 
@@ -427,10 +431,11 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ) -> None | Awaitable[None]:
-        """Запуск Брокера. Эта функция задействуется основным экземпляром `QueueTasks` через `run_forever`.
-
-        Args:
-            worker (BaseWorker, optional): класс Воркера. По умолчанию: `None`.
+        """
+        Launching the Broker. This function is enabled by the main `QueueTasks` instance via `run_forever`.
+        
+                Args:
+                    worker (BaseWorker, optional): Worker class. Default: `None`.
         """
         pass
 
@@ -446,7 +451,7 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def stop(self) -> None | Awaitable[None]:
-        """Останавливает брокер. Эта функция задействуется основным экземпляром `QueueTasks` после завершения функции `run_forever`."""
+        """The broker stops. This function is invoked by the main `QueueTasks` instance after the `run_forever` function completes."""
         pass
 
     def update_config(
@@ -460,10 +465,11 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None:
-        """Обновляет конфиг брокера.
-
-        Args:
-            config (QueueConfig): Конфиг.
+        """
+        Updates the broker config.
+        
+                Args:
+                    config (QueueConfig): Config.
         """
         self.config = config
         return
@@ -489,11 +495,12 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ] = None,
     ) -> None:
-        """Добавить плагин в класс.
-
-        Args:
-            plugin (BasePlugin): Плагин
-            trigger_names (List[str], optional): Имя триггеров для плагина. По умолчанию: будет добавлен в `Globals`.
+        """
+        Add a plugin to the class.
+        
+                Args:
+                    plugin (BasePlugin): Plugin
+                    trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
         """
         trigger_names = trigger_names or ["Globals"]
 
@@ -511,11 +518,11 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
     async def flush_all(self: BaseBroker[Literal[True]]) -> None: ...
 
     def flush_all(self) -> None | Awaitable[None]:
-        """Удалить все данные."""
+        """Delete all data."""
         pass
 
     def init_plugins(self):
-        """Инициализация плагинов."""
+        """Initializing plugins."""
         pass
 
     @overload
@@ -579,11 +586,12 @@ class BaseBroker(Generic[TAsyncFlag], ABC):
             ),
         ],
     ) -> None | Awaitable[None]:
-        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
-
-        Args:
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Модель результата задачи.
+        """
+        Updates storage data via the `self.storage.remove_finished_task` function.
+        
+                Args:
+                    task_broker (TaskPrioritySchema): The priority task schema.
+                    model (TaskStatusSuccessSchema | TaskStatusProcessSchema | TaskStatusErrorSchema | TaskStatusCancelSchema): Model of the task result.
         """
         pass
 

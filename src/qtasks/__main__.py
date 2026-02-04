@@ -1,4 +1,4 @@
-"""Входная точка для запуска QTasks."""
+"""Entry point for running QTasks."""
 from __future__ import annotations
 
 import os
@@ -19,13 +19,14 @@ sys.path.append(os.path.abspath(os.getcwd()))
 
 
 def get_app(app_arg: str) -> Union[QueueTasks, aioQueueTasks, None]:
-    """Получение экземпляра приложения.
-
-    Args:
-        app_arg (str): Аргумент приложения в формате "module:app".
-
-    Returns:
-        QueueTasks: Экземпляр приложения.
+    """
+    Get an application instance.
+    
+        Args:
+            app_arg (str): Application argument in the format "module:app".
+    
+        Returns:
+            QueueTasks: Application instance.
     """
     try:
         if not app_arg:
@@ -40,7 +41,7 @@ def get_app(app_arg: str) -> Union[QueueTasks, aioQueueTasks, None]:
 
 
 def positional(args):
-    """Разбор позиционных аргументов."""
+    """Analysis of positional arguments."""
     positional_args = []
     keyword_args = {}
     for arg in args.extra:
@@ -62,7 +63,7 @@ def positional(args):
 
 
 def main():
-    """Главная функция."""
+    """Main function."""
     parser = ArgumentParser(
         prog="QTasks",
         description="QueueTasks framework",

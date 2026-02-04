@@ -8,58 +8,62 @@ from typing import Any
 
 
 class SyncStateRegistry:
-    """Класс реестра состояний."""
+    """State registry class."""
 
     def __init__(self) -> None:
-        """Инициализация реестра состояний."""
+        """Initializing the state register."""
         self._lock = threading.Lock()
         self._buckets: dict[type, dict[str, Any]] = {}
 
     def _ensure(self, state_cls: type) -> None:
-        """Обеспечить наличие реестра для данного класса состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
+        """
+        Ensure that there is a registry for this condition class.
+        
+                Args:
+                    state_cls (Type): State class.
         """
         if state_cls not in self._buckets:
             self._buckets[state_cls] = {}
 
     def get(self, state_cls: type, key: str, default: Any = None) -> Any:
-        """Получить значение состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-            key (str): Ключ состояния.
-            default (Any, optional): Значение по умолчанию, если состояние не найдено. Defaults to None.
-
-        Returns:
-            Any: Значение состояния или значение по умолчанию.
+        """
+        Get the status value.
+        
+                Args:
+                    state_cls (Type): State class.
+                    key (str): State key.
+                    default (Any, optional): Default value if the state is not found. Defaults to None.
+        
+                Returns:
+                    Any: Status value or default value.
         """
         with self._lock:
             self._ensure(state_cls)
             return self._buckets[state_cls].get(key, default)
 
     def set(self, state_cls: type, key: str, value: Any) -> None:
-        """Установить значение состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-            key (str): Ключ состояния.
-            value (Any): Значение состояния.
+        """
+        Set the status value.
+        
+                Args:
+                    state_cls (Type): State class.
+                    key (str): State key.
+                    value (Any): State value.
         """
         with self._lock:
             self._ensure(state_cls)
             self._buckets[state_cls][key] = value
 
     def update(self, state_cls: type, mapping: dict[str, Any]) -> dict[str, Any]:
-        """Обновить значения состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-            mapping (Dict[str, Any]): Словарь обновлённых значений состояния.
-
-        Returns:
-            Dict[str, Any]: Словарь старых значений состояния.
+        """
+        Update status values.
+        
+                Args:
+                    state_cls (Type): State class.
+                    mapping (Dict[str, Any]): Dictionary of updated state values.
+        
+                Returns:
+                    Dict[str, Any]: Dictionary of old state values.
         """
         with self._lock:
             self._ensure(state_cls)
@@ -68,34 +72,37 @@ class SyncStateRegistry:
             return dict(self._buckets[state_cls])
 
     def get_all(self, state_cls: type) -> dict[str, Any]:
-        """Получить все значения состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-
-        Returns:
-            Dict[str, Any]: Словарь всех значений состояния.
+        """
+        Get all state values.
+        
+                Args:
+                    state_cls (Type): State class.
+        
+                Returns:
+                    Dict[str, Any]: Dictionary of all state values.
         """
         with self._lock:
             self._ensure(state_cls)
             return dict(self._buckets[state_cls])
 
     def delete(self, state_cls: type, key: str) -> None:
-        """Удалить значение состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-            key (str): Ключ состояния.
+        """
+        Remove status value.
+        
+                Args:
+                    state_cls (Type): State class.
+                    key (str): State key.
         """
         with self._lock:
             self._ensure(state_cls)
             self._buckets[state_cls].pop(key, None)
 
     def clear(self, state_cls: type) -> None:
-        """Очистить все значения состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
+        """
+        Clear all status values.
+        
+                Args:
+                    state_cls (Type): State class.
         """
         with self._lock:
             self._ensure(state_cls)
@@ -103,58 +110,62 @@ class SyncStateRegistry:
 
 
 class AsyncStateRegistry:
-    """Класс реестра состояний."""
+    """State registry class."""
 
     def __init__(self) -> None:
-        """Инициализация реестра состояний."""
+        """Initializing the state register."""
         self._lock = asyncio.Lock()
         self._buckets: dict[type, dict[str, Any]] = {}
 
     async def _ensure(self, state_cls: type) -> None:
-        """Обеспечить наличие реестра для данного класса состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
+        """
+        Ensure that there is a registry for this condition class.
+        
+                Args:
+                    state_cls (Type): State class.
         """
         if state_cls not in self._buckets:
             self._buckets[state_cls] = {}
 
     async def get(self, state_cls: type, key: str, default: Any = None) -> Any:
-        """Получить значение состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-            key (str): Ключ состояния.
-            default (Any, optional): Значение по умолчанию, если состояние не найдено. Defaults to None.
-
-        Returns:
-            Any: Значение состояния или значение по умолчанию.
+        """
+        Get the status value.
+        
+                Args:
+                    state_cls (Type): State class.
+                    key (str): State key.
+                    default (Any, optional): Default value if the state is not found. Defaults to None.
+        
+                Returns:
+                    Any: Status value or default value.
         """
         async with self._lock:
             await self._ensure(state_cls)
             return self._buckets[state_cls].get(key, default)
 
     async def set(self, state_cls: type, key: str, value: Any) -> None:
-        """Установить значение состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-            key (str): Ключ состояния.
-            value (Any): Значение состояния.
+        """
+        Set the status value.
+        
+                Args:
+                    state_cls (Type): State class.
+                    key (str): State key.
+                    value (Any): State value.
         """
         async with self._lock:
             await self._ensure(state_cls)
             self._buckets[state_cls][key] = value
 
     async def update(self, state_cls: type, mapping: dict[str, Any]) -> dict[str, Any]:
-        """Обновить значения состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-            mapping (Dict[str, Any]): Словарь обновлённых значений состояния.
-
-        Returns:
-            Dict[str, Any]: Словарь старых значений состояния.
+        """
+        Update status values.
+        
+                Args:
+                    state_cls (Type): State class.
+                    mapping (Dict[str, Any]): Dictionary of updated state values.
+        
+                Returns:
+                    Dict[str, Any]: Dictionary of old state values.
         """
         async with self._lock:
             await self._ensure(state_cls)
@@ -162,34 +173,37 @@ class AsyncStateRegistry:
             return dict(self._buckets[state_cls])
 
     async def get_all(self, state_cls: type) -> dict[str, Any]:
-        """Получить все значения состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-
-        Returns:
-            Dict[str, Any]: Словарь всех значений состояния.
+        """
+        Get all state values.
+        
+                Args:
+                    state_cls (Type): State class.
+        
+                Returns:
+                    Dict[str, Any]: Dictionary of all state values.
         """
         async with self._lock:
             await self._ensure(state_cls)
             return dict(self._buckets[state_cls])
 
     async def delete(self, state_cls: type, key: str) -> None:
-        """Удалить значение состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
-            key (str): Ключ состояния.
+        """
+        Remove status value.
+        
+                Args:
+                    state_cls (Type): State class.
+                    key (str): State key.
         """
         async with self._lock:
             await self._ensure(state_cls)
             self._buckets[state_cls].pop(key, None)
 
     async def clear(self, state_cls: type) -> None:
-        """Очистить все значения состояния.
-
-        Args:
-            state_cls (Type): Класс состояния.
+        """
+        Clear all status values.
+        
+                Args:
+                    state_cls (Type): State class.
         """
         async with self._lock:
             await self._ensure(state_cls)

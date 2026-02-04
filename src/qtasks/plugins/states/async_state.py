@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 
 
 class AsyncStatePlugin(BasePlugin):
-    """Плагин для работы с асинхронными состояниями."""
+    """Plugin for working with asynchronous states."""
 
     def __init__(self, accept_annotated: bool = True):
-        """Инициализация плагина."""
+        """Initializing the plugin."""
         super().__init__()
         self.accept_annotated = accept_annotated
         self._registry = AsyncStateRegistry()
@@ -26,15 +26,15 @@ class AsyncStatePlugin(BasePlugin):
         self.handlers = {"task_executor_args_replace": self.task_executor_args_replace}
 
     async def start(self, *args, **kwargs):
-        """Запуск плагина."""
+        """Launch the plugin."""
         pass
 
     async def stop(self, *args, **kwargs):
-        """Остановка плагина."""
+        """Stopping the plugin."""
         pass
 
     async def trigger(self, name, *args, **kwargs):
-        """Триггер для запуска обработчика."""
+        """Trigger to run the handler."""
         handler = self.handlers.get(name)
         if not handler:
             return
@@ -47,16 +47,17 @@ class AsyncStatePlugin(BasePlugin):
         kw: dict[str, Any],
         args_info: list[ArgMeta],
     ):
-        """Заменяет аргументы и ключевые слова в задаче.
-
-        Args:
-            task_executor (BaseTaskExecutor): Экземпляр исполнителя задач.
-            args (List[Any]): Позиционные аргументы задачи.
-            kw (Dict[str, Any]): Именованные аргументы задачи.
-            args_info (List[ArgMeta]): Метаданные аргументов.
-
-        Returns:
-            Tuple[List[Any], Dict[str, Any]]: Замененные аргументы и ключевые слова.
+        """
+        Replaces arguments and keywords in a task.
+        
+                Args:
+                    task_executor (BaseTaskExecutor): A task executor instance.
+                    args (List[Any]): Positional arguments to the task.
+                    kw (Dict[str, Any]): Named task arguments.
+                    args_info (List[ArgMeta]): Argument metadata.
+        
+                Returns:
+                    Tuple[List[Any], Dict[str, Any]]: Replaced arguments and keywords.
         """
         new_args = list(args)
         new_kw = dict(kw)
@@ -89,13 +90,14 @@ class AsyncStatePlugin(BasePlugin):
         return {"args": new_args, "kw": new_kw}
 
     def _extract_state_class(self, ann: Any) -> type[AsyncState] | None:
-        """Извлекает класс состояния из аннотации.
-
-        Args:
-            ann (Any): Аннотация.
-
-        Returns:
-            Type[State] | None: Класс состояния или None.
+        """
+        Retrieves the state class from the annotation.
+        
+                Args:
+                    ann (Any): Abstract.
+        
+                Returns:
+                    Type[State] | None: State class or None.
         """
         if ann is None:
             return None

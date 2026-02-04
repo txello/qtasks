@@ -8,13 +8,14 @@ from qtasks.utils import _build_task
 
 
 class SyncTestPlugin(BasePlugin):
-    """Плагин для синхронной обработки тестов."""
+    """Plugin for synchronous test processing."""
 
     def __init__(self, name: str = "SyncTestPlugin"):
-        """Инициализация плагина.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: "SyncTestPlugin".
+        """
+        Initializing the plugin.
+        
+                Args:
+                    name (str, optional): Project name. Default: "SyncTestPlugin".
         """
         super().__init__(name=name)
         self.handlers = {
@@ -23,15 +24,15 @@ class SyncTestPlugin(BasePlugin):
         }
 
     def start(self, *args, **kwargs):
-        """Запуск плагина."""
+        """Launch the plugin."""
         pass
 
     def stop(self, *args, **kwargs):
-        """Остановка плагина."""
+        """Stopping the plugin."""
         pass
 
     def trigger(self, name, **kwargs):
-        """Триггер для запуска обработчика."""
+        """Trigger to run the handler."""
         handler = self.handlers.get(name)
         return (
             handler(
@@ -42,13 +43,13 @@ class SyncTestPlugin(BasePlugin):
         )
 
     def worker_execute_before(self, *args, **kwargs):
-        """Обработчик перед выполнением задачи."""
+        """A handler before executing a task."""
         result = self._execute(*args, **kwargs)
         if result:
             return result.get("model")
 
     def worker_remove_finished_task(self, *args, **kwargs):
-        """Обработчик завершения задачи."""
+        """Task completion handler."""
         return self._execute(*args, **kwargs)
 
     def _execute(

@@ -11,19 +11,19 @@ from qtasks.types.typing import TAsyncFlag
 
 class BasePlugin(Generic[TAsyncFlag], ABC):
     """
-    `BasePlugin` - Абстрактный класс, который является фундаментом для Плагинов.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.plugins.base import BasePlugin
-
-    class MyPlugin(BasePlugin):
-        def __init__(self, name: str = None):
-            super().__init__(name=name)
-            pass
-    ```
+    `BasePlugin` - An abstract class that is the foundation for Plugins.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.plugins.base import BasePlugin
+    
+        class MyPlugin(BasePlugin):
+            def __init__(self, name: str = None):
+                super().__init__(name=name)
+                pass
+        ```
     """
 
     def __init__(
@@ -41,10 +41,11 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
         *args,
         **kwargs
     ):
-        """Инициализация плагина.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: `None`.
+        """
+        Initializing the plugin.
+        
+                Args:
+                    name (str, optional): Project name. Default: `None`.
         """
         self.name: str | None = name
 
@@ -65,12 +66,13 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
     def trigger(
         self, name: str, *args, **kwargs
     ) -> dict[str, Any] | None | Awaitable[dict[str, Any] | None]:
-        """Триггер плагина.
-
-        Args:
-            name (str): Имя триггера.
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+        """
+        Plugin trigger.
+        
+                Args:
+                    name (str): Trigger name.
+                    args (tuple, optional): Trigger arguments of type args.
+                    kwargs (dict, optional): Trigger arguments of type kwargs.
         """
         pass
 
@@ -82,11 +84,12 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def start(self, *args, **kwargs) -> None | Awaitable[None]:
-        """Запускает Плагин.
-
-        Args:
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+        """
+        Launches the Plugin.
+        
+                Args:
+                    args (tuple, optional): Trigger arguments of type args.
+                    kwargs (dict, optional): Trigger arguments of type kwargs.
         """
         pass
 
@@ -98,10 +101,11 @@ class BasePlugin(Generic[TAsyncFlag], ABC):
 
     @abstractmethod
     def stop(self, *args, **kwargs) -> None | Awaitable[None]:
-        """Останавливает Плагин.
-
-        Args:
-            args (tuple, optional): Аргументы триггера типа args.
-            kwargs (dict, optional): Аргументы триггера типа kwargs.
+        """
+        Stops the Plugin.
+        
+                Args:
+                    args (tuple, optional): Trigger arguments of type args.
+                    kwargs (dict, optional): Trigger arguments of type kwargs.
         """
         pass

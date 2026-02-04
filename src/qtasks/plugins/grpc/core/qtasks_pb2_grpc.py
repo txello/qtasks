@@ -50,15 +50,13 @@ class QTasksServiceServicer:
     """Missing associated documentation comment in .proto file."""
 
     def AddTask(self, request, context):
-        """Добавить задачу
-        """
+        """Add a task"""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetTask(self, request, context):
-        """Получить состояние/результат задачи
-        """
+        """Get task status/result"""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')

@@ -13,22 +13,23 @@ from qtasks.results.sync_result import SyncResult
 
 @dataclass
 class Task:
-    """`Task` модель.
-
-    Args:
-        status (str): Статус.
-        uuid (UUID): UUID.
-        priority (int): Приоритет.
-        task_name (str): Название.
-
-        args (Tuple[str]): Аргументы типа args.
-        kwargs (Dict[str, Any]): Аргументы типа kwargs.
-
-        created_at (datetime): Дата создания.
-        updated_at (datetime): Дата обновления.
-
-        returning (str | None): Результат. По умолчанию: `None`.
-        traceback (str | None): Трассировка ошибок. По умолчанию: `None`.
+    """
+    `Task` model.
+    
+        Args:
+            status (str): Status.
+            uuid (UUID): UUID.
+            priority (int): Priority.
+            task_name (str): Name.
+    
+            args (Tuple[str]): Arguments of type args.
+            kwargs (Dict[str, Any]): Arguments of type kwargs.
+    
+            created_at (datetime): Created date.
+            updated_at (datetime): Date of update.
+    
+            returning (str | None): Result. Default: `None`.
+            traceback (str | None): Trace errors. Default: `None`.
     """
 
     status: str
@@ -61,10 +62,11 @@ class Task:
             ),
         ] = 100.0,
     ) -> Union["Task", None]:
-        """Ожидание результата задачи Синхронно.
-
-        Args:
-            timeout (Annotated[Optional[float], Doc], optional): Таймаут ожидания результата. По умолчанию: `100.0`.
+        """
+        Waiting for task result Synchronously.
+        
+                Args:
+                    timeout (Annotated[Optional[float], Doc], optional): Timeout for waiting for the result. Default: `100.0`.
         """
         return SyncResult(uuid=self.uuid).result(timeout=timeout)
 
@@ -79,9 +81,10 @@ class Task:
             ),
         ] = 100.0,
     ) -> Union["Task", None]:
-        """Ожидание результата задачи Асинхронно.
-
-        Args:
-            timeout (Annotated[Optional[float], Doc], optional): Таймаут ожидания результата. По умолчанию: `100.0`.
+        """
+        Waiting for task result Asynchronously.
+        
+                Args:
+                    timeout (Annotated[Optional[float], Doc], optional): Timeout for waiting for the result. Default: `100.0`.
         """
         return await AsyncResult(uuid=self.uuid).result(timeout=timeout)

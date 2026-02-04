@@ -6,15 +6,14 @@ from dataclasses import dataclass
 @dataclass
 class TestConfig:
     """
-    Конфигурация тестирования очередей задач.
-
-    Attributes:
-        worker (bool): Воркер.
-        broker (bool): Брокер.
-        storage (bool): Хранилище.
-        global_config (bool): Глобальный конфиг.
-        plugins (bool): Плагины.
-
+    Configuration for testing task queues.
+    
+        Attributes:
+            worker (bool): Worker.
+            broker (bool): Broker.
+            storage (bool): Storage.
+            global_config (bool): Global config.
+            plugins (bool): Plugins.
     """
 
     __test__ = False
@@ -27,22 +26,22 @@ class TestConfig:
 
     @classmethod
     def full(cls):
-        """Создать полную конфигурацию тестирования."""
+        """Create a complete testing configuration."""
         return cls(
             worker=True, broker=True, storage=True, global_config=True, plugins=True
         )
 
     @classmethod
     def only_worker(cls, plugins: bool = False):
-        """Создать конфигурацию тестирования только для воркера."""
+        """Create a testing configuration for the worker only."""
         return cls(worker=True, plugins=plugins)
 
     @classmethod
     def only_broker(cls, plugins: bool = False):
-        """Создать конфигурацию тестирования только для брокера."""
+        """Create a test configuration for the broker only."""
         return cls(broker=True, plugins=plugins)
 
     @classmethod
     def full_broker(cls):
-        """Создать полную конфигурацию тестирования для брокера."""
+        """Create a complete testing configuration for the broker."""
         return cls(broker=True, storage=True, global_config=True, plugins=True)

@@ -29,18 +29,18 @@ if TYPE_CHECKING:
 
 class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
     """
-    `QueueTasks` - Фреймворк для очередей задач.
-
-    Читать больше:
-    [Первые шаги](https://txello.github.io/qtasks/getting_started/).
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-
-    app = QueueTasks()
-    ```
+    `QueueTasks` - Framework for task queues.
+    
+        Read more:
+        [First steps](https://txello.github.io/qtasks/getting_started/).
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+    
+        app = QueueTasks()
+        ```
     """
 
     def __init__(
@@ -117,16 +117,16 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
         ] = None,
     ):
         """
-        Инициализация QueueTasks.
-
-        Args:
-            name (str): Имя проекта. По умолчанию: `QueueTasks`.
-            broker_url (str, optional): URL для Брокера. Используется Брокером по умолчанию через параметр url. По умолчанию: `None`.
-            broker (Type[BaseBroker], optional): Брокер. Хранит в себе обработку из очередей задач и хранилище данных. По умолчанию: `qtasks.brokers.AsyncRedisBroker`.
-            worker (Type[BaseWorker], optional): Воркер. Хранит в себе обработку задач. По умолчанию: `qtasks.workers.AsyncWorker`.
-            log (Logger, optional): Логгер. По умолчанию: `qtasks.logs.Logger`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `qtasks.configs.QueueConfig`.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
+        Initializing QueueTasks.
+        
+                Args:
+                    name (str): Project name. Default: `QueueTasks`.
+                    broker_url (str, optional): URL for the Broker. Used by the Broker by default via the url parameter. Default: `None`.
+                    broker (Type[BaseBroker], optional): Broker. Stores processing from task queues and data storage. Default: `qtasks.brokers.AsyncRedisBroker`.
+                    worker (Type[BaseWorker], optional): Worker. Stores task processing. Default: `qtasks.workers.AsyncWorker`.
+                    log (Logger, optional): Logger. Default: `qtasks.logs.Logger`.
+                    config (QueueConfig, optional): Config. Default: `qtasks.configs.QueueConfig`.
+                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         broker = broker or AsyncRedisBroker(
             name=name, url=broker_url, log=log, config=config, events=events
@@ -378,18 +378,19 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ],
     ) -> Union[Task, Optional[Task]]:
-        """Добавить задачу.
-
-        Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умолчанию: Значение приоритета у задачи.
-            args (tuple, optional): args задачи. По умолчанию `()`.
-            kwargs (dict, optional): kwags задачи. По умолчанию `{}`.
-
-            timeout (float, optional): Таймаут задачи. Если указан, задача возвращается через `qtasks.results.AsyncResult`.
-
-        Returns:
-            Task|None: `schemas.task.Task` или `None`.
+        """
+        Add a task.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    priority (int, optional): Task priority. Default: Task priority value.
+                    args (tuple, optional): task args. Defaults to `()`.
+                    kwargs (dict, optional): kwags tasks. Defaults to `{}`.
+        
+                    timeout (float, optional): Task timeout. If specified, the task is returned via `qtasks.results.AsyncResult`.
+        
+                Returns:
+                    Task|None: `schemas.task.Task` or `None`.
         """
         if priority is None:
             task_registry = self.tasks.get(task_name, 0)
@@ -457,13 +458,14 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ],
     ) -> Union[Task, None]:
-        """Получить задачу.
-
-        Args:
-            uuid (UUID|str): UUID Задачи.
-
-        Returns:
-            Task|None: Данные задачи или None.
+        """
+        Get a task.
+        
+                Args:
+                    uuid (UUID|str): UUID of the Task.
+        
+                Returns:
+                    Task|None: Task data or None.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
@@ -519,13 +521,14 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
             ),
         ] = True,
     ) -> None:
-        """Запуск асинхронно Приложение.
-
-        Args:
-            loop (asyncio.AbstractEventLoop, optional): асинхронный loop. По умолчанию: None.
-            starter (BaseStarter, optional): Стартер. По умолчанию: `qtasks.starters.AsyncStarter`.
-            num_workers (int, optional): Количество запущенных воркеров. По умолчанию: 4.
-            reset_config (bool, optional): Обновить config у воркера и брокера. По умолчанию: True.
+        """
+        Launch asynchronously Application.
+        
+                Args:
+                    loop (asyncio.AbstractEventLoop, optional): async loop. Default: None.
+                    starter (BaseStarter, optional): Starter. Default: `qtasks.starters.AsyncStarter`.
+                    num_workers (int, optional): Number of workers running. Default: 4.
+                    reset_config (bool, optional): Update the config of the worker and broker. Default: True.
         """
         self.starter = starter or AsyncStarter(
             name=self.name,
@@ -555,19 +558,20 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
         )
 
     async def stop(self):
-        """Останавливает все компоненты."""
+        """Stops all components."""
         await self._plugin_trigger("qtasks_stop", qtasks=self, starter=self.starter)
         if self.starter:
             await self.starter.stop()
 
     async def ping(self, server: bool = True) -> bool:
-        """Проверка запуска сервера.
-
-        Args:
-            server (bool, optional): Проверка через сервер. По умолчанию `True`.
-
-        Returns:
-            bool: True - Работает, False - Не работает.
+        """
+        Checking server startup.
+        
+                Args:
+                    server (bool, optional): Verification via server. Default is `True`.
+        
+                Returns:
+                    bool: True - Works, False - Doesn't work.
         """
         await self._plugin_trigger(
             "qtasks_ping", qtasks=self, global_config=self.broker.storage.global_config
@@ -580,6 +584,6 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
         return True
 
     async def flush_all(self) -> None:
-        """Удалить все данные."""
+        """Delete all data."""
         await self._plugin_trigger("qtasks_flush_all", qtasks=self, broker=self.broker)
         await self.broker.flush_all()

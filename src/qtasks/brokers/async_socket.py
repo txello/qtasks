@@ -37,18 +37,18 @@ if TYPE_CHECKING:
 
 class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     """
-    Брокер, слушающий сокеты и добавляющий задачи в очередь.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.brokers import AsyncSocketBroker
-
-    broker = AsyncSocketBroker(name="QueueTasks", url="127.0.0.1")
-
-    app = QueueTasks(broker=broker)
-    ```
+    A broker that listens to sockets and adds tasks to the queue.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.brokers import AsyncSocketBroker
+    
+        broker = AsyncSocketBroker(name="QueueTasks", url="127.0.0.1")
+    
+        app = QueueTasks(broker=broker)
+        ```
     """
 
     def __init__(
@@ -124,16 +124,17 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
     ):
-        """Инициализация AsyncSocketBroker.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: `QueueTasks`.
-            url (str, optional): URL для подключения к сокету. По умолчанию: `127.0.0.1`.
-            port (int, optional): Порт для подключения к сокету. По умолчанию: `8765`.
-            storage (BaseStorage, optional): Хранилище. По умолчанию: `None`.
-            log (Logger, optional): Логгер. По умолчанию: `None`.
-            config (QueueConfig, optional): Конфиг. По умолчанию: `None`.
-            events (BaseEvents, optional): События. По умолчанию: `qtasks.events.AsyncEvents`.
+        """
+        Initializing AsyncSocketBroker.
+        
+                Args:
+                    name (str, optional): Project name. Default: `QueueTasks`.
+                    url (str, optional): URL to connect to the socket. Default: `127.0.0.1`.
+                    port (int, optional): Port to connect to the socket. Default: `8765`.
+                    storage (BaseStorage, optional): Storage. Default: `None`.
+                    log (Logger, optional): Logger. Default: `None`.
+                    config (QueueConfig, optional): Config. Default: `None`.
+                    events (BaseEvents, optional): Events. Default: `qtasks.events.AsyncEvents`.
         """
         self.url = url
         self.port = port
@@ -160,11 +161,12 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
     async def handle_connection(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ):
-        """Обрабатывает входящее соединение.
-
-        Args:
-            reader (asyncio.StreamReader): Читатель для входящих данных.
-            writer (asyncio.StreamWriter): Писатель для исходящих данных.
+        """
+        Handles an incoming connection.
+        
+                Args:
+                    reader(asyncio.StreamReader): Reader for incoming data.
+                    writer(asyncio.StreamWriter): Writer for outgoing data.
         """
         try:
             data = await reader.read(4096)
@@ -207,13 +209,14 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
     ):
-        """Слушает очередь сокета и передаёт задачи воркеру.
-
-        Args:
-            worker (BaseWorker): Класс воркера.
-
-        Raises:
-            KeyError: Задача не найдена.
+        """
+        Listens to the socket queue and transfers tasks to the worker.
+        
+                Args:
+                    worker (BaseWorker): Worker class.
+        
+                Raises:
+                    KeyError: Task not found.
         """
         await self._plugin_trigger("broker_listen_start", broker=self, worker=worker)
         self.running = True
@@ -322,20 +325,21 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ] = None,
     ) -> Task:
-        """Добавляет задачу в брокер.
-
-        Args:
-            task_name (str): Имя задачи.
-            priority (int, optional): Приоритет задачи. По умоланию: 0.
-            extra (dict, optional): Дополнительные параметры задачи. По умолчанию: `None`.
-            args (tuple, optional): Аргументы задачи типа args. По умолчанию: `()`.
-            kwargs (dict, optional): Аргументы задачи типа kwargs. По умолчанию: `{}`.
-
-        Returns:
-            Task: `schemas.task.Task`
-
-        Raises:
-            ValueError: Некорректный статус задачи.
+        """
+        Adds a task to the broker.
+        
+                Args:
+                    task_name (str): The name of the task.
+                    priority (int, optional): Task priority. By default: 0.
+                    extra (dict, optional): Additional task parameters. Default: `None`.
+                    args (tuple, optional): Task arguments of type args. Default: `()`.
+                    kwargs (dict, optional): Task arguments of type kwargs. Default: `{}`.
+        
+                Returns:
+                    Task: `schemas.task.Task`
+        
+                Raises:
+                    ValueError: Incorrect task status.
         """
         loop = asyncio.get_running_loop()
         asyncio_atexit.register(self.stop, loop=loop)
@@ -400,13 +404,14 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
     ) -> Task | None:
-        """Получение информации о задаче.
-
-        Args:
-            uuid (UUID|str): UUID задачи.
-
-        Returns:
-            Task|None: Если есть информация о задаче, возвращает `schemas.task.Task`, иначе `None`.
+        """
+        Obtaining information about a task.
+        
+                Args:
+                    uuid (UUID|str): UUID of the task.
+        
+                Returns:
+                    Task|None: If there is task information, returns `schemas.task.Task`, otherwise `None`.
         """
         if isinstance(uuid, str):
             uuid = UUID(uuid)
@@ -429,10 +434,11 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Обновляет информацию о задаче.
-
-        Args:
-            kwargs (dict, optional): данные задачи типа kwargs.
+        """
+        Updates task information.
+        
+                Args:
+                    kwargs (dict, optional): task data of type kwargs.
         """
         new_kw = await self._plugin_trigger(
             "broker_update", broker=self, kw=kwargs, return_last=True
@@ -452,10 +458,11 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Запускает брокер.
-
-        Args:
-            worker (BaseWorker): Класс Воркера.
+        """
+        Launches the broker.
+        
+                Args:
+                    worker (BaseWorker): Worker class.
         """
         await self._plugin_trigger("broker_start", broker=self, worker=worker)
         await self.storage.start()
@@ -480,7 +487,7 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             await self._serve_task
 
     async def stop(self):
-        """Останавливает брокер."""
+        """The broker stops."""
         await self._plugin_trigger("broker_stop", broker=self)
         self.running = False
 
@@ -520,11 +527,12 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
             ),
         ],
     ) -> None:
-        """Обновляет данные хранилища через функцию `self.storage.remove_finished_task`.
-
-        Args:
-            task_broker (TaskPrioritySchema): Схема приоритетной задачи.
-            model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Модель результата задачи.
+        """
+        Updates storage data via the `self.storage.remove_finished_task` function.
+        
+                Args:
+                    task_broker (TaskPrioritySchema): The priority task schema.
+                    model (TaskStatusSuccessSchema | TaskStatusErrorSchema): Model of the task result.
         """
         new_model = await self._plugin_trigger(
             "broker_remove_finished_task",
@@ -546,6 +554,6 @@ class AsyncSocketBroker(BaseBroker, AsyncPluginMixin):
         return await self.storage._running_older_tasks(worker)
 
     async def flush_all(self) -> None:
-        """Удалить все данные."""
+        """Delete all data."""
         await self._plugin_trigger("broker_flush_all", broker=self)
         await self.storage.flush_all()

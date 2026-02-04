@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 class SyncContextPool:
     """
-    Хранит асинхронные контексты по группам (name).
-    Ключ для идентификации конкретного контекста — id(cm).
+    Stores asynchronous contexts by group (name).
+        The key to identify a specific context is id(cm).
     """
 
     def __init__(self):
@@ -14,8 +14,8 @@ class SyncContextPool:
 
     def enter(self, name: str, cm: object) -> Any:
         """
-        Войти в асинхронный контекст cm и сохранить его.
-        Возвращает значение, полученное из yield в @contextmanager.
+        Enter the asynchronous cm context and save it.
+                Returns the value obtained from yield in @contextmanager.
         """
         stack = ExitStack()
         value = stack.enter_context(cm) # type: ignore
@@ -25,8 +25,8 @@ class SyncContextPool:
 
     def close_by_cm(self, cm: object) -> bool:
         """
-        Закрыть контекст по самому объекту cm.
-        Возвращает True если найден и закрыт, иначе False.
+        Close the context on the cm object itself.
+                Returns True if found and closed, False otherwise.
         """
         cm_id = id(cm)
         for name, lst in list(self._contexts.items()):
@@ -40,9 +40,7 @@ class SyncContextPool:
         return False
 
     def close_by_id(self, cm_id: int) -> bool:
-        """
-        Аналогично close_by_cm, но по id(cm).
-        """
+        """Similar to close_by_cm, but by id(cm)."""
         for name, lst in list(self._contexts.items()):
             for i, (stored_id, _, stack, _) in enumerate(lst):
                 if stored_id == cm_id:
@@ -54,7 +52,7 @@ class SyncContextPool:
         return False
 
     def close_last(self, name: str) -> bool:
-        """Закрыть последний (LIFO) контекст из группы name."""
+        """Close the last (LIFO) context from the name group."""
         lst = self._contexts.get(name)
         if not lst:
             return False
@@ -65,7 +63,7 @@ class SyncContextPool:
         return True
 
     def close_all(self, name: Optional[str] = None) -> None:
-        """Закрыть все контексты в группе или все группы."""
+        """Close all contexts in a group or all groups."""
         if name is None:
             names = list(self._contexts.keys())
             for n in names:

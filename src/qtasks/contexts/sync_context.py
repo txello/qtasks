@@ -17,24 +17,24 @@ if TYPE_CHECKING:
 
 class SyncContext:
     """
-    Контекст, связанный с синхронными задачами.
-
-    ## Пример
-
-    ```python
-    from qtasks import QueueTasks
-    from qtasks.registries import SyncTask
-
-    app = QueueTasks()
-
-    @app.task(echo=True)
-    async def my_task(self: SyncTask):
-        self.ctx # SyncContext
-    ```
+    Context associated with synchronous tasks.
+    
+        ## Example
+    
+        ```python
+        from qtasks import QueueTasks
+        from qtasks.registries import SyncTask
+    
+        app = QueueTasks()
+    
+        @app.task(echo=True)
+        async def my_task(self: SyncTask):
+            self.ctx # SyncContext
+        ```
     """
 
     def __init__(self, **kwargs):
-        """Инициализация контекста."""
+        """Initializing the context."""
         self.task_name = kwargs.get("task_name")
         """Имя задачи."""
 
@@ -54,36 +54,39 @@ class SyncContext:
         """Метаданные задачи."""
 
     def get_logger(self, name: str | None = None) -> Logger:
-        """Возвращает логгер для текущего контекста.
-
-        Args:
-            name (str|None): Имя логгера. Если не указано, используется имя задачи.
-
-        Returns:
-            Logger: Логгер для текущего контекста.
+        """
+        Returns a logger for the current context.
+        
+                Args:
+                    name (str|None): Logger name. If not specified, the task name is used.
+        
+                Returns:
+                    Logger: Logger for the current context.
         """
         self._log = self._log.with_subname(name or self.task_name or "SyncContext")
         return self._log
 
     def get_config(self) -> QueueConfig:
-        """Возвращает конфигурацию приложения.
-
-        Returns:
-            QueueConfig: Конфигурация приложения.
+        """
+        Returns the application configuration.
+        
+                Returns:
+                    QueueConfig: Application configuration.
         """
         return self._app.config
 
     def get_metadata(self, cache=True) -> Union[Task, None]:
-        """Возвращает метаданные задачи.
-
-        Args:
-            cache (bool): Использовать кэшированные метаданные.
-
-        Returns:
-            Task|None: Метаданные задачи или None, если не найдены.
-
-        Raises:
-            ValueError: Если UUID задачи не установлен.
+        """
+        Returns task metadata.
+        
+                Args:
+                    cache (bool): Use cached metadata.
+        
+                Returns:
+                    Task|None: Task metadata or None if not found.
+        
+                Raises:
+                    ValueError: If the task UUID is not set.
         """
         if not self.task_uuid:
             raise ValueError("UUID задачи не установлен.")
@@ -95,57 +98,62 @@ class SyncContext:
         return self._app.get(self.task_uuid)
 
     def get_task(self, uuid: UUID | str) -> Union[Task, None]:
-        """Возвращает задачу по UUID.
-
-        Args:
-            uuid (UUID|str): UUID задачи.
-
-        Returns:
-            Task|None: Задача или None, если не найдена.
+        """
+        Returns the task by UUID.
+        
+                Args:
+                    uuid (UUID|str): UUID of the task.
+        
+                Returns:
+                    Task|None: Task or None if not found.
         """
         return self._app.get(uuid)
 
     def sleep(self, seconds: float) -> None:
-        """Приостанавливает выполнение на заданное количество секунд.
-
-        Args:
-            seconds (float): Количество секунд для приостановки.
+        """
+        Pauses execution for the specified number of seconds.
+        
+                Args:
+                    seconds (float): Number of seconds to pause.
         """
         time.sleep(seconds)
         return
 
     def cancel(self, reason: str = "") -> NoReturn:
-        """Отменяет задачу.
-
-        Args:
-            reason (str): Причина отмены задачи.
-
-        Raises:
-            TaskCancelError: Исключение, вызываемое при отмене задачи.
+        """
+        Cancels the task.
+        
+                Args:
+                    reason (str): Reason for canceling the task.
+        
+                Raises:
+                    TaskCancelError: The exception thrown when a task is canceled.
         """
         raise TaskCancelError(reason or f"{self.task_name}.cancel")
 
     def plugin_error(self, **kwargs):
-        """Вызывает ошибку плагина.
-
-        Args:
-            **kwargs: Аргументы для передачи в обработчик ошибки плагина.
+        """
+        Causes a plugin error.
+        
+                Args:
+                    **kwargs: Arguments to pass to the plugin error handler.
         """
         raise TaskPluginTriggerError(**kwargs)
 
     def get_component(self, name: str):
-        """Возвращает компонент приложения по имени.
-
-        Args:
-            name (str): Имя компонента.
-
-        Returns:
-            Any: Компонент приложения или None, если не найден.
+        """
+        Returns the application component by name.
+        
+                Args:
+                    name (str): Component name.
+        
+                Returns:
+                    Any: Application component or None if not found.
         """
         return getattr(self._app, name, None)
 
     def _update_app(self):
-        """Обновляет приложение для текущего контекста."""
+        """Updates the application for the current context."""
         import qtasks._state
 
         app = qtasks._state.app_main  # type: ignore
@@ -161,10 +169,11 @@ class SyncContext:
         return log
 
     def _update(self, **kwargs):
-        """Обновляет атрибуты контекста.
-
-        Args:
-            kwargs (dict, optional): Новые значения атрибутов контекста.
+        """
+        Updates context attributes.
+        
+                Args:
+                    kwargs (dict, optional): New context attribute values.
         """
         for name, value in kwargs.items():
             setattr(self, name, value)

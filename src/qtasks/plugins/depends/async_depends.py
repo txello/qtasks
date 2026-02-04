@@ -42,7 +42,7 @@ class AsyncDependsPlugin(BasePlugin):
     """Async Depends plugin."""
 
     def __init__(self, name="AsyncDependsPlugin"):
-        """Инициализация плагина Pydantic."""
+        """Initializing the Pydantic plugin."""
         super().__init__(name=name)
 
         self.contexts = AsyncContextPool()
@@ -57,15 +57,15 @@ class AsyncDependsPlugin(BasePlugin):
         }
 
     async def start(self, *args, **kwargs):
-        """Запуск плагина Pydantic."""
+        """Launching the Pydantic plugin."""
         pass
 
     async def stop(self, *args, **kwargs):
-        """Остановка плагина Pydantic."""
+        """Stopping the Pydantic plugin."""
         pass
 
     async def trigger(self, name, *args, **kwargs):
-        """Триггер плагина."""
+        """Plugin trigger."""
         if name in self.handlers:
             return await self.handlers[name](**kwargs)
         return None
@@ -78,7 +78,7 @@ class AsyncDependsPlugin(BasePlugin):
         args_info: list[ArgMeta],
         plugin_cache: Optional[dict] = None
     ):
-        """Заменяет аргументы задачи."""
+        """Replaces task arguments."""
         result = {}
 
         for args_meta in args_info:
@@ -105,7 +105,7 @@ class AsyncDependsPlugin(BasePlugin):
         return result
 
     def _is_async_cm_function(self, func) -> bool:
-        """Функция, обёрнутая @asynccontextmanager. asynccontextmanager сохраняет исходную функцию в __wrapped__."""
+        """Function wrapped by @asynccontextmanager. asynccontextmanager stores the original function in __wrapped__."""
         wrapped = getattr(func, "__wrapped__", None)
         return (
             inspect.isfunction(func)
@@ -114,7 +114,7 @@ class AsyncDependsPlugin(BasePlugin):
         )
 
     def _is_sync_cm_function(self, func) -> bool:
-        """Функция, обёрнутая @contextmanager (синхронный CM)."""
+        """Function wrapped by @contextmanager (synchronous CM)."""
         wrapped = getattr(func, "__wrapped__", None)
         return (
             inspect.isfunction(func)
@@ -123,7 +123,7 @@ class AsyncDependsPlugin(BasePlugin):
         )
 
     async def _eval_dep_callable(self, callable_obj, scope):
-        """Универсально "разворачивает" зависимость до значения. Никаких аргументов не прокидываем — если нужно, добавьте их где вызываете."""
+        """Universally "expands" a dependency to a value. We don’t pass any arguments - if necessary, add them where you call them."""
         func = callable_obj
 
         # 1) Функция, помеченная @asynccontextmanager

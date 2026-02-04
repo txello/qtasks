@@ -8,13 +8,14 @@ from qtasks.utils import _build_task
 
 
 class AsyncTestPlugin(BasePlugin):
-    """Плагин для асинхронной обработки тестов."""
+    """Plugin for asynchronous test processing."""
 
     def __init__(self, name: str = "AsyncTestPlugin"):
-        """Инициализация плагина.
-
-        Args:
-            name (str, optional): Имя проекта. По умолчанию: "AsyncTestPlugin".
+        """
+        Initializing the plugin.
+        
+                Args:
+                    name (str, optional): Project name. Default: "AsyncTestPlugin".
         """
         super().__init__(name=name)
         self.handlers = {
@@ -23,15 +24,15 @@ class AsyncTestPlugin(BasePlugin):
         }
 
     async def start(self, *args, **kwargs):
-        """Запуск плагина."""
+        """Launch the plugin."""
         pass
 
     async def stop(self, *args, **kwargs):
-        """Остановка плагина."""
+        """Stopping the plugin."""
         pass
 
     async def trigger(self, name, **kwargs):
-        """Триггер для запуска обработчика."""
+        """Trigger to run the handler."""
         handler = self.handlers.get(name)
         return (
             await handler(
@@ -42,14 +43,14 @@ class AsyncTestPlugin(BasePlugin):
         )
 
     async def worker_execute_before(self, *args, **kwargs):
-        """Обработчик перед выполнением задачи."""
+        """A handler before executing a task."""
         result = await self._execute(*args, **kwargs)
         if not result:
             return
         return result.get("model")
 
     async def worker_remove_finished_task(self, *args, **kwargs):
-        """Обработчик завершения задачи."""
+        """Task completion handler."""
         return await self._execute(*args, **kwargs)
 
     async def _execute(
