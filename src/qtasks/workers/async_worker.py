@@ -494,6 +494,7 @@ class AsyncWorker(BaseWorker, AsyncPluginMixin):
                 task_func=task_func,
                 task_broker=task_broker,
                 trace=trace,
+                return_last=True,
             )
 
         model = TaskStatusErrorSchema(

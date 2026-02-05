@@ -531,6 +531,12 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             base_kwargs["returning"] = json.loads(result["returning"])
         if "traceback" in result:
             base_kwargs["traceback"] = result["traceback"]
+        if "retry" in result:
+            base_kwargs["retry"] = int(result["retry"])
+        if "retry_parent_uuid" in result:
+            base_kwargs["retry_parent_uuid"] = result["retry_parent_uuid"]
+        if "retry_child_uuid" in result:
+            base_kwargs["retry_child_uuid"] = result["retry_child_uuid"]
 
         # Get the names of standard fields
         task_field_names = {f.name for f in fields(Task)}
