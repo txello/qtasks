@@ -66,7 +66,6 @@ class AsyncQTasksGRPCServer:
     async def _serve(self) -> None:
         await self._create_server()
         await self._server.start()
-        print("The gRPC server has started")
         self._health.set("", health_pb2.HealthCheckResponse.SERVING)
         try:
             await self._server.wait_for_termination()
