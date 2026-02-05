@@ -21,6 +21,6 @@ async def test(num: int):
 
 timer = AsyncTimer(app=app)
 
-timer.add_task(5, task_name="test", trigger=CronTrigger(minute="*/1"))
+timer.add_task(5, task_name="test", trigger=CronTrigger(second="*/5"))
 
 timer.run_forever()

@@ -393,8 +393,8 @@ class SyncThreadWorker(BaseWorker, SyncPluginMixin):
 
         if self.log:
             self.log.info(
-                f"Task {task_broker.uuid} ({task_broker.name}) in process, priority: {task_broker.priority}./n",
-                f"Task arguments: {task_broker.args}, {task_broker.kwargs}"
+                f"Task {task_broker.uuid} ({task_broker.name}) is running, priority: {task_broker.priority}.\n"
+                f"Arguments of the task: {task_broker.args}, {task_broker.kwargs}"
             )
 
         new_data = self._plugin_trigger(

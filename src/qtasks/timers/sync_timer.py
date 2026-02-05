@@ -186,9 +186,9 @@ class SyncTimer(BaseTimer[Literal[False]]):
         """
         args, kwargs = args or (), kwargs or {}
         task = self.app.add_task(
-            *args, task_name=task_name, priority=priority, timeout=None, **kwargs
+            task_name, *args, priority=priority, timeout=None, **kwargs
         )
-        self.log.info(f"Task {task_name} sent with UUID: {task.uuid}")
+        self.log.info(f"Task '{task_name}' sent with UUID: {task.uuid}")
 
     def run_forever(self):
         """Start Timer."""
