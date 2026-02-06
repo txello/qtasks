@@ -1,6 +1,11 @@
 from contextlib import AsyncExitStack
 from typing import Any, Dict, List, Optional, Tuple
 
+try:
+    from contextlib import _GeneratorContextManager as _GCM
+except Exception:
+    _GCM = None
+
 
 class AsyncContextPool:
     """
@@ -18,7 +23,11 @@ class AsyncContextPool:
                 Returns the value obtained from yield in @asynccontextmanager.
         """
         stack = AsyncExitStack()
-        value = await stack.enter_async_context(cm) # type: ignore
+        if isinstance(cm, _GCM):
+            value = stack.enter_context(cm)  # type: ignore
+        else:
+            value = await stack.enter_async_context(cm) # type: ignore
+
         entry = (id(cm), cm, stack, value)
         self._contexts.setdefault(name, []).append(entry)
         return value, entry

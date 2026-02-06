@@ -1,14 +1,16 @@
 """Async Depends."""
 
 import inspect
+from contextlib import asynccontextmanager, contextmanager
 from functools import partial
 from typing import (
     TYPE_CHECKING,
     Annotated,
     Any,
     AsyncGenerator,
+    Awaitable,
+    Callable,
     Optional,
-    cast,
     get_args,
 )
 
@@ -29,6 +31,7 @@ except Exception:
 from qtasks.plugins.base import BasePlugin
 from qtasks.plugins.depends.class_depends import Depends
 from qtasks.schemas.argmeta import ArgMeta
+from qtasks.types import T
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
@@ -140,18 +143,11 @@ class AsyncDependsPlugin(BasePlugin):
 
         # 2) Pure async function
         if inspect.iscoroutinefunction(func):
-            return await func()
+            return await self.contexts.enter(scope, self._async_func_to_cm(func))
 
         # 3) async generator function (take the first yield and close it)
         if inspect.isasyncgenfunction(func):
-            agen: AsyncGenerator = func()
-            try:
-                v = await agen.__anext__()
-            except StopAsyncIteration:
-                v = None
-            finally:
-                await agen.aclose()
-            return v
+            return await self.contexts.enter(scope, self._async_agen_to_acm(func))
 
         # 4) sync function
         if inspect.isfunction(func):
@@ -166,43 +162,78 @@ class AsyncDependsPlugin(BasePlugin):
 
         # === Parsing the call result ===
 
-        # 5) An already created async context manager
-        if _AGCM and isinstance(res, _AGCM):
-            async with res as v:
-                return v
-        if hasattr(res, "__aenter__") and hasattr(res, "__aexit__"):
-            # any object with the async CM protocol
-            async with cast(Any, res) as v:
-                return v
-        # Checking for the presence of the __aenter__ and __aexit__ methods
-        if hasattr(res, "__aenter__") and hasattr(res, "__aexit__"):
-            async with cast(Any, res) as v:
-                return v
-
         # 6) Coroutine (awaitable)
         if inspect.isawaitable(res):
-            return await res
+            return await self.contexts.enter(scope, self._awaitable_to_acm(res))
 
-        # 7) Synchronous context manager
-        if _GCM and isinstance(res, _GCM):
-            with res as v:
-                return v
-        if hasattr(res, "__enter__") and hasattr(res, "__exit__"):
-            with cast(Any, res) as v:
-                return v
+        # 7) Sync context manager
+        if (_GCM and isinstance(res, _GCM)) or (hasattr(res, "__enter__") and hasattr(res, "__exit__")):
+            return await self.contexts.enter(scope, res)
 
-        # 8) Sync generator: take the first yield and close
+        # 8) Sync generator
         if inspect.isgenerator(res):
-            try:
-                v = next(res)
-            except StopIteration:
-                v = None
-            finally:
-                res.close()
-            return v
+            return await self.contexts.enter(scope, self._genobj_to_cm(res))
 
         # 9) Normal value
-        return res
+        return await self.contexts.enter(scope, self._sync_func_to_cm(lambda: res))
+
+    def _async_func_to_cm(self, func: Callable[[], Awaitable[Any]]):
+        @asynccontextmanager
+        async def _cm():
+            value = await func()
+            yield value
+        return _cm()
+
+    def _sync_func_to_cm(self, func: Callable[[], Awaitable[Any]]):
+        @contextmanager
+        def _cm():
+            value = func()
+            yield value
+        return _cm()
+
+    def _async_agen_to_acm(self, factory: Callable[[], AsyncGenerator[Any, None]]):
+        @asynccontextmanager
+        async def _acm():
+            agen = factory()
+            try:
+                yield await agen.__anext__()
+            except StopAsyncIteration as e:
+                raise RuntimeError("Dependency async generator didn't yield a value") from e
+        return _acm()
+
+    def _genobj_to_cm(self, gen):
+        """
+        Treat raw sync generator as a context manager:
+        - first yield => dependency value
+        - generator finalization => cleanup
+        """
+        @contextmanager
+        def _cm():
+            try:
+                value = next(gen)
+            except StopIteration as e:
+                raise RuntimeError("Sync generator dependency didn't yield a value") from e
+
+            try:
+                yield value
+            finally:
+                # Prefer normal completion to run code after yield and finally.
+                try:
+                    next(gen)
+                except StopIteration:
+                    pass
+                else:
+                    # If it yielded more than once — that's a bug in dependency.
+                    raise RuntimeError("Sync generator dependency yielded more than once")
+
+        return _cm()
+
+    def _awaitable_to_acm(self, awaitable: Awaitable[T]):
+        @asynccontextmanager
+        async def _acm():
+            value = await awaitable
+            yield value
+        return _acm()
 
     async def task_close(
         self,
