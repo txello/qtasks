@@ -1,5 +1,15 @@
 # История обновлений
 
+## v1.7.3 2026-02-17
+
+- Исправлена ​​обработка повторных попыток выполнения задач.
+- Исправлена ​​обработка функций для [`Depends()`](features/depends.md).
+
+### Документация
+
+- Изменен параметр `site_url` в `mkdocs` на `docs.qtasks.tech`.
+- Добавлены ссылки в списке изменений.
+
 ## v1.7.2 2026-02-05
 
 - Исправлена ссылка на русский язык в файле mkdocs.yml для корректной маршрутизации
@@ -11,20 +21,22 @@
 ## v1.7.0 2026-02-05
 
 - Добавлены `(A)syncTaskUtils` и `(A)syncChain`.
-- Добавлена возможность получать настройки для `QueueConfig`из `os.environ`.
-- Добавлен `(A)syncTaskCls`.
+- Добавлена возможность получать настройки для [`QueueConfig`](api/schemas/queueconfig.md)
+из `os.environ`.
+- Добавлен [`(A)syncTaskCls`](features/task.md#pre-building-a-task).
 - Добавлен `(A)syncgRPCPlugin`.
-- Добавлены системы плагинов для `(A)syncStats`.
-- Добавлен триггер плагинов `stats_inspect` для `(A)syncStats`.
-- Добавлена поддержка ExitStack для `Depends` и параметр `scope=` для этого.
+- Добавлены системы плагинов для [`(A)syncStats`](features/stats.md).
+- Добавлен триггер плагинов `stats_inspect` для[`(A)syncStats`](features/stats.md).
+- Добавлена поддержка ExitStack для [`Depends`](features/depends.md) ипараметр `scope=`
+для этого.
 - Добавлен `plugin_cache=` для триггеров плагинов.
 - Весь код переведён на английский язык.
-- `Router` изменен на `(A)syncRouter`.
+- `Router` изменен на [`(A)syncRouter`](api/router.md).
 - Обновлены выводы дебага.
 - Обновлены настройки рефакторинга на E, W, F, B, I, и UP.
-- Исправлена типизация у `(A)syncRouter.task`.
-- Исправлен параметр у функции `autodiscover_tasks`.
-- Исправлены модели `Config` и `Task`.
+- Исправлена типизация у [`(A)syncRouter.task`](api/router.md#qtasks.routers.async_router.AsyncRouter.task).
+- Исправлен параметр у функции [`autodiscover_tasks`](api/libraries/django.md#qtasks.contrib.django.autodiscover.autodiscover_tasks).
+- Исправлены модели [`Config`](api/schemas/queueconfig.md) и [`Task`](api/models/task.md).
 - Исправлены вызовы плагинов.
 - Рефакторинг кода.
 

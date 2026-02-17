@@ -1,5 +1,15 @@
 # Update History
 
+## v1.7.3 2026-02-17
+
+- Fixed handling of retry tasks.
+- Fixed handling of functions for [`Depends()`](features/depends.md).
+
+### Documentation
+
+- Changed the `site_url` parameter in `mkdocs` to `docs.qtasks.tech`.
+- Added links to the changelog.
+
 ## v1.7.2 2026-02-05
 
 - Update Russian language link in mkdocs.yml for correct routing
@@ -11,20 +21,24 @@
 ## v1.7.0 2026-02-05
 
 - Added `(A)syncTaskUtils` and `(A)syncChain`.
-- Added the ability to get settings for `QueueConfig` from `os.environ`.
-- Added `(A)syncTaskCls`.
+- Added the ability to get settings for [`QueueConfig`](api/schemas/queueconfig.md)
+from `os.environ`.
+- Added [`(A)syncTaskCls`](features/task.md#pre-building-a-task).
 - Added `(A)syncgRPCPlugin`.
-- Added plugin systems for `(A)syncStats`.
-- Added `stats_inspect` plugin trigger for `(A)syncStats`.
-- Added ExitStack support for `Depends` and the `scope=` parameter for it.
+- Added plugin systems for [`(A)syncStats`](features/stats.md).
+- Added `stats_inspect` plugin trigger for [`(A)syncStats`](features/stats.md).
+- Added ExitStack support for [`Depends`](features/depends.md) and the `scope=`
+parameter for it.
 - Added `plugin_cache=` for plugin triggers.
 - All code translated into English.
-- `Router` changed to `(A)syncRouter`.
+- `Router` changed to [`(A)syncRouter`](api/router.md).
 - Updated debug output.
 - Updated refactoring settings for E, W, F, B, I, and UP.
-- Fixed typing in `(A)syncRouter.task`.
-- Fixed parameter in the `autodiscover_tasks` function.
-- Fixed `Config` and `Task` models.
+- Fixed typing in [`(A)syncRouter.task`](api/router.md#qtasks.routers.async_router.AsyncRouter.task).
+- Fixed parameter in the [`autodiscover_tasks`](api/libraries/django.md#qtasks.contrib.django.autodiscover.autodiscover_tasks)
+function.
+- Fixed [`Config`](api/schemas/queueconfig.md) and [`Task`](api/models/task.md)
+models.
 - Fixed plugin calls.
 - Code refactoring.
 

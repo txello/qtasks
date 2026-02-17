@@ -47,7 +47,7 @@ class SyncRetryPlugin(BasePlugin):
         if not task:
             raise ValueError("Task not found")
 
-        task_retry = task.retry or task_func.retry
+        task_retry = task.retry if task.retry is not None else task_func.retry
         new_task = None
 
         if not isinstance(task_retry, int):
@@ -59,7 +59,7 @@ class SyncRetryPlugin(BasePlugin):
                 priority=task_broker.priority,
                 extra={
                     "retry": task_retry - 1,
-                    "retry_parent_uuid": task_broker.uuid,
+                    "retry_parent_uuid": str(task_broker.uuid),
                 },
                 args=tuple(task_broker.args),
                 kwargs=task_broker.kwargs,

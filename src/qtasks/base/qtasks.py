@@ -112,7 +112,7 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         """
         self.name = name
 
-        self.version: Annotated[str, Doc("Project version.")] = "1.7.2"
+        self.version: Annotated[str, Doc("Project version.")] = "1.7.3"
 
         self.config: Annotated[
             QueueConfig,

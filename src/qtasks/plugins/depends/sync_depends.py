@@ -1,10 +1,14 @@
 """Sync Depends."""
 
 import inspect
+from contextlib import contextmanager
+from functools import partial
 from typing import (
     TYPE_CHECKING,
     Annotated,
     Any,
+    Awaitable,
+    Callable,
     Optional,
     get_args,
 )
@@ -100,14 +104,63 @@ class SyncDependsPlugin(BasePlugin):
         """Universally "expands" a dependency to a value. We don’t pass any arguments - if necessary, add them where you call them."""
         func = callable_obj
 
-        res = func() if inspect.isfunction(func) else func
+        # 1) sync function
+        if inspect.isfunction(func):
+            res = func()
+            # the result may still turn out to be an awaitable/generator/CM - we'll discuss this below
+        elif isinstance(func, partial) or callable(func):
+            # support for partial/callable objects
+            res = func()
+        else:
+            # This is a ready-made object (suddenly they passed a created CM/generator/coroutine)
+            res = func
 
-        if _GCM and isinstance(res, _GCM):
-            return self.contexts.enter(scope, res)
-        if hasattr(res, "__enter__") and hasattr(res, "__exit__"):
+        # 2) Sync context manager
+        if (_GCM and isinstance(res, _GCM)) or (hasattr(res, "__enter__") and hasattr(res, "__exit__")):
             return self.contexts.enter(scope, res)
 
-        return self.contexts.enter(scope, res)
+        # 3) Sync generator
+        if inspect.isgenerator(res):
+            return self.contexts.enter(scope, self._genobj_to_cm(res))
+
+        # 4) Normal value
+        return self.contexts.enter(scope, self._sync_func_to_cm(lambda: res))
+
+    def _sync_func_to_cm(self, func: Callable[[], Awaitable[Any]]):
+        @contextmanager
+        def _cm():
+            value = func()
+            yield value
+        return _cm()
+
+
+    def _genobj_to_cm(self, gen):
+        """
+        Treat raw sync generator as a context manager:
+        - first yield => dependency value
+        - generator finalization => cleanup
+        """
+        @contextmanager
+        def _cm():
+            try:
+                value = next(gen)
+            except StopIteration as e:
+                raise RuntimeError("Sync generator dependency didn't yield a value") from e
+
+            try:
+                yield value
+            finally:
+                # Prefer normal completion to run code after yield and finally.
+                try:
+                    next(gen)
+                except StopIteration:
+                    pass
+                else:
+                    # If it yielded more than once — that's a bug in dependency.
+                    raise RuntimeError("Sync generator dependency yielded more than once")
+
+        return _cm()
+
 
     def task_close(
         self,
