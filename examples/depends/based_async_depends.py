@@ -29,7 +29,7 @@ async def test_dep():
 
 @app.task
 async def test(dep: Annotated[int, Depends(test_dep, scope=ScopeEnum.TASK)]):
-    print(55555, dep)
+    print(dep)
 
 
 if __name__ == "__main__":
