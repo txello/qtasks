@@ -94,7 +94,7 @@ pip install -e .
 
 Recommended:
 
-* Python 3.8–3.12
+* Python 3.10–3.13
 * tox (for multi-version testing)
 * Redis (for integration tests)
 
