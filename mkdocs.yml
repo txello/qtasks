@@ -103,6 +103,8 @@ markdown_extensions:
 
 
 extra:
+  cname: docs.qtasks.tech
+
   alternate:
     - name: en - English
       link: "/"
