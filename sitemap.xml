@@ -1,0 +1,1501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>https://docs.qtasks.tech/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/blog/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/blog/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/blog/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/changelog/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/changelog/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/components/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/components/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/components/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/console/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/console/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/console/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/getting_started/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/getting_started/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/getting_started/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/install/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/install/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/install/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/next/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/next/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/next/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/schemas/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/schemas/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/schemas/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/tests/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/tests/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/tests/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/exceptions/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/exceptions/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/exceptions/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/logs/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/logs/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/logs/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/queuetasks/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/queuetasks/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/queuetasks/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/router/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/router/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/router/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/states/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/states/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/states/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/webview/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/webview/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/webview/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/asyncio/queuetasks/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/asyncio/queuetasks/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/asyncio/queuetasks/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/brokers/async_kafkabroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/async_kafkabroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/async_kafkabroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/brokers/async_rabbitmqbroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/async_rabbitmqbroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/async_rabbitmqbroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/brokers/async_redisbroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/async_redisbroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/async_redisbroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/brokers/async_socket/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/async_socket/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/async_socket/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/brokers/basebroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/basebroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/basebroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/brokers/sync_kafkabroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/sync_kafkabroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/sync_kafkabroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/brokers/sync_rabbitmqbroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/sync_rabbitmqbroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/sync_rabbitmqbroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/brokers/sync_redisbroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/sync_redisbroker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/sync_redisbroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/brokers/sync_socket/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/sync_socket/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/sync_socket/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/classes/async_redis_commands/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/classes/async_redis_commands/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/classes/async_redis_commands/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/classes/baseqtasks/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/classes/baseqtasks/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/classes/baseqtasks/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/classes/sync_redis_commands/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/classes/sync_redis_commands/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/classes/sync_redis_commands/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/contexts/async_context/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/contexts/async_context/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/contexts/async_context/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/contexts/sync_context/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/contexts/sync_context/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/contexts/sync_context/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/executors/async_task_executor/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/executors/async_task_executor/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/executors/async_task_executor/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/executors/basetask_executor/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/executors/basetask_executor/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/executors/basetask_executor/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/executors/sync_task_executor/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/executors/sync_task_executor/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/executors/sync_task_executor/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/globalconfig/async_redisglobalconfig/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/globalconfig/async_redisglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/globalconfig/async_redisglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/globalconfig/baseglobalconfig/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/globalconfig/baseglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/globalconfig/baseglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/globalconfig/sync_redisglobalconfig/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/globalconfig/sync_redisglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/globalconfig/sync_redisglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/libraries/django/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/libraries/django/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/libraries/django/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/middlewares/basemiddleware/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/middlewares/basemiddleware/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/middlewares/basemiddleware/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/middlewares/task_middleware/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/middlewares/task_middleware/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/middlewares/task_middleware/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/models/task/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/models/task/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/models/task/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/plugins/errors/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/plugins/errors/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/plugins/errors/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/plugins/triggers/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/plugins/triggers/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/plugins/triggers/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/registries/async_task_decorator/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/registries/async_task_decorator/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/registries/async_task_decorator/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/registries/sync_task_decorator/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/registries/sync_task_decorator/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/registries/sync_task_decorator/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/results/async_result/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/results/async_result/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/results/async_result/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/results/sync_result/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/results/sync_result/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/results/sync_result/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/schemas/global_config/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/global_config/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/global_config/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/schemas/inits/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/inits/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/inits/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/schemas/queueconfig/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/queueconfig/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/queueconfig/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/schemas/task_exec/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/task_exec/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/task_exec/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/schemas/task_status/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/task_status/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/task_status/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/schemas/task_status_enum/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/task_status_enum/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/task_status_enum/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/schemas/test_config/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/test_config/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/test_config/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/starters/async_starter/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/starters/async_starter/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/starters/async_starter/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/starters/basestarter/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/starters/basestarter/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/starters/basestarter/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/starters/sync_starter/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/starters/sync_starter/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/starters/sync_starter/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/stats/async_stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/async_stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/async_stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/stats/basestats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/basestats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/basestats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/stats/sync_stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/sync_stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/sync_stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/stats/inspect/inspect_stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/inspect/inspect_stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/inspect/inspect_stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/stats/inspect/utils_inspect_stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/inspect/utils_inspect_stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/inspect/utils_inspect_stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/storages/async_redisstorage/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/storages/async_redisstorage/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/storages/async_redisstorage/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/storages/basestorage/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/storages/basestorage/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/storages/basestorage/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/storages/sync_redisstorage/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/storages/sync_redisstorage/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/storages/sync_redisstorage/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/tests/async_testcase/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/tests/async_testcase/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/tests/async_testcase/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/tests/basetests/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/tests/basetests/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/tests/basetests/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/tests/sync_testcase/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/tests/sync_testcase/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/tests/sync_testcase/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/timers/async_timer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/timers/async_timer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/timers/async_timer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/timers/basetimer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/timers/basetimer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/timers/basetimer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/timers/sync_timer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/timers/sync_timer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/timers/sync_timer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/workers/async_worker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/workers/async_worker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/workers/async_worker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/workers/baseworker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/workers/baseworker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/workers/baseworker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/api/workers/sync_threadworker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/workers/sync_threadworker/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/workers/sync_threadworker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/configuration/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/configuration/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/extensibility/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/extensibility/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/extensibility/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/task_flow/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/task_flow/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/task_flow/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/components/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/components/abstract_classes/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/abstract_classes/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/abstract_classes/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/components/plugin_system/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/plugin_system/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/plugin_system/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/components/schemas/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/schemas/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/schemas/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/components/threads_async/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/threads_async/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/threads_async/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/integrations/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/integrations/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/integrations/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/architecture/integrations/django/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/integrations/django/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/integrations/django/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/analytics/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/analytics/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/analytics/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/echo/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/echo/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/echo/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/features/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/features/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/features/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/plugins/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/plugins/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/plugins/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/variables/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/variables/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/variables/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/yield/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/yield/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/yield/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/integrations/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/integrations/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/integrations/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/integrations/django/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/integrations/django/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/integrations/django/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/practice/freelancer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/practice/freelancer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/practice/freelancer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/practice/large_business/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/practice/large_business/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/practice/large_business/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/examples/practice/small_business/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/practice/small_business/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/practice/small_business/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/contexts/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/contexts/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/contexts/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/depends/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/depends/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/depends/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/pydantic/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/pydantic/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/pydantic/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/states/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/states/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/states/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/stats/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/task/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/task/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/task/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/timer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/timer/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/timer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/uniqueness/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/uniqueness/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/uniqueness/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/features/yield/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/yield/"/>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/yield/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/blog/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/blog/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/blog/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/changelog/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/changelog/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/changelog/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/components/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/components/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/components/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/console/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/console/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/console/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/getting_started/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/getting_started/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/getting_started/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/install/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/install/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/install/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/next/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/next/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/next/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/schemas/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/schemas/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/schemas/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/tests/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/tests/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/tests/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/exceptions/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/exceptions/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/exceptions/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/logs/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/logs/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/logs/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/queuetasks/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/queuetasks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/queuetasks/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/router/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/router/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/router/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/states/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/states/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/states/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/webview/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/webview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/webview/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/asyncio/queuetasks/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/asyncio/queuetasks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/asyncio/queuetasks/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/brokers/async_kafkabroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/async_kafkabroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/async_kafkabroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/brokers/async_rabbitmqbroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/async_rabbitmqbroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/async_rabbitmqbroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/brokers/async_redisbroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/async_redisbroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/async_redisbroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/brokers/async_socket/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/async_socket/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/async_socket/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/brokers/basebroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/basebroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/basebroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/brokers/sync_kafkabroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/sync_kafkabroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/sync_kafkabroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/brokers/sync_rabbitmqbroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/sync_rabbitmqbroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/sync_rabbitmqbroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/brokers/sync_redisbroker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/sync_redisbroker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/sync_redisbroker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/brokers/sync_socket/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/brokers/sync_socket/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/brokers/sync_socket/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/classes/async_redis_commands/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/classes/async_redis_commands/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/classes/async_redis_commands/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/classes/baseqtasks/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/classes/baseqtasks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/classes/baseqtasks/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/classes/sync_redis_commands/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/classes/sync_redis_commands/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/classes/sync_redis_commands/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/contexts/async_context/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/contexts/async_context/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/contexts/async_context/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/contexts/sync_context/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/contexts/sync_context/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/contexts/sync_context/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/executors/async_task_executor/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/executors/async_task_executor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/executors/async_task_executor/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/executors/basetask_executor/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/executors/basetask_executor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/executors/basetask_executor/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/executors/sync_task_executor/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/executors/sync_task_executor/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/executors/sync_task_executor/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/globalconfig/async_redisglobalconfig/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/globalconfig/async_redisglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/globalconfig/async_redisglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/globalconfig/baseglobalconfig/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/globalconfig/baseglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/globalconfig/baseglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/globalconfig/sync_redisglobalconfig/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/globalconfig/sync_redisglobalconfig/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/globalconfig/sync_redisglobalconfig/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/libraries/django/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/libraries/django/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/libraries/django/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/middlewares/basemiddleware/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/middlewares/basemiddleware/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/middlewares/basemiddleware/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/middlewares/task_middleware/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/middlewares/task_middleware/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/middlewares/task_middleware/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/models/task/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/models/task/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/models/task/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/plugins/errors/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/plugins/errors/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/plugins/errors/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/plugins/triggers/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/plugins/triggers/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/plugins/triggers/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/registries/async_task_decorator/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/registries/async_task_decorator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/registries/async_task_decorator/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/registries/sync_task_decorator/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/registries/sync_task_decorator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/registries/sync_task_decorator/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/results/async_result/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/results/async_result/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/results/async_result/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/results/sync_result/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/results/sync_result/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/results/sync_result/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/schemas/global_config/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/global_config/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/global_config/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/schemas/inits/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/inits/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/inits/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/schemas/queueconfig/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/queueconfig/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/queueconfig/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/schemas/task_exec/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/task_exec/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/task_exec/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/schemas/task_status/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/task_status/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/task_status/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/schemas/task_status_enum/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/task_status_enum/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/task_status_enum/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/schemas/test_config/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/schemas/test_config/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/schemas/test_config/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/starters/async_starter/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/starters/async_starter/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/starters/async_starter/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/starters/basestarter/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/starters/basestarter/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/starters/basestarter/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/starters/sync_starter/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/starters/sync_starter/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/starters/sync_starter/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/stats/async_stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/async_stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/async_stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/stats/basestats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/basestats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/basestats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/stats/sync_stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/sync_stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/sync_stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/stats/inspect/inspect_stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/inspect/inspect_stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/inspect/inspect_stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/stats/inspect/utils_inspect_stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/stats/inspect/utils_inspect_stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/stats/inspect/utils_inspect_stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/storages/async_redisstorage/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/storages/async_redisstorage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/storages/async_redisstorage/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/storages/basestorage/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/storages/basestorage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/storages/basestorage/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/storages/sync_redisstorage/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/storages/sync_redisstorage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/storages/sync_redisstorage/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/tests/async_testcase/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/tests/async_testcase/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/tests/async_testcase/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/tests/basetests/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/tests/basetests/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/tests/basetests/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/tests/sync_testcase/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/tests/sync_testcase/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/tests/sync_testcase/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/timers/async_timer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/timers/async_timer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/timers/async_timer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/timers/basetimer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/timers/basetimer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/timers/basetimer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/timers/sync_timer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/timers/sync_timer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/timers/sync_timer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/workers/async_worker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/workers/async_worker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/workers/async_worker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/workers/baseworker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/workers/baseworker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/workers/baseworker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/api/workers/sync_threadworker/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/api/workers/sync_threadworker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/api/workers/sync_threadworker/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/configuration/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/configuration/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/extensibility/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/extensibility/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/extensibility/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/task_flow/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/task_flow/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/task_flow/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/components/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/components/abstract_classes/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/abstract_classes/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/abstract_classes/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/components/plugin_system/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/plugin_system/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/plugin_system/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/components/schemas/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/schemas/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/schemas/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/components/threads_async/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/components/threads_async/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/components/threads_async/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/integrations/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/integrations/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/integrations/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/architecture/integrations/django/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/architecture/integrations/django/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/architecture/integrations/django/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/analytics/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/analytics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/analytics/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/echo/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/echo/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/echo/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/features/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/features/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/features/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/plugins/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/plugins/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/plugins/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/variables/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/variables/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/variables/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/yield/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/yield/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/yield/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/integrations/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/integrations/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/integrations/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/integrations/django/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/integrations/django/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/integrations/django/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/practice/freelancer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/practice/freelancer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/practice/freelancer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/practice/large_business/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/practice/large_business/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/practice/large_business/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/examples/practice/small_business/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/examples/practice/small_business/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/examples/practice/small_business/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/contexts/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/contexts/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/contexts/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/depends/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/depends/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/depends/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/pydantic/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/pydantic/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/pydantic/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/states/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/states/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/states/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/stats/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/stats/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/stats/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/task/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/task/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/task/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/timer/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/timer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/timer/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/uniqueness/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/uniqueness/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/uniqueness/"/>
+    </url>
+    <url>
+        <loc>https://docs.qtasks.tech/ru/features/yield/</loc>
+        <lastmod>2026-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ru" href="https://docs.qtasks.tech/ru/features/yield/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://docs.qtasks.tech/features/yield/"/>
+    </url>
+</urlset>
