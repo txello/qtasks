@@ -9,6 +9,7 @@ from qtasks.configs.config import QueueConfig
 from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
+from qtasks.plugins.classes.registry.base import BasePluginRegistry
 
 from .base import BaseStarter
 
@@ -136,7 +137,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
                     """),
         ] = True,
         plugins: Annotated[
-            dict[str, list[BasePlugin]] | None,
+            dict[str, list[BasePluginRegistry[Literal[False]]]] | None,
             Doc("""
                     Plugins for worker and broker.
 
@@ -149,7 +150,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
         Args:
             num_workers (int, optional): Number of workers. Default: 4.
             reset_config (bool, optional): Update the config of the worker and broker. Default: True.
-            plugins (Dict[str, BasePlugin] | None, optional): Plugins. Default: None.
+            plugins (Dict[str, BasePluginRegistry[Literal[False]]] | None, optional): Plugins. Default: None.
         """
         if self.log:
             self.log.info("Starting QueueTasks...")

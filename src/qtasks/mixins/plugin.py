@@ -13,8 +13,10 @@ from typing import (
 
 from typing_extensions import Doc
 
-from qtasks.mixins.async_plugin_cache import AsyncPluginCacheMixin
-from qtasks.mixins.sync_plugin_cache import SyncPluginCacheMixin
+from qtasks.plugins.classes.registry.async_registry import AsyncPluginRegistry
+from qtasks.plugins.classes.registry.base import BasePluginRegistry
+from qtasks.plugins.classes.registry.sync_registry import SyncPluginRegistry
+from qtasks.plugins.classes.result import PluginResult
 
 if TYPE_CHECKING:
     from qtasks.logs import Logger
@@ -24,10 +26,8 @@ if TYPE_CHECKING:
 class SyncPluginMixin:
     """Mixin for synchronous work with plugins."""
 
-    plugins: dict[str, list[BasePlugin]]
+    plugins: dict[str, list[BasePluginRegistry[Literal[False]]]]
     log: Optional[Logger] = None
-
-    plugins_cache = SyncPluginCacheMixin
 
     @overload
     def _plugin_trigger(
@@ -76,18 +76,11 @@ class SyncPluginMixin:
         kwargs_copy = kwargs.copy()
 
         for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            with self.plugins_cache(plugin=plugin) as plugin_cache:
-                # cache: start
-                if plugin_cache:
-                    kwargs_copy.update({"plugin_cache": plugin_cache})
-                elif "plugin_cache" in kwargs_copy:
-                    del kwargs_copy["plugin_cache"]
-                #
-
                 try:
-                    result: dict[str, Any] | None = plugin.trigger(
+                    plugin_result: PluginResult | None = plugin.trigger(
                         name, **kwargs_copy
                     )
+                    result = plugin_result.result
                 except Exception as e:
                     if safe:
                         tb = "".join(
@@ -100,20 +93,14 @@ class SyncPluginMixin:
                         if not continue_on_fail:
                             break
                         continue
+                    continue
 
-                if result is not None:
-                    # cache: stop
-                    if "plugin_cache" in result:
-                        if plugin.name:
-                            self.plugins_cache.cache[plugin.name] = result["plugin_cache"]
-                        del result["plugin_cache"]
-                    #
-
+                if plugin_result is not None:
                     results.append(result)
-                    if "args" in result:
-                        kwargs_copy["args"] = result.get("args", [])
-                    if "kw" in result:
-                        kwargs_copy["kw"] = result.get("kw", {})
+                    if plugin_result.args_next:
+                        kwargs_copy["args"] = plugin_result.args_next
+                    if plugin_result.kwargs_next:
+                        kwargs_copy["kw"] = plugin_result.kwargs_next
 
         if return_last and results:
             return {
@@ -154,21 +141,21 @@ class SyncPluginMixin:
         """
         trigger_names = trigger_names or ["Globals"]
 
+        plugin_registry = SyncPluginRegistry(plugin=plugin)
+
         for name in trigger_names:
             if name not in self.plugins:
-                self.plugins.update({name: [plugin]})
+                self.plugins.update({name: [plugin_registry]})
             else:
-                self.plugins[name].append(plugin)
+                self.plugins[name].append(plugin_registry)
         return
 
 
 class AsyncPluginMixin:
     """Mixin for asynchronous work with plugins."""
 
-    plugins: dict[str, list[BasePlugin[Literal[True]]]]
+    plugins: dict[str, list[BasePluginRegistry[Literal[True]]]]
     log: Optional[Logger] = None
-
-    plugins_cache = AsyncPluginCacheMixin
 
     @overload
     async def _plugin_trigger(
@@ -242,47 +229,55 @@ class AsyncPluginMixin:
         results = []
         kwargs_copy = kwargs.copy()
 
-        for plugin in self.plugins.get(name, []) + self.plugins.get("Globals", []):
-            async with self.plugins_cache(plugin=plugin) as plugin_cache:
-                # cache: start
-                if plugin_cache:
-                    kwargs_copy.update({"plugin_cache": plugin_cache})
-                elif "plugin_cache" in kwargs_copy:
-                    del kwargs_copy["plugin_cache"]
+        for plugin_registry in self.plugins.get(name, []) + self.plugins.get("Globals", []):
+            print(plugin_registry.plugin.name)
+            # cache: start
+            cache = await plugin_registry.get_cache()
+            if cache:
+                kwargs_copy.update({"plugin_cache": cache})
+            elif "plugin_cache" in kwargs_copy:
+                del kwargs_copy["plugin_cache"]
+            #
+            result = None
+            try:
+                result: PluginResult | None = await plugin_registry.trigger(
+                    name, **kwargs_copy
+                )
+                print(123, result)
+            except Exception as e:
+                if safe:
+                    tb = "".join(
+                        traceback.TracebackException.from_exception(e).format()
+                    )
+                    msg = f"Plugin {plugin_registry.plugin.name} finished with an error:\n {tb}"
+                    if hasattr(self, "log") and self.log:
+                        self.log.error(msg)
+                    print(msg)
+                    if not continue_on_fail:
+                        break
+                    continue
+
+            if result:
+                # cache: stop
+                print(4444, plugin_registry.plugin.name)
+                result_cache = result.cache
+
+                if result_cache is not None:
+                    if plugin_registry.plugin.name:
+                        plugin_registry.update_cache(result_cache)
                 #
 
-                try:
-                    result: dict[str, Any] | None = await plugin.trigger(
-                        name, **kwargs_copy
-                    )
-                except Exception as e:
-                    if safe:
-                        tb = "".join(
-                            traceback.TracebackException.from_exception(e).format()
-                        )
-                        msg = f"Plugin {plugin.name} finished with an error:\n {tb}"
-                        if hasattr(self, "log") and self.log:
-                            self.log.error(msg)
-                        print(msg)
-                        if not continue_on_fail:
-                            break
-                        continue
+                if result.result is not None:
+                    results.append(result.result)
 
-                if result is not None:
-                    # cache: stop
-                    if "plugin_cache" in result:
-                        if plugin.name:
-                            self.plugins_cache.cache[plugin.name] = result["plugin_cache"]
-                        del result["plugin_cache"]
-                    #
+                args_next = result.args_next
+                kwargs_next = result.kwargs_next
 
-                    results.append(result)
-                    if "args" in result:
-                        kwargs_copy["args"] = result.get("args", [])
-                    if "kw" in result:
-                        kwargs_copy["kw"] = result.get("kw", {})
+                kwargs_copy["args"] = args_next or ()
+                kwargs_copy["kw"] = kwargs_next or {}
 
         if return_last and results:
+            print(111122223333, results, kwargs_copy["args"], kwargs_copy["kw"])
             return {
                 **{
                     k: v
@@ -290,8 +285,8 @@ class AsyncPluginMixin:
                     for k, v in r.items()
                     if k not in ("args", "kw")
                 },
-                "args": next((r["args"] for r in results[::-1] if "args" in r), None),
-                "kw": next((r["kw"] for r in results[::-1] if "kw" in r), {}),
+                "args": kwargs_copy["args"],
+                "kw": kwargs_copy["kw"],
             }
         return results
 
@@ -299,31 +294,52 @@ class AsyncPluginMixin:
         self,
         plugin: Annotated[
             BasePlugin,
-            Doc("""
-                    Plugin.
-                    """),
+            Doc(
+                """
+                    Plugin class.
+                    """
+            ),
         ],
         trigger_names: Annotated[
             list[str] | None,
-            Doc("""
+            Doc(
+                """
                     The name of the triggers for the plugin.
 
-                    Default: Default: will be added to `Globals`.
-                    """),
+                    Default: will be added to `Globals`.
+                    """
+            ),
+        ] = None,
+        component: Annotated[
+            str | None,
+            Doc(
+                """
+                    Component name.
+
+                    Default: `None`.
+                    """
+            ),
         ] = None,
     ) -> None:
         """
-        Add a plugin to the class.
+        Add a plugin.
 
         Args:
-            plugin (BasePlugin): Plugin
+            plugin (Type[BasePlugin]): Plugin class.
             trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+            component (str, optional): Component name. Default: `None`.
+
+        Raises:
+            KeyError: Unable to get component {component}!
         """
         trigger_names = trigger_names or ["Globals"]
 
-        for name in trigger_names:
-            if name not in self.plugins:
-                self.plugins.update({name: [plugin]})
-            else:
-                self.plugins[name].append(plugin)
-        return
+        plugin_registry = AsyncPluginRegistry(plugin=plugin)
+
+        if not component:
+            for name in trigger_names:
+                if name not in self.plugins:
+                    self.plugins.update({name: [plugin_registry]})
+                else:
+                    self.plugins[name].append(plugin_registry)
+            return

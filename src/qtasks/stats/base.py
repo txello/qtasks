@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from qtasks.asyncio import QueueTasks as aioQueueTasks
-    from qtasks.plugins.base import BasePlugin
+    from qtasks.plugins.classes.registry.base import BasePluginRegistry
     from qtasks.qtasks import QueueTasks
 
 
@@ -16,9 +16,9 @@ class BaseStats(ABC): # noqa: B024
     def __init__(
             self,
             app: Union[QueueTasks, aioQueueTasks],
-            plugins: dict[str, list[BasePlugin]] | None = None
+            plugins: dict[str, list[BasePluginRegistry]] | None = None
         ):
         """Initialize basic statistics."""
         self.app = app
 
-        self.plugins: dict[str, list[BasePlugin]] = plugins or {}
+        self.plugins: dict[str, list[BasePluginRegistry]] = plugins or {}

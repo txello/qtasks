@@ -15,6 +15,7 @@ from typing import (
 from pydantic import BaseModel, ValidationError
 
 from qtasks.plugins.base import BasePlugin
+from qtasks.plugins.classes.result import PluginResult
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.argmeta import ArgMeta
@@ -67,6 +68,7 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
         )
         start_index = 1 if echo else 0
 
+        result_cls = PluginResult()
         for meta in args_info[start_index:]:
             model_cls = self._model_class_from_meta(meta)
             if not model_cls:
@@ -89,11 +91,11 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
                         new_kwargs.pop(k, None)
                     if echo:
                         new_args_trimmed.insert(0, echo)
-                    return {
-                        "args": new_args_trimmed,
-                        "kw": {**new_kwargs, meta.name: model_instance},
-                    }
-                return {"kw": {**new_kwargs, meta.name: model_instance}}
+                    result_cls.args_next = new_args_trimmed
+                    result_cls.kwargs_next = {**new_kwargs, meta.name: model_instance}
+                    return result_cls
+                result_cls.kwargs_next = {**new_kwargs, meta.name: model_instance}
+                return result_cls
 
             except Exception as e:
                 raise ValueError(
@@ -102,10 +104,10 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
 
         return None
 
-    def replace_result(self, task_executor, result: Any) -> Any:
+    def replace_result(self, task_executor, result: Any) -> PluginResult | None:
         """Wraps the result in a dictionary if it is a Pydantic model."""
         if isinstance(result, BaseModel):
-            return {"result": result.model_dump()}
+            return PluginResult(result=result.model_dump())
         return None
 
     def _model_class_from_meta(self, meta_or_ann, *, globalns=None, localns=None):

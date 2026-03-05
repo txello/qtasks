@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from qtasks.executors.base import BaseTaskExecutor
     from qtasks.middlewares.base import BaseMiddleware
     from qtasks.middlewares.task import TaskMiddleware
-    from qtasks.plugins.base import BasePlugin
+    from qtasks.plugins.classes.registry.base import BasePluginRegistry
     from qtasks.routers.async_router import AsyncRouter
     from qtasks.routers.sync_router import SyncRouter
     from qtasks.starters.base import BaseStarter
@@ -160,9 +160,9 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         ] = {}
 
         self.plugins: Annotated[
-            dict[str, list[BasePlugin]],
+            dict[str, list[BasePluginRegistry]],
             Doc("""
-                Tasks, type `{trigger_name:[qtasks.plugins.base.BasePlugin]}`.
+                Tasks, type `{trigger_name:[qtasks.plugins.classes.registry.BasePluginRegistry]}`.
 
                 Default: `Empty dictionary`.
                 """),
@@ -560,71 +560,6 @@ class BaseQueueTasks(Generic[TAsyncFlag]):
         self.routers.append(router)
         self.tasks.update(router.tasks)
         self.worker._tasks.update(router.tasks)
-
-    def add_plugin(
-        self,
-        plugin: Annotated[
-            BasePlugin,
-            Doc(
-                """
-                    Plugin class.
-                    """
-            ),
-        ],
-        trigger_names: Annotated[
-            list[str] | None,
-            Doc(
-                """
-                    The name of the triggers for the plugin.
-
-                    Default: will be added to `Globals`.
-                    """
-            ),
-        ] = None,
-        component: Annotated[
-            str | None,
-            Doc(
-                """
-                    Component name.
-
-                    Default: `None`.
-                    """
-            ),
-        ] = None,
-    ) -> None:
-        """
-        Add a plugin.
-
-        Args:
-            plugin (Type[BasePlugin]): Plugin class.
-            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
-            component (str, optional): Component name. Default: `None`.
-
-        Raises:
-            KeyError: Unable to get component {component}!
-        """
-        data = {
-            "worker": self.worker,
-            "broker": self.broker,
-            "storage": self.broker.storage,
-            "global_config": self.broker.storage.global_config,
-        }
-
-        trigger_names = trigger_names or ["Globals"]
-
-        if not component:
-            for name in trigger_names:
-                if name not in self.plugins:
-                    self.plugins.update({name: [plugin]})
-                else:
-                    self.plugins[name].append(plugin)
-            return
-
-        component_data = data.get(component)
-        if not component_data:
-            raise KeyError(f"Unable to get component {component}!")
-        component_data.add_plugin(plugin, trigger_names)
-        return
 
     def add_middleware(
         self,

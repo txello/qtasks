@@ -4,20 +4,18 @@ from __future__ import annotations
 import json
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import Annotated, Any, Literal
 
 from typing_extensions import Doc
 
 from qtasks.exc.plugins import TaskPluginTriggerError
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
+from qtasks.plugins.classes.registry.base import BasePluginRegistry
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 from .base import BaseTaskExecutor
-
-if TYPE_CHECKING:
-    from qtasks.plugins.base import BasePlugin
 
 
 class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
@@ -59,7 +57,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
                     """),
         ] = None,
         plugins: Annotated[
-            dict[str, list[BasePlugin]] | None,
+            dict[str, list[BasePluginRegistry[Literal[False]]]] | None,
             Doc("""
                     Array of Plugins.
 
@@ -74,7 +72,7 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             task_func (TaskExecSchema): Schema `TaskExecSchema`.
             task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
             log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
-            plugins (Dict[str, List[BasePlugin]], optional): Plugin dictionary. Default: `Empty dictionary`.
+            plugins (Dict[str, List[BasePluginRegistry[Literal[False]]]], optional): Plugin dictionary. Default: `Empty dictionary`.
         """
         super().__init__(
             task_func=task_func,

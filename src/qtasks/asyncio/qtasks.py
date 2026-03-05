@@ -14,6 +14,7 @@ from qtasks.configs import QueueConfig
 from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
+from qtasks.plugins.classes.registry.async_registry import AsyncPluginRegistry
 from qtasks.results.async_result import AsyncResult
 from qtasks.schemas.task_exec import TaskExecSchema
 from qtasks.starters.async_starter import AsyncStarter
@@ -22,6 +23,7 @@ from qtasks.workers.async_worker import AsyncWorker
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
     from qtasks.events.base import BaseEvents
+    from qtasks.plugins.base import BasePlugin
     from qtasks.schemas.task import Task
     from qtasks.starters.base import BaseStarter
     from qtasks.workers.base import BaseWorker
@@ -533,3 +535,70 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
         """Delete all data."""
         await self._plugin_trigger("qtasks_flush_all", qtasks=self, broker=self.broker)
         await self.broker.flush_all()
+
+    def add_plugin(
+        self,
+        plugin: Annotated[
+            BasePlugin,
+            Doc(
+                """
+                    Plugin class.
+                    """
+            ),
+        ],
+        trigger_names: Annotated[
+            list[str] | None,
+            Doc(
+                """
+                    The name of the triggers for the plugin.
+
+                    Default: will be added to `Globals`.
+                    """
+            ),
+        ] = None,
+        component: Annotated[
+            str | None,
+            Doc(
+                """
+                    Component name.
+
+                    Default: `None`.
+                    """
+            ),
+        ] = None,
+    ) -> None:
+        """
+        Add a plugin.
+
+        Args:
+            plugin (Type[BasePlugin]): Plugin class.
+            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
+            component (str, optional): Component name. Default: `None`.
+
+        Raises:
+            KeyError: Unable to get component {component}!
+        """
+        data = {
+            "worker": self.worker,
+            "broker": self.broker,
+            "storage": self.broker.storage,
+            "global_config": self.broker.storage.global_config,
+        }
+
+        trigger_names = trigger_names or ["Globals"]
+
+        plugin_registry = AsyncPluginRegistry(plugin=plugin)
+
+        if not component:
+            for name in trigger_names:
+                if name not in self.plugins:
+                    self.plugins.update({name: [plugin_registry]})
+                else:
+                    self.plugins[name].append(plugin_registry)
+            return
+
+        component_data = data.get(component)
+        if not component_data:
+            raise KeyError(f"Unable to get component {component}!")
+        component_data.add_plugin(plugin_registry, trigger_names)
+        return
