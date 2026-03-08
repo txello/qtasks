@@ -15,6 +15,7 @@ from qtasks.events.async_events import AsyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
 from qtasks.plugins.classes.registry.async_registry import AsyncPluginRegistry
+from qtasks.plugins.classes.registry.base import BasePluginRegistry
 from qtasks.results.async_result import AsyncResult
 from qtasks.schemas.task_exec import TaskExecSchema
 from qtasks.starters.async_starter import AsyncStarter
@@ -556,6 +557,26 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
                     """
             ),
         ] = None,
+        priority: Annotated[
+            int | None,
+            Doc(
+                """
+                    Priority for the plugin.
+
+                    Default: class_.priority.
+                    """
+            ),
+        ] = None,
+        class_: Annotated[
+            BasePluginRegistry[Literal[True]] | None,
+            Doc(
+                """
+                    Async PluginRegistry class.
+
+                    Default: `AsyncPluginRegistry`.
+                    """
+            ),
+        ] = None,
         component: Annotated[
             str | None,
             Doc(
@@ -587,18 +608,19 @@ class QueueTasks(BaseQueueTasks[Literal[True]], AsyncPluginMixin):
 
         trigger_names = trigger_names or ["Globals"]
 
-        plugin_registry = AsyncPluginRegistry(plugin=plugin)
+        if component:
+            component_data = data.get(component)
+            if not component_data:
+                raise KeyError(f"Unable to get component {component}!")
+            return component_data.add_plugin(plugin=plugin, trigger_names=trigger_names, priority=priority, class_=class_)
 
-        if not component:
-            for name in trigger_names:
-                if name not in self.plugins:
-                    self.plugins.update({name: [plugin_registry]})
-                else:
-                    self.plugins[name].append(plugin_registry)
-            return
+        plugin_registry = (class_ or AsyncPluginRegistry)(plugin=plugin)
+        if priority is not None:
+            plugin_registry.priority = priority
 
-        component_data = data.get(component)
-        if not component_data:
-            raise KeyError(f"Unable to get component {component}!")
-        component_data.add_plugin(plugin_registry, trigger_names)
+        for name in trigger_names:
+            if name not in self.plugins:
+                self.plugins.update({name: [plugin_registry]})
+            else:
+                self.plugins[name].append(plugin_registry)
         return

@@ -173,7 +173,12 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             num_workers (int, optional): Number of workers. Default: 4.
         """
         self._plugin_trigger("starter_start", starter=self)
-        for plugin in [i for y in self.plugins.values() for i in y]:
+
+        plugins = sorted(
+            (i for y in self.plugins.values() for i in y),
+            key=lambda p: p.priority
+        )
+        for plugin in plugins:
             if plugin not in self._started_plugins:
                 self._started_plugins.add(plugin)
                 plugin.start()

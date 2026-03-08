@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Dict, Generic, Literal, overload
+from typing import Any, Awaitable, Dict, Generic, Literal, Optional, overload
 
 from qtasks.plugins.base import BasePlugin
 from qtasks.plugins.classes.result import PluginResult
@@ -11,7 +11,8 @@ from qtasks.types.typing import TAsyncFlag
 
 
 class BasePluginRegistry(Generic[TAsyncFlag], ABC):
-    def __init__(self, plugin: BasePlugin[TAsyncFlag]):
+    def __init__(self, plugin: BasePlugin[TAsyncFlag], name: Optional[str] = None):
+        self.name: Optional[str] = name
         self.plugin: BasePlugin[TAsyncFlag] = plugin
 
         self.enabled: bool = True

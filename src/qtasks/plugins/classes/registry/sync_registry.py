@@ -6,7 +6,7 @@ from qtasks.plugins.classes.registry.base import BasePluginRegistry
 
 class SyncPluginRegistry(BasePluginRegistry):
     def __init__(self, plugin: BasePlugin[True]):
-        super().__init__(plugin=plugin)
+        super().__init__(plugin=plugin, name=plugin.name)
         pass
 
     def start(self, *args, **kwargs):

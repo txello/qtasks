@@ -9,7 +9,7 @@ from qtasks.plugins.classes.result import PluginResult
 
 class AsyncPluginRegistry(BasePluginRegistry):
     def __init__(self, plugin: BasePlugin[Literal[True]]):
-        super().__init__(plugin=plugin)
+        super().__init__(plugin=plugin, name=plugin.name)
         pass
 
     async def start(self, *args, **kwargs):
