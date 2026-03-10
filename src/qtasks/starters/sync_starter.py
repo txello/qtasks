@@ -16,7 +16,6 @@ from .base import BaseStarter
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
     from qtasks.events.base import BaseEvents
-    from qtasks.plugins.base import BasePlugin
     from qtasks.workers.base import BaseWorker
 
 
@@ -116,7 +115,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
         self.worker: BaseWorker[Literal[False]]
         self.broker: BaseBroker[Literal[False]]
 
-        self._started_plugins: set[BasePlugin] = set()
+        self._started_plugins: set[BasePluginRegistry[Literal[False]]] = set()
 
     def start(
         self,

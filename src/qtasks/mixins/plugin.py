@@ -75,12 +75,7 @@ class SyncPluginMixin:
         results = []
         kwargs_copy = kwargs.copy()
 
-        plugins = sorted(
-            self.plugins.get(name, []) + self.plugins.get("Globals", []),
-            key=lambda p: p.priority
-        )
-
-        for plugin_registry in plugins:
+        for plugin_registry in self.plugins.get(name, []) + self.plugins.get("Globals", []):
             # cache: start
             cache = plugin_registry.get_cache()
             if cache:
@@ -187,10 +182,9 @@ class SyncPluginMixin:
             plugin_registry.priority = priority
 
         for name in trigger_names:
-            if name not in self.plugins:
-                self.plugins.update({name: [plugin_registry]})
-            else:
-                self.plugins[name].append(plugin_registry)
+            plugins = self.plugins.setdefault(name, [])
+            plugins.append(plugin_registry)
+            plugins.sort(key=lambda p: p.priority)
         return
 
 
@@ -272,12 +266,7 @@ class AsyncPluginMixin:
         results = []
         kwargs_copy = kwargs.copy()
 
-        plugins = sorted(
-            self.plugins.get(name, []) + self.plugins.get("Globals", []),
-            key=lambda p: p.priority
-        )
-
-        for plugin_registry in plugins:
+        for plugin_registry in self.plugins.get(name, []) + self.plugins.get("Globals", []):
             # cache: start
             cache = await plugin_registry.get_cache()
             if cache:
@@ -382,7 +371,7 @@ class AsyncPluginMixin:
         Add a plugin.
 
         Args:
-            plugin (Type[BasePlugin]): Plugin class.
+            plugin (BasePlugin): Plugin class.
             trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
             component (str, optional): Component name. Default: `None`.
 
@@ -396,8 +385,7 @@ class AsyncPluginMixin:
             plugin_registry.priority = priority
 
         for name in trigger_names:
-            if name not in self.plugins:
-                self.plugins.update({name: [plugin_registry]})
-            else:
-                self.plugins[name].append(plugin_registry)
+            plugins = self.plugins.setdefault(name, [])
+            plugins.append(plugin_registry)
+            plugins.sort(key=lambda p: p.priority)
         return
