@@ -1,42 +1,88 @@
-# Components: Plugin System
+# Components: The Plugin System
 
 This page describes the architecture of the QTasks plugin system at the component
 level:
-how plugins are connected, where exactly they are called, and how they affect the
-execution flow.
+how plugins are integrated, where exactly they are invoked, and how they affect
+the execution flow.
 
 The plugin system is a built-in mechanism for extending components and does not
 exist separately from them.
-
-Each component determines for itself
-whether it supports plugins and at which points they can be called.
-Each component determines for itself whether it supports plugins and at which
-points they can be called.
+Each component independently determines
+**whether it supports plugins and at which points they can be invoked**.
 
 ---
 
 ## Plugins as part of a component
 
-Each core QTasks component has its own set of plugins, accessible via `self.plugins`.
+Each core QTasks component has its own set of plugins,
+accessible via:
+
+```python
+self.plugins: dict[str, list[BasePluginRegistry]]
+```
+
+Where:
+
+* key (str) — the trigger name;
+* value (list[BasePluginRegistry]) — a list of registered plugins for
+that trigger.
+* The list of plugins within each trigger is sorted by priority.
+* Sorting is performed in ascending order of priority (from lowest to highest).
+* This guarantees a predictable order of plugin execution.
+
+The list of plugins in each trigger is sorted by priority.
+Sorting is performed in ascending order of priority (from lowest to highest).
 
 Plugins:
 
 * belong to a specific component;
 * are called only at explicitly defined points (triggers);
-* do not have direct access to the internal state of the component.
+* do not have direct access to the component’s internal state.
 
-Thus, behavior extension is controlled and predictable.
+Thus, behavior extension occurs in a controlled and predictable manner.
 
 ---
 
-## PluginMixin and enabling the plugin system
+## BasePluginRegistry
 
-For a component to use plugins, it must inherit
+Plugins are not stored directly inside components.
+Each plugin is wrapped in a plugin registry object.
+
+Base registry type:
+
+```python
+BasePluginRegistry
+```
+
+This is an abstract class from which the following classes are derived:
+
+* AsyncPluginRegistry
+* SyncPluginRegistry
+
+These classes manage the invocation of the corresponding plugin types.
+
+## BasePluginRegistry Fields
+
+Each plugin registry contains the following fields:
+
+| Field      | Type   | Description                          |
+| ---------- | ------ | ------------------------------------ |
+| `name`     | `str`  | Plugin name (`plugin.name`)          |
+| `plugin`   | `Any`  | Plugin instance                      |
+| `enabled`  | `bool` | Whether the plugin is allowed to run |
+| `priority` | `int`  | Execution priority                   |
+| `cache`    | `dict` | Data cache for `_plugin_trigger`     |
+
+---
+
+## PluginMixin and Enabling the Plugin System
+
+For a component to use plugins, it must inherit from
 `AsyncPluginMixin` or `SyncPluginMixin`.
 
-Mixin provides:
+The mixin provides:
 
-* the `_plugin_trigger()` method — the point at which plugins are called;
+* the `_plugin_trigger()` method — a callback point for plugins;
 * the `add_plugin()` method — a mechanism for registering plugins.
 
 Without connecting the appropriate mixin, the plugin system for the component is
@@ -44,92 +90,113 @@ considered disabled.
 
 ---
 
-## Calling triggers
+Plugins are enabled using the method:
 
-Plugin triggers are called explicitly within the component logic.
+```python
+add_plugin()
+```
+
+Method signature:
+
+```python
+add_plugin(
+    plugin,
+    trigger_names=None,
+    priority=None,
+    class_=None,
+)
+```
+
+---
+
+## Calling Triggers
+
+Plugin triggers are explicitly called within the component’s logic.
 
 Example of calling an asynchronous trigger:
 
 ```python
 new_results = await self._plugin_trigger(
-    "storage_get_all",
+    “storage_get_all”,
     storage=self,
     results=results,
     return_last=True,
 )
 ```
 
-A trigger is not a "default" event, but an architectural decision made by the
-component author.
-If the trigger is not called, the plugins are not executed.
+A trigger is not a “standard” event, but rather an architectural decision made by
+the component author.
+If a trigger is not called, plugins are not executed.
 
 ---
 
-## Plugin registration
+## Registering Plugins
 
-Plugins are added via `add_plugin()`.
+Plugins are added using `add_plugin()`.
 
 ```python
 self.add_plugin(
     AsyncRetryPlugin(),
-    trigger_names=["worker_task_error_retry"],
+    trigger_names=[“worker_task_error_retry”],
 )
 ```
 
-`add_plugin()` accepts:
+After registration:
 
-* `plugin` — a plugin instance;
-* `trigger_names` — a list of trigger names.
+1. an instance of `PluginRegistry` is created;
+2. it is added to `self.plugins[trigger_name]`;
+3. the list of plugins for the trigger is sorted by `priority`.
 
 If `trigger_names` is `None`, the plugin is considered **global** and
-will be called in all component triggers.
+will be called in all triggers of the component.
 
-!!! note
-    In `QueueTasks()`, the `add_plugin()` method additionally accepts the parameter
-    `component=""`,
+!!! Note
+    In the `QueueTasks()` method, the `add_plugin()` function additionally accepts
+    the `component=""` parameter,
     which allows you to add a plugin not to `QueueTasks` itself, but to a specific
     component.
 
-!!! note
-    Worker passes its plugins to `TaskExecutor` at the task assembly stage.
+!!! Note
+    The workflow passes its plugins to `TaskExecutor` during the task assembly phase.
 
-This allows plugins to influence not only task management, but also the process
-of their immediate execution.
+This allows plugins to influence not only task management but also the process
+of their direct execution.
 
 ---
 
-## Trigger types
+## Trigger Types
 
-From an architectural point of view, triggers are divided into two types.
+From an architectural standpoint, triggers are divided into two types.
 
-### Unidirectional triggers
+### Unidirectional Triggers
 
 A unidirectional trigger is used for side effects and does not affect
-the further execution of the component code.
+the subsequent execution of the component’s code.
 
-* The result of plugin execution is ignored.
-* The trigger is used for logging, metrics, notifications, and similar tasks.
+* The result of the plugin’s execution is ignored;
+* The trigger is used for logging, collecting metrics, notifications, and
+similar tasks.
 
-### Returnable triggers
+### Return Triggers
 
-A returnable trigger allows plugins to change data involved in further
+A return trigger allows plugins to modify data involved in subsequent
 execution.
 
-* plugin results can replace input parameters;
-* the set of returnable values is strictly defined by the trigger contract;
-* Most often, the same data that is passed to the trigger is changed.
+* The plugin’s results can replace the input parameters;
+* The set of return values is strictly defined by the trigger contract;
+* Most often, the same data that is passed to the trigger is modified.
 
-Which parameters can be changed is determined by the description of the specific
-trigger.
+Which specific parameters can be modified is determined by the description of
+the specific trigger.
 
 ---
 
-## Trigger call parameters
+## Trigger Call Parameters
 
 Each call to `_plugin_trigger()` has the following logical parameter structure:
 
 * `<self>` — the component that initiated the trigger call;
-* `[additional component]` — optional, if the trigger is logically related to
+* `[additional component]` — optional, if the trigger is logically associated with
 another component;
 * `**parameters` — a dictionary of parameters passed to plugins.
 
@@ -137,32 +204,46 @@ Additional execution control parameters:
 
 * `return_last: bool | None = None` — return only the last result, if available;
 * `safe: bool = True` — if `True`, plugin errors are not ignored;
-* `continue_on_fail: bool` — if `True`, other plugins continue to execute
+* `continue_on_fail: bool` — if `True`, execution of other plugins continues
 even if an error occurs.
 
 ---
 
-## Component developer responsibility
+## Component Developer Responsibilities
 
 If you are creating your own component and want to support plugins, you must:
 
 * connect the appropriate `PluginMixin`;
-* explicitly place `_plugin_trigger()` calls in the necessary places in the logic.
+* explicitly place `_plugin_trigger()` calls in the appropriate locations within
+the logic.
 
-If triggers are not added, the plugin system for the component does not actually
-exist.
+If triggers are not added, the plugin system for the component effectively does
+not exist.
 
-Similarly, if you want to completely disable plugins in a component, simply
+Similarly, if you need to completely disable plugins in a component, simply
 do not add triggers.
 
 ---
 
-## Architectural invariants
+## Architectural Invariants
 
-* Plugins belong to components, not to the system as a whole.
-* Triggers are only called explicitly.
-* Plugins do not violate component contracts.
-* The plugin system extends behavior without changing the architectural foundations.
+* Plugins belong to components, not to the system as a whole;
+* Triggers are called only explicitly;
+* Plugins do not violate component contracts;
+* The plugin system extends behavior without altering the architectural foundations.
 
-The QTasks plugin system provides a controlled extension of the architecture
-without hidden dependencies or implicit side effects.
+The QTasks plugin system provides controlled architecture extension without hidden
+dependencies or implicit side effects.
+
+## Summary
+
+The QTasks plugin system is a
+**component-oriented extension mechanism** in which:
+
+* plugins are registered via `add_plugin()`;
+* managed via `BasePluginRegistry`;
+* stored in `dict[str, list[BasePluginRegistry]]`;
+* executed via `_plugin_trigger()`.
+
+This approach allows for safe system extension and the introduction of new
+functionality without changing the component architecture.
