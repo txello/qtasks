@@ -117,9 +117,9 @@ class SyncPluginMixin:
                 args_next = result.args_next
                 kwargs_next = result.kwargs_next
 
-                if args_next:
+                if args_next is not None:
                     kwargs_copy["args"] = args_next or ()
-                if kwargs_next:
+                if kwargs_next is not None:
                     kwargs_copy["kw"] = kwargs_next or {}
 
         if return_last and results:
@@ -315,9 +315,9 @@ class AsyncPluginMixin:
                 args_next = result.args_next
                 kwargs_next = result.kwargs_next
 
-                if args_next:
+                if args_next is not None:
                     kwargs_copy["args"] = args_next or ()
-                if kwargs_next:
+                if kwargs_next is not None:
                     kwargs_copy["kw"] = kwargs_next or {}
 
         if return_last and results:
