@@ -114,10 +114,8 @@ class SyncTaskExecutor(BaseTaskExecutor, SyncPluginMixin):
             return_last=True,
         )
         if new_args:
-            kw: dict = new_args.get("kw")  # type: ignore
-            if not kw:
-                self._args = kw.get("args", self._args)
-                self._kwargs = kw.get("kw", self._kwargs)
+            self._args = new_args.get("args", self._args)
+            self._kwargs = new_args.get("kw", self._kwargs)
 
         self._plugin_trigger("task_executor_before_execute", task_executor=self)
 

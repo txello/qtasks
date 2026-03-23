@@ -80,8 +80,6 @@ class SyncPluginMixin:
             cache = plugin_registry.get_cache()
             if cache:
                 kwargs_copy.update({"plugin_cache": cache})
-            elif "plugin_cache" in kwargs_copy:
-                del kwargs_copy["plugin_cache"]
             #
 
             result = None
@@ -89,6 +87,8 @@ class SyncPluginMixin:
                 result: PluginResult | None = plugin_registry.trigger(
                     name, **kwargs_copy
                 )
+                if not isinstance(result, PluginResult) and result is not None:
+                    raise ValueError(f"Plugin `{plugin_registry.name}` returned a value that does not match `PluginResult` or `None`")
             except Exception as e:
                 if safe:
                     tb = "".join(
@@ -285,6 +285,8 @@ class AsyncPluginMixin:
                 result: PluginResult | None = await plugin_registry.trigger(
                     name, **kwargs_copy
                 )
+                if not isinstance(result, PluginResult) and result is not None:
+                    raise ValueError(f"Plugin `{plugin_registry.name}` returned a value that does not match `PluginResult` or `None`")
             except Exception as e:
                 if safe:
                     tb = "".join(

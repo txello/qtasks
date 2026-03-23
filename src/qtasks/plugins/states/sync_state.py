@@ -88,7 +88,7 @@ class SyncStatePlugin(BasePlugin):
                     new_args.append(None)
                 new_args[meta.index] = bound
 
-        return PluginResult(result={"args": new_args, "kw": new_kw})
+        return PluginResult(args_next=new_args, kwargs_next=new_kw)
 
     def _extract_state_class(self, ann: Any) -> type[SyncState] | None:
         """
