@@ -17,7 +17,7 @@ from .base import BaseStarter
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
     from qtasks.events.base import BaseEvents
-    from qtasks.plugins.base import BasePlugin
+    from qtasks.plugins.classes.registry.base import BasePluginRegistry
     from qtasks.workers.base import BaseWorker
 
 
@@ -118,7 +118,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
         self.broker: BaseBroker[Literal[True]]
 
         self._global_loop: asyncio.AbstractEventLoop | None = None
-        self._started_plugins: set[BasePlugin] = set()
+        self._started_plugins: set[BasePluginRegistry[Literal[True]]] = set()
 
     def start(
         self,
@@ -147,7 +147,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
                     """),
         ] = True,
         plugins: Annotated[
-            dict[str, list[BasePlugin]] | None,
+            dict[str, list[BasePluginRegistry[Literal[True]]]] | None,
             Doc("""
                     Plugins for worker and broker.
 
@@ -162,7 +162,7 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             loop (asyncio.AbstractEventLoop, optional): Asynchronous loop. Default: None.
             num_workers (int, optional): Number of workers. Default: 4.
             reset_config (bool, optional): Update the config of the worker and broker. Default: True.
-            plugins (Dict[str, List[BasePlugin]] | None, optional): Plugins. Default: None.
+            plugins (Dict[str, List[BasePluginRegistry[Literal[True]]]] | None, optional): Plugins. Default: None.
         """
         if self.log:
             self.log.info("Starting QueueTasks...")
@@ -196,9 +196,13 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
             num_workers (int, optional): Number of workers. Default: 4.
         """
         await self._plugin_trigger("starter_start", starter=self)
-        for plugin in [i for y in self.plugins.values() for i in y]:
+
+        plugins = sorted(
+            (i for y in self.plugins.values() for i in y),
+            key=lambda p: p.priority
+        )
+        for plugin in plugins:
             if plugin not in self._started_plugins:
-                plugin: BasePlugin[Literal[True]]
                 self._started_plugins.add(plugin)
                 await plugin.start()
 
@@ -235,10 +239,8 @@ class AsyncStarter(BaseStarter[Literal[True]], AsyncPluginMixin):
         )
 
         for model_plugin in [i for y in self.plugins.values() for i in y]:
-            model_plugin: BasePlugin[Literal[True]]
             await model_plugin.stop()
 
         for plugin in self._started_plugins:
-            plugin: BasePlugin[Literal[True]]
             await plugin.stop()
         self._started_plugins.clear()

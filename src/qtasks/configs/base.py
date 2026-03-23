@@ -17,11 +17,11 @@ from typing_extensions import Doc
 
 from qtasks.configs.config import QueueConfig
 from qtasks.logs import Logger
+from qtasks.plugins.classes.registry.base import BasePluginRegistry
 from qtasks.types.typing import TAsyncFlag
 
 if TYPE_CHECKING:
     from qtasks.events.base import BaseEvents
-    from qtasks.plugins.base import BasePlugin
 
 
 class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
@@ -101,7 +101,7 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
         )
         self.events = events
         self.client = None
-        self.plugins: dict[str, list[BasePlugin]] = {}
+        self.plugins: dict[str, list[BasePluginRegistry]] = {}
 
         self.init_plugins()
 
@@ -227,39 +227,6 @@ class BaseGlobalConfig(Generic[TAsyncFlag], ABC):
             config (QueueConfig): Config.
         """
         self.config = config
-        return
-
-    def add_plugin(
-        self,
-        plugin: Annotated[
-            BasePlugin,
-            Doc("""
-                    Plugin.
-                    """),
-        ],
-        trigger_names: Annotated[
-            list[str] | None,
-            Doc("""
-                    The name of the triggers for the plugin.
-
-                    Default: Default: will be added to `Globals`.
-                    """),
-        ] = None,
-    ) -> None:
-        """
-        Add a plugin to the class.
-
-        Args:
-            plugin (BasePlugin): Plugin
-            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
-        """
-        trigger_names = trigger_names or ["Globals"]
-
-        for name in trigger_names:
-            if name not in self.plugins:
-                self.plugins.update({name: [plugin]})
-            else:
-                self.plugins[name].append(plugin)
         return
 
     def init_plugins(self):

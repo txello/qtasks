@@ -33,7 +33,7 @@ from qtasks.types.typing import TAsyncFlag
 if TYPE_CHECKING:
     from qtasks.configs.base import BaseGlobalConfig
     from qtasks.events.base import BaseEvents
-    from qtasks.plugins.base import BasePlugin
+    from qtasks.plugins.classes.registry.base import BasePluginRegistry
     from qtasks.workers.base import BaseWorker
 
 
@@ -123,7 +123,7 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
         self.events = events
 
         self.client = None
-        self.plugins: dict[str, list[BasePlugin]] = {}
+        self.plugins: dict[str, list[BasePluginRegistry]] = {}
 
         self.init_plugins()
 
@@ -365,39 +365,6 @@ class BaseStorage(Generic[TAsyncFlag], ABC):
             priority (int): Task priority.
         """
         pass
-
-    def add_plugin(
-        self,
-        plugin: Annotated[
-            BasePlugin,
-            Doc("""
-                    Plugin.
-                    """),
-        ],
-        trigger_names: Annotated[
-            list[str] | None,
-            Doc("""
-                    The name of the triggers for the plugin.
-
-                    Default: Default: will be added to `Globals`.
-                    """),
-        ] = None,
-    ) -> None:
-        """
-        Add a plugin to the class.
-
-        Args:
-            plugin (BasePlugin): Plugin
-            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
-        """
-        trigger_names = trigger_names or ["Globals"]
-
-        for name in trigger_names:
-            if name not in self.plugins:
-                self.plugins.update({name: [plugin]})
-            else:
-                self.plugins[name].append(plugin)
-        return
 
     @overload
     def remove_finished_task(

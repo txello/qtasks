@@ -8,6 +8,7 @@ app = QueueTasks()
 
 class TestPlugin(BasePlugin):
     def __init__(self, name=None):
+        name = "TestPlugin"
         super().__init__(name)
 
         self.handlers = {
@@ -31,7 +32,7 @@ class TestPlugin(BasePlugin):
         return None
 
 
-app.add_plugin(TestPlugin(), trigger_names=["task_executor_run_task_trigger_error"], component="worker")
+app.add_plugin(TestPlugin(), trigger_names=["task_executor_run_task_trigger_error"], component="worker", priority=0)
 
 
 @app.task(echo=True)

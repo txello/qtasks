@@ -6,7 +6,6 @@ import json
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable
 from typing import (
-    TYPE_CHECKING,
     Annotated,
     Any,
     Generic,
@@ -19,12 +18,10 @@ from typing import (
 from typing_extensions import Doc
 
 from qtasks.logs import Logger
+from qtasks.plugins.classes.registry.base import BasePluginRegistry
 from qtasks.schemas.argmeta import ArgMeta
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 from qtasks.types.typing import TAsyncFlag
-
-if TYPE_CHECKING:
-    from qtasks.plugins.base import BasePlugin
 
 
 class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
@@ -66,7 +63,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
                     """),
         ] = None,
         plugins: Annotated[
-            dict[str, list[BasePlugin]] | None,
+            dict[str, list[BasePluginRegistry[TAsyncFlag]]] | None,
             Doc("""
                     Array of Plugins.
 
@@ -81,7 +78,7 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
             task_func (TaskExecSchema): Schema `TaskExecSchema`.
             task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
             log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
-            plugins (Dict[str, List[BasePlugin]], optional): Plugin dictionary. Default: `Empty dictionary`.
+            plugins (Dict[str, list[BasePluginRegistry[TAsyncFlag]]], optional): Plugin dictionary. Default: `Empty dictionary`.
         """
         self.task_func = task_func
         self.task_broker = task_broker
@@ -247,39 +244,6 @@ class BaseTaskExecutor(Generic[TAsyncFlag], ABC):
             str: Result of the task.
         """
         return ""
-
-    def add_plugin(
-        self,
-        plugin: Annotated[
-            BasePlugin,
-            Doc("""
-                    Plugin.
-                    """),
-        ],
-        trigger_names: Annotated[
-            list[str] | None,
-            Doc("""
-                    The name of the triggers for the plugin.
-
-                    Default: Default: will be added to `Globals`.
-                    """),
-        ] = None,
-    ) -> None:
-        """
-        Add a plugin to the class.
-
-        Args:
-            plugin (BasePlugin): Plugin
-            trigger_names (List[str], optional): The name of the triggers for the plugin. Default: will be added to `Globals`.
-        """
-        trigger_names = trigger_names or ["Globals"]
-
-        for name in trigger_names:
-            if name not in self.plugins:
-                self.plugins.update({name: [plugin]})
-            else:
-                self.plugins[name].append(plugin)
-        return
 
     def _extract_args_kwargs_from_func(self, func: Any) -> tuple[list, dict]:
         """

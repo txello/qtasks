@@ -9,13 +9,13 @@ from qtasks.configs.config import QueueConfig
 from qtasks.events.sync_events import SyncEvents
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import SyncPluginMixin
+from qtasks.plugins.classes.registry.base import BasePluginRegistry
 
 from .base import BaseStarter
 
 if TYPE_CHECKING:
     from qtasks.brokers.base import BaseBroker
     from qtasks.events.base import BaseEvents
-    from qtasks.plugins.base import BasePlugin
     from qtasks.workers.base import BaseWorker
 
 
@@ -115,7 +115,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
         self.worker: BaseWorker[Literal[False]]
         self.broker: BaseBroker[Literal[False]]
 
-        self._started_plugins: set[BasePlugin] = set()
+        self._started_plugins: set[BasePluginRegistry[Literal[False]]] = set()
 
     def start(
         self,
@@ -136,7 +136,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
                     """),
         ] = True,
         plugins: Annotated[
-            dict[str, list[BasePlugin]] | None,
+            dict[str, list[BasePluginRegistry[Literal[False]]]] | None,
             Doc("""
                     Plugins for worker and broker.
 
@@ -149,7 +149,7 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
         Args:
             num_workers (int, optional): Number of workers. Default: 4.
             reset_config (bool, optional): Update the config of the worker and broker. Default: True.
-            plugins (Dict[str, BasePlugin] | None, optional): Plugins. Default: None.
+            plugins (Dict[str, BasePluginRegistry[Literal[False]]] | None, optional): Plugins. Default: None.
         """
         if self.log:
             self.log.info("Starting QueueTasks...")
@@ -172,7 +172,12 @@ class SyncStarter(BaseStarter[Literal[False]], SyncPluginMixin):
             num_workers (int, optional): Number of workers. Default: 4.
         """
         self._plugin_trigger("starter_start", starter=self)
-        for plugin in [i for y in self.plugins.values() for i in y]:
+
+        plugins = sorted(
+            (i for y in self.plugins.values() for i in y),
+            key=lambda p: p.priority
+        )
+        for plugin in plugins:
             if plugin not in self._started_plugins:
                 self._started_plugins.add(plugin)
                 plugin.start()

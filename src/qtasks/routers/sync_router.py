@@ -3,22 +3,17 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Callable
-from typing import (
-    TYPE_CHECKING,
-    Annotated,
-)
+from typing import Annotated
 
 from typing_extensions import Doc
 
 from qtasks.executors.base import BaseTaskExecutor
 from qtasks.middlewares.task import TaskMiddleware
 from qtasks.mixins.plugin import SyncPluginMixin
+from qtasks.plugins.classes.registry.base import BasePluginRegistry
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.task_exec import TaskExecSchema
 from qtasks.types.annotations import P, R
-
-if TYPE_CHECKING:
-    from qtasks.plugins.base import BasePlugin
 
 
 class SyncRouter(SyncPluginMixin):
@@ -53,7 +48,7 @@ class SyncRouter(SyncPluginMixin):
                 """),
         ] = {}
 
-        self.plugins: dict[str, list[BasePlugin]] = {}
+        self.plugins: dict[str, list[BasePluginRegistry]] = {}
 
     def task(
         self,

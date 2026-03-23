@@ -4,9 +4,9 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncGenerator, Generator
 from typing import (
-    TYPE_CHECKING,
     Annotated,
     Any,
+    Literal,
 )
 
 from typing_extensions import Doc
@@ -14,14 +14,12 @@ from typing_extensions import Doc
 from qtasks.exc.plugins import TaskPluginTriggerError
 from qtasks.logs import Logger
 from qtasks.mixins.plugin import AsyncPluginMixin
+from qtasks.plugins.classes.registry.base import BasePluginRegistry
 from qtasks.registries.async_task_decorator import AsyncTask
 from qtasks.registries.sync_task_decorator import SyncTask
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
 from .base import BaseTaskExecutor
-
-if TYPE_CHECKING:
-    from qtasks.plugins.base import BasePlugin
 
 
 class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
@@ -64,7 +62,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
                     """),
         ] = None,
         plugins: Annotated[
-            dict[str, list[BasePlugin]] | None,
+            dict[str, list[BasePluginRegistry[Literal[True]]]] | None,
             Doc("""
                     Array of Plugins.
 
@@ -79,7 +77,7 @@ class AsyncTaskExecutor(BaseTaskExecutor, AsyncPluginMixin):
             task_func (TaskExecSchema): Schema `TaskExecSchema`.
             task_broker(TaskPrioritySchema): Schema `TaskPrioritySchema`.
             log (Logger, optional): class `qtasks.logs.Logger`. Default: `qtasks._state.log_main`.
-            plugins (Dict[str, List[BasePlugin]], optional): An array of plugins. Default: `Empty array`.
+            plugins (Dict[str, List[BasePluginRegistry[Literal[True]]]], optional): An array of plugins. Default: `Empty array`.
         """
         super().__init__(
             task_func=task_func,

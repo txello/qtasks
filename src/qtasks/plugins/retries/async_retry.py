@@ -6,6 +6,7 @@ from typing import Literal, Optional, Union
 
 from qtasks.brokers.base import BaseBroker
 from qtasks.plugins.base import BasePlugin
+from qtasks.plugins.classes.result import PluginResult
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 from qtasks.schemas.task_status import TaskStatusErrorSchema
 
@@ -85,4 +86,4 @@ class AsyncRetryPlugin(BasePlugin):
         if new_task is not None:
             model.retry_child_uuid = str(new_task.uuid) if task_retry > 0 else "None"  # type: ignore
             model.status = "retry"
-        return {"model": model}
+        return PluginResult(result={"model": model})
