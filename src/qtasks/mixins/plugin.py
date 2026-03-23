@@ -75,11 +75,16 @@ class SyncPluginMixin:
         results = []
         kwargs_copy = kwargs.copy()
 
+        args_next = None
+        kwargs_next = None
+
         for plugin_registry in self.plugins.get(name, []) + self.plugins.get("Globals", []):
             # cache: start
             cache = plugin_registry.get_cache()
             if cache:
                 kwargs_copy.update({"plugin_cache": cache})
+            elif "plugin_cache" in kwargs_copy:
+                del kwargs_copy["plugin_cache"]
             #
 
             result = None
@@ -107,20 +112,16 @@ class SyncPluginMixin:
                 result_cache = result.cache
 
                 if result_cache is not None:
-                    if plugin_registry.plugin.name:
-                        plugin_registry.update_cache(**result_cache)
+                    plugin_registry.update_cache(**result_cache)
                 #
 
                 if result.result is not None:
                     results.append(result.result)
 
-                args_next = result.args_next
-                kwargs_next = result.kwargs_next
-
-                if args_next is not None:
-                    kwargs_copy["args"] = args_next or ()
-                if kwargs_next is not None:
-                    kwargs_copy["kw"] = kwargs_next or {}
+                if result.args_next is not None:
+                    args_next = result.args_next or ()
+                if result.kwargs_next is not None:
+                    kwargs_next = result.kwargs_next or {}
 
         if return_last and results:
             return {
@@ -128,10 +129,9 @@ class SyncPluginMixin:
                     k: v
                     for r in results
                     for k, v in r.items()
-                    if k not in ("args", "kw")
                 },
-                "args": kwargs_copy["args"],
-                "kw": kwargs_copy["kw"],
+                "args": args_next,
+                "kw": kwargs_next,
             }
         return results
 
@@ -271,6 +271,9 @@ class AsyncPluginMixin:
         results = []
         kwargs_copy = kwargs.copy()
 
+        args_next = None
+        kwargs_next = None
+
         for plugin_registry in self.plugins.get(name, []) + self.plugins.get("Globals", []):
             # cache: start
             cache = await plugin_registry.get_cache()
@@ -305,8 +308,7 @@ class AsyncPluginMixin:
                 result_cache = result.cache
 
                 if result_cache is not None:
-                    if plugin_registry.plugin.name:
-                        await plugin_registry.update_cache(**result_cache)
+                    await plugin_registry.update_cache(**result_cache)
                 #
 
                 if result.result is not None:
@@ -315,10 +317,10 @@ class AsyncPluginMixin:
                 args_next = result.args_next
                 kwargs_next = result.kwargs_next
 
-                if args_next is not None:
-                    kwargs_copy["args"] = args_next or ()
-                if kwargs_next is not None:
-                    kwargs_copy["kw"] = kwargs_next or {}
+                if result.args_next is not None:
+                    args_next = result.args_next or ()
+                if result.kwargs_next is not None:
+                    kwargs_next = result.kwargs_next or {}
 
         if return_last and results:
             return {
@@ -326,10 +328,9 @@ class AsyncPluginMixin:
                     k: v
                     for r in results
                     for k, v in r.items()
-                    if k not in ("args", "kw")
                 },
-                "args": kwargs_copy["args"],
-                "kw": kwargs_copy["kw"],
+                "args": args_next,
+                "kw": kwargs_next,
             }
         return results
 
