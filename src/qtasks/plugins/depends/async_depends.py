@@ -43,7 +43,7 @@ class AsyncDependsPlugin(BasePlugin):
     """Async Depends plugin."""
 
     def __init__(self, name="AsyncDependsPlugin"):
-        """Initializing the Pydantic plugin."""
+        """Initializing the Depends plugin."""
         super().__init__(name=name)
 
         self.contexts = AsyncContextPool()
@@ -58,11 +58,11 @@ class AsyncDependsPlugin(BasePlugin):
         }
 
     async def start(self, *args, **kwargs):
-        """Launching the Pydantic plugin."""
+        """Launching the Depends plugin."""
         pass
 
     async def stop(self, *args, **kwargs):
-        """Stopping the Pydantic plugin."""
+        """Stopping the Depends plugin."""
         pass
 
     async def trigger(self, name, *args, **kwargs):

@@ -27,9 +27,9 @@ if TYPE_CHECKING:
 class AsyncPydanticWrapperPlugin(BasePlugin):
     """Plugin for wrapping arguments in a Pydantic model."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, name="AsyncPydanticWrapperPlugin"):
         """Initializing the Pydantic plugin."""
-        super().__init__(*args, **kwargs)
+        super().__init__(name=name)
 
         self.handlers = {
             "task_executor_args_replace": self.replace_args,
@@ -94,6 +94,7 @@ class AsyncPydanticWrapperPlugin(BasePlugin):
                     result_cls.args_next = new_args_trimmed
                     result_cls.kwargs_next = {**new_kwargs, meta.name: model_instance}
                     return result_cls
+
                 result_cls.kwargs_next = {**new_kwargs, meta.name: model_instance}
                 return result_cls
 

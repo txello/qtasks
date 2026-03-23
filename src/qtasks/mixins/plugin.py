@@ -114,8 +114,13 @@ class SyncPluginMixin:
                 if result.result is not None:
                     results.append(result.result)
 
-                kwargs_copy["args"] = result.args_next or ()
-                kwargs_copy["kw"] = result.kwargs_next or {}
+                args_next = result.args_next
+                kwargs_next = result.kwargs_next
+
+                if args_next:
+                    kwargs_copy["args"] = args_next or ()
+                if kwargs_next:
+                    kwargs_copy["kw"] = kwargs_next or {}
 
         if return_last and results:
             return {

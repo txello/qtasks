@@ -18,9 +18,9 @@ if TYPE_CHECKING:
 class AsyncStatePlugin(BasePlugin):
     """Plugin for working with asynchronous states."""
 
-    def __init__(self, accept_annotated: bool = True):
+    def __init__(self, name: str = "AsyncStatePlugin", accept_annotated: bool = True):
         """Initializing the plugin."""
-        super().__init__()
+        super().__init__(name=name)
         self.accept_annotated = accept_annotated
         self._registry = AsyncStateRegistry()
 

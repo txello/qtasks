@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, get_args, get_origin
 
 from qtasks.plugins.base import BasePlugin
+from qtasks.plugins.classes.result import PluginResult
 from qtasks.plugins.states.registry import SyncStateRegistry
 from qtasks.schemas.argmeta import ArgMeta
 
@@ -17,9 +18,9 @@ if TYPE_CHECKING:
 class SyncStatePlugin(BasePlugin):
     """Plugin for working with synchronous states."""
 
-    def __init__(self, accept_annotated: bool = True):
+    def __init__(self, name: str = "SyncStatePlugin", accept_annotated: bool = True):
         """Initializing the plugin."""
-        super().__init__()
+        super().__init__(name=name)
         self.accept_annotated = accept_annotated
         self._registry = SyncStateRegistry()
 
@@ -87,7 +88,7 @@ class SyncStatePlugin(BasePlugin):
                     new_args.append(None)
                 new_args[meta.index] = bound
 
-        return {"args": new_args, "kw": new_kw}
+        return PluginResult(result={"args": new_args, "kw": new_kw})
 
     def _extract_state_class(self, ann: Any) -> type[SyncState] | None:
         """

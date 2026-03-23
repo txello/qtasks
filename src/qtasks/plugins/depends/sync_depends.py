@@ -9,6 +9,7 @@ from typing import (
     get_args,
 )
 
+from qtasks.plugins.classes.result import PluginResult
 from qtasks.plugins.depends.contexts.sync_contexts import SyncContextPool
 from qtasks.schemas.task_exec import TaskExecSchema, TaskPrioritySchema
 
@@ -33,8 +34,8 @@ if TYPE_CHECKING:
 class SyncDependsPlugin(BasePlugin):
     """Depends plugin."""
 
-    def __init__(self, name="AsyncDependsPlugin"):
-        """Initializing the Pydantic plugin."""
+    def __init__(self, name="SyncDependsPlugin"):
+        """Initializing the Depends plugin."""
         super().__init__(name=name)
 
         self.contexts = SyncContextPool()
@@ -49,11 +50,11 @@ class SyncDependsPlugin(BasePlugin):
         }
 
     def start(self, *args, **kwargs):
-        """Launching the Pydantic plugin."""
+        """Launching the Depends plugin."""
         pass
 
     def stop(self, *args, **kwargs):
-        """Stopping the Pydantic plugin."""
+        """Stopping the Depends plugin."""
         pass
 
     def trigger(self, name, *args, **kwargs):
@@ -72,6 +73,7 @@ class SyncDependsPlugin(BasePlugin):
     ):
         """Replaces task arguments."""
         result = {}
+        result_cls = PluginResult(result=result)
 
         for args_meta in args_info:
             if args_meta.is_kwarg:
@@ -88,13 +90,14 @@ class SyncDependsPlugin(BasePlugin):
 
             if not plugin_cache or dep.scope not in plugin_cache:
                 plugin_cache = {dep.scope: [cm[1]]}
-                result.update({"plugin_cache": {dep.scope: [cm[1]]}})
+                result_cls.cache = plugin_cache
             else:
                 plugin_cache[dep.scope].append(cm[1])
-                result["plugin_cache"] = plugin_cache
+                result_cls.cache = plugin_cache
 
-        result.update({"kw": kw})
-        return result
+        if kw:
+            result_cls.kwargs_next = kw
+        return result_cls
 
     def _eval_dep_callable(self, callable_obj, scope):
         """Universally "expands" a dependency to a value. We don’t pass any arguments - if necessary, add them where you call them."""
@@ -119,7 +122,7 @@ class SyncDependsPlugin(BasePlugin):
         if plugin_cache and "task" in plugin_cache:
             for cm in plugin_cache["task"]:
                 self.contexts.close_by_cm(cm)
-            return {"plugin_cache" : {"task": []}}
+            return PluginResult(cache={"task": []})
 
     def worker_close(
         self,
@@ -129,7 +132,7 @@ class SyncDependsPlugin(BasePlugin):
         if plugin_cache and "worker" in plugin_cache:
             for cm in plugin_cache["worker"]:
                 self.contexts.close_by_cm(cm)
-            return {"plugin_cache" : {"worker": []}}
+            return PluginResult(cache={"worker": []})
 
     def broker_close(
         self,
@@ -139,7 +142,7 @@ class SyncDependsPlugin(BasePlugin):
         if plugin_cache and "broker" in plugin_cache:
             for cm in plugin_cache["broker"]:
                 self.contexts.close_by_cm(cm)
-            return {"plugin_cache" : {"broker": []}}
+            return PluginResult(cache={"broker": []})
 
     def storage_close(
         self,
@@ -149,7 +152,7 @@ class SyncDependsPlugin(BasePlugin):
         if plugin_cache and "storage" in plugin_cache:
             for cm in plugin_cache["storage"]:
                 self.contexts.close_by_cm(cm)
-            return {"plugin_cache" : {"storage": []}}
+            return PluginResult(cache={"storage": []})
 
     def global_config_close(
         self,
@@ -159,4 +162,4 @@ class SyncDependsPlugin(BasePlugin):
         if plugin_cache and "global_config" in plugin_cache:
             for cm in plugin_cache["global_config"]:
                 self.contexts.close_by_cm(cm)
-            return {"plugin_cache" : {"global_config": []}}
+            return PluginResult(cache={"global_config": []})

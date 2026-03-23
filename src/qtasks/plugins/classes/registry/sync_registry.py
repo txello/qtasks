@@ -19,3 +19,9 @@ class SyncPluginRegistry(BasePluginRegistry):
 
     def trigger(self, name, *args, **kwargs):
         return self.plugin.trigger(name, *args, **kwargs)
+
+    def get_cache(self):
+        return self.cache
+
+    def update_cache(self, **kwargs):
+        return self.cache.update(kwargs)
